@@ -1,7 +1,7 @@
 {
   "name": "re-typescript",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.html",
   "license": "MIT",
   "scripts": {
     "bs:build": "bsb -make-world",
@@ -14,6 +14,17 @@
     "src_js/index.html"
   ],
   "browser": "docs/index.html",
+  "targets": {
+    "browser": {
+      "engines": {
+        "browsers": [
+          "last 1 version"
+        ]
+      },
+      "distDir": "docs",
+      "publicUrl": "./re-typescript"
+    }
+  },
   "devDependencies": {
     "bs-platform": "^7.3.2",
     "parcel": "^2.0.0-alpha.3.2"
