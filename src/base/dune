@@ -11,4 +11,5 @@
  (name re_typescript_base)
  (public_name re_typescript.base)
  (ocamlopt_flags (-linkall))
+ (flags -w -30)
 )

@@ -22,10 +22,13 @@ rule read =
   | newline                 { next_line lexbuf; read lexbuf }
   | "type"                  { TYPE }
   | "interface"             { INTERFACE }
+  | "Array"                 { ARRAY }
   | "extends"               { EXTENDS }
   | "import"                { IMPORT }
   | "export"                { EXPORT }
   | "from"                  { FROM }
+  | "readonly"              { READONLY }
+  | "enum"                  { ENUM }
   | "as"                    { AS }
   | '*'                     { STAR }
   | '='                     { EQUALS }
@@ -41,10 +44,16 @@ rule read =
   | '}'                     { RCURLY }
   | '('                     { LPAREN }
   | ')'                     { RPAREN }
+  | '['                     { LSQRBRACKET }
+  | ']'                     { RSQRBRACKET }
   | ['"' '\'']              { read_string (Buffer.create 17) lexbuf }
   | "string"                { PRIM_STRING }
   | "number"                { PRIM_NUMBER }
   | "boolean"               { PRIM_BOOLEAN }
+  | "null"                  { PRIM_NULL }
+  | "undefined"             { PRIM_UNDEFINED }
+  | "void"                  { PRIM_VOID }
+  | "any"                   { PRIM_ANY }
   | ident as v              { IDENT ( v ) }
   | _                       { read lexbuf }
   | eof                     { EOF }

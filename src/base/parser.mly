@@ -1,13 +1,53 @@
-%token TYPE INTERFACE
+%token
+  TYPE
+  INTERFACE
+  ARRAY
+  ENUM
+
 %token <string> IDENT
 %token <string> STRING
-%token EQUALS
-%token EXTENDS
-%token GT LT
-%token PRIM_STRING PRIM_NUMBER PRIM_BOOLEAN
-%token SEMICOLON COLON COMMA QMARK DOT AMPERSAND
-%token LCURLY RCURLY LPAREN RPAREN
-%token IMPORT EXPORT FROM STAR AS
+%token <int>    INT
+%token <float>  FLOAT
+
+%token
+  EQUALS
+  EXTENDS
+  READONLY
+
+%token
+  PRIM_STRING
+  PRIM_NUMBER
+  PRIM_BOOLEAN
+  PRIM_NULL
+  PRIM_UNDEFINED
+  PRIM_VOID
+  PRIM_ANY
+
+%token
+  SEMICOLON
+  COLON
+  COMMA
+  QMARK
+  DOT
+  AMPERSAND
+
+%token
+  LCURLY
+  RCURLY
+  LPAREN
+  RPAREN
+  LSQRBRACKET
+  RSQRBRACKET
+  GT
+  LT
+
+%token
+  IMPORT
+  EXPORT
+  FROM
+  STAR
+  AS
+
 %token EOF
 
 %start <Ts.toplevel> main
@@ -18,7 +58,8 @@ let main :=
 
 type_def:
   | TYPE; name = IDENT; EQUALS; t = type_; SEMICOLON? { `TypeDef(name, t) }
-  | INTERFACE; name = IDENT; extends = extends; LCURLY; obj = separated_or_terminated_list(obj_separator, obj_field)?; RCURLY; SEMICOLON? { `InterfaceDef(name, extends, match obj with | None -> [] | Some(v) -> v ) }
+  | TYPE; name = IDENT; EQUALS; t = type_; LSQRBRACKET; RSQRBRACKET; SEMICOLON? { `TypeDef(name, `Array(t)) }
+  | INTERFACE; name = IDENT; extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON? { `InterfaceDef(name, extends, obj ) }
 
 let extends :=
   | { [] }
@@ -31,28 +72,25 @@ let ref_part :=
   | name = IDENT; { (name, []) }
   | name = IDENT; LT; t = separated_or_terminated_list(COMMA, type_); GT; { (name, t) }
 
-
-separated_or_terminated_list(separator, X):
-  | x=X { [x] }
-  | x=X separator { [x] }
-  | x=X separator xs=separated_or_terminated_list(separator, X) { x :: xs }
-
 obj_field:
-  | key = STRING; r = QMARK?; COLON; t = type_    { {Ts.key; type_ = t; optional = match r with | None -> true | Some _ -> false } }
-  | key = IDENT; r = QMARK?; COLON; t = type_     { {Ts.key; type_ = t; optional = match r with | None -> true | Some _ -> false } } ;
+  | ro = opt_as_bool(READONLY); key = STRING; optional = opt_as_bool(QMARK); COLON; t = type_    { {Ts.key; type_ = t; optional; readonly = ro } }
+  | ro = opt_as_bool(READONLY); key = IDENT; optional = opt_as_bool(QMARK); COLON; t = type_     { {Ts.key; type_ = t; optional; readonly = ro } } ;
 
 type_:
   | PRIM_STRING       { `String }
   | PRIM_NUMBER       { `Number }
   | PRIM_BOOLEAN      { `Boolean }
-  | LCURLY; obj = separated_or_terminated_list(obj_separator, obj_field)?; RCURLY; { `Obj(match obj with | None -> [] | Some(v) -> v ) }
+  | PRIM_NULL         { `Null }
+  | PRIM_UNDEFINED    { `Undefined }
+  | PRIM_VOID         { `Void }
+  | PRIM_ANY          { `Any }
+  | LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; { `Obj(obj) }
+  | ARRAY; LT; t = type_; GT; { `Array(t) }
   | r = ref_          { `Ref(r) };
 
-let obj_separator :=
-  | COMMA; { Some(()) }
-  | SEMICOLON; { Some(()) }
-  | { None }
-
+(*
+  Imports
+*)
 
 let import :=
   | IMPORT; name = import_alias; FROM; path = STRING; SEMICOLON?; { { Ts.path; name } }
@@ -63,3 +101,23 @@ let import_alias :=
   | STAR; AS; alias = IDENT; { `Alias(`Star, alias) }
   | LCURLY; lst = separated_or_terminated_list(COMMA, import_alias); AS; alias = IDENT; RCURLY; { `Alias(`List(lst), alias) }
   | LCURLY; lst = separated_or_terminated_list(COMMA, import_alias); RCURLY; { `List(lst) }
+
+(*
+  Utility functions
+*)
+
+let maybe_separated_or_terminated_list(separator, X) :=
+  v = separated_or_terminated_list(separator, X)?; { match v with | None -> [] | Some(v) -> v }
+
+separated_or_terminated_list(separator, X):
+  | x=X { [x] }
+  | x=X separator { [x] }
+  | x=X separator xs=separated_or_terminated_list(separator, X) { x :: xs }
+
+let opt_as_bool(X) :=
+  v = X?; { match v with | None -> true | Some _ -> false }
+
+let obj_separator :=
+  | COMMA; { Some(()) }
+  | SEMICOLON; { Some(()) }
+  | { None }
