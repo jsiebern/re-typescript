@@ -44,8 +44,8 @@ rule read =
   | '}'                     { RCURLY }
   | '('                     { LPAREN }
   | ')'                     { RPAREN }
-  | '['                     { LSQRBRACKET }
-  | ']'                     { RSQRBRACKET }
+  | '['                     { LBRACKET }
+  | ']'                     { RBRACKET }
   | ['"' '\'']              { read_string (Buffer.create 17) lexbuf }
   | "string"                { PRIM_STRING }
   | "number"                { PRIM_NUMBER }

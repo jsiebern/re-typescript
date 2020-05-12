@@ -36,8 +36,8 @@
   RCURLY
   LPAREN
   RPAREN
-  LSQRBRACKET
-  RSQRBRACKET
+  LBRACKET
+  RBRACKET
   GT
   LT
 
@@ -58,7 +58,7 @@ let main :=
 
 type_def:
   | TYPE; name = IDENT; EQUALS; t = type_; SEMICOLON? { `TypeDef(name, t) }
-  | TYPE; name = IDENT; EQUALS; t = type_; LSQRBRACKET; RSQRBRACKET; SEMICOLON? { `TypeDef(name, `Array(t)) }
+  | TYPE; name = IDENT; EQUALS; t = type_; LBRACKET; RBRACKET; SEMICOLON? { `TypeDef(name, `Array(t)) }
   | INTERFACE; name = IDENT; extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON? { `InterfaceDef(name, extends, obj ) }
 
 let extends :=

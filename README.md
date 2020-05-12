@@ -18,6 +18,11 @@ I am not sure about how to handle unparseable code yet. I believe a _best approx
 
 This tool will be opinionated about a few things. Typescripts dynamic nature makes this unavoidable. I am not yet sure how the native mode will generate it's types exactly (esp. regarding unions / mixed enums). Bucklescript has great features for handling these things, like the `@unboxed` attribute, as well as `@bs.string` for externals and `bs.as` in records.
 
+## Playground
+
+I will update the playground from time to time. It's not great yet, I just wanted a visual representation for now. You can see the current progress here:
+[re-typescript](https://jsiebern.github.io/re-typescript/)
+
 ## Todo
 
 - [ ] Lexing / Parsing
@@ -110,7 +115,7 @@ This tool will be opinionated about a few things. Typescripts dynamic nature mak
     - [ ] Functions
     - [ ] Classes
     - [ ] Exports as externals
-- [ ] Web interface
+- [ ] Playground
   - [ ] Check if it's really necessary to pull half of the ocaml compiler in
   - [ ] Create a UI
   - [ ] Add syntax highlighting
