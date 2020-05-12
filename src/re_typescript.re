@@ -6,26 +6,39 @@ let process = (lexbuf: Lexing.lexbuf) => {
     | `Number => Printf.sprintf("number")
     | `Boolean => Printf.sprintf("boolean")
     | `Obj(items) =>
-      items
-      |> List.fold_left(
-           (p, x: Ts.obj_field) => {
-             Printf.sprintf("%s  %s: %s\n", p, x.name, tToStr(x.type_))
-           },
-           "\n",
-         )
+      " {"
+      ++ (
+        items
+        |> List.fold_left(
+             (p, x: Ts.obj_field) => {
+               Printf.sprintf("%s  %s: %s\n", p, x.key, tToStr(x.type_))
+             },
+             "\n",
+           )
+      )
+      ++ "}\n"
   and rToStr = r =>
     r
     |> List.fold_left(
-         (p, (x, t)) =>
+         (p, (x, t)) => {
            Printf.sprintf(
-             "%s %s%s",
+             "%s%s%s",
              p,
              x,
              switch (t) {
              | [] => ""
-             | t => (t |> List.fold_left((p, t) => tToStr(t), "<")) ++ ">"
+             | t =>
+               (
+                 t
+                 |> List.fold_left(
+                      (p, t) => Printf.sprintf("%s, %s", p, tToStr(t)),
+                      "<",
+                    )
+               )
+               ++ ">"
              },
-           ),
+           )
+         },
          "",
        )
   and pr = t =>
@@ -41,12 +54,17 @@ let process = (lexbuf: Lexing.lexbuf) => {
       Printf.fprintf(stdout, "\n");
       items
       |> List.iter((x: Ts.obj_field) => {
-           Printf.fprintf(stdout, "  %s: %s\n", x.name, tToStr(x.type_))
+           Printf.fprintf(stdout, "  %s: %s\n", x.key, tToStr(x.type_))
          });
     };
 
   /* Run the parser on this line of input. */
-  try(Parser.main(Lexer.read, lexbuf) |> List.iter(t => pr(t))) {
+  try({
+    let tl = Parser.main(Lexer.read, lexbuf);
+    tl.imports
+    |> List.iter((i: Ts.import) => Printf.fprintf(stdout, "%s\n", i.path));
+    tl.types |> List.iter(t => pr(t));
+  }) {
   | Lexer.SyntaxError(msg) => Printf.fprintf(stderr, "%s%!", msg)
   | Parser.Error =>
     Printf.fprintf(
@@ -57,21 +75,29 @@ let process = (lexbuf: Lexing.lexbuf) => {
   };
 };
 
-let () =
-  process(
-    Lexing.from_string(
-      {|
-    type x = string;
-    type y = number;
-    type someObj = {
-        some: boolean,
-        other: string,
-        rec: someObj,
-    };
-    interface next extends React.CSSProperties<string> {
-        has: number;
-        obj: somObj;
-    };
-|},
-    ),
-  );
+let content = {|
+import { Palette } from './createPalette';
+import * as React from 'react';
+import { CSSProperties } from './withStyles';
+
+type x = string;
+type y = number;
+type someObj = {
+    some: boolean,
+    other: string,
+    rec: someObj,
+};
+interface next extends React.CSSProperties<Required<{
+  fontFamily: string,
+  nested: React.SomeOther<{color: number},string,boolean>
+}>> {
+    has: number;
+    obj: somObj;
+};
+
+
+|};
+
+let () = {
+  process(Lexing.from_string(content));
+};

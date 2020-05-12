@@ -23,6 +23,10 @@ rule read =
   | "type"                  { TYPE }
   | "interface"             { INTERFACE }
   | "extends"               { EXTENDS }
+  | "import"                { IMPORT }
+  | "from"                  { FROM }
+  | "as"                    { AS }
+  | '*'                     { STAR }
   | '='                     { EQUALS }
   | '?'                     { QMARK }
   | ';'                     { SEMICOLON }

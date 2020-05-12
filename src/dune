@@ -10,5 +10,6 @@
 (executable
  (name re_typescript)
  (public_name re_typescript)
+ (libraries stdlib)
  (ocamlopt_flags (-linkall))
 )
