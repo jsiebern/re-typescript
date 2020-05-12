@@ -1,0 +1,14 @@
+(ocamllex
+  (modules lexer)
+)
+
+(menhir
+  (modules parser)
+  (flags -la 2)
+)
+
+(executable
+ (name re_typescript)
+ (public_name re_typescript)
+ (ocamlopt_flags (-linkall))
+)
