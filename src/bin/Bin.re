@@ -1,3 +1,5 @@
+open Re_typescript_base;
+
 let process = (lexbuf: Lexing.lexbuf) => {
   let rec tToStr =
     fun

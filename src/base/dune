@@ -7,9 +7,8 @@
   (flags -la 2)
 )
 
-(executable
- (name re_typescript)
- (public_name re_typescript)
- (libraries stdlib)
+(library
+ (name re_typescript_base)
+ (public_name re_typescript.base)
  (ocamlopt_flags (-linkall))
 )
