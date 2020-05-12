@@ -18,7 +18,7 @@ let main :=
 
 type_def:
   | TYPE; name = IDENT; EQUALS; t = type_; SEMICOLON? { `TypeDef(name, t) }
-  | INTERFACE; name = IDENT; extends = extends; LCURLY; obj = separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON? { `InterfaceDef(name, extends, obj) }
+  | INTERFACE; name = IDENT; extends = extends; LCURLY; obj = separated_or_terminated_list(obj_separator, obj_field)?; RCURLY; SEMICOLON? { `InterfaceDef(name, extends, match obj with | None -> [] | Some(v) -> v ) }
 
 let extends :=
   | { [] }
