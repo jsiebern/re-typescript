@@ -4,10 +4,10 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "bs:build": "./env.sh && bsb -make-world",
+    "bs:build": "bsb -make-world",
     "bs:clean": "bsb -clean-world",
     "start": "parcel ./src_js/index.html",
-    "assets": ""
+    "assets": "./compile-assets.sh"
   },
   "devDependencies": {
     "bs-platform": "^7.3.2",
