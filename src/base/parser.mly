@@ -55,7 +55,7 @@ let obj_separator :=
 
 
 let import :=
-  | IMPORT; name = import_alias; FROM; path = STRING; SEMICOLON?; { { path; name } }
+  | IMPORT; name = import_alias; FROM; path = STRING; SEMICOLON?; { { Ts.path; name } }
 
 let import_alias :=
   | name = IDENT; { `Named(name) }

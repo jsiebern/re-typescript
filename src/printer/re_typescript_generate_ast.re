@@ -1,15 +1,21 @@
 open Migrate_parsetree;
 open Re_typescript_base;
 
-open Ast_411;
+open Ast_406;
 open Parsetree;
 open Ast_helper;
+let prim_type = name => {
+  Ast_helper.Typ.constr(
+    {Location.txt: Longident.parse(name), loc: Location.none},
+    [],
+  );
+};
 
 let rec base_type =
   fun
-  | `String => (Ptype_abstract, Some([%type: string]))
-  | `Number => (Ptype_abstract, Some([%type: int]))
-  | `Boolean => (Ptype_abstract, Some([%type: bool]))
+  | `String => (Ptype_abstract, Some(prim_type("string")))
+  | `Number => (Ptype_abstract, Some(prim_type("int")))
+  | `Boolean => (Ptype_abstract, Some(prim_type("bool")))
   | `Obj(fields) => (
       Ptype_record(
         fields
@@ -25,7 +31,7 @@ let rec base_type =
       ),
       None,
     )
-  | _ => (Ptype_abstract, Some([%type: unit]));
+  | _ => (Ptype_abstract, Some(prim_type("unit")));
 
 let generate = (toplevel: Ts.toplevel) => {
   [

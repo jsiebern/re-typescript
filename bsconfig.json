@@ -1,0 +1,22 @@
+{
+  "name": "re_typescript",
+  "namespace": true,
+  "sources": [
+    "src/base",
+    "src/printer",
+    {
+      "dir": "src_js",
+      "subdirs": true
+    }
+  ],
+  "reason": { "react-jsx": 3 },
+  "package-specs": {
+    "module": "es6",
+    "in-source": true
+  },
+  "bsc-flags": ["-bs-super-errors"],
+  "bs-dependencies": ["reason-react"],
+  "refmt": 3,
+  "suffix": ".bs.js",
+  "generate-merlin": true
+}
