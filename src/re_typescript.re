@@ -88,8 +88,8 @@ type someObj = {
     rec: someObj,
 };
 interface next extends React.CSSProperties<Required<{
-  fontFamily: string,
-  nested: React.SomeOther<{color: number},string,boolean>
+  fontFamily: string;
+  nested: React.SomeOther<{color: number},string,boolean>;
 }>> {
     has: number;
     obj: somObj;

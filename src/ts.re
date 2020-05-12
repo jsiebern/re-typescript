@@ -16,7 +16,7 @@ and type_ = [
 and obj_field = {
   key: string,
   type_,
-  required: bool,
+  optional: bool,
 }
 and ref_ = list((string, list(type_)))
 and import = {

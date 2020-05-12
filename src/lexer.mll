@@ -24,6 +24,7 @@ rule read =
   | "interface"             { INTERFACE }
   | "extends"               { EXTENDS }
   | "import"                { IMPORT }
+  | "export"                { EXPORT }
   | "from"                  { FROM }
   | "as"                    { AS }
   | '*'                     { STAR }
@@ -35,6 +36,7 @@ rule read =
   | '<'                     { LT }
   | '>'                     { GT }
   | ','                     { COMMA }
+  | '&'                     { AMPERSAND }
   | '{'                     { LCURLY }
   | '}'                     { RCURLY }
   | '('                     { LPAREN }
