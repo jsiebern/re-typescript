@@ -5,8 +5,5 @@ let print_from_ts = (input: Re_typescript_base.Ts.toplevel) => {
   let migration =
     Versions.migrate(Versions.ocaml_411, Versions.ocaml_current);
 
-  let out = Pprintast.string_of_structure(migration.copy_structure(ast));
-  Printf.fprintf(stdout, "%s", out);
-
-  ();
+  Pprintast.string_of_structure(migration.copy_structure(ast));
 };

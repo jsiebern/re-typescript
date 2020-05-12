@@ -101,8 +101,11 @@ interface next extends React.CSSProperties<Required<{
 |};
 
 let () = {
-  // process(Lexing.from_string(content));
-  Re_typescript_printer.print_from_ts(
-    Parser.main(Lexer.read, Lexing.from_string(content)),
+  Printf.fprintf(
+    stdout,
+    "%s",
+    Re_typescript_printer.print_from_ts(
+      Parser.main(Lexer.read, Lexing.from_string(content)),
+    ),
   );
 };
