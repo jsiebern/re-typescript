@@ -29,13 +29,50 @@ let rec generate_type_def = (~ctx, type_def) =>
         },
       ),
     )
-  | TypeDeclaration(_) =>
+  | Record(fields) => (
+      generate_record_kind(
+        fields
+        |> List.map(
+             fun
+             | RecordField(name, type_, _) => (
+                 name,
+                 switch (type_ |> generate_type_def(~ctx)) {
+                 | (_, None) =>
+                   raise(
+                     BS_Decode_Error(
+                       "Invalid record field type",
+                       Std.dump(type_),
+                     ),
+                   )
+                 | (_, Some(t)) => t
+                 },
+               )
+             | d =>
+               raise(
+                 BS_Decode_Error(
+                   "Record only accepts children of type RecordField",
+                   Std.dump(d),
+                 ),
+               ),
+           ),
+      ),
+      None,
+    )
+  | RecordField(_) =>
     raise(
       BS_Decode_Error(
-        "Type declaration is not valid outside of root",
+        "RecordField is not valid outside of type Record",
         Std.dump(type_def),
       ),
     )
+  | TypeDeclaration(_) =>
+    raise(
+      BS_Decode_Error(
+        "TypeDeclaration is not valid outside of root",
+        Std.dump(type_def),
+      ),
+    )
+  | t => raise(BS_Decode_Error("Not yet implemented", Std.dump(t)))
   };
 
 let generate = (~ctx, type_defs) => [

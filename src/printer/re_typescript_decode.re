@@ -31,7 +31,8 @@ and decode_type: Ts.type_ => type_def =
     raise(Re_Typescript_Decode_Error("Null cannot exist outside of a union"))
 and decode_obj_field =
   fun
-  | {key, optional: true, readonly, type_} =>
-    RecordField(key, Optional(type_ |> decode_type), readonly)
+  | {key, optional: true, readonly, type_} => {
+      RecordField(key, Optional(type_ |> decode_type), readonly);
+    }
   | {key, optional: false, readonly, type_} =>
     RecordField(key, type_ |> decode_type, readonly);

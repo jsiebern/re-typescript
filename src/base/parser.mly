@@ -115,7 +115,7 @@ separated_or_terminated_list(separator, X):
   | x=X separator xs=separated_or_terminated_list(separator, X) { x :: xs }
 
 let opt_as_bool(X) :=
-  v = X?; { match v with | None -> true | Some _ -> false }
+  v = X?; { match v with | None -> false | Some _ -> true }
 
 let obj_separator :=
   | COMMA; { Some(()) }

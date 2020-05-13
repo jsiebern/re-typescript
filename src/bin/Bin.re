@@ -77,30 +77,6 @@ open Re_typescript_base;
 //   };
 // };
 
-// let content = {|
-// import { Palette } from './createPalette';
-// import * as React from 'react';
-// import { CSSProperties } from './withStyles';
-
-// type x = string;
-// type y = number;
-// type someObj = {
-//     some: boolean,
-//     other: string,
-//     rec: someObj,
-// };
-// interface next extends React.CSSProperties<Required<{
-//   fontFamily: string;
-//   nested: React.SomeOther<{color: number},string,boolean>;
-// }>> {
-//     has: number;
-//     obj: somObj;
-// };
-
-// type emptyObj = {};
-// interface emptyI {};
-
-// |};
 let content = {|
 import { Palette } from './createPalette';
 import * as React from 'react';
@@ -108,6 +84,46 @@ import { CSSProperties } from './withStyles';
 
 type x = string;
 type y = number;
+type someObj = {
+    some: boolean,
+    other: string,
+    rec: someObj,
+};
+interface next extends React.CSSProperties<Required<{
+  fontFamily: string;
+  nested: React.SomeOther<{color: number},string,boolean>;
+}>> {
+    has: number;
+    obj: somObj;
+};
+
+type emptyObj = {};
+interface emptyI {};
+
+|};
+let content = {|
+import { Palette } from './createPalette';
+import * as React from 'react';
+import { CSSProperties } from './withStyles';
+
+type x = string;
+type y = number;
+
+type someObj = {
+    some: boolean,
+    other: string,
+};
+
+interface next extends React.CSSProperties<Required<{
+  fontFamily: string;
+  nested: React.SomeOther<{color: number},string,boolean>;
+}>> {
+    has: number;
+    obj: boolean;
+};
+
+type emptyObj = {};
+interface emptyI {};
 |};
 
 let () = {
