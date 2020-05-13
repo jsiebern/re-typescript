@@ -10,7 +10,9 @@
     "@opam/reason": ">=3.6.0",
     "@opam/menhir": "*",
     "@opam/ocaml-migrate-parsetree": "*",
-    "@opam/ppx_tools_versioned": "*"
+    "@opam/ppx_tools_versioned": "*",
+    "@opam/result": "*",
+    "@opam/extlib": "*"
   },
   "devDependencies": {
     "ocaml": "~4.8.0",

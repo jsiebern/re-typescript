@@ -1,5 +1,5 @@
 type toplevel = {
-  types: list(type_def),
+  types: list((type_def, bool)),
   imports: list(import),
 }
 and type_def = [

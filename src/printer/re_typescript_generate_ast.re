@@ -41,12 +41,12 @@ let generate = (toplevel: Ts.toplevel) => {
         toplevel.types
         |> List.map(
              fun
-             | `TypeDef(name, t) => {
+             | (`TypeDef(name, t), _) => {
                  let (kind, manifest) = base_type(t);
 
                  [Type.mk(~kind, ~manifest?, Location.mknoloc(name))];
                }
-             | `InterfaceDef(name, _, fields) => {
+             | (`InterfaceDef(name, _, fields), _) => {
                  let (kind, manifest) = base_type(`Obj(fields));
 
                  [Type.mk(~kind, ~manifest?, Location.mknoloc(name))];

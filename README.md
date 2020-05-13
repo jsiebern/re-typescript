@@ -27,6 +27,8 @@ I will update the playground from time to time. It's not great yet, I just wante
 
 - [ ] Lexing / Parsing
 
+  - [ ] Include lexing positions for better error messages
+  - [ ] Use an identifier hash table to avoid crashing on large files
   - [ ] Basic
     - [x] Any
     - [x] Void
@@ -75,17 +77,18 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Type definition
     - [ ] Interfaces
     - [ ] Classes
+    - [ ] Extends keyword
 
 - [ ] Decoding
   - [ ] Create representation
-    - [ ] Basic types
+    - [x] Basic types
     - [ ] Interfaces
     - [ ] Arrays / Lists
     - [ ] Enums
     - [ ] Unions
     - [ ] Functions
     - [ ] Classes
-  - [ ] Abstracted file loader to resolve import / exports (should work both on web / native)
+  - [x] Abstracted file loader to resolve import / exports (should work both on web / native)
   - [ ] Resolve extension refs for the current type (finalize all fields)
   - [ ] Flattened type tree
 - [ ] Generating

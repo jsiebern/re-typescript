@@ -57,9 +57,9 @@ let main :=
   | imports = import*; types = type_def*; EOF; { { types; imports } }
 
 type_def:
-  | TYPE; name = IDENT; EQUALS; t = type_; SEMICOLON? { `TypeDef(name, t) }
-  | TYPE; name = IDENT; EQUALS; t = type_; LBRACKET; RBRACKET; SEMICOLON? { `TypeDef(name, `Array(t)) }
-  | INTERFACE; name = IDENT; extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON? { `InterfaceDef(name, extends, obj ) }
+  | export = opt_as_bool(EXPORT); TYPE; name = IDENT; EQUALS; t = type_; SEMICOLON? { (`TypeDef(name, t), export) }
+  | export = opt_as_bool(EXPORT); TYPE; name = IDENT; EQUALS; t = type_; LBRACKET; RBRACKET; SEMICOLON? { (`TypeDef(name, `Array(t)), export) }
+  | export = opt_as_bool(EXPORT); INTERFACE; name = IDENT; extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON? { (`InterfaceDef(name, extends, obj), export) }
 
 let extends :=
   | { [] }
