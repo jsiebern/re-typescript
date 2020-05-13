@@ -11,8 +11,7 @@
     "@opam/menhir": "*",
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/ppx_tools_versioned": "*",
-    "@opam/result": "*",
-    "@opam/extlib": "*"
+    "@opam/batteries": "*"
   },
   "devDependencies": {
     "ocaml": "~4.8.0",

@@ -34,14 +34,14 @@ let rec generate_type_def = (~ctx, type_def) =>
         fields
         |> List.map(
              fun
-             | RecordField(name, type_, _) => (
+             | RecordField((name, _), type_, _) => (
                  name,
                  switch (type_ |> generate_type_def(~ctx)) {
                  | (_, None) =>
                    raise(
                      BS_Decode_Error(
                        "Invalid record field type",
-                       Std.dump(type_),
+                       BatPervasives.dump(type_),
                      ),
                    )
                  | (_, Some(t)) => t
@@ -51,7 +51,7 @@ let rec generate_type_def = (~ctx, type_def) =>
                raise(
                  BS_Decode_Error(
                    "Record only accepts children of type RecordField",
-                   Std.dump(d),
+                   BatPervasives.dump(d),
                  ),
                ),
            ),
@@ -62,17 +62,18 @@ let rec generate_type_def = (~ctx, type_def) =>
     raise(
       BS_Decode_Error(
         "RecordField is not valid outside of type Record",
-        Std.dump(type_def),
+        BatPervasives.dump(type_def),
       ),
     )
   | TypeDeclaration(_) =>
     raise(
       BS_Decode_Error(
         "TypeDeclaration is not valid outside of root",
-        Std.dump(type_def),
+        BatPervasives.dump(type_def),
       ),
     )
-  | t => raise(BS_Decode_Error("Not yet implemented", Std.dump(t)))
+  | t =>
+    raise(BS_Decode_Error("Not yet implemented", BatPervasives.dump(t)))
   };
 
 let generate = (~ctx, type_defs) => [
@@ -82,14 +83,14 @@ let generate = (~ctx, type_defs) => [
       type_defs
       |> List.map(type_def =>
            switch (type_def) {
-           | TypeDeclaration(name, type_) =>
+           | TypeDeclaration((name, _), type_) =>
              let (kind, manifest) = generate_type_def(~ctx, type_);
              [Type.mk(~kind, ~manifest?, Location.mknoloc(name))];
            | d =>
              raise(
                BS_Decode_Error(
                  "Invalid data structure in root",
-                 Std.dump(d),
+                 BatPervasives.dump(d),
                ),
              )
            }

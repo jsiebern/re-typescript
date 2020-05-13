@@ -17,6 +17,8 @@ and config = {
   number_mode,
   files: list((string, Ts.toplevel)),
   file_loader: (module Re_typescript_file_loader.T),
+  generate_parser: bool,
+  generate_serializer: bool,
 };
 let defaultConfig: config = {
   output_type: Bucklescript,
@@ -24,6 +26,6 @@ let defaultConfig: config = {
   number_mode: Float,
   files: [],
   file_loader: (module Re_typescript_file_loader.Loader_fs),
+  generate_parser: false,
+  generate_serializer: false,
 };
-
-// module X = (val defaultConfig.file_loader: Re_typescript_file_loader.T);

@@ -10,7 +10,7 @@ module Loader_fs: T = {
   let lookup_file = path => {
     let file_path = Filename.concat(Sys.getcwd(), path);
     Sys.file_exists(file_path)
-      ? try(Some(Std.input_file(file_path))) {
+      ? try(Some(BatPervasives.input_file(file_path))) {
         | _ => None
         }
       : None;

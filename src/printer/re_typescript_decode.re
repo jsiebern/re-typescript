@@ -1,6 +1,7 @@
 open Re_typescript_base;
 open Re_typescript_decode_result;
 open Re_typescript_decode_config;
+open Re_typescript_decode_utils;
 
 exception Re_Typescript_Decode_Error(string);
 
@@ -9,9 +10,13 @@ let rec decode = (~ctx: config=defaultConfig, toplevel: Ts.toplevel) => {
 }
 and decode_type_def: ((Ts.type_def, bool)) => type_def =
   fun
-  | (`TypeDef(name, type_), _) => TypeDeclaration(name, decode_type(type_))
+  | (`TypeDef(name, type_), _) =>
+    TypeDeclaration(name |> to_valid_typename, decode_type(type_))
   | (`InterfaceDef(name, extends_ref, fields), _) =>
-    TypeDeclaration(name, Record(fields |> List.map(decode_obj_field)))
+    TypeDeclaration(
+      name |> to_valid_typename,
+      Record(fields |> List.map(decode_obj_field)),
+    )
 and decode_type: Ts.type_ => type_def =
   fun
   | `String => Base(String)
@@ -32,7 +37,11 @@ and decode_type: Ts.type_ => type_def =
 and decode_obj_field =
   fun
   | {key, optional: true, readonly, type_} => {
-      RecordField(key, Optional(type_ |> decode_type), readonly);
+      RecordField(
+        key |> to_valid_ident,
+        Optional(type_ |> decode_type),
+        readonly,
+      );
     }
   | {key, optional: false, readonly, type_} =>
-    RecordField(key, type_ |> decode_type, readonly);
+    RecordField(key |> to_valid_ident, type_ |> decode_type, readonly);
