@@ -1,0 +1,1 @@
+include Re_typescript_ast_generator.T;
