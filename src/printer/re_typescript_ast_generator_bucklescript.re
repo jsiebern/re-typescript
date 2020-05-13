@@ -24,8 +24,8 @@ let rec generate_type_def = (~ctx, type_def) =>
           }
         | Boolean => generate_base_type("bool")
         | Void => generate_base_type("unit")
+        | Ref(ref_) => generate_base_type(ref_)
         | Any => raise(BS_Decode_Error("Not yet implemented", "Any"))
-        | Ref(_) => raise(BS_Decode_Error("Not yet implemented", "Ref"))
         },
       ),
     )

@@ -27,7 +27,7 @@ and decode_type: Ts.type_ => type_def =
   | `Obj(fields) => Record(fields |> List.map(decode_obj_field))
   | `Array(type_) => Array(decode_type(type_))
   | `Tuple(types) => Tuple(types |> List.map(decode_type))
-  | `Ref(ref_) => Base(Ref(""))
+  | `Ref(ref_) => Base(Ref(ref_ |> decode_ref))
   | `Undefined =>
     raise(
       Re_Typescript_Decode_Error("Undefined cannot exist outside of a union"),
@@ -44,4 +44,9 @@ and decode_obj_field =
       );
     }
   | {key, optional: false, readonly, type_} =>
-    RecordField(key |> to_valid_ident, type_ |> decode_type, readonly);
+    RecordField(key |> to_valid_ident, type_ |> decode_type, readonly)
+and decode_ref = (ref_: Ts.ref_) => {
+  ref_
+  |> BatList.map(fst)
+  |> BatList.reduce((p, v) => Printf.sprintf("%s.%s", p, v));
+};
