@@ -22,7 +22,7 @@
         ]
       },
       "distDir": "docs",
-      "publicUrl": "./re-typescript"
+      "publicUrl": "./"
     }
   },
   "devDependencies": {
