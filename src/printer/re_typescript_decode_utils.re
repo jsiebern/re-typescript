@@ -37,8 +37,6 @@ let get_decoder:
   | BucklescriptBindings => (module Re_typescript_ast_generator_bucklescript)
   | Native => (module Re_typescript_ast_generator_native);
 
-let to_valid_typename = tn => (BatString.uncapitalize_ascii(tn), tn);
-
 let to_valid_ident = ident => (
   BatString.uncapitalize_ascii(
     if (ident.[0] >= '0' && ident.[0] <= '9') {
@@ -116,3 +114,6 @@ let to_valid_ident = ident => (
   ),
   ident,
 );
+
+let to_valid_typename = tn =>
+  tn |> BatString.uncapitalize_ascii |> to_valid_ident;

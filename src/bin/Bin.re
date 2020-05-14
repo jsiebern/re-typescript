@@ -44,6 +44,8 @@ type emptyObj = {
   Not_empty: someObj;
 };
 interface EmptyI {}
+
+type module = number;
 |};
 
 let () = {
