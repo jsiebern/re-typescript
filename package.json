@@ -8,7 +8,7 @@
     "bs:clean": "bsb -clean-world",
     "start": "parcel ./src_js/index.html",
     "assets": "./compile-assets.sh",
-    "docs": "parcel build src_js/index.html --target browser"
+    "docs": "rm docs/*.js*; parcel build src_js/index.html --target browser"
   },
   "source": [
     "src_js/index.html"

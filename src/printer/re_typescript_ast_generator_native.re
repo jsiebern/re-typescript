@@ -1,3 +1,3 @@
 open Migrate_parsetree;
 
-let generate = (~ctx, _) => [%str let _ = ()];
+let generate = (~ctx, _) => raise(Not_found);

@@ -43,8 +43,7 @@ type SomeObjR = someObj;
 type emptyObj = {
   Not_empty: someObj;
 };
-interface EmptyI {
-};
+interface EmptyI {}
 |};
 
 let () = {

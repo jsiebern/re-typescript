@@ -12,7 +12,7 @@
   "reason": { "react-jsx": 3 },
   "package-specs": {
     "module": "es6",
-    "in-source": true
+    "in-source": false
   },
   "bsc-flags": ["-bs-super-errors"],
   "bs-dependencies": ["reason-react"],
@@ -20,6 +20,6 @@
   "suffix": ".bs.js",
   "generate-merlin": true,
   "warnings": {
-    "number": "-33-44-45-106"
+    "number": "-33-44-45-106-30"
   }
 }
