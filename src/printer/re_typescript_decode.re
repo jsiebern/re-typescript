@@ -45,8 +45,9 @@ and decode_obj_field =
     }
   | {key, optional: false, readonly, type_} =>
     RecordField(key |> to_valid_ident, type_ |> decode_type, readonly)
-and decode_ref = (ref_: Ts.ref_) => {
+and decode_ref = (ref_: Ts.ref_): (string, string) => {
   ref_
   |> BatList.map(fst)
-  |> BatList.reduce((p, v) => Printf.sprintf("%s.%s", p, v));
+  |> BatList.reduce((p, v) => Printf.sprintf("%s_%s", p, v))
+  |> to_valid_typename;
 };

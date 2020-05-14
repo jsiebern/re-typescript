@@ -8,7 +8,7 @@ open Re_typescript_ast_generator_utils;
 
 exception BS_Decode_Error(string, string);
 
-let rec generate_type_def = (~ctx, type_def) =>
+let rec generate_type_def = (~ctx: config, type_def) =>
   switch (type_def) {
   | Base(base_type) => (
       Ptype_abstract,
@@ -24,7 +24,7 @@ let rec generate_type_def = (~ctx, type_def) =>
           }
         | Boolean => generate_base_type("bool")
         | Void => generate_base_type("unit")
-        | Ref(ref_) => generate_base_type(ref_)
+        | Ref(ref_) => generate_base_type(ref_ |> fst)
         | Any => raise(BS_Decode_Error("Not yet implemented", "Any"))
         },
       ),
@@ -57,6 +57,13 @@ let rec generate_type_def = (~ctx, type_def) =>
            ),
       ),
       None,
+    )
+  | Array(inner) => (
+      Ptype_abstract,
+      switch (ctx.array_mode, generate_type_def(~ctx, inner)) {
+      | (Array, (_, inner)) => inner |> BatOption.map(generate_array_of)
+      | (List, (_, inner)) => inner |> BatOption.map(generate_list_of)
+      },
     )
   | RecordField(_) =>
     raise(

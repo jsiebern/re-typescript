@@ -23,6 +23,9 @@ interface next extends React.CSSProperties<Required<{
 type emptyObj = {};
 interface emptyI {};
 
+export declare type Subset<T, U> = {
+  [key in keyof T]: key extends keyof U ? T[key] : never;
+};
 |};
 let content = {|
 import { Palette } from './createPalette';
@@ -45,7 +48,8 @@ type emptyObj = {
 };
 interface EmptyI {}
 
-type module = number;
+type module = number[];
+type interfaceA = Array<EmptyI>
 |};
 
 let () = {

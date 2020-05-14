@@ -18,7 +18,7 @@ and base_type =
   | Boolean
   | Void
   | Any
-  | Ref(string)
+  | Ref((string, string))
 and value_type =
   | V_String(string)
   | V_Int(int);

@@ -29,6 +29,7 @@ I will update the playground from time to time. It's not great yet, I just wante
 
   - [ ] Include lexing positions for better error messages
   - [ ] Use an identifier hash table to avoid crashing on large files
+  - [ ] Ignore or warn unknown structures
   - [ ] Basic
     - [x] Any
     - [x] Void
@@ -37,11 +38,13 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] String
     - [x] Null
     - [x] Undefined
+    - [x] Symbol
     - [x] Reference
       - [ ] Special modifier keywords (`e.g. Required<{...}>`)
     - [ ] Type extraction (`e.g. x['field']`)
   - [x] Array
   - [ ] Tuple
+  - [ ] Named tuple (derives from Array<T>)
   - [ ] Union
   - [ ] Enum
     - [ ] Keys
@@ -52,6 +55,7 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Semicolon / Comma
     - [x] Optional
     - [x] Readonly
+    - [ ] Nested interfaces
     - [ ] Dynamic keys
     - [x] Extends keyword
   - [ ] Functions
@@ -73,6 +77,7 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Star aliased
     - [x] List of named
   - [ ] Exports
+  - [ ] Mutators
   - [ ] Generics
     - [ ] Type definition
     - [ ] Interfaces
@@ -83,16 +88,21 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [ ] Create representation
     - [x] Basic types
     - [ ] Interfaces
-    - [ ] Arrays / Lists
+      - [ ] Nested
+    - [x] Arrays / Lists
     - [ ] Enums
     - [ ] Unions
     - [ ] Functions
     - [ ] Classes
   - [x] Abstracted file loader to resolve import / exports (should work both on web / native)
+  - [ ] Implement separate file loaders
   - [ ] Resolve extension refs for the current type (finalize all fields)
   - [ ] Flattened type tree
+  - [ ] Solve inline interfaces (e.g. in an array)
+  - [ ] Mutators
+  - [ ] Generics
 - [ ] Generating
-  - [ ] Valid identifiers (Reserved keywords / uppercase variables)
+  - [x] Valid identifiers (Reserved keywords / uppercase variables)
   - [ ] Native (Generate types without bucklescript features)
     - [ ] Basic types
     - [ ] Interfaces
@@ -102,9 +112,10 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Functions
     - [ ] Classes
   - [ ] Bucklescript (Make use of bucklescript features, but do not use externals)
-    - [ ] Basic types
-    - [ ] Interfaces
-    - [ ] Arrays / Lists
+    - [x] Basic types
+    - [x] Interfaces
+      - [ ] `@bs.as` attribute
+    - [x] Arrays / Lists
     - [ ] Enums
     - [ ] Unions
     - [ ] Functions
@@ -118,6 +129,8 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Functions
     - [ ] Classes
     - [ ] Exports as externals
+- [ ] Plugin system
+  - [ ] ReasonReact
 - [ ] Playground
   - [ ] Check if it's really necessary to pull half of the ocaml compiler in
   - [ ] Create a UI
