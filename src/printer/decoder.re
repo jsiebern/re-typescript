@@ -16,15 +16,14 @@ let rec decode = (~ctx: config=defaultConfig, toplevel: Ts.toplevel) => {
 
   types
   |> Tablecloth.List.append(
-       Hashtbl.to_seq_values(injected)
-       |> Seq.fold_left(
-            (p, type_dec) =>
-              switch (type_dec) {
-              | TypeDeclaration(_) as type_dec => [type_dec, ...p]
+       Hashtbl.fold((_, v, p) => [v, ...p], injected, [])
+       |> Tablecloth.List.reverse
+       |> Tablecloth.List.map(
+            ~f=
+              fun
+              | TypeDeclaration(_) as type_dec => type_dec
               | _ =>
-                raise(Decode_Error("Only TypeDeclarations can be injected"))
-              },
-            [],
+                raise(Decode_Error("Only TypeDeclarations can be injected")),
           )
        |> Tablecloth.List.reverse,
      );

@@ -14,6 +14,7 @@
     "module": "commonjs",
     "in-source": false
   },
+  "ppx-flags": [],
   "bsc-flags": ["-bs-super-errors"],
   "bs-dependencies": ["reason-react", "tablecloth-bucklescript"],
   "refmt": 3,

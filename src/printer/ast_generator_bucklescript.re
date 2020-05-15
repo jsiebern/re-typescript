@@ -114,13 +114,5 @@ let generate = (~ctx, type_defs) => {
     ),
   ];
   gen_config.has_any
-    ? types
-      |> Tablecloth.List.append(
-           [%str
-             [@unboxed]
-             type any =
-               | Any('a): any
-           ],
-         )
-    : types;
+    ? types |> Tablecloth.List.append(generate_any()) : types;
 };

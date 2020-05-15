@@ -29,6 +29,15 @@ interface next extends React.CSSProperties<Required<{
 
 type module = number[];
 type interfaceA = Array<EmptyI>
+
+interface I_a {
+  field_1: string;
+  field_2: string;
+  field_3: {
+    inline: boolean;
+    nested: string;
+  }
+}
 |};
 
 module X = {

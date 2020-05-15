@@ -8,7 +8,7 @@ module Re_typescript_printer = {
   open Migrate_parsetree;
   open Decode_config;
   open Decode_utils;
-  open Decode;
+  open Decoder;
 
   let print_from_ts = (~ctx: config, input: Re_typescript_base.Ts.toplevel) => {
     module Generator = (val get_decoder(ctx.output_type): Ast_generator.T);
