@@ -1,0 +1,2 @@
+base syntax for types › basic type definition
+type t_bool = bool

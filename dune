@@ -1,7 +1,9 @@
-(dirs src)
+(dirs src tests)
 
 (env
  (dev
-  (flags (:standard -w -32-33-42-27)))
+  (flags
+   (:standard -w -32-33-42-27)))
  (release
-  (flags (:standard -O3))))
+  (flags
+   (:standard -O3))))

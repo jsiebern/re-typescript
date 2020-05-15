@@ -4,26 +4,34 @@
   "scripts": {
     "format": "dune build @fmt --auto-promote --root .",
     "watch": "esy x redemon -p ./src esy x Re_typescript",
-    "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
+    "watch-test": "esy x redemon -p tests esy x RunTests.exe",
+    "test": "esy x RunTests.exe",
+    "test-u": "esy x RunTests.exe -u",
+    "release-static":
+      "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },
   "dependencies": {
+    "@opam/batteries": "*",
     "@opam/dune": "*",
-    "@opam/reason": ">=3.6.0",
     "@opam/menhir": "*",
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/ppx_tools_versioned": "*",
+    "@opam/reason": ">=3.6.0",
     "@opam/tablecloth-native": "*",
-    "@opam/batteries": "*"
+    "@reason-native/console": "^0.1.0"
   },
   "devDependencies": {
     "ocaml": "~4.8.0",
     "refmterr": "~3.3.0",
-    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#7592d32",
-    "@opam/redemon": "ulrikstrid/redemon:redemon.opam"
+    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam",
+    "@opam/redemon": "ulrikstrid/redemon:redemon.opam",
+    "@reason-native/rely": "^3.2.1"
   },
   "esy": {
     "build": [
-      ["refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"]
+      [
+        "refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"
+      ]
     ],
     "buildsInSource": "_build"
   }

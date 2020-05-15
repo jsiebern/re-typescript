@@ -1,0 +1,14 @@
+(library
+ (name re_typescript_test_lib)
+ (public_name re_typescript.test_lib)
+ (ocamlopt_flags -linkall -g)
+ (libraries rely.lib re_typescript.base re_typescript.printer console.lib)
+ (modules
+  (:standard \ RunTests)))
+
+(executable
+ (package re_typescript)
+ (name RunTests)
+ (public_name RunTests.exe)
+ (libraries re_typescript.test_lib)
+ (modules RunTests))

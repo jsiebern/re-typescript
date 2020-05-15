@@ -2,5 +2,4 @@
  (name bin)
  (public_name re_typescript)
  (libraries stdlib re_typescript.base re_typescript.printer)
- (ocamlopt_flags (-linkall))
-)
+ (ocamlopt_flags (-linkall)))
