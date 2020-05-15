@@ -27,7 +27,8 @@ interface next extends React.CSSProperties<Required<{
     obj: somObj;
 };
 
-
+type module = number[];
+type interfaceA = Array<EmptyI>
 |};
 
 module X = {

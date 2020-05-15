@@ -61,8 +61,10 @@ let rec generate_type_def = (~ctx: config, type_def) =>
   | Array(inner) => (
       Ptype_abstract,
       switch (ctx.array_mode, generate_type_def(~ctx, inner)) {
-      | (Array, (_, inner)) => inner |> BatOption.map(generate_array_of)
-      | (List, (_, inner)) => inner |> BatOption.map(generate_list_of)
+      | (Array, (_, inner)) =>
+        inner |> Tablecloth.Option.map(~f=generate_array_of)
+      | (List, (_, inner)) =>
+        inner |> Tablecloth.Option.map(~f=generate_list_of)
       },
     )
   | RecordField(_) =>

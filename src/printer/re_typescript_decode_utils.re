@@ -39,7 +39,7 @@ let get_decoder:
 
 let to_valid_ident = ident => (
   try(
-    BatString.uncapitalize_ascii(
+    Tablecloth.String.uncapitalize(
       if (ident.[0] >= '0' && ident.[0] <= '9') {
         "_" ++ ident;
       } else {
@@ -121,4 +121,4 @@ let to_valid_ident = ident => (
 );
 
 let to_valid_typename = tn =>
-  tn |> BatString.uncapitalize_ascii |> to_valid_ident;
+  tn |> Tablecloth.String.uncapitalize |> to_valid_ident;

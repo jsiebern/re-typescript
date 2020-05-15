@@ -77,14 +77,15 @@ and decode_obj_field =
 and decode_extends_ref = (ref_: Ts.ref_) => {
   // Only implement this naively for now
   let lookup_name = fst(decode_ref_type_name(ref_));
-  BatOption.(
+  Tablecloth.Option.(
     Hashtbl.find_opt(record_cache, lookup_name)
-    |> map_default(
-         fun
-         | Record(fields) => fields
-         | _ => [],
-         [],
+    |> map(
+         ~f=
+           fun
+           | Record(fields) => fields
+           | _ => [],
        )
+    |> with_default(~default=[])
   );
 }
 and decode_ref_type_name = (ref_: Ts.ref_): (string, string) => {
