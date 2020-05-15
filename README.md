@@ -27,8 +27,7 @@ I will update the playground from time to time. It's not great yet, I just wante
 
 - [ ] Lexing / Parsing
 
-  - [ ] Include lexing positions for better error messages
-  - [ ] Use an identifier hash table to avoid crashing on large files
+  - [x] Include lexing positions for better error messages
   - [ ] Ignore or warn unknown structures
   - [ ] Basic
     - [x] Any
