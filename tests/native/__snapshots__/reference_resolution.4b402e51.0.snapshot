@@ -1,0 +1,4 @@
+reference resolution › resolve recursively
+type i_Ref = {
+  f_num: float ;
+  f_inner: i_Ref }

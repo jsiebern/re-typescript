@@ -71,3 +71,101 @@ describe("config flags effects", ({test, _}) => {
       toThrow();
   });
 });
+
+/********************************************
+  Interfaces
+ ********************************************/
+describe("interfaces", ({test, _}) => {
+  test("object & interface syntax create equal types", ({expect, _}) => {
+    expect.string(print({|type Eqiv = { field: string }|})).toEqual(
+      print({|
+      interface Eqiv {
+        field: string;
+      }
+    |}),
+    )
+  })
+});
+
+describe("interface extension", ({test, _}) => {
+  test("adds fields from other interfaces", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface I_a {
+        field_1: string;
+        field_2: string;
+      }
+      interface I_b extends I_a {
+        field_3: number
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+  test("adds fields from other interfaces", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface I_a {
+        field_1: string;
+        field_2: string;
+      }
+      interface I_b extends I_a {
+        field_1: boolean;
+        field_3: number
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+});
+
+/********************************************
+  Reference resolution
+ ********************************************/
+describe("reference resolution", ({test, _}) => {
+  test("resolve simple definitions", ({expect, _}) => {
+    expect.string(
+      print({|
+      type t_str = string;
+      type t_ref = t_str;
+    |}),
+    ).
+      toMatchSnapshot()
+  });
+
+  test("resolve in interface fields", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      type t_str = string;
+      interface I_Ref {
+        f_num: number;
+        f_str: t_str;
+      };
+      type r_ref = {
+        inner: I_Ref
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+
+  test("resolve recursively", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface I_Ref {
+        f_num: number;
+        f_inner: I_Ref
+      };
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+});

@@ -1,0 +1,3 @@
+reference resolution › resolve simple definitions
+type t_str = string
+and t_ref = t_str
