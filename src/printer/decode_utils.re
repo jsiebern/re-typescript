@@ -35,12 +35,13 @@ let get_decoder: Decode_config.output_type => (module Ast_generator.T) =
   | BucklescriptBindings => (module Ast_generator_bucklescript)
   | Native => (module Ast_generator_native);
 
+let string_replace = (input, output) =>
+  Str.global_replace(Str.regexp_string(input), output);
+
 let to_valid_ident = ident => (
-  try(
-    Tablecloth.String.uncapitalize(
-      if (ident.[0] >= '0' && ident.[0] <= '9') {
-        "_" ++ ident;
-      } else {
+  (
+    try(
+      Tablecloth.String.uncapitalize(
         // from gist of sgrove, source:
         // https://gist.github.com/sgrove/335bf1759d8d2f685dfea80d4e6afac7
         [
@@ -108,13 +109,14 @@ let to_valid_ident = ident => (
           "with",
         ]
         |> List.exists(reserved_word => ident == reserved_word)
-          ? ident ++ "_" : ident;
-      },
-    )
-  ) {
-  | Invalid_argument(_) => "_"
-  | e => raise(e)
-  },
+          ? ident ++ "_" : ident,
+      )
+    ) {
+    | Invalid_argument(_) => "_"
+    | e => raise(e)
+    }
+  )
+  |> string_replace("$", "_"),
   ident,
 );
 

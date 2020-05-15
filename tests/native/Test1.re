@@ -40,8 +40,12 @@ describe("generates valid type names", ({test, _}) => {
     expect.string(print("type $_string = string")).toMatchSnapshot();
     expect.string(print("type t_$string = string")).toMatchSnapshot();
     // Invalid TS typenames should not be parsed at all
-    expect.string(print("type 1_string = string")).toEqual("");
-    expect.string(print("type st.ring = string")).toEqual("");
+    expect.fn(() => print("type 1_string = string")).toThrowException(
+      Parser.Error,
+    );
+    expect.fn(() => print("type st.ring = string")).toThrowException(
+      Parser.Error,
+    );
   });
 });
 
