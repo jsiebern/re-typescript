@@ -8,6 +8,8 @@ open Ast_generator_utils;
 
 exception BS_Decode_Error(string, string);
 
+type gen_config = {mutable has_any: bool};
+let gen_config = {has_any: false};
 let rec generate_type_def = (~ctx: config, type_def) =>
   switch (type_def) {
   | Base(base_type) => (
@@ -25,7 +27,9 @@ let rec generate_type_def = (~ctx: config, type_def) =>
         | Boolean => generate_base_type("bool")
         | Void => generate_base_type("unit")
         | Ref(ref_) => generate_base_type(ref_ |> fst)
-        | Any => raise(BS_Decode_Error("Not yet implemented", "Any"))
+        | Any =>
+          gen_config.has_any = true;
+          generate_base_type("any");
         },
       ),
     )
@@ -85,25 +89,38 @@ let rec generate_type_def = (~ctx: config, type_def) =>
     raise(BS_Decode_Error("Not yet implemented", BatPervasives.dump(t)))
   };
 
-let generate = (~ctx, type_defs) => [
-  Str.type_(
-    Recursive,
-    List.concat(
-      type_defs
-      |> List.map(type_def =>
-           switch (type_def) {
-           | TypeDeclaration((name, _), type_) =>
-             let (kind, manifest) = generate_type_def(~ctx, type_);
-             [Type.mk(~kind, ~manifest?, Location.mknoloc(name))];
-           | d =>
-             raise(
-               BS_Decode_Error(
-                 "Invalid data structure in root",
-                 BatPervasives.dump(d),
-               ),
-             )
-           }
-         ),
+let generate = (~ctx, type_defs) => {
+  gen_config.has_any = false;
+  let types = [
+    Str.type_(
+      Recursive,
+      List.concat(
+        type_defs
+        |> List.map(type_def =>
+             switch (type_def) {
+             | TypeDeclaration((name, _), type_) =>
+               let (kind, manifest) = generate_type_def(~ctx, type_);
+               [Type.mk(~kind, ~manifest?, Location.mknoloc(name))];
+             | d =>
+               raise(
+                 BS_Decode_Error(
+                   "Invalid data structure in root",
+                   BatPervasives.dump(d),
+                 ),
+               )
+             }
+           ),
+      ),
     ),
-  ),
-];
+  ];
+  gen_config.has_any
+    ? types
+      |> Tablecloth.List.append(
+           [%str
+             [@unboxed]
+             type any =
+               | Any('a): any
+           ],
+         )
+    : types;
+};

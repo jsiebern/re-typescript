@@ -21,6 +21,10 @@ describe("basic syntax for types", ({test, _}) => {
   test("basic type definition without semicolon", ({expect, _}) => {
     expect.string(print("type t_string = string")).toMatchSnapshot()
   });
+
+  test("adds extra type for any", ({expect, _}) => {
+    expect.string(print("type t_any = any")).toMatchSnapshot()
+  });
 });
 
 /********************************************

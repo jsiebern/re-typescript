@@ -34,7 +34,10 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-type st.ring = string
+type x = string;
+type what = any;
+type y = any;
+type nu = number;
 |};
 
 let () = {
