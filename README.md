@@ -87,7 +87,7 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [ ] Create representation
     - [x] Basic types
     - [x] Interfaces
-      - [x] Nested
+      - [ ] Nested
     - [x] Arrays / Lists
     - [ ] Enums
     - [ ] Unions

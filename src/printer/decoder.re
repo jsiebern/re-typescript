@@ -7,16 +7,34 @@ exception Decode_Error(string);
 let types: ref(list(Ts.type_def)) = ref([]);
 let record_cache: Hashtbl.t(string, Decode_result.type_def) =
   Hashtbl.create(0);
+let injected: Hashtbl.t(string, Decode_result.type_def) = Hashtbl.create(0);
 
 let rec decode = (~ctx: config=defaultConfig, toplevel: Ts.toplevel) => {
+  Hashtbl.clear(injected);
   types := toplevel.types |> List.map(fst);
-  toplevel.types |> List.map(decode_type_def);
+  let types = toplevel.types |> List.map(decode_type_def);
+
+  types
+  |> Tablecloth.List.append(
+       Hashtbl.to_seq_values(injected)
+       |> Seq.fold_left(
+            (p, type_dec) =>
+              switch (type_dec) {
+              | TypeDeclaration(_) as type_dec => [type_dec, ...p]
+              | _ =>
+                raise(Decode_Error("Only TypeDeclarations can be injected"))
+              },
+            [],
+          )
+       |> Tablecloth.List.reverse,
+     );
 }
 and decode_type_def: ((Ts.type_def, bool)) => type_def =
   fun
   | (`TypeDef(name, `Obj(fields)), _) => {
       let name = name |> to_valid_typename;
-      let record = Record(fields |> List.map(decode_obj_field));
+      let record =
+        Record(fields |> List.map(decode_obj_field(~obj_name=name)));
       Hashtbl.add(record_cache, fst(name), record);
       TypeDeclaration(name, record);
     }
@@ -25,7 +43,7 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
       let record =
         Record(
           fields
-          |> Tablecloth.List.map(~f=decode_obj_field)
+          |> Tablecloth.List.map(~f=decode_obj_field(~obj_name=name))
           |> Tablecloth.List.append(decode_extends_ref(extends_ref))
           |> Tablecloth.List.reverse
           |> Tablecloth.List.uniqueBy(
@@ -33,8 +51,7 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
                  fun
                  | RecordField((a, _), _, _) => a
                  | _ => "",
-             )
-          |> Tablecloth.List.reverse,
+             ),
         );
       Hashtbl.add(record_cache, fst(name), record);
       TypeDeclaration(name, record);
@@ -58,8 +75,32 @@ and decode_type: Ts.type_ => type_def =
   | `Null => raise(Decode_Error("Null cannot exist outside of a union"))
   | `Obj(_) =>
     raise(Decode_Error("Obj should never be reached in this switch"))
-and decode_obj_field =
+and decode_obj_field = (~obj_name) =>
   fun
+  | {key, type_: `Obj(fields), _} as field => {
+      let sub_type_name =
+        Printf.sprintf("%s_%s", fst(obj_name), key |> to_valid_ident |> fst);
+      Hashtbl.add(
+        injected,
+        sub_type_name,
+        TypeDeclaration(
+          (sub_type_name, sub_type_name),
+          Record(
+            fields
+            |> Tablecloth.List.map(
+                 ~f=
+                   decode_obj_field(
+                     ~obj_name=(sub_type_name, sub_type_name),
+                   ),
+               ),
+          ),
+        ),
+      );
+      decode_obj_field(
+        ~obj_name,
+        {...field, type_: `Ref([(sub_type_name, [])])},
+      );
+    }
   | {key, optional: true, readonly, type_} => {
       RecordField(
         key |> to_valid_ident,

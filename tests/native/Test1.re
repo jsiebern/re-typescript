@@ -88,7 +88,25 @@ describe("interfaces", ({test, _}) => {
       }
     |}),
     )
-  })
+  });
+
+  test("nested interfaces", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface I_a {
+        field_1: string;
+        field_2: string;
+        field_3: {
+          inline: boolean;
+          nested: string;
+        }
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });
 
 describe("interface extension", ({test, _}) => {
@@ -108,6 +126,7 @@ describe("interface extension", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+
   test("fields from current interface take priority", ({expect, _}) => {
     expect.string(
       print(

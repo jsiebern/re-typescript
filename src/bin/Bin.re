@@ -34,10 +34,14 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-type x = string;
-type what = any;
-type y = any;
-type nu = number;
+interface I_a {
+        field_1: string;
+        field_2: string;
+        field_3: {
+          inline: boolean;
+          nested: string;
+        }
+      }
 |};
 
 let () = {
