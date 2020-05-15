@@ -34,14 +34,7 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-interface I_a {
-        field_1: string;
-        field_2: string;
-        field_3: {
-          inline: boolean;
-          nested: string;
-        }
-      }
+type x = number;
 |};
 
 let () = {
@@ -52,7 +45,10 @@ let () = {
       stdout,
       "%s",
       Re_typescript_printer.print_from_ts(
-        ~ctx=Re_typescript_printer.Config.defaultConfig,
+        ~ctx={
+          ...Re_typescript_printer.Config.defaultConfig,
+          number_mode: Unboxed,
+        },
         Parser.main(Lexer.read, lexbuf),
       ),
     )

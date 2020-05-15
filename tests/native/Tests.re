@@ -70,9 +70,8 @@ describe("config flags effects", ({test, _}) => {
       toMatchSnapshot();
     expect.string(print(~ctx={...config, number_mode: Int}, ts)).
       toMatchSnapshot();
-    // Unboxed not implemented yet
-    expect.fn(() => print(~ctx={...config, number_mode: Unboxed}, ts)).
-      toThrow();
+    expect.string(print(~ctx={...config, number_mode: Unboxed}, ts)).
+      toMatchSnapshot();
   });
 });
 

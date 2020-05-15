@@ -100,7 +100,7 @@ type_:
 *)
 
 let import :=
-  | IMPORT; name = import_alias; FROM; path = STRING; SEMICOLON?; { let (path, _, _) = path in { Ts.path; name } }
+  | IMPORT; TYPE?; name = import_alias; FROM; path = STRING; SEMICOLON?; { let (path, _, _) = path in { Ts.path; name } }
 
 let import_alias :=
   | name = IDENT; { `Named(fst(name)) }

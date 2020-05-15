@@ -8,8 +8,11 @@ open Ast_generator_utils;
 
 exception BS_Decode_Error(string, string);
 
-type gen_config = {mutable has_any: bool};
-let gen_config = {has_any: false};
+type gen_config = {
+  mutable has_any: bool,
+  mutable has_unboxed_number: bool,
+};
+let gen_config = {has_any: false, has_unboxed_number: false};
 let rec generate_type_def = (~ctx: config, type_def) =>
   switch (type_def) {
   | Base(base_type) => (
@@ -22,7 +25,8 @@ let rec generate_type_def = (~ctx: config, type_def) =>
           | Float => generate_base_type("float")
           | Int => generate_base_type("int")
           | Unboxed =>
-            raise(BS_Decode_Error("Not yet implemented", "Unboxed"))
+            gen_config.has_unboxed_number = true;
+            generate_base_type("Number.t");
           }
         | Boolean => generate_base_type("bool")
         | Void => generate_base_type("unit")
@@ -91,6 +95,7 @@ let rec generate_type_def = (~ctx: config, type_def) =>
 
 let generate = (~ctx, type_defs) => {
   gen_config.has_any = false;
+  gen_config.has_unboxed_number = false;
   let types = [
     Str.type_(
       Recursive,
@@ -113,6 +118,10 @@ let generate = (~ctx, type_defs) => {
       ),
     ),
   ];
-  gen_config.has_any
-    ? types |> Tablecloth.List.append(generate_any()) : types;
+  Tablecloth.List.concat([
+    gen_config.has_unboxed_number
+      ? Ast_generator_bucklescript_number_unboxed.number_unboxed : [],
+    gen_config.has_any ? generate_any() : [],
+    types,
+  ]);
 };

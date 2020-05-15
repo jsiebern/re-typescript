@@ -1,0 +1,28 @@
+config flags effects › number_mode
+module Number :
+  sig
+    type t
+    val float : float -> t
+    val int : int -> t
+    type case =
+      | Int of int 
+      | Float of float 
+    val classify : t -> case
+  end =
+  struct
+    type t =
+      | Number: 'a -> t [@@unboxed ]
+    let float (v : float) = ((Number (v))[@explicit_arity ])
+    let int (v : int) = ((Number (v))[@explicit_arity ])
+    type case =
+      | Int of int 
+      | Float of float 
+    let isInteger v =
+      ((Js.typeof v) == \"number\") &&
+        ((Js.Float.isFinite v) && ((Js.Math.floor_float v) == v))
+    let classify (((Number (v))[@explicit_arity ]) : t) =
+      match isInteger (Obj.magic v) with
+      | true -> ((Int ((Obj.magic v : int)))[@explicit_arity ])
+      | false -> ((Float ((Obj.magic v : float)))[@explicit_arity ])
+  end 
+type t_number = Number.t
