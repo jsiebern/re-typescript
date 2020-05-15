@@ -86,8 +86,8 @@ I will update the playground from time to time. It's not great yet, I just wante
 - [ ] Decoding
   - [ ] Create representation
     - [x] Basic types
-    - [ ] Interfaces
-      - [ ] Nested
+    - [x] Interfaces
+      - [x] Nested
     - [x] Arrays / Lists
     - [ ] Enums
     - [ ] Unions
@@ -95,8 +95,8 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Classes
   - [x] Abstracted file loader to resolve import / exports (should work both on web / native)
   - [ ] Implement separate file loaders
-  - [ ] Resolve extension refs for the current type (finalize all fields)
-  - [ ] Flattened type tree
+  - [x] Resolve extension refs for the current type (finalize all fields)
+  - [x] Flattened type tree
   - [ ] Solve inline interfaces (e.g. in an array)
   - [ ] Mutators
   - [ ] Generics
