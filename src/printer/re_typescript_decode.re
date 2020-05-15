@@ -4,7 +4,6 @@ open Re_typescript_decode_config;
 open Re_typescript_decode_utils;
 
 exception Re_Typescript_Decode_Error(string);
-
 let types: ref(list(Ts.type_def)) = ref([]);
 let record_cache: Hashtbl.t(string, Re_typescript_decode_result.type_def) =
   Hashtbl.create(0);
@@ -26,14 +25,13 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
       let record =
         Record(
           fields
-          |> BatList.map(decode_obj_field)
-          |> BatList.append(decode_extends_ref(extends_ref))
-          |> BatList.unique(~eq=(a, b) =>
-               switch (a, b) {
-               | (RecordField((a, _), _, _), RecordField((b, _), _, _)) =>
-                 BatString.equal(a, b)
-               | _ => false
-               }
+          |> Tablecloth.List.map(~f=decode_obj_field)
+          |> Tablecloth.List.append(decode_extends_ref(extends_ref))
+          |> Tablecloth.List.uniqueBy(
+               ~f=
+                 fun
+                 | RecordField((a, _), _, _) => a
+                 | _ => "",
              ),
         );
       Hashtbl.add(record_cache, fst(name), record);
@@ -79,7 +77,6 @@ and decode_obj_field =
 and decode_extends_ref = (ref_: Ts.ref_) => {
   // Only implement this naively for now
   let lookup_name = fst(decode_ref_type_name(ref_));
-  prerr_endline(lookup_name);
   BatOption.(
     Hashtbl.find_opt(record_cache, lookup_name)
     |> map_default(
@@ -91,17 +88,17 @@ and decode_extends_ref = (ref_: Ts.ref_) => {
   );
 }
 and decode_ref_type_name = (ref_: Ts.ref_): (string, string) => {
-  let idents = ref_ |> BatList.map(fst) |> BatList.enum;
-
-  let o = BatIO.output_string();
-  idents
-  |> BatEnum.print(
-       ~sep="_",
-       (o, part) => {
-         BatPrintf.fprintf(o, "%s", part);
-         ();
-       },
-       o,
-     );
-  BatIO.close_out(o) |> to_valid_typename;
+  let idents =
+    ref_
+    |> Tablecloth.List.map(~f=fst)
+    |> Tablecloth.List.map(~f=v => ["_", v])
+    |> Tablecloth.List.concat;
+  (
+    switch (idents) {
+    | [] => ""
+    | [_, ...rest] =>
+      rest |> Tablecloth.List.fold_left(~initial="", ~f=(p, e) => p ++ e)
+    }
+  )
+  |> to_valid_typename;
 };

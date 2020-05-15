@@ -1,7 +1,7 @@
 (library
  (name re_typescript_printer)
  (public_name re_typescript.printer)
- (libraries reason ocaml-migrate-parsetree re_typescript.base ppx_tools_versioned batteries)
+ (libraries reason ocaml-migrate-parsetree re_typescript.base ppx_tools_versioned tablecloth-native batteries)
  (preprocess
   (pps ppx_tools_versioned.metaquot_406))
 )

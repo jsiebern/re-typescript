@@ -1,5 +1,3 @@
-open! Stdlib;
-
 type t = {
   src: option(string),
   name: option(string),
@@ -23,7 +21,7 @@ let t_of_lexbuf = (lexbuf): t => {
 };
 
 let start_position = (t: t) => {
-  Lexing.pos_fname: Option.value(~default="", t.name),
+  Lexing.pos_fname: BatOption.default("", t.name),
   pos_lnum: t.line,
   pos_bol: t.idx - t.col,
   pos_cnum: t.idx,

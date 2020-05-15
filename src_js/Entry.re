@@ -3,6 +3,15 @@ import { Palette } from './createPalette';
 import * as React from 'react';
 import { CSSProperties } from './withStyles';
 
+interface I_one {
+  key_1: string;
+  key_2: number;
+}
+interface I_two extends I_one {
+  key_1: number;
+  key_3: boolean;
+}
+
 type x = string;
 type y = number;
 type someObj = {
