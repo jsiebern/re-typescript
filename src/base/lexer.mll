@@ -7,7 +7,7 @@
   let tok lexbuf = Lexing.lexeme lexbuf
 
   let keyword_table =
-    let h = Hashtbl.create 29 in
+    let h = Hashtbl.create 30 in
     List.iter (fun (s,f) -> Hashtbl.add h s f ) [
       "false",      (fun ii -> FALSE ii);
       "function",   (fun ii -> FUNCTION ii);
@@ -37,6 +37,7 @@
       "void",       (fun ii -> PRIM_VOID ii);
       "any",        (fun ii -> PRIM_ANY ii);
       "declare",    (fun ii -> DECLARE ii);
+      "namespace",  (fun ii -> NAMESPACE ii);
     ];
     h
 

@@ -19,7 +19,9 @@
     "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#7592d32"
   },
   "esy": {
-    "build": [["refmterr", "dune", "build", "-p", "#{self.name}"]],
+    "build": [
+      ["refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"]
+    ],
     "buildsInSource": "_build"
   }
 }

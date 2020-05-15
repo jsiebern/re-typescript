@@ -15,6 +15,7 @@
   TYPEOF
   VAR LET CONST
   FUNCTION
+  NAMESPACE
 
 (* With value *)
 %token <string * Parse_info.t>       IDENT
@@ -83,6 +84,8 @@ obj_field:
 type_:
   | PRIM_STRING       { `String }
   | PRIM_NUMBER       { `Number }
+  | FALSE
+  | TRUE
   | PRIM_BOOLEAN      { `Boolean }
   | PRIM_NULL         { `Null }
   | PRIM_UNDEFINED    { `Undefined }

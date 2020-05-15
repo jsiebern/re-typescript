@@ -28,25 +28,14 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-import { Palette } from './createPalette';
-import * as React from 'react';
-import { CSSProperties } from './withStyles';
-
-type x = string;
-type y = number;
-
-type someObj = {
-    some: boolean,
-    other: string,
-    recR: someObj,
-};
-
-type SomeObjR = someObj;
-
-type emptyObj = {
-  Not_empty: someObj;
-};
-interface EmptyI {}
+interface I_one {
+  key_1: string;
+  key_2: number;
+}
+interface I_two extends I_one {
+  key_1: number;
+  key_3: boolean;
+}
 
 type module = number[];
 type interfaceA = Array<EmptyI>
