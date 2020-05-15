@@ -1,0 +1,8 @@
+interface extension › fields from current interface take priority
+type i_a = {
+  field_1: string ;
+  field_2: string }
+and i_b = {
+  field_2: string ;
+  field_1: bool ;
+  field_3: float }

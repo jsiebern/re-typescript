@@ -27,12 +27,14 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
           fields
           |> Tablecloth.List.map(~f=decode_obj_field)
           |> Tablecloth.List.append(decode_extends_ref(extends_ref))
+          |> Tablecloth.List.reverse
           |> Tablecloth.List.uniqueBy(
                ~f=
                  fun
                  | RecordField((a, _), _, _) => a
                  | _ => "",
-             ),
+             )
+          |> Tablecloth.List.reverse,
         );
       Hashtbl.add(record_cache, fst(name), record);
       TypeDeclaration(name, record);

@@ -104,7 +104,7 @@ describe("interface extension", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
-  test("adds fields from other interfaces", ({expect, _}) => {
+  test("fields from current interface take priority", ({expect, _}) => {
     expect.string(
       print(
         {|
