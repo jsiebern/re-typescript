@@ -1,5 +1,11 @@
 open Re_typescript_base;
 
+module FCP =
+  FileContextPrinter.Make({
+    let config =
+      FileContextPrinter.Config.initialize({linesBefore: 1, linesAfter: 3});
+  });
+
 let content = {|
 import { Palette } from './createPalette';
 import * as React from 'react';
@@ -28,21 +34,13 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-interface I_one {
-  key_1: string;
-  key_2: number;
-}
-interface I_two extends I_one {
-  key_1: number;
-  key_3: boolean;
-}
 
-type module = number[];
-type interfaceA = Array<EmptyI>
+type 1_string = string
+
 |};
 
 let () = {
-  let lexbuf = Lexing.from_string(content);
+  let lexbuf = Lexing.from_string(content |> Tablecloth.String.trim);
 
   try(
     Printf.fprintf(
@@ -56,24 +54,48 @@ let () = {
   ) {
   | Lexer.SyntaxError(msg) => Printf.fprintf(stderr, "%s", msg)
   | Parser.Error =>
-    Printf.fprintf(
-      stderr,
-      "At offset %d: syntax error.\n%s",
-      Lexing.lexeme_start(lexbuf),
-      Lexing.(
-        try(
-          "\n\n\""
-          ++ sub_lexeme(
-               lexbuf,
-               lexeme_start(lexbuf) - 15,
-               lexeme_end(lexbuf),
-             )
-          ++ "\"\n\n"
-        ) {
-        | _ => lexeme(lexbuf)
-        }
-      ),
-    )
-  | e => raise(e)
+    let location =
+      FCP.print(
+        content |> Tablecloth.String.trim |> Tablecloth.String.split(~on="\n"),
+        ~highlight=(
+          (
+            lexbuf.Lexing.lex_start_p.pos_lnum,
+            lexbuf.Lexing.lex_start_p.pos_cnum
+            - lexbuf.Lexing.lex_start_p.pos_bol
+            + 1,
+          ),
+          (
+            lexbuf.Lexing.lex_curr_p.pos_lnum,
+            lexbuf.Lexing.lex_curr_p.pos_cnum
+            - lexbuf.Lexing.lex_curr_p.pos_bol
+            + 1,
+          ),
+        ),
+      );
+    let error =
+      Pastel.(
+        <Pastel>
+          "\n"
+          <Pastel bold=true color=Red>
+            "          ReTypescript Syntax Error\n"
+          </Pastel>
+          <Pastel bold=true color=Red>
+            "----------------------------------------------------"
+          </Pastel>
+          "\n"
+          location
+          "\n"
+          <Pastel bold=true color=Red>
+            "----------------------------------------------------"
+          </Pastel>
+          <Pastel italic=true>
+            "\n   Check your input at the corresponding position\n"
+          </Pastel>
+        </Pastel>
+      );
+    Console.error(error);
+  | e =>
+    Console.error(e);
+    raise(e);
   };
 };

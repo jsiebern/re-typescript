@@ -118,7 +118,7 @@ rule read =
   | ','                     { COMMA (tokinfo lexbuf); }
 
   (* Keywords and ident *)
-  | ['a'-'z''A'-'Z''$''_']['a'-'z''A'-'Z''$''_''0'-'9''.']* {
+  | ['a'-'z''A'-'Z''$''_']['a'-'z''A'-'Z''$''_''0'-'9']* {
       let s = tok lexbuf in
       let info = tokinfo lexbuf in
       try

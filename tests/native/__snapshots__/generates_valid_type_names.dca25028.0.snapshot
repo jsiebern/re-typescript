@@ -1,0 +1,2 @@
+generates valid type names › invalid characters
+type st$ring = string

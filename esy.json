@@ -18,7 +18,9 @@
     "@opam/ppx_tools_versioned": "*",
     "@opam/reason": ">=3.6.0",
     "@opam/tablecloth-native": "*",
-    "@reason-native/console": "^0.1.0"
+    "@reason-native/console": "^0.1.0",
+    "@reason-native/file-context-printer": "^0.0.3",
+    "@reason-native/pastel": "^0.3.0"
   },
   "devDependencies": {
     "ocaml": "~4.8.0",
