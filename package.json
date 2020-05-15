@@ -8,26 +8,13 @@
     "bs:clean": "bsb -clean-world",
     "start": "parcel ./src_js/index.html",
     "assets": "./compile-assets.sh",
-    "docs": "rm docs/*.js*; parcel build src_js/index.html --target browser"
-  },
-  "source": [
-    "src_js/index.html"
-  ],
-  "browser": "docs/index.html",
-  "targets": {
-    "browser": {
-      "engines": {
-        "browsers": [
-          "last 1 version"
-        ]
-      },
-      "distDir": "docs",
-      "publicUrl": "./"
-    }
+    "docs": "yarn bs:build && ./node_modules/.bin/fpack build --dev --mock constants:constants-browserify --mock fs && mv bundle/index.js docs && rm -rf bundle"
   },
   "devDependencies": {
     "bs-platform": "^7.3.2",
-    "parcel": "^2.0.0-alpha.3.2"
+    "constants-browserify": "^1.0.0",
+    "fastpack": "^0.9.1",
+    "fs": "^0.0.1-security"
   },
   "dependencies": {
     "react": "^16.13.1",

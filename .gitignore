@@ -12,3 +12,4 @@ dist
 lib
 *.bs.js
 .bsb.lock
+bundle

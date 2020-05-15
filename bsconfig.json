@@ -11,7 +11,7 @@
   ],
   "reason": { "react-jsx": 3 },
   "package-specs": {
-    "module": "es6",
+    "module": "commonjs",
     "in-source": false
   },
   "bsc-flags": ["-bs-super-errors"],

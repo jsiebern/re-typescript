@@ -38,6 +38,8 @@ let print = v => {
       "At offset %d: syntax error.\n%!",
       Lexing.lexeme_start(lexbuf),
     )
-  | _ => ""
+  | e =>
+    Js.log(e);
+    raise(e);
   };
 };
