@@ -3,6 +3,7 @@
   "description": "",
   "scripts": {
     "format": "dune build @fmt --auto-promote --root .",
+    "watch": "esy x redemon -p ./src esy x Re_typescript",
     "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },
   "dependencies": {
@@ -16,8 +17,9 @@
   },
   "devDependencies": {
     "ocaml": "~4.8.0",
-    "refmterr": "*",
-    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#7592d32"
+    "refmterr": "~3.3.0",
+    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#7592d32",
+    "@opam/redemon": "ulrikstrid/redemon:redemon.opam"
   },
   "esy": {
     "build": [
