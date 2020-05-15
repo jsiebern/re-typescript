@@ -1,10 +1,10 @@
-open Re_typescript_decode_result;
-open Re_typescript_decode_config;
+open Decode_result;
+open Decode_config;
 open Migrate_parsetree;
 open Ast_406;
 open Parsetree;
 open Ast_helper;
-open Re_typescript_ast_generator_utils;
+open Ast_generator_utils;
 
 exception BS_Decode_Error(string, string);
 

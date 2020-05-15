@@ -29,13 +29,11 @@ let ts_from_string = (content: string) => {
   };
 };
 
-let get_decoder:
-  Re_typescript_decode_config.output_type =>
-  (module Re_typescript_ast_generator.T) =
+let get_decoder: Decode_config.output_type => (module Ast_generator.T) =
   fun
   | Bucklescript
-  | BucklescriptBindings => (module Re_typescript_ast_generator_bucklescript)
-  | Native => (module Re_typescript_ast_generator_native);
+  | BucklescriptBindings => (module Ast_generator_bucklescript)
+  | Native => (module Ast_generator_native);
 
 let to_valid_ident = ident => (
   try(

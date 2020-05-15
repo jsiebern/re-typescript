@@ -16,7 +16,7 @@ and config = {
   array_mode,
   number_mode,
   files: list((string, Ts.toplevel)),
-  file_loader: (module Re_typescript_file_loader.T),
+  file_loader: (module File_loader.T),
   generate_parser: bool,
   generate_serializer: bool,
 };
@@ -25,7 +25,7 @@ let defaultConfig: config = {
   array_mode: Array,
   number_mode: Float,
   files: [],
-  file_loader: (module Re_typescript_file_loader.Loader_fs),
+  file_loader: (module File_loader.Loader_fs),
   generate_parser: false,
   generate_serializer: false,
 };

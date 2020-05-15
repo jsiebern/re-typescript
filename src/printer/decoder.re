@@ -1,11 +1,11 @@
 open Re_typescript_base;
-open Re_typescript_decode_result;
-open Re_typescript_decode_config;
-open Re_typescript_decode_utils;
+open Decode_result;
+open Decode_config;
+open Decode_utils;
 
-exception Re_Typescript_Decode_Error(string);
+exception Decode_Error(string);
 let types: ref(list(Ts.type_def)) = ref([]);
-let record_cache: Hashtbl.t(string, Re_typescript_decode_result.type_def) =
+let record_cache: Hashtbl.t(string, Decode_result.type_def) =
   Hashtbl.create(0);
 
 let rec decode = (~ctx: config=defaultConfig, toplevel: Ts.toplevel) => {
@@ -50,19 +50,12 @@ and decode_type: Ts.type_ => type_def =
   | `Tuple(types) => Tuple(types |> List.map(decode_type))
   | `Ref(ref_) => Base(Ref(ref_ |> decode_ref_type_name))
   | `Enum(_)
-  | `Union(_) => raise(Re_Typescript_Decode_Error("Not yet implemented"))
+  | `Union(_) => raise(Decode_Error("Not yet implemented"))
   | `Undefined =>
-    raise(
-      Re_Typescript_Decode_Error("Undefined cannot exist outside of a union"),
-    )
-  | `Null =>
-    raise(Re_Typescript_Decode_Error("Null cannot exist outside of a union"))
+    raise(Decode_Error("Undefined cannot exist outside of a union"))
+  | `Null => raise(Decode_Error("Null cannot exist outside of a union"))
   | `Obj(_) =>
-    raise(
-      Re_Typescript_Decode_Error(
-        "Obj should never be reached in this switch",
-      ),
-    )
+    raise(Decode_Error("Obj should never be reached in this switch"))
 and decode_obj_field =
   fun
   | {key, optional: true, readonly, type_} => {

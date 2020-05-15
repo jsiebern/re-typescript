@@ -6,14 +6,12 @@ module Reason = {
 
 module Re_typescript_printer = {
   open Migrate_parsetree;
-  open Re_typescript_decode_config;
-  open Re_typescript_decode_utils;
-  open Re_typescript_decode;
+  open Decode_config;
+  open Decode_utils;
+  open Decode;
 
   let print_from_ts = (~ctx: config, input: Re_typescript_base.Ts.toplevel) => {
-    module Generator = (
-      val get_decoder(ctx.output_type): Re_typescript_ast_generator.T
-    );
+    module Generator = (val get_decoder(ctx.output_type): Ast_generator.T);
     let ast = Generator.generate(~ctx, decode(~ctx, input));
 
     Pprintast.string_of_structure(ast->Obj.magic);
@@ -26,7 +24,7 @@ let print = v => {
     Reason.printRE(
       Reason.parseML(
         Re_typescript_printer.print_from_ts(
-          ~ctx=Re_typescript_decode_config.defaultConfig,
+          ~ctx=Decode_config.defaultConfig,
           Parser.main(Lexer.read, lexbuf),
         ),
       ),
