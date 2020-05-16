@@ -28,11 +28,11 @@ module Make = (UserConfig: FileContextPrinterConfig) => {
     ->Belt.List.mapWithIndex((i, ln) =>
         " "
         ++ i->string_of_int
-        ++ " | "
         ++ Tablecloth.String.repeat(
              ~count=l - (i |> string_of_int |> Tablecloth.String.length),
              " ",
            )
+        ++ "|  "
         ++ (
           if (i + 1 === fst(fst(highlight))) {
             ln

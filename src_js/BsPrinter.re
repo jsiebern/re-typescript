@@ -1,8 +1,11 @@
 module Reason = {
   type a;
+  [@bs.module "reason"] external printML: a => string = "printML";
   [@bs.module "reason"] external printRE: a => string = "printRE";
   [@bs.module "reason"] external parseML: string => a = "parseML";
 };
+
+exception ParseError(string);
 
 module Re_typescript_printer = {
   open Migrate_parsetree;
@@ -18,11 +21,11 @@ module Re_typescript_printer = {
   };
 };
 
-let print = v => {
+let print = (~re=true, v) => {
   let v = v |> Tablecloth.String.trim;
   let lexbuf = Lexing.from_string(v);
   try(
-    Reason.printRE(
+    (re ? Reason.printRE : Reason.printML)(
       Reason.parseML(
         Re_typescript_printer.print_from_ts(
           ~ctx=Decode_config.defaultConfig,
@@ -33,7 +36,13 @@ let print = v => {
   ) {
   | Lexer.SyntaxError(msg) => Printf.sprintf("%s%!", msg)
   | Parser.Error =>
-    ReactDOMServerRe.renderToString(Error.parser_error(~content=v, ~lexbuf))
+    raise(
+      ParseError(
+        ReactDOMServerRe.renderToString(
+          Error.parser_error(~content=v, ~lexbuf),
+        ),
+      ),
+    )
   | e =>
     Js.log(e);
     raise(e);

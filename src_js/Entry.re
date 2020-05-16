@@ -40,19 +40,42 @@ interface I_a {
 }
 |};
 
+module Highlight = {
+  [@react.component] [@bs.module "react-highlight.js"]
+  external make: (~language: string, ~children: string) => React.element =
+    "default";
+};
+
 module X = {
   [@react.component]
   let make = () => {
     let (v, setV) = React.useReducer((_, v) => v, content);
+    let (re, setRe) = React.useReducer((_, v) => v, true);
 
     <>
       <textarea
         value=v
         onChange={e => setV(e->ReactEvent.Form.target##value)}
       />
-      <div className="display">
-        <pre dangerouslySetInnerHTML={"__html": BsPrinter.print(v)} />
-      </div>
+      {try(
+         <div className="display">
+           <button className="switch-button" onClick={_ => setRe(!re)}>
+             (re ? "ReasonML" : "ocaml")->React.string
+           </button>
+           <pre>
+             <Highlight language={re ? "reasonml" : "ocaml"}>
+               {BsPrinter.print(~re, v)}
+             </Highlight>
+           </pre>
+         </div>
+       ) {
+       | BsPrinter.ParseError(e) =>
+           <div
+             className="error"
+             style={ReactDOMRe.Style.make(~padding="15px", ())}
+             dangerouslySetInnerHTML={"__html": e}
+           />
+       }}
     </>;
   };
 };

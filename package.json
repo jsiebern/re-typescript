@@ -19,6 +19,7 @@
   "dependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-highlight.js": "^1.0.7",
     "reason": "^3.3.4",
     "reason-react": "^0.8.0",
     "tablecloth-bucklescript": "^0.0.7"

@@ -21,15 +21,47 @@
         width: 50%;
       }
       .display {
-        padding: 15px;
         font-family: "Fira Code";
         display: inline-block;
         height: 100vh;
         width: 50%;
-        background: gray;
+        background: #282c34;
         color: white;
+        position: relative;
+      }
+      .display code {
+        padding: 15px;
+        height: 100vh;
+        width: 100%;
+        overflow-y: scroll;
+      }
+      .error {
+        font-family: "Fira Code";
+        display: inline-block;
+        height: 100vh;
+        width: 50%;
+        background: #282c34;
+        color: white;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        white-space: pre;
+      }
+      .switch-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 5px;
+        cursor: pointer;
+        outline: none;
       }
     </style>
+    <link
+      rel="stylesheet"
+      href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.0.0/build/styles/default.min.css"
+    />
+    <link rel="stylesheet" href="styles/atom-one-dark.css" />
   </head>
   <body>
     <div id="app"></div>
