@@ -46,6 +46,31 @@ module Highlight = {
     "default";
 };
 
+module CodeMirror = {
+  [%bs.raw "require('codemirror/lib/codemirror.css')"];
+  [%bs.raw "require('codemirror/mode/javascript/javascript')"];
+  type ts_mode ={
+    name: string,
+    typescript:bool,
+  };
+  type options = {
+    lineNumbers: bool,
+    mode: ts_mode,
+    theme: string,
+  };
+  [@react.component] [@bs.module]
+  external make:
+    (
+      ~value: string,
+      ~onChange: string => unit,
+      ~options: option(options)=?,
+      ~className: option(string)=?,
+      ~preserveScrollPosition: option(bool)=?
+    ) =>
+    React.element =
+    "react-codemirror";
+};
+
 module X = {
   [@react.component]
   let make = () => {
@@ -53,9 +78,12 @@ module X = {
     let (re, setRe) = React.useReducer((_, v) => v, true);
 
     <>
-      <textarea
+      <CodeMirror
+        className="editor"
         value=v
-        onChange={e => setV(e->ReactEvent.Form.target##value)}
+        onChange=setV
+        preserveScrollPosition=true
+        options={lineNumbers: true, mode: {name: "javascript", typescript: true }, theme:"monokai" }
       />
       {try(
          <div className="display">
@@ -70,11 +98,11 @@ module X = {
          </div>
        ) {
        | BsPrinter.ParseError(e) =>
-           <div
-             className="error"
-             style={ReactDOMRe.Style.make(~padding="15px", ())}
-             dangerouslySetInnerHTML={"__html": e}
-           />
+         <div
+           className="error"
+           style={ReactDOMRe.Style.make(~padding="15px", ())}
+           dangerouslySetInnerHTML={"__html": e}
+         />
        }}
     </>;
   };

@@ -84,6 +84,7 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Extends keyword
 
 - [ ] Decoding
+  - [ ] Treat generics that get used in their type as not actually creating a type def as it needs to be called somewhere to be resolved (`type ab<A,B> = { a: A, b: B };`)
   - [ ] Create representation
     - [x] Basic types
     - [x] Interfaces
@@ -133,15 +134,16 @@ I will update the playground from time to time. It's not great yet, I just wante
 - [ ] Playground
   - [ ] Check if it's really necessary to pull half of the ocaml compiler in
   - [ ] Create a UI
-  - [ ] Add syntax highlighting
+  - [x] Add syntax highlighting
   - [ ] Keep source in local storage
-  - [ ] Add reason / ocaml switch
+  - [x] Add reason / ocaml switch
   - [ ] Download file button
 - [ ] Config / Misc
   - [ ] Think of a way to inject overrides (e.g. a Hashmap of type name regexes and a replacement)
-  - [ ] Provide better error messages on syntax error
+  - [x] Provide better error messages on syntax error
   - [ ] `array_mode` (Array / List)
-  - [ ] `number_mode` (Int / Float / Unboxed)
+  - [x] `number_mode` (Int / Float / Unboxed)
+  - [ ] Option to throw error if a type can't be resolved while decoding
   - [ ] PPX (far future)
     - ```reason
       [%re_typescript "package/def.d.ts"]]
