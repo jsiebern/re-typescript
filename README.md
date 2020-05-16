@@ -42,7 +42,7 @@ I will update the playground from time to time. It's not great yet, I just wante
       - [ ] Special modifier keywords (`e.g. Required<{...}>`)
     - [x] Type extraction (`e.g. x['field']`)
   - [x] Array
-  - [ ] Tuple
+  - [x] Tuple
   - [ ] Named tuple (derives from Array<T>)
   - [ ] Union
   - [ ] Enum
@@ -98,7 +98,7 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [ ] Implement separate file loaders
   - [x] Resolve extension refs for the current type (finalize all fields)
   - [x] Flattened type tree
-  - [ ] Solve inline interfaces (e.g. in an array)
+  - [x] Solve inline interfaces (e.g. in an array)
   - [ ] Mutators
   - [ ] Generics
 - [ ] Generating
@@ -114,7 +114,7 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [ ] Bucklescript (Make use of bucklescript features, but do not use externals)
     - [x] Basic types
     - [x] Interfaces
-      - [ ] `@bs.as` attribute
+      - [x] `@bs.as` attribute
     - [x] Arrays / Lists
     - [ ] Enums
     - [ ] Unions

@@ -10,11 +10,12 @@ let generate_base_type = (~inner=[], name) => {
   );
 };
 
-let generate_record_kind = (fields: list((string, core_type))) =>
+let generate_record_kind =
+    (fields: list((string, core_type, list(attribute)))) =>
   Ptype_record(
     fields
-    |> List.map(((name, type_)) =>
-         Type.field(Location.mknoloc(name), type_)
+    |> List.map(((name, type_, attrs)) =>
+         Type.field(~attrs, Location.mknoloc(name), type_)
        ),
   );
 

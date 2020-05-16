@@ -10,6 +10,7 @@ interface I_one {
 interface I_two extends I_one {
   key_1: number;
   key_3: boolean;
+}
 
 type x = string;
 type y = number;

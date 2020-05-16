@@ -6,6 +6,12 @@ open Parsetree;
 open Ast_helper;
 open Ast_generator_utils;
 
+let bs_as_attribute: string => attribute =
+  name => (
+    Location.mknoloc("bs.as"),
+    PStr([Str.eval(Ast_convenience_406.str(name))]),
+  );
+
 exception BS_Decode_Error(string, string);
 
 type gen_config = {
@@ -13,6 +19,7 @@ type gen_config = {
   mutable has_unboxed_number: bool,
 };
 let gen_config = {has_any: false, has_unboxed_number: false};
+
 let rec generate_type_def = (~ctx: config, type_def) =>
   switch (type_def) {
   | Base(base_type) => (
@@ -42,7 +49,7 @@ let rec generate_type_def = (~ctx: config, type_def) =>
         fields
         |> List.map(
              fun
-             | RecordField((name, _), type_, _) => (
+             | RecordField((name, orig_name), type_, _) => (
                  name,
                  switch (type_ |> generate_type_def(~ctx)) {
                  | (_, None) =>
@@ -54,6 +61,7 @@ let rec generate_type_def = (~ctx: config, type_def) =>
                    )
                  | (_, Some(t)) => t
                  },
+                 name != orig_name ? [bs_as_attribute(orig_name)] : [],
                )
              | d =>
                raise(

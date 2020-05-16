@@ -3,5 +3,5 @@ type i_int = {
   i_field: float }
 and obj = {
   field_1: string ;
-  if_: i_int }
+  if_: i_int [@bs.as \"if\"]}
 and field_1 = float

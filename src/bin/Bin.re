@@ -29,7 +29,7 @@ export declare type Subset<T, U> = {
 |};
 let content = {|
 type x = {field: string}[];
-type y = Array<{field: string}>;
+type y = Array<{X_field: string}>;
 |};
 
 let () = {
