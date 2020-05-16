@@ -40,7 +40,7 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Symbol
     - [x] Reference
       - [ ] Special modifier keywords (`e.g. Required<{...}>`)
-    - [ ] Type extraction (`e.g. x['field']`)
+    - [x] Type extraction (`e.g. x['field']`)
   - [x] Array
   - [ ] Tuple
   - [ ] Named tuple (derives from Array<T>)

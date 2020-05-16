@@ -28,21 +28,8 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-type moreObj = {
-  another: number,
-}
-type someObj = {
-    some: boolean,
-    other: string,
-    rec: someObj,
-    obj: moreObj,
-    nested: {
-      more: moreObj
-    }
-};
-type t = someObj['rec']['some'];
-type nd = someObj["obj"]['another'];
-type n = someObj['nested']['more']["another"];
+interface I_a {};
+interface I_b extends I_a { field: string };
 |};
 
 let () = {

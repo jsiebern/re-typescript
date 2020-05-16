@@ -28,34 +28,36 @@ describe("interfaces", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
-  //   test("empty obj / interfaces should throw ", ({expect, _}) => {
-  //     expect.fn(() => print({|interface I_a {};|})).toThrow();
-  //     expect.fn(() => print({|type o_a = {}|})).toThrow();
-  //   });
-  //   test("empty interface should not throw when extened", ({expect, _}) => {
-  //     expect.string(
-  //       print(
-  //         {|
-  //         interface I_b { field: string };
-  //         interface I_a extends I_b {};
-  //       |},
-  //       ),
-  //     ).
-  //       toMatchSnapshot()
-  //   });
-  //   test(
-  //     "empty interface should not throw when having only been used in an extension",
-  //     ({expect, _}) => {
-  //     expect.string(
-  //       print(
-  //         {|
-  //         interface I_a {};
-  //         interface I_b extends I_a { field: string };
-  //       |},
-  //       ),
-  //     ).
-  //       toMatchSnapshot()
-  //   });
+  test(
+    "empty obj / interfaces should be valid but not rendered", ({expect, _}) => {
+    expect.string(print({|interface I_a {};|})).toEqual("");
+    expect.string(print({|type o_a = {}|})).toEqual("");
+  });
+  test("empty objects should be referenced as any", ({expect, _}) => {
+    expect.string(print({|interface I_a {}; type x = I_a;|})).toMatchSnapshot()
+  });
+  test("empty interface should not be omitted when extened", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+          interface I_b { field: string };
+          interface I_a extends I_b {};
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+  test("empty interface can be target of an extension", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+          interface I_a {};
+          interface I_b extends I_a { field: string };
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });
 
 describe("interface extension", ({test, _}) => {

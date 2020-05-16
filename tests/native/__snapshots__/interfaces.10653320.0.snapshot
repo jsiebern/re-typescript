@@ -1,0 +1,5 @@
+interfaces › empty objects should be referenced as any
+type any =
+  | Any: 'a -> any [@@unboxed ]
+type i_a = any
+and x = i_a

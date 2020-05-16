@@ -96,28 +96,31 @@ let rec generate_type_def = (~ctx: config, type_def) =>
 let generate = (~ctx, type_defs) => {
   gen_config.has_any = false;
   gen_config.has_unboxed_number = false;
-  let types = [
-    Str.type_(
-      Recursive,
-      List.concat(
-        type_defs
-        |> List.map(type_def =>
-             switch (type_def) {
-             | TypeDeclaration((name, _), type_) =>
-               let (kind, manifest) = generate_type_def(~ctx, type_);
-               [Type.mk(~kind, ~manifest?, Location.mknoloc(name))];
-             | d =>
-               raise(
-                 BS_Decode_Error(
-                   "Invalid data structure in root",
-                   BatPervasives.dump(d),
-                 ),
-               )
-             }
-           ),
-      ),
-    ),
-  ];
+  let types =
+    !(type_defs |> Tablecloth.List.is_empty)
+      ? [
+        Str.type_(
+          Recursive,
+          List.concat(
+            type_defs
+            |> List.map(type_def =>
+                 switch (type_def) {
+                 | TypeDeclaration((name, _), type_) =>
+                   let (kind, manifest) = generate_type_def(~ctx, type_);
+                   [Type.mk(~kind, ~manifest?, Location.mknoloc(name))];
+                 | d =>
+                   raise(
+                     BS_Decode_Error(
+                       "Invalid data structure in root",
+                       BatPervasives.dump(d),
+                     ),
+                   )
+                 }
+               ),
+          ),
+        ),
+      ]
+      : [];
   Tablecloth.List.concat([
     gen_config.has_unboxed_number
       ? Ast_generator_bucklescript_number_unboxed.number_unboxed : [],

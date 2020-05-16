@@ -8,10 +8,16 @@ let types: ref(list(Ts.type_def)) = ref([]);
 let record_cache: Hashtbl.t(string, Decode_result.type_def) =
   Hashtbl.create(0);
 let injected: Hashtbl.t(string, Decode_result.type_def) = Hashtbl.create(0);
+let record_referenced = ref([]);
+let has_been_referenced = name =>
+  record_referenced^
+  |> List.find_opt(x => x == name)
+  |> Tablecloth.Option.is_some;
 
 let rec decode = (~ctx: config=defaultConfig, toplevel: Ts.toplevel) => {
   Hashtbl.clear(injected);
   types := toplevel.types |> List.map(fst);
+  record_referenced := [];
   let types = toplevel.types |> List.map(decode_type_def);
 
   types
@@ -26,6 +32,15 @@ let rec decode = (~ctx: config=defaultConfig, toplevel: Ts.toplevel) => {
                 raise(Decode_Error("Only TypeDeclarations can be injected")),
           )
        |> Tablecloth.List.reverse,
+     )
+  |> Tablecloth.List.filter_map(
+       ~f=
+         fun
+         | TypeDeclaration((name, _) as n, Record([]))
+             when has_been_referenced(name) =>
+           Some(TypeDeclaration(n, Base(Any)))
+         | TypeDeclaration(_, Record([])) => None
+         | v => Some(v),
      );
 }
 and decode_type_def: ((Ts.type_def, bool)) => type_def =
@@ -176,12 +191,15 @@ and decode_ref_type_name = (ref_: Ts.ref_): (string, string) => {
     |> Tablecloth.List.map(~f=fst)
     |> Tablecloth.List.map(~f=v => ["_", v])
     |> Tablecloth.List.concat;
-  (
-    switch (idents) {
-    | [] => ""
-    | [_, ...rest] =>
-      rest |> Tablecloth.List.fold_left(~initial="", ~f=(p, e) => p ++ e)
-    }
-  )
-  |> to_valid_typename;
+  let ref_resolved =
+    (
+      switch (idents) {
+      | [] => ""
+      | [_, ...rest] =>
+        rest |> Tablecloth.List.fold_left(~initial="", ~f=(p, e) => p ++ e)
+      }
+    )
+    |> to_valid_typename;
+  record_referenced := [ref_resolved |> fst, ...record_referenced^];
+  ref_resolved;
 };
