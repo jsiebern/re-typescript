@@ -28,8 +28,7 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-interface I_a {};
-interface I_b extends I_a { field: string };
+type x = [string, number, bool];
 |};
 
 let () = {

@@ -56,6 +56,9 @@ type type_extr = {
 type t = type_extr['rec']['some'];
 type nd = type_extr["obj"]['another'];
 type n = type_extr['nested']['more']["another"];
+
+type tpl = [string, number, boolean];
+type tpl_inline = [string, { field: number }, boolean];
 |};
 
 module Highlight = {

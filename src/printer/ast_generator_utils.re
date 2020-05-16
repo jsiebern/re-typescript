@@ -26,6 +26,10 @@ let generate_list_of = wrap_type => {
   generate_base_type(~inner=[wrap_type], "list");
 };
 
+let generate_tuple_of = types => {
+  Typ.tuple(types);
+};
+
 let generate_any = () => [
   {
     pstr_loc: Ast_helper.default_loc.contents,

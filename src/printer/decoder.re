@@ -48,7 +48,7 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
   | (`TypeDef(name, `Obj(fields)), _) => {
       let name = name |> to_valid_typename;
       let record =
-        Record(fields |> List.map(decode_obj_field(~obj_name=name)));
+        Record(fields |> List.map(decode_obj_field(~parent_name=name)));
       Hashtbl.add(record_cache, fst(name), record);
       TypeDeclaration(name, record);
     }
@@ -57,7 +57,7 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
       let record =
         Record(
           fields
-          |> Tablecloth.List.map(~f=decode_obj_field(~obj_name=name))
+          |> Tablecloth.List.map(~f=decode_obj_field(~parent_name=name))
           |> Tablecloth.List.append(decode_extends_ref(extends_ref))
           |> Tablecloth.List.reverse
           |> Tablecloth.List.uniqueBy(
@@ -70,58 +70,85 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
       Hashtbl.add(record_cache, fst(name), record);
       TypeDeclaration(name, record);
     }
-  | (`TypeDef(name, type_), _) =>
-    TypeDeclaration(name |> to_valid_typename, decode_type(type_))
-and decode_type: Ts.type_ => type_def =
+  | (`TypeDef(name, type_), _) => {
+      let name = name |> to_valid_typename;
+      TypeDeclaration(name, decode_type(~parent_name=name, type_));
+    }
+and decode_type: (~parent_name: (string, string), Ts.type_) => type_def =
+  (~parent_name) =>
+    fun
+    | `String => Base(String)
+    | `Number => Base(Number)
+    | `Boolean => Base(Boolean)
+    | `Void => Base(Void)
+    | `Any => Base(Any)
+    | `Array(type_) => Array(decode_type(~parent_name, type_))
+    | `Tuple(types) => decode_tuple(~parent_name, types)
+    | `Ref(ref_) => Base(Ref(ref_ |> decode_ref_type_name))
+    | `Enum(_)
+    | `Union(_) => raise(Decode_Error("Not yet implemented"))
+    | `Undefined =>
+      raise(Decode_Error("Undefined cannot exist outside of a union"))
+    | `Null => raise(Decode_Error("Null cannot exist outside of a union"))
+    | `Obj(_) =>
+      raise(Decode_Error("Obj should never be reached in this switch"))
+    | `TypeExtract(ref_, names) => decode_type_extract(ref_, names)
+and decode_tuple = (~parent_name, types) => {
+  Tuple(
+    types
+    |> Tablecloth.List.mapi(~f=i =>
+         fun
+         | `Obj(fields) =>
+           decode_inline_record(
+             ~parent_name,
+             ~key=i + 1 |> string_of_int,
+             ~fields,
+           )
+         | t => decode_type(~parent_name, t)
+       ),
+  );
+}
+and decode_inline_record = (~parent_name, ~key, ~fields) => {
+  let sub_type_name =
+    Printf.sprintf("%s_%s", fst(parent_name), key |> to_valid_ident |> fst);
+  let record =
+    Record(
+      fields
+      |> Tablecloth.List.map(
+           ~f=decode_obj_field(~parent_name=(sub_type_name, sub_type_name)),
+         ),
+    );
+  Hashtbl.add(
+    injected,
+    sub_type_name,
+    TypeDeclaration((sub_type_name, sub_type_name), record),
+  );
+  Hashtbl.add(record_cache, sub_type_name, record);
+  Base(Ref((sub_type_name, sub_type_name)));
+}
+and decode_obj_field = (~parent_name) =>
   fun
-  | `String => Base(String)
-  | `Number => Base(Number)
-  | `Boolean => Base(Boolean)
-  | `Void => Base(Void)
-  | `Any => Base(Any)
-  | `Array(type_) => Array(decode_type(type_))
-  | `Tuple(types) => Tuple(types |> List.map(decode_type))
-  | `Ref(ref_) => Base(Ref(ref_ |> decode_ref_type_name))
-  | `Enum(_)
-  | `Union(_) => raise(Decode_Error("Not yet implemented"))
-  | `Undefined =>
-    raise(Decode_Error("Undefined cannot exist outside of a union"))
-  | `Null => raise(Decode_Error("Null cannot exist outside of a union"))
-  | `Obj(_) =>
-    raise(Decode_Error("Obj should never be reached in this switch"))
-  | `TypeExtract(ref_, names) => decode_type_extract(ref_, names)
-and decode_obj_field = (~obj_name) =>
-  fun
-  | {key, type_: `Obj(fields), _} as field => {
-      let sub_type_name =
-        Printf.sprintf("%s_%s", fst(obj_name), key |> to_valid_ident |> fst);
-      let record =
-        Record(
-          fields
-          |> Tablecloth.List.map(
-               ~f=decode_obj_field(~obj_name=(sub_type_name, sub_type_name)),
-             ),
-        );
-      Hashtbl.add(
-        injected,
-        sub_type_name,
-        TypeDeclaration((sub_type_name, sub_type_name), record),
-      );
-      Hashtbl.add(record_cache, sub_type_name, record);
-      decode_obj_field(
-        ~obj_name,
-        {...field, type_: `Ref([(sub_type_name, [])])},
+  | {key, type_: `Obj(fields), optional, readonly} => {
+      let t_ref = decode_inline_record(~parent_name, ~key, ~fields);
+      RecordField(
+        key |> to_valid_ident,
+        optional ? Optional(t_ref) : t_ref,
+        readonly,
       );
     }
   | {key, optional: true, readonly, type_} => {
       RecordField(
         key |> to_valid_ident,
-        Optional(type_ |> decode_type),
+        Optional(type_ |> decode_type(~parent_name)),
         readonly,
       );
     }
   | {key, optional: false, readonly, type_} =>
-    RecordField(key |> to_valid_ident, type_ |> decode_type, readonly)
+    RecordField(
+      key |> to_valid_ident,
+      type_ |> decode_type(~parent_name),
+      readonly,
+    )
 and decode_type_extract = (ref_: Ts.ref_, fields: list(string)) => {
   let fields_in_type = decode_extends_ref(ref_);
   let find_field = name =>

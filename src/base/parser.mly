@@ -91,15 +91,17 @@ type_:
   | PRIM_UNDEFINED;    { `Undefined }
   | PRIM_VOID;         { `Void }
   | PRIM_ANY;          { `Any }
+  (* Tuple *)
+  | LBRACKET; types = separated_nonempty_list(COMMA, type_); RBRACKET; { `Tuple(types) }
   (* Inline obj *)
   | LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; { `Obj(obj) }
   (* Arrays *)
-  | ARRAY; LT; t = type_; GT; { `Array(t) }
-  | t = type_; LBRACKET; RBRACKET; { `Array(t) }
+  | ARRAY; LT; t = type_; GT;       { `Array(t) }
+  | t = type_; LBRACKET; RBRACKET;  { `Array(t) }
   (* Type extraction *)
   | r = ref_; fa = nonempty_list(field_access); { `TypeExtract(r, fa) }
   (* Reference *)
-  | r = ref_;          { `Ref(r) }
+  | r = ref_; { `Ref(r) }
 
 
 (*

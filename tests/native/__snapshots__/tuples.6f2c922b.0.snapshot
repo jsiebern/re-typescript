@@ -1,0 +1,3 @@
+tuples › can use tuple inside of an interface
+type obj = {
+  field: (string * float * bool) }

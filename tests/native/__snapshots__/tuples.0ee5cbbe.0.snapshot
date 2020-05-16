@@ -1,0 +1,3 @@
+tuples › can generate an array of tuples
+type tpl_arr = (string * float * bool) array
+and tpl_arr2 = (string * float * bool) array

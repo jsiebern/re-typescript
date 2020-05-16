@@ -75,6 +75,16 @@ let rec generate_type_def = (~ctx: config, type_def) =>
         inner |> Tablecloth.Option.map(~f=generate_list_of)
       },
     )
+  | Tuple(types) => (
+      Ptype_abstract,
+      Some(
+        generate_tuple_of(
+          types
+          |> Tablecloth.List.map(~f=generate_type_def(~ctx))
+          |> Tablecloth.List.filter_map(~f=snd),
+        ),
+      ),
+    )
   | RecordField(_) =>
     raise(
       BS_Decode_Error(
