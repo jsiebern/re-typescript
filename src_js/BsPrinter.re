@@ -19,6 +19,7 @@ module Re_typescript_printer = {
 };
 
 let print = v => {
+  let v = v |> Tablecloth.String.trim;
   let lexbuf = Lexing.from_string(v);
   try(
     Reason.printRE(
@@ -32,10 +33,7 @@ let print = v => {
   ) {
   | Lexer.SyntaxError(msg) => Printf.sprintf("%s%!", msg)
   | Parser.Error =>
-    Printf.sprintf(
-      "At offset %d: syntax error.\n%!",
-      Lexing.lexeme_start(lexbuf),
-    )
+    ReactDOMServerRe.renderToString(Error.parser_error(~content=v, ~lexbuf))
   | e =>
     Js.log(e);
     raise(e);

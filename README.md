@@ -54,7 +54,7 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Semicolon / Comma
     - [x] Optional
     - [x] Readonly
-    - [ ] Nested interfaces
+    - [x] Nested interfaces
     - [ ] Dynamic keys
     - [x] Extends keyword
   - [ ] Functions

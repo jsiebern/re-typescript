@@ -51,7 +51,7 @@ module X = {
         onChange={e => setV(e->ReactEvent.Form.target##value)}
       />
       <div className="display">
-        <pre> {BsPrinter.print(v)->React.string} </pre>
+        <pre dangerouslySetInnerHTML={"__html": BsPrinter.print(v)} />
       </div>
     </>;
   };

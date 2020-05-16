@@ -1,16 +1,13 @@
 (ocamllex
-  (modules lexer)
-)
+ (modules lexer))
 
 (menhir
-  (modules parser)
-  (flags -la 2)
-)
+ (modules parser)
+ (flags -la 2))
 
 (library
  (name re_typescript_base)
  (public_name re_typescript.base)
- (libraries tablecloth-native batteries)
+ (libraries tablecloth-native batteries file-context-printer.lib pastel.lib)
  (ocamlopt_flags (-linkall))
- (flags -w -30)
-)
+ (flags -w -30))
