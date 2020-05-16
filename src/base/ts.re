@@ -20,6 +20,7 @@ and type_ = [
   | `Tuple(list(type_))
   | `Obj(list(obj_field))
   | `Ref(ref_)
+  | `TypeExtract(ref_, list(string))
 ]
 and prim_value = [ | `V_String(string) | `V_Number(int)]
 and enum_field = {

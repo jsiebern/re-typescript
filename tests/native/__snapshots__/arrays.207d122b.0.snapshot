@@ -1,0 +1,3 @@
+arrays › arrays in record field defs
+type obj = {
+  field: string array }

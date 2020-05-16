@@ -1,12 +1,4 @@
 open TestFramework;
-open Re_typescript_base;
-
-let config = Re_typescript_printer.Config.defaultConfig;
-let print = (~ctx=config, value) =>
-  Re_typescript_printer.print_from_ts(
-    ~ctx,
-    Parser.main(Lexer.read, Lexing.from_string(value)),
-  );
 
 /********************************************
   Basic type syntax
@@ -44,12 +36,8 @@ describe("generates valid type names", ({test, _}) => {
     expect.string(print("type $_string = string")).toMatchSnapshot();
     expect.string(print("type t_$string = string")).toMatchSnapshot();
     // Invalid TS typenames should not be parsed at all
-    expect.fn(() => print("type 1_string = string")).toThrowException(
-      Parser.Error,
-    );
-    expect.fn(() => print("type st.ring = string")).toThrowException(
-      Parser.Error,
-    );
+    expect.fn(() => print("type 1_string = string")).toThrow();
+    expect.fn(() => print("type st.ring = string")).toThrow();
   });
 });
 
@@ -72,76 +60,6 @@ describe("config flags effects", ({test, _}) => {
       toMatchSnapshot();
     expect.string(print(~ctx={...config, number_mode: Unboxed}, ts)).
       toMatchSnapshot();
-  });
-});
-
-/********************************************
-  Interfaces
- ********************************************/
-describe("interfaces", ({test, _}) => {
-  test("object & interface syntax create equal types", ({expect, _}) => {
-    expect.string(print({|type Eqiv = { field: string }|})).toEqual(
-      print({|
-      interface Eqiv {
-        field: string;
-      }
-    |}),
-    )
-  });
-
-  test("nested interfaces", ({expect, _}) => {
-    expect.string(
-      print(
-        {|
-      interface I_a {
-        field_1: string;
-        field_2: string;
-        field_3: {
-          inline: boolean;
-          nested: string;
-        }
-      }
-    |},
-      ),
-    ).
-      toMatchSnapshot()
-  });
-});
-
-describe("interface extension", ({test, _}) => {
-  test("adds fields from other interfaces", ({expect, _}) => {
-    expect.string(
-      print(
-        {|
-      interface I_a {
-        field_1: string;
-        field_2: string;
-      }
-      interface I_b extends I_a {
-        field_3: number
-      }
-    |},
-      ),
-    ).
-      toMatchSnapshot()
-  });
-
-  test("fields from current interface take priority", ({expect, _}) => {
-    expect.string(
-      print(
-        {|
-      interface I_a {
-        field_1: string;
-        field_2: string;
-      }
-      interface I_b extends I_a {
-        field_1: boolean;
-        field_3: number
-      }
-    |},
-      ),
-    ).
-      toMatchSnapshot()
   });
 });
 
@@ -190,4 +108,15 @@ describe("reference resolution", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+});
+
+/********************************************
+  Arrays
+ ********************************************/
+describe("arrays", ({test, _}) => {
+  test("arrays in record field defs", ({expect, _}) => {
+    expect.string(print({|type obj = { field: string[] }|})).toMatchSnapshot();
+    expect.string(print({|type obj = { field: Array<string>, }|})).
+      toMatchSnapshot();
+  })
 });

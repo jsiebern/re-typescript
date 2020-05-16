@@ -24,11 +24,13 @@ interface next extends React.CSSProperties<Required<{
   nested: React.SomeOther<{color: number},string,boolean>;
 }>> {
     has: number;
-    obj: somObj;
+    obj: someObj;
 };
 
+interface NonEmptyI { field: string };
+
 type module = number[];
-type interfaceA = Array<EmptyI>
+type interfaceA = Array<NonEmptyI>
 
 interface I_a {
   field_1: string;
@@ -38,6 +40,22 @@ interface I_a {
     nested: string;
   }
 }
+
+type moreObj = {
+  another: number,
+}
+type type_extr = {
+    some: boolean,
+    other: string,
+    rec: type_extr,
+    obj: moreObj,
+    nested: {
+      more: moreObj
+    }
+};
+type t = type_extr['rec']['some'];
+type nd = type_extr["obj"]['another'];
+type n = type_extr['nested']['more']["another"];
 |};
 
 module Highlight = {
@@ -49,9 +67,9 @@ module Highlight = {
 module CodeMirror = {
   [%bs.raw "require('codemirror/lib/codemirror.css')"];
   [%bs.raw "require('codemirror/mode/javascript/javascript')"];
-  type ts_mode ={
+  type ts_mode = {
     name: string,
-    typescript:bool,
+    typescript: bool,
   };
   type options = {
     lineNumbers: bool,
@@ -83,7 +101,14 @@ module X = {
         value=v
         onChange=setV
         preserveScrollPosition=true
-        options={lineNumbers: true, mode: {name: "javascript", typescript: true }, theme:"monokai" }
+        options={
+          lineNumbers: true,
+          mode: {
+            name: "javascript",
+            typescript: true,
+          },
+          theme: "monokai",
+        }
       />
       {try(
          <div className="display">

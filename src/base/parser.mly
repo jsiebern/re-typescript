@@ -63,7 +63,6 @@ let main :=
 
 type_def:
   | export = opt_as_bool(EXPORT); TYPE; name = IDENT; EQUALS; t = type_; SEMICOLON? { (`TypeDef(fst(name), t), export) }
-  | export = opt_as_bool(EXPORT); TYPE; name = IDENT; EQUALS; t = type_; LBRACKET; RBRACKET; SEMICOLON? { (`TypeDef(fst(name), `Array(t)), export) }
   | export = opt_as_bool(EXPORT); INTERFACE; name = IDENT; extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON? { (`InterfaceDef(fst(name), extends, obj), export) }
 
 let extends :=
@@ -82,18 +81,26 @@ obj_field:
   | ro = opt_as_bool(READONLY); key = IDENT; optional = opt_as_bool(QMARK); COLON; t = type_     { let (key,_) = key in {Ts.key; type_ = t; optional; readonly = ro } } ;
 
 type_:
-  | PRIM_STRING       { `String }
-  | PRIM_NUMBER       { `Number }
+  (* Base types *)
+  | PRIM_STRING;       { `String }
+  | PRIM_NUMBER;       { `Number }
   | FALSE
   | TRUE
-  | PRIM_BOOLEAN      { `Boolean }
-  | PRIM_NULL         { `Null }
-  | PRIM_UNDEFINED    { `Undefined }
-  | PRIM_VOID         { `Void }
-  | PRIM_ANY          { `Any }
+  | PRIM_BOOLEAN;      { `Boolean }
+  | PRIM_NULL;         { `Null }
+  | PRIM_UNDEFINED;    { `Undefined }
+  | PRIM_VOID;         { `Void }
+  | PRIM_ANY;          { `Any }
+  (* Inline obj *)
   | LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; { `Obj(obj) }
+  (* Arrays *)
   | ARRAY; LT; t = type_; GT; { `Array(t) }
-  | r = ref_          { `Ref(r) };
+  | t = type_; LBRACKET; RBRACKET; { `Array(t) }
+  (* Type extraction *)
+  | r = ref_; fa = nonempty_list(field_access); { `TypeExtract(r, fa) }
+  (* Reference *)
+  | r = ref_;          { `Ref(r) }
+
 
 (*
   Imports
@@ -128,3 +135,6 @@ let obj_separator :=
   | COMMA; { Some(()) }
   | SEMICOLON; { Some(()) }
   | { None }
+
+let field_access :=
+  | LBRACKET; s = STRING; RBRACKET; { let (s,_,_) = s in s }

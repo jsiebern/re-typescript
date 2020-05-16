@@ -28,7 +28,21 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-type x = number;
+type moreObj = {
+  another: number,
+}
+type someObj = {
+    some: boolean,
+    other: string,
+    rec: someObj,
+    obj: moreObj,
+    nested: {
+      more: moreObj
+    }
+};
+type t = someObj['rec']['some'];
+type nd = someObj["obj"]['another'];
+type n = someObj['nested']['more']["another"];
 |};
 
 let () = {
@@ -41,7 +55,7 @@ let () = {
       Re_typescript_printer.print_from_ts(
         ~ctx={
           ...Re_typescript_printer.Config.defaultConfig,
-          number_mode: Unboxed,
+          number_mode: Int,
         },
         Parser.main(Lexer.read, lexbuf),
       ),

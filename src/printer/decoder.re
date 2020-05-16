@@ -74,27 +74,25 @@ and decode_type: Ts.type_ => type_def =
   | `Null => raise(Decode_Error("Null cannot exist outside of a union"))
   | `Obj(_) =>
     raise(Decode_Error("Obj should never be reached in this switch"))
+  | `TypeExtract(ref_, names) => decode_type_extract(ref_, names)
 and decode_obj_field = (~obj_name) =>
   fun
   | {key, type_: `Obj(fields), _} as field => {
       let sub_type_name =
         Printf.sprintf("%s_%s", fst(obj_name), key |> to_valid_ident |> fst);
+      let record =
+        Record(
+          fields
+          |> Tablecloth.List.map(
+               ~f=decode_obj_field(~obj_name=(sub_type_name, sub_type_name)),
+             ),
+        );
       Hashtbl.add(
         injected,
         sub_type_name,
-        TypeDeclaration(
-          (sub_type_name, sub_type_name),
-          Record(
-            fields
-            |> Tablecloth.List.map(
-                 ~f=
-                   decode_obj_field(
-                     ~obj_name=(sub_type_name, sub_type_name),
-                   ),
-               ),
-          ),
-        ),
+        TypeDeclaration((sub_type_name, sub_type_name), record),
       );
+      Hashtbl.add(record_cache, sub_type_name, record);
       decode_obj_field(
         ~obj_name,
         {...field, type_: `Ref([(sub_type_name, [])])},
@@ -109,6 +107,55 @@ and decode_obj_field = (~obj_name) =>
     }
   | {key, optional: false, readonly, type_} =>
     RecordField(key |> to_valid_ident, type_ |> decode_type, readonly)
+and decode_type_extract = (ref_: Ts.ref_, fields: list(string)) => {
+  let fields_in_type = decode_extends_ref(ref_);
+  let find_field = name =>
+    fields_in_type
+    |> Tablecloth.List.find(
+         ~f=
+           fun
+           | RecordField((n, _), _, _) when n == name => true
+           | _ => false,
+       );
+  switch (fields) {
+  | [] => raise(Not_found)
+  | [name] =>
+    switch (find_field(name |> to_valid_typename |> fst)) {
+    | Some(RecordField(_, type_, _)) => type_
+    | Some(_)
+    | None =>
+      // TODO: Decide wether to to just return any here instead of an error
+      Console.error(fields);
+      raise(
+        Decode_Error(
+          Printf.sprintf(
+            "Could not find field %s in %s",
+            name,
+            decode_ref_type_name(ref_) |> snd,
+          ),
+        ),
+      );
+    }
+  | [name, ...rest] =>
+    switch (find_field(name |> to_valid_typename |> fst)) {
+    | Some(RecordField(_, Base(Ref((ref_name, _))), _)) =>
+      decode_type_extract([(ref_name, [])], rest)
+    | Some(_)
+    | None =>
+      // TODO: Decide wether to to just return any here instead of an error
+      Console.error(fields);
+      raise(
+        Decode_Error(
+          Printf.sprintf(
+            "Could not find field %s in %s",
+            name,
+            decode_ref_type_name(ref_) |> snd,
+          ),
+        ),
+      );
+    }
+  };
+}
 and decode_extends_ref = (ref_: Ts.ref_) => {
   // Only implement this naively for now
   let lookup_name = fst(decode_ref_type_name(ref_));
