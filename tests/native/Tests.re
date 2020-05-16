@@ -109,14 +109,3 @@ describe("reference resolution", ({test, _}) => {
       toMatchSnapshot()
   });
 });
-
-/********************************************
-  Arrays
- ********************************************/
-describe("arrays", ({test, _}) => {
-  test("arrays in record field defs", ({expect, _}) => {
-    expect.string(print({|type obj = { field: string[] }|})).toMatchSnapshot();
-    expect.string(print({|type obj = { field: Array<string>, }|})).
-      toMatchSnapshot();
-  })
-});

@@ -82,7 +82,7 @@ and decode_type: (~parent_name: (string, string), Ts.type_) => type_def =
     | `Boolean => Base(Boolean)
     | `Void => Base(Void)
     | `Any => Base(Any)
-    | `Array(type_) => Array(decode_type(~parent_name, type_))
+    | `Array(type_) => decode_array(~parent_name, type_)
     | `Tuple(types) => decode_tuple(~parent_name, types)
     | `Ref(ref_) => Base(Ref(ref_ |> decode_ref_type_name))
     | `Enum(_)
@@ -93,6 +93,12 @@ and decode_type: (~parent_name: (string, string), Ts.type_) => type_def =
     | `Obj(_) =>
       raise(Decode_Error("Obj should never be reached in this switch"))
     | `TypeExtract(ref_, names) => decode_type_extract(ref_, names)
+  and decode_array = (~parent_name, type_) => {
+    Array(switch (type_) {
+      | `Obj(fields) => decode_inline_record(~parent_name, ~key="t",~fields)
+      | t => decode_type(~parent_name, t)
+    })
+  }
 and decode_tuple = (~parent_name, types) => {
   Tuple(
     types
