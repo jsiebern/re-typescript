@@ -28,8 +28,7 @@ I will update the playground from time to time. It's not great yet, I just wante
 - [ ] Lexing / Parsing
 
   - [x] Include lexing positions for better error messages
-  - [ ] Ignore or warn unknown structures
-  - [ ] Basic
+  - [x] Basic
     - [x] Any
     - [x] Void
     - [x] Boolean
@@ -39,7 +38,6 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Undefined
     - [x] Symbol
     - [x] Reference
-      - [ ] Special modifier keywords (`e.g. Required<{...}>`)
     - [x] Type extraction (`e.g. x['field']`)
   - [x] Array
   - [x] Tuple
@@ -48,12 +46,14 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Simple Nullable / Optional
     - [x] String unions
     - [x] Int unions
-    - [ ] Mixed unions
+    - [x] Mixed unions
+    - [ ] Union of types
   - [ ] Enum
     - [x] Keys
     - [ ] Default values
     - [ ] Computed values
     - [ ] Const enums
+  - [ ] Intersection types
   - [ ] Interfaces / Objects
     - [x] Keyword
     - [x] Keys
@@ -81,32 +81,35 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Aliased
     - [x] Star aliased
     - [x] List of named
+  - [ ] Namespaces
   - [ ] Exports
   - [ ] Mutators
-  - [ ] Generics
+  - [ ] Type Parameters
     - [ ] Type definition
     - [ ] Interfaces
     - [ ] Classes
     - [ ] Extends keyword
 
 - [ ] Decoding
-  - [ ] Treat generics that get used in their type as not actually creating a type def as it needs to be called somewhere to be resolved (`type ab<A,B> = { a: A, b: B };`)
+  - [ ] Treat type parameters that get used in their type as not actually creating a type def as it needs to be called somewhere to be resolved (`type ab<A,B> = { a: A, b: B };`)
   - [ ] Create representation
     - [x] Basic types
     - [x] Interfaces
       - [x] Nested
     - [x] Arrays / Lists
     - [ ] Enums
-    - [ ] Unions
+    - [x] Unions
     - [ ] Functions
     - [ ] Classes
+    - [ ] Intersection types
+    - [ ] Type Parameters
+      - [ ] Throw error if 2 type parameters have the same name
   - [x] Abstracted file loader to resolve import / exports (should work both on web / native)
   - [ ] Implement separate file loaders
   - [x] Resolve extension refs for the current type (finalize all fields)
   - [x] Flattened type tree
   - [x] Solve inline interfaces (e.g. in an array)
   - [ ] Mutators
-  - [ ] Generics
 - [ ] Generating
   - [x] Valid identifiers (Reserved keywords / uppercase variables)
   - [ ] Native (Generate types without bucklescript features)
@@ -117,6 +120,8 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Unions
     - [ ] Functions
     - [ ] Classes
+    - [ ] Intersection types
+    - [ ] Type Parameters
   - [ ] Bucklescript (Make use of bucklescript features, but do not use externals)
     - [x] Basic types
     - [x] Interfaces
@@ -126,6 +131,9 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Unions
     - [ ] Functions
     - [ ] Classes
+    - [ ] Namespaces
+    - [ ] Intersection types
+    - [ ] Type Parameters
   - [ ] Bucklescript Bindings (Full use of bucklescript features and sensible approach of providing externals)
     - [ ] Basic types
     - [ ] Interfaces
@@ -135,6 +143,8 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Functions
     - [ ] Classes
     - [ ] Exports as externals
+    - [ ] Intersection types
+    - [ ] Type Parameters
 - [ ] Plugin system
   - [ ] ReasonReact
 - [ ] Playground

@@ -14,7 +14,7 @@
   },
   "ppx-flags": [],
   "bsc-flags": ["-bs-super-errors"],
-  "bs-dependencies": ["reason-react", "re-debouncer"],
+  "bs-dependencies": ["reason-react", "bs-webworkers"],
   "refmt": 3,
   "suffix": ".bs.js",
   "generate-merlin": true,

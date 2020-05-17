@@ -1,4 +1,5 @@
 {
   "entryPoints": ["lib/js/src_js/Entry.bs.js"],
-  "preprocess": []
+  "outputDir": "docs/index",
+  "outputFilename": "index.js"
 }

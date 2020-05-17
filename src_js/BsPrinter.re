@@ -1,50 +1,31 @@
-module Reason = {
-  type a;
-  [@bs.module "reason"] external printML: a => string = "printML";
-  [@bs.module "reason"] external printRE: a => string = "printRE";
-  [@bs.module "reason"] external parseML: string => a = "parseML";
-};
+let worker = WebWorkers.create_webworker("../worker/worker.js");
 
-module Ansi = {
-  type t = {ansi_to_html: (. string) => string};
-  [@bs.new] [@bs.module "ansi_up"] external ansi_up: unit => t = "default";
-  let instance = ansi_up();
-};
+let set_printed: ref(option(Belt.Result.t(string, string) => unit)) =
+  ref(None);
+WebWorkers.onMessage(
+  worker,
+  (e: WebWorkers.MessageEvent.t) => {
+    let data = WebWorkers.MessageEvent.data(e);
 
-[@bs.val]
-[@bs.module "./../../../_build/default/src/js/re_typescript_js.bc.js"]
-external run: string => string = "run";
-let run =
-  Debouncer.makeCancelable(
-    ((value, re, setPrinted: Belt.Result.t(string, string) => unit)) =>
-    setPrinted(
-      try(
-        Ok(
-          (re ? Reason.printRE : Reason.printML)(
-            Reason.parseML(run(value)),
-          ),
-        )
-      ) {
-      | e =>
-        Error(
-          Ansi.instance.ansi_to_html(.
-            Js.Exn.asJsExn(e)
-            ->Belt.Option.flatMap(Js.Exn.message)
-            ->Belt.Option.getWithDefault("ERROR"),
-          ),
-        )
-      },
-    )
-  );
+    switch (set_printed^) {
+    | None => ()
+    | Some(set_printed) =>
+      set_printed(
+        data##status === "success" ? Ok(data##data) : Error(data##data),
+      )
+    };
+  },
+);
 
 let usePrintedValue = (~re=true, value: string) => {
   let (printed, setPrinted) = React.useReducer((_, v) => v, Ok(""));
+  set_printed := Some(setPrinted);
 
   React.useEffect2(
     () => {
-      run.schedule((value, re, setPrinted));
+      WebWorkers.postMessage(worker, {"value": value, "re": re});
 
-      Some(() => {run.cancel()});
+      None;
     },
     (re, value),
   );

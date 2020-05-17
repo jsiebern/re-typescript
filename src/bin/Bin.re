@@ -28,10 +28,14 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-// Variant
-/* Comment */
-type x = 1 | 'string' | false | 3 | undefined;
-type y = number | undefined;
+  type a = string;
+
+  type b<P> = {
+      field_1: number,
+      field_2: P
+  };
+
+  type c = b<a>;
 |};
 
 let () = {

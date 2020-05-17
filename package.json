@@ -6,8 +6,9 @@
   "scripts": {
     "bs:build": "bsb -make-world",
     "bs:clean": "bsb -clean-world",
-    "start": "parcel ./src_js/index.html",
-    "docs": "esy js-release; yarn bs:build; ./node_modules/.bin/fpack build --dev --mock constants:constants-browserify --mock fs --mock child_process --mock tty --preprocess='\\.css$:style-loader!css-loader'; mv bundle/index.js docs; rm -rf bundle"
+    "fpack": "./node_modules/.bin/fpack build --dev --mock constants:constants-browserify --mock fs --mock child_process --mock tty --preprocess='\\.css$:style-loader!css-loader'",
+    "fpack-worker": "./node_modules/.bin/fpack build -c fastpack-worker.json --dev --mock constants:constants-browserify --mock fs --mock child_process --mock tty --preprocess='\\.css$:style-loader!css-loader'",
+    "docs": "./docs.sh"
   },
   "devDependencies": {
     "bs-platform": "^7.3.2",
@@ -17,10 +18,11 @@
     "style-loader": "^1.2.1"
   },
   "dependencies": {
+    "@babel/runtime": "^7.9.6",
+    "@monaco-editor/react": "^3.3.0",
     "ansi_up": "^4.0.4",
-    "re-debouncer": "^2.1.0",
+    "bs-webworkers": "^0.2.4",
     "react": "^16.13.1",
-    "react-codemirror": "^1.0.0",
     "react-dom": "^16.13.1",
     "react-highlight.js": "^1.0.7",
     "reason": "^3.3.4",

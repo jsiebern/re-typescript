@@ -82,29 +82,18 @@ module Highlight = {
     "default";
 };
 
-module CodeMirror = {
-  [%bs.raw "require('codemirror/lib/codemirror.css')"];
-  [%bs.raw "require('codemirror/mode/javascript/javascript')"];
-  type ts_mode = {
-    name: string,
-    typescript: bool,
-  };
-  type options = {
-    lineNumbers: bool,
-    mode: ts_mode,
-    theme: string,
-  };
-  [@react.component] [@bs.module]
+module MonacoEditor = {
+  [@react.component] [@bs.module "@monaco-editor/react"]
   external make:
     (
+      ~height: string=?,
+      ~width: string=?,
+      ~language: [@bs.string] [ | `javascript | `typescript],
       ~value: string,
-      ~onChange: string => unit,
-      ~options: option(options)=?,
-      ~className: option(string)=?,
-      ~preserveScrollPosition: option(bool)=?
+      ~onChange: ('a, string) => unit
     ) =>
     React.element =
-    "react-codemirror";
+    "ControlledEditor";
 };
 
 module X = {
@@ -115,19 +104,12 @@ module X = {
     let result = BsPrinter.usePrintedValue(~re, v);
 
     <>
-      <CodeMirror
-        className="editor"
+      <MonacoEditor
+        height="100vh"
+        width="70vw"
         value=v
-        onChange=setV
-        preserveScrollPosition=true
-        options={
-          lineNumbers: true,
-          mode: {
-            name: "javascript",
-            typescript: true,
-          },
-          theme: "monokai",
-        }
+        onChange={(_, v) => setV(v)}
+        language=`typescript
       />
       {switch (result) {
        | Ok(printed) =>

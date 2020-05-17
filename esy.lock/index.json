@@ -60,7 +60,7 @@
       "devDependencies": [
         "refmterr@3.3.0@d41d8cd9", "ocaml@4.8.1000@d41d8cd9",
         "@reason-native/rely@3.2.1@d41d8cd9",
-        "@opam/redemon@github:ulrikstrid/redemon:redemon.opam#d408ff4e7fdca70c3e9fff94ed0cc634dba8c10b@d41d8cd9",
+        "@opam/redemon@github:ulrikstrid/redemon:redemon.opam#0c9a08cb116dab641cf0f89cc291dd6a2f4ec7cc@d41d8cd9",
         "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#df00f6d5a81b3a6921127103180f0f02139bac74@d41d8cd9",
         "@opam/js_of_ocaml-compiler@opam:3.6.0@f65d8969"
       ]
@@ -426,16 +426,16 @@
         "ocaml@4.8.1000@d41d8cd9", "@opam/dune@opam:2.5.1@a0c1e658"
       ]
     },
-    "@opam/redemon@github:ulrikstrid/redemon:redemon.opam#d408ff4e7fdca70c3e9fff94ed0cc634dba8c10b@d41d8cd9": {
+    "@opam/redemon@github:ulrikstrid/redemon:redemon.opam#0c9a08cb116dab641cf0f89cc291dd6a2f4ec7cc@d41d8cd9": {
       "id":
-        "@opam/redemon@github:ulrikstrid/redemon:redemon.opam#d408ff4e7fdca70c3e9fff94ed0cc634dba8c10b@d41d8cd9",
+        "@opam/redemon@github:ulrikstrid/redemon:redemon.opam#0c9a08cb116dab641cf0f89cc291dd6a2f4ec7cc@d41d8cd9",
       "name": "@opam/redemon",
       "version":
-        "github:ulrikstrid/redemon:redemon.opam#d408ff4e7fdca70c3e9fff94ed0cc634dba8c10b",
+        "github:ulrikstrid/redemon:redemon.opam#0c9a08cb116dab641cf0f89cc291dd6a2f4ec7cc",
       "source": {
         "type": "install",
         "source": [
-          "github:ulrikstrid/redemon:redemon.opam#d408ff4e7fdca70c3e9fff94ed0cc634dba8c10b"
+          "github:ulrikstrid/redemon:redemon.opam#0c9a08cb116dab641cf0f89cc291dd6a2f4ec7cc"
         ]
       },
       "overrides": [],

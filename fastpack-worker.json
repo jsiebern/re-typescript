@@ -1,0 +1,5 @@
+{
+  "entryPoints": ["lib/js/src_js/Worker.bs.js"],
+  "outputDir": "docs/worker",
+  "outputFilename": "worker.js"
+}
