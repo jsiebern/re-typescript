@@ -64,6 +64,12 @@ enum clean_enum { Red, Green, Blue };
 
 type null_string = string | null;
 type opt_string = string | undefined;
+
+type variant = 'red' | 'blue' | undefined;
+interface inline_variant {
+  field: 'red' | 'blue',
+}
+type inline_variant_in_arr = Array<inline_variant['field']>;
 |};
 
 module Highlight = {

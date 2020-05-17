@@ -1,0 +1,2 @@
+string only unions › can be generated inside optional
+type variant = [ `Blue  | `Red ] option

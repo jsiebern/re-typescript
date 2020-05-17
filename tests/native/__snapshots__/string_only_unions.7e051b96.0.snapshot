@@ -1,0 +1,2 @@
+string only unions › recognizes single string as union
+type variant = [ `Single ]

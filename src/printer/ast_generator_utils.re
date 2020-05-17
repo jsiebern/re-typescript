@@ -44,6 +44,17 @@ let generate_variant_kind = (names: list(string)) => {
   );
 };
 
+let generate_poly_variant = (names: list(string)) => {
+  Typ.variant(
+    names
+    |> Tablecloth.List.map(~f=name =>
+         Rtag(Location.mknoloc(name), [], false, [])
+       ),
+    Closed,
+    None,
+  );
+};
+
 let generate_any = () => [
   {
     pstr_loc: Ast_helper.default_loc.contents,

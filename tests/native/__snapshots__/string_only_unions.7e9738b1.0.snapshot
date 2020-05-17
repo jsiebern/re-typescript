@@ -1,0 +1,2 @@
+string only unions › can generate simple string unions
+type variant = [ `Str1  | `Str1  | `X__STR ]

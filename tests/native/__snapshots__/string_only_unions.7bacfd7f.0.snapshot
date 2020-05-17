@@ -1,0 +1,4 @@
+string only unions › can be generated inline
+type obj = {
+  field: [ `Red  | `Blue ] }
+and in_arr = [ `Red  | `Blue ] array

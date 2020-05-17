@@ -45,6 +45,10 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [x] Tuple
   - [ ] Named tuple (derives from Array<T>)
   - [ ] Union
+    - [x] Simple Nullable / Optional
+    - [x] String unions
+    - [ ] Int unions
+    - [ ] Mixed unions
   - [ ] Enum
     - [x] Keys
     - [ ] Default values
@@ -143,8 +147,9 @@ I will update the playground from time to time. It's not great yet, I just wante
 - [ ] Config / Misc
   - [ ] Think of a way to inject overrides (e.g. a Hashmap of type name regexes and a replacement)
   - [x] Provide better error messages on syntax error
-  - [ ] `array_mode` (Array / List)
+  - [x] `array_mode` (Array / List)
   - [x] `number_mode` (Int / Float / Unboxed)
+  - [ ] Hoist inline variants when generating parsers / serializers (for ease of use together with [@bs.deriving])
   - [ ] Option to throw error if a type can't be resolved while decoding
   - [ ] PPX (far future)
     - ```reason

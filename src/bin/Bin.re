@@ -28,7 +28,7 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-type x = string | null;
+type x = 's1' | 's2' | "s3";
 type y = number | undefined;
 |};
 

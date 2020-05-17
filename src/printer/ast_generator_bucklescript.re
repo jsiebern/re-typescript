@@ -11,8 +11,9 @@ let bs_as_attribute: string => attribute =
     Location.mknoloc("bs.as"),
     PStr([Str.eval(Ast_convenience_406.str(name))]),
   );
-let generate_nullable_of = wrap_type =>
+let generate_nullable_of = wrap_type => {
   generate_base_type(~inner=[wrap_type], "Js.Nullable.t");
+};
 
 exception BS_Decode_Error(string, string);
 
@@ -100,6 +101,10 @@ let rec generate_type_def = (~ctx: config, type_def) =>
   | VariantEnum(keys) => (
       generate_variant_kind(keys |> Tablecloth.List.map(~f=fst)),
       None,
+    )
+  | VariantString(keys) => (
+      Ptype_abstract,
+      Some(generate_poly_variant(keys |> Tablecloth.List.map(~f=fst))),
     )
   | Tuple(types) => (
       Ptype_abstract,
