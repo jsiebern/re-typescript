@@ -123,13 +123,37 @@ and decode_union = (~parent_name, members) => {
       switch (decode_union_string(members)) {
       | Some(t) => t
       | None =>
-        Console.error(members);
-        raise(Decode_Error("Complex unions are not yet implemented"));
+        switch (decode_union_int(members)) {
+        | Some(t) => t
+        | None =>
+          Console.error(members);
+          raise(Decode_Error("Complex unions are not yet implemented"));
+        }
       }
     }
   };
 }
-and decode_union_string = members => {
+and decode_union_int = (members: list(Ts.union_member)) => {
+  exception No_union_number;
+  try(
+    Some(
+      VariantInt(
+        members
+        |> Tablecloth.List.map(
+             ~f=
+               fun
+               | `U_Number(n) => n
+               | _ => raise(No_union_number),
+           )
+        |> Tablecloth.List.map(~f=to_int_variant_constructor),
+      ),
+    )
+  ) {
+  | No_union_number => None
+  | e => raise(e)
+  };
+}
+and decode_union_string = (members: list(Ts.union_member)) => {
   exception No_union_string;
   try(
     Some(
@@ -149,7 +173,7 @@ and decode_union_string = members => {
   | e => raise(e)
   };
 }
-and decode_union_nullable = (~parent_name, members) => {
+and decode_union_nullable = (~parent_name, members: list(Ts.union_member)) => {
   let extract_null =
     members
     |> Tablecloth.List.fold_left(
@@ -169,7 +193,7 @@ and decode_union_nullable = (~parent_name, members) => {
   | (false, _) => None
   };
 }
-and decode_union_undefined = (~parent_name, members) => {
+and decode_union_undefined = (~parent_name, members: list(Ts.union_member)) => {
   let extract_undefined =
     members
     |> Tablecloth.List.fold_left(

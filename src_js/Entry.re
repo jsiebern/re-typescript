@@ -70,6 +70,8 @@ interface inline_variant {
   field: 'red' | 'blue',
 }
 type inline_variant_in_arr = Array<inline_variant['field']>;
+
+type variant_num = 2 | 4 | 8 | 16;
 |};
 
 module Highlight = {

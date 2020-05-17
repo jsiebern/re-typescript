@@ -1,0 +1,2 @@
+number only unions › generates simple int union
+type variant = [ `_2  | `_4  | `_8  | `_16 ]

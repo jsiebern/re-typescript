@@ -106,6 +106,10 @@ let rec generate_type_def = (~ctx: config, type_def) =>
       Ptype_abstract,
       Some(generate_poly_variant(keys |> Tablecloth.List.map(~f=fst))),
     )
+  | VariantInt(keys) => (
+      Ptype_abstract,
+      Some(generate_poly_variant(keys |> Tablecloth.List.map(~f=fst))),
+    )
   | Tuple(types) => (
       Ptype_abstract,
       Some(

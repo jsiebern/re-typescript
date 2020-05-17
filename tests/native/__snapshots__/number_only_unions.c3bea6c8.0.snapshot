@@ -1,0 +1,2 @@
+number only unions › generates int union from single value
+type variant = [ `_32 ]

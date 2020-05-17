@@ -1,0 +1,2 @@
+number only unions › converts floats into ints for now
+type variant = [ `_2  | `_3  | `_4 ]

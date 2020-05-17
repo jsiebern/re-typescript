@@ -86,3 +86,23 @@ describe("string only unions", ({test, _}) => {
       toMatchSnapshot()
   });
 });
+
+describe("number only unions", ({test, _}) => {
+  test("generates simple int union", ({expect, _}) => {
+    expect.string(print({|
+      type variant = 2 | 4 | 8 | 16;
+    |})).
+      toMatchSnapshot()
+  });
+
+  test("generates int union from single value", ({expect, _}) => {
+    expect.string(print({|type variant = 32;|})).toMatchSnapshot()
+  });
+
+  test("converts floats into ints for now", ({expect, _}) => {
+    expect.string(print({|
+      type variant = 2.4 | 3.2 | 4;
+    |})).
+      toMatchSnapshot()
+  });
+});

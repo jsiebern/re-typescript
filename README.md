@@ -47,7 +47,7 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [ ] Union
     - [x] Simple Nullable / Optional
     - [x] String unions
-    - [ ] Int unions
+    - [x] Int unions
     - [ ] Mixed unions
   - [ ] Enum
     - [x] Keys

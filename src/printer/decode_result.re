@@ -8,7 +8,7 @@ type type_def =
   | Union(list(type_def))
   | VariantEnum(list((string, string)))
   | VariantString(list((string, string)))
-  | VariantInt(list((int, option(int))))
+  | VariantInt(list((string, int)))
   | VariantMixed(list((string, option(value_type))))
   | Array(type_def)
   | Tuple(list(type_def))

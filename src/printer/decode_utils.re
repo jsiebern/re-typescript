@@ -127,3 +127,5 @@ let to_valid_variant_constructor = ident => (
   ident |> Tablecloth.String.capitalize |> string_replace("$", "_"),
   ident,
 );
+
+let to_int_variant_constructor = (i: int) => (Printf.sprintf("_%#u", i), i);
