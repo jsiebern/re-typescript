@@ -1,2 +1,5 @@
 number only unions › generates int union from single value
-type variant = [ `_32 ]
+module Variant : sig type t = private int val _32 : t[@@bs.inline 32] end =
+  struct type t = int
+         let _32 = 32[@@bs.inline ] end 
+type variant = Variant.t

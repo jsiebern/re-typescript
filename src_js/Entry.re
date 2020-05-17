@@ -72,6 +72,8 @@ interface inline_variant {
 type inline_variant_in_arr = Array<inline_variant['field']>;
 
 type variant_num = 2 | 4 | 8 | 16;
+
+type x = 1 | 'string' | undefined | false | 3;
 |};
 
 module Highlight = {

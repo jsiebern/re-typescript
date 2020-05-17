@@ -1,2 +1,15 @@
 number only unions › converts floats into ints for now
-type variant = [ `_2  | `_3  | `_4 ]
+module Variant :
+  sig
+    type t = private int
+    val _2 : t[@@bs.inline 2]
+    val _3 : t[@@bs.inline 3]
+    val _4 : t[@@bs.inline 4]
+  end =
+  struct
+    type t = int
+    let _2 = 2[@@bs.inline ]
+    let _3 = 3[@@bs.inline ]
+    let _4 = 4[@@bs.inline ]
+  end 
+type variant = Variant.t

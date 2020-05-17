@@ -104,8 +104,6 @@ type_:
   (* Base types *)
   | PRIM_STRING;       { `String }
   | PRIM_NUMBER;       { `Number }
-  | FALSE
-  | TRUE
   | PRIM_BOOLEAN;      { `Boolean }
   | PRIM_NULL;         { `Null }
   | PRIM_UNDEFINED;    { `Undefined }
@@ -128,12 +126,10 @@ let union :=
   | u_values = separated_nonempty_list(PIPE, union_value); { `Union(u_values) }
 
 let union_value :=
+  | b = boolean_literal; { `U_Bool(b) }
   | s = STRING; { let (s,_,_) = s in `U_String(s) }
   | n = NUMBER; { `U_Number(fst(n) |> int_of_float) }
-  | TRUE; { `U_Bool(true) }
-  | FALSE; { `U_Bool(false) }
   | t = type_; { `U_Type(t) }
-  
 
 (*
   Imports
@@ -171,3 +167,7 @@ let obj_separator :=
 
 let field_access :=
   | LBRACKET; s = STRING; RBRACKET; { let (s,_,_) = s in s }
+
+let boolean_literal :=
+  | TRUE; { true }  
+  | FALSE; { false }

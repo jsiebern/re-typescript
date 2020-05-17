@@ -4,6 +4,8 @@ open Parsetree;
 open Ast_helper;
 open Ast_generator_utils;
 open Ast_convenience_406;
+open Decode_result;
+open Utils;
 
 let number_unboxed = [%str
   module Number: {
@@ -103,5 +105,51 @@ let generate_bs_inline_int = (~module_name, members: list((string, int))) => {
     ~t=generate_base_type("int"),
     members,
     int,
+  );
+};
+
+let generate_bs_unboxed =
+    (~module_name, members: list(Decode_result.value_type)) => {
+  let members =
+    members
+    |> CCList.map(
+         fun
+         | U_String(s) => (s |> to_valid_ident |> fst, str(s))
+         | U_Number(n) => (n |> to_int_variant_constructor |> fst, int(n))
+         | U_Bool(b) => (
+             b ? "true" : "false" |> to_valid_ident |> fst,
+             constr(b ? "true" : "false", []),
+           ),
+       );
+  let str_members =
+    members
+    |> CCList.map(((name, value)) => {
+         [%stri let [%p Pat.var(Location.mknoloc(name))] = Any([%e value])]
+       });
+  let stri_members =
+    members
+    |> CCList.map(((name, _)) => {
+         Sig.value(Val.mk(Location.mknoloc(name), [%type: t]))
+       });
+
+  Str.module_(
+    Mb.mk(
+      Location.mknoloc(module_name),
+      Mod.constraint_(
+        Mod.mk(
+          Pmod_structure(
+            CCList.concat([
+              [%str
+                [@unboxed]
+                type t =
+                  | Any('a): t
+              ],
+              str_members,
+            ]),
+          ),
+        ),
+        Mty.signature(CCList.concat([[%sig: type t], stri_members])),
+      ),
+    ),
   );
 };

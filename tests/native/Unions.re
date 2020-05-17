@@ -106,3 +106,30 @@ describe("number only unions", ({test, _}) => {
       toMatchSnapshot()
   });
 });
+
+describe("mixed unions", ({test, _}) => {
+  test("generates unboxed type", ({expect, _}) => {
+    expect.string(print({|
+      type x = 1 | 'string';
+    |})).
+      toMatchSnapshot()
+  });
+
+  test("works with all primitives", ({expect, _}) => {
+    expect.string(print({|
+      type x = 1 | 'string' | false | 3;
+    |})).
+      toMatchSnapshot()
+  });
+
+  test(
+    "can be made optional no matter the position of the undefined",
+    ({expect, _}) => {
+    expect.string(
+      print({|
+      type x = 1 | 'string' | undefined | false | 3;
+    |}),
+    ).
+      toMatchSnapshot()
+  });
+});

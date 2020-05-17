@@ -1,0 +1,12 @@
+mixed unions › can be made optional no matter the position of the undefined
+module X : sig type t val _3 : t val false_ : t val string : t val _1 : t end
+  =
+  struct
+    type t =
+      | Any: 'a -> t [@@unboxed ]
+    let _3 = ((Any (3))[@explicit_arity ])
+    let false_ = ((Any (false))[@explicit_arity ])
+    let string = ((Any (\"string\"))[@explicit_arity ])
+    let _1 = ((Any (1))[@explicit_arity ])
+  end 
+type x = X.t option

@@ -130,7 +130,19 @@ module Make = (Config: Config) : Ast_generator.T => {
           Some(generate_base_type(Printf.sprintf("%s.t", module_name))),
         );
       }
-
+    | VariantMixed(values) =>
+      switch (config.mixed_variant_mode) {
+      | `BsUnboxed =>
+        let module_name = to_valid_module_name(parent_name) |> fst;
+        gen_config.inject = [
+          generate_bs_unboxed(~module_name, values),
+          ...gen_config.inject,
+        ];
+        (
+          Ptype_abstract,
+          Some(generate_base_type(Printf.sprintf("%s.t", module_name))),
+        );
+      }
     | VariantInt(keys) =>
       let keys = pat =>
         keys

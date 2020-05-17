@@ -123,11 +123,35 @@ and decode_union = (~parent_name, members) => {
         switch (decode_union_int(members)) {
         | Some(t) => t
         | None =>
-          Console.error(members);
-          raise(Decode_Error("Complex unions are not yet implemented"));
+          switch (decode_union_mixed(members)) {
+          | Some(t) => t
+          | None =>
+            Console.error(members);
+            raise(Decode_Error("Complex unions are not yet implemented"));
+          }
         }
       }
     }
+  };
+}
+and decode_union_mixed = (members: list(Ts.union_member)) => {
+  exception No_union_mixed;
+  try(
+    Some(
+      VariantMixed(
+        members
+        |> CCList.map(
+             fun
+             | `U_String(n) => U_String(n)
+             | `U_Number(n) => U_Number(n)
+             | `U_Bool(n) => U_Bool(n)
+             | _ => raise(No_union_mixed),
+           ),
+      ),
+    )
+  ) {
+  | No_union_mixed => None
+  | e => raise(e)
   };
 }
 and decode_union_int = (members: list(Ts.union_member)) => {

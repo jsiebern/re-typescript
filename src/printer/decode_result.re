@@ -21,5 +21,6 @@ and base_type =
   | Any
   | Ref((string, string))
 and value_type =
-  | V_String(string)
-  | V_Int(int);
+  | U_String(string)
+  | U_Number(int)
+  | U_Bool(bool);
