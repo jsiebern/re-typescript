@@ -28,7 +28,7 @@ let print = (~re=true, v) => {
     (re ? Reason.printRE : Reason.printML)(
       Reason.parseML(
         Re_typescript_printer.print_from_ts(
-          ~ctx=Decode_config.defaultConfig,
+          ~ctx=Decode_config.default_config,
           Parser.main(Lexer.read, lexbuf),
         ),
       ),
