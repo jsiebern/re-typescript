@@ -61,6 +61,9 @@ type tpl = [string, number, boolean];
 type tpl_inline = [string, { field: number }, boolean];
 
 enum clean_enum { Red, Green, Blue };
+
+type null_string = string | null;
+type opt_string = string | undefined;
 |};
 
 module Highlight = {

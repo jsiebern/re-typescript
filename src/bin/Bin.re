@@ -28,7 +28,8 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-enum SomeEnum { Red, Green, Blue }
+type x = string | null;
+type y = number | undefined;
 |};
 
 let () = {

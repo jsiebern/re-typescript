@@ -39,6 +39,7 @@
   DOT
   AMPERSAND
   STAR
+  PIPE
 
 (* Syntax *)
 %token <Parse_info.t>
@@ -62,7 +63,7 @@ let main :=
   | imports = import*; types = type_def*; EOF; { { types; imports } }
 
 type_def:
-  | export = opt_as_bool(EXPORT); TYPE; name = IDENT; EQUALS; t = type_; SEMICOLON?; { (`TypeDef(fst(name), t), export) }
+  | export = opt_as_bool(EXPORT); TYPE; name = IDENT; EQUALS; t = type_or_union; SEMICOLON?; { (`TypeDef(fst(name), t), export) }
   | export = opt_as_bool(EXPORT); INTERFACE; name = IDENT; extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON?; { (`InterfaceDef(fst(name), extends, obj), export) }
   | export = opt_as_bool(EXPORT); is_const = opt_as_bool(CONST); ENUM; name = IDENT; LCURLY; members = separated_nonempty_list(COMMA, enum_member); RCURLY; SEMICOLON?; { (`EnumDef(fst(name), members, is_const), export) }
 
@@ -83,11 +84,15 @@ let ref_ :=
 
 let ref_part :=
   | name = IDENT; { (fst(name), []) }
-  | name = IDENT; LT; t = separated_or_terminated_list(COMMA, type_); GT; { (fst(name), t) }
+  | name = IDENT; LT; t = separated_or_terminated_list(COMMA, type_or_union); GT; { (fst(name), t) }
 
 obj_field:
-  | ro = opt_as_bool(READONLY); key = STRING; optional = opt_as_bool(QMARK); COLON; t = type_    { let (key,_,_) = key in {Ts.key; type_ = t; optional; readonly = ro } }
-  | ro = opt_as_bool(READONLY); key = IDENT; optional = opt_as_bool(QMARK); COLON; t = type_     { let (key,_) = key in {Ts.key; type_ = t; optional; readonly = ro } } ;
+  | ro = opt_as_bool(READONLY); key = STRING; optional = opt_as_bool(QMARK); COLON; t = type_or_union    { let (key,_,_) = key in {Ts.key; type_ = t; optional; readonly = ro } }
+  | ro = opt_as_bool(READONLY); key = IDENT; optional = opt_as_bool(QMARK); COLON; t = type_or_union     { let (key,_) = key in {Ts.key; type_ = t; optional; readonly = ro } } ;
+
+let type_or_union :=
+  | u = union; { u }
+  | t = type_; { t }
 
 type_:
   (* Base types *)
@@ -101,17 +106,26 @@ type_:
   | PRIM_VOID;         { `Void }
   | PRIM_ANY;          { `Any }
   (* Tuple *)
-  | LBRACKET; types = separated_nonempty_list(COMMA, type_); RBRACKET; { `Tuple(types) }
+  | LBRACKET; types = separated_nonempty_list(COMMA, type_or_union); RBRACKET; { `Tuple(types) }
   (* Inline obj *)
   | LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; { `Obj(obj) }
   (* Arrays *)
-  | ARRAY; LT; t = type_; GT;       { `Array(t) }
-  | t = type_; LBRACKET; RBRACKET;  { `Array(t) }
+  | ARRAY; LT; t = type_or_union; GT;               { `Array(t) }
+  | t = type_; LBRACKET; RBRACKET;                  { `Array(t) }
+  | LPAREN; t = union; RPAREN; LBRACKET; RBRACKET;  { `Array(t) }
   (* Type extraction *)
   | r = ref_; fa = nonempty_list(field_access); { `TypeExtract(r, fa) }
   (* Reference *)
   | r = ref_; { `Ref(r) }
+  
+let union :=
+  | u_values = separated_nonempty_list(PIPE, union_value); { `Union(u_values) }
 
+let union_value :=
+  | s = STRING; { let (s,_,_) = s in `U_String(s) }
+  | n = NUMBER; { `U_Number(fst(n) |> int_of_float) }
+  | t = type_; { `U_Type(t) }
+  
 
 (*
   Imports

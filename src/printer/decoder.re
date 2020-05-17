@@ -106,13 +106,65 @@ and decode_type: (~parent_name: (string, string), Ts.type_) => type_def =
     | `Array(type_) => decode_array(~parent_name, type_)
     | `Tuple(types) => decode_tuple(~parent_name, types)
     | `Ref(ref_) => Base(Ref(ref_ |> decode_ref_type_name))
-    | `Union(_) => raise(Decode_Error("Not yet implemented"))
+    | `Union(members) => decode_union(~parent_name, members)
     | `Undefined =>
       raise(Decode_Error("Undefined cannot exist outside of a union"))
     | `Null => raise(Decode_Error("Null cannot exist outside of a union"))
     | `Obj(_) =>
       raise(Decode_Error("Obj should never be reached in this switch"))
     | `TypeExtract(ref_, names) => decode_type_extract(ref_, names)
+and decode_union = (~parent_name, members) => {
+  switch (decode_union_nullable(~parent_name, members)) {
+  | Some(t) => t
+  | None =>
+    switch (decode_union_undefined(~parent_name, members)) {
+    | Some(t) => t
+    | None =>
+      Console.error(members);
+      raise(Decode_Error("Complex unions are not yet implemented"));
+    }
+  };
+}
+and decode_union_nullable = (~parent_name, members) => {
+  let extract_null =
+    members
+    |> Tablecloth.List.fold_left(
+         ~f=
+           (member, (has_null, p)) => {
+             switch (member) {
+             | `U_Type(`Null) => (true, p)
+             | member => (has_null, [member, ...p])
+             }
+           },
+         ~initial=(false, []),
+       );
+  switch (extract_null) {
+  | (true, [`U_Type(type_)]) =>
+    Some(Nullable(decode_type(~parent_name, type_)))
+  | (false, _) => None
+  | _ => raise(Decode_Error("Complex unions are not yet implemented"))
+  };
+}
+and decode_union_undefined = (~parent_name, members) => {
+  let extract_null =
+    members
+    |> Tablecloth.List.fold_left(
+         ~f=
+           (member, (has_undefined, p)) => {
+             switch (member) {
+             | `U_Type(`Undefined) => (true, p)
+             | member => (has_undefined, [member, ...p])
+             }
+           },
+         ~initial=(false, []),
+       );
+  switch (extract_null) {
+  | (true, [`U_Type(type_)]) =>
+    Some(Optional(decode_type(~parent_name, type_)))
+  | (false, _) => None
+  | _ => raise(Decode_Error("Complex unions are not yet implemented"))
+  };
+}
 and decode_array = (~parent_name, type_) => {
   Array(
     switch (type_) {

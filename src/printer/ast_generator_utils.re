@@ -27,6 +27,10 @@ let generate_list_of = wrap_type => {
   generate_base_type(~inner=[wrap_type], "list");
 };
 
+let generate_option_of = wrap_type => {
+  generate_base_type(~inner=[wrap_type], "option");
+};
+
 let generate_tuple_of = types => {
   Typ.tuple(types);
 };

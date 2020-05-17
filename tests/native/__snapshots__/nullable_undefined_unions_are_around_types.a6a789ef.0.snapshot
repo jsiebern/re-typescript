@@ -1,0 +1,2 @@
+nullable / undefined unions are around types › nullable for single base types
+type null_string = string Js.Nullable.t

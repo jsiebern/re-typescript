@@ -98,10 +98,12 @@ rule read =
       read lexbuf
     }
 
+  (* Operators *)
   | '*'                     { STAR (tokinfo lexbuf); }
   | '='                     { EQUALS (tokinfo lexbuf); }
   | '?'                     { QMARK (tokinfo lexbuf); }
   | '&'                     { AMPERSAND (tokinfo lexbuf); }
+  | '|'                     { PIPE (tokinfo lexbuf); }
 
   (* Syntax *)
   | '{'                     { LCURLY (tokinfo lexbuf); }

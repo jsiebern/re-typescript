@@ -46,7 +46,7 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [ ] Named tuple (derives from Array<T>)
   - [ ] Union
   - [ ] Enum
-    - [ ] Keys
+    - [x] Keys
     - [ ] Default values
     - [ ] Computed values
     - [ ] Const enums

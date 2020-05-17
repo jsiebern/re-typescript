@@ -1,0 +1,4 @@
+nullable / undefined unions are around types › nullable/undefined for single base types on record fields
+type obj = {
+  opt_string: string option ;
+  null_string: string Js.Nullable.t }

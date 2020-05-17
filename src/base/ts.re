@@ -15,13 +15,14 @@ and type_ = [
   | `Undefined
   | `Void
   | `Any
-  | `Union(list(type_))
+  | `Union(list(union_member))
   | `Array(type_)
   | `Tuple(list(type_))
   | `Obj(list(obj_field))
   | `Ref(ref_)
   | `TypeExtract(ref_, list(string))
 ]
+and union_member = [ | `U_String(string) | `U_Number(int) | `U_Type(type_)]
 and prim_value = [ | `V_String(string) | `V_Number(int)]
 and enum_field = {
   key: string,

@@ -1,0 +1,5 @@
+nullable / undefined unions are around types › nullable/undefined for single base types in arrays
+type opt_in_arr = string option array
+and null_in_arr = bool Js.Nullable.t array
+and arr_null = string array Js.Nullable.t
+and arr_opt = bool array option
