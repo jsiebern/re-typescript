@@ -131,14 +131,47 @@ module Make = (Config: Config) : Ast_generator.T => {
         );
       }
 
-    | VariantInt(keys) => (
-        Ptype_abstract,
-        Some(
-          generate_poly_variant(
-            keys |> CCList.map(to_int_variant_constructor) |> CCList.map(fst),
-          ),
-        ),
-      )
+    | VariantInt(keys) =>
+      let keys = pat =>
+        keys
+        |> CCList.map(v =>
+             switch (pat) {
+             | None =>
+               switch (config.number_variant_mode) {
+               | `BsInline(_) => (
+                   to_valid_ident(v |> string_of_int) |> fst,
+                   v,
+                 )
+               | `Variant(_)
+               | `PolyVariant(_) => to_int_variant_constructor(v)
+               }
+             | Some(pat) => (
+                 Printf.sprintf("%s%d%s", pat.prefix, v, pat.suffix),
+                 v,
+               )
+             }
+           );
+      switch (config.number_variant_mode) {
+      | `PolyVariant(pat) => (
+          Ptype_abstract,
+          Some(generate_poly_variant(keys(pat) |> CCList.map(fst))),
+        )
+      | `Variant(pat) => (
+          generate_variant_kind(keys(pat) |> CCList.map(fst)),
+          None,
+        )
+      | `BsInline(pat) =>
+        let module_name = to_valid_module_name(parent_name) |> fst;
+        gen_config.inject = [
+          generate_bs_inline_int(~module_name, keys(pat)),
+          ...gen_config.inject,
+        ];
+        (
+          Ptype_abstract,
+          Some(generate_base_type(Printf.sprintf("%s.t", module_name))),
+        );
+      };
+
     | Tuple(types) => (
         Ptype_abstract,
         Some(

@@ -30,7 +30,7 @@ export declare type Subset<T, U> = {
 let content = {|
 // Variant
 /* Comment */
-type x = 's1' | 's2' | "s3";
+type x = 1 | 2 | 3;
 type y = number | undefined;
 |};
 

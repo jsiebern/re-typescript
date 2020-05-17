@@ -122,8 +122,8 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Interfaces
       - [x] `@bs.as` attribute
     - [x] Arrays / Lists
-    - [ ] Enums
-    - [ ] Unions
+    - [x] Enums
+    - [x] Unions
     - [ ] Functions
     - [ ] Classes
   - [ ] Bucklescript Bindings (Full use of bucklescript features and sensible approach of providing externals)

@@ -48,19 +48,20 @@ let generate_any = () => [%str
     | Any('a): any
 ];
 
-let generate_bs_inline_str = (~module_name, members: list((string, string))) => {
+let generate_bs_inline_simple =
+    (~module_name, ~t, members: list((string, 'a)), conv: 'a => expression) => {
   let make_str = ((name, value)) => {
     let name_p = Pat.var(Location.mknoloc(name));
     [%stri
       [@bs.inline]
-      let [%p name_p] = [%e str(value)]
+      let [%p name_p] = [%e conv(value)]
     ];
   };
   let make_stri = ((name, value)) => {
     Sig.value(
       Val.mk(
         ~attrs=[
-          (Location.mknoloc("bs.inline"), PStr([Str.eval(str(value))])),
+          (Location.mknoloc("bs.inline"), PStr([Str.eval(conv(value))])),
         ],
         Location.mknoloc(name),
         [%type: t],
@@ -76,13 +77,31 @@ let generate_bs_inline_str = (~module_name, members: list((string, string))) => 
       Mod.constraint_(
         Mod.mk(
           Pmod_structure(
-            CCList.concat([[%str type t = string], str_members]),
+            CCList.concat([[%str type t = [%t t]], str_members]),
           ),
         ),
         Mty.signature(
-          CCList.concat([[%sig: type t = pri string], stri_members]),
+          CCList.concat([[%sig: type t = pri [%t t]], stri_members]),
         ),
       ),
     ),
+  );
+};
+
+let generate_bs_inline_str = (~module_name, members: list((string, string))) => {
+  generate_bs_inline_simple(
+    ~module_name,
+    ~t=generate_base_type("string"),
+    members,
+    str,
+  );
+};
+
+let generate_bs_inline_int = (~module_name, members: list((string, int))) => {
+  generate_bs_inline_simple(
+    ~module_name,
+    ~t=generate_base_type("int"),
+    members,
+    int,
   );
 };

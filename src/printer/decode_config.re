@@ -11,7 +11,7 @@ and number_variant_mode = [
   | `PolyVariant(option(number_variant_mode_name))
   | `BsInline(option(number_variant_mode_name))
 ]
-and mixed_variant_mode = [ | `BsUnboxed | `BsInline]
+and mixed_variant_mode = [ | `BsUnboxed]
 and number_variant_mode_name = {
   prefix: string,
   suffix: string,
