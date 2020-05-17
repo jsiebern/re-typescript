@@ -8,6 +8,7 @@
     "test": "esy x RunTests.exe",
     "test-u": "esy x RunTests.exe -u",
     "js": "esy dune build ./src/js/re_typescript_js.bc.js",
+    "js-release": "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
     "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },
   "dependencies": {

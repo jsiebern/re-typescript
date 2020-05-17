@@ -5,46 +5,49 @@ module Reason = {
   [@bs.module "reason"] external parseML: string => a = "parseML";
 };
 
-exception ParseError(string);
-
-module Re_typescript_printer = {
-  open Migrate_parsetree;
-  open Decode_config;
-  open Decode_utils;
-  open Decoder;
-
-  let print_from_ts = (~ctx: config, input: Re_typescript_base.Ts.toplevel) => {
-    module Generator = (val get_decoder(ctx.output_type): Ast_generator.T);
-    let ast = Generator.generate(~ctx, decode(~ctx, input));
-
-    Pprintast.string_of_structure(ast->Obj.magic);
-  };
+module Ansi = {
+  type t = {ansi_to_html: (. string) => string};
+  [@bs.new] [@bs.module "ansi_up"] external ansi_up: unit => t = "default";
+  let instance = ansi_up();
 };
 
-let print = (~re=true, v) => {
-  let v = v |> CCString.trim;
-  let lexbuf = Lexing.from_string(v);
-  try(
-    (re ? Reason.printRE : Reason.printML)(
-      Reason.parseML(
-        Re_typescript_printer.print_from_ts(
-          ~ctx=Decode_config.default_config,
-          Parser.main(Lexer.read, lexbuf),
-        ),
-      ),
+[@bs.val]
+[@bs.module "./../../../_build/default/src/js/re_typescript_js.bc.js"]
+external run: string => string = "run";
+let run =
+  Debouncer.makeCancelable(
+    ((value, re, setPrinted: Belt.Result.t(string, string) => unit)) =>
+    setPrinted(
+      try(
+        Ok(
+          (re ? Reason.printRE : Reason.printML)(
+            Reason.parseML(run(value)),
+          ),
+        )
+      ) {
+      | e =>
+        Error(
+          Ansi.instance.ansi_to_html(.
+            Js.Exn.asJsExn(e)
+            ->Belt.Option.flatMap(Js.Exn.message)
+            ->Belt.Option.getWithDefault("ERROR"),
+          ),
+        )
+      },
     )
-  ) {
-  | Lexer.SyntaxError(msg) => Printf.sprintf("%s%!", msg)
-  | Parser.Error =>
-    raise(
-      ParseError(
-        ReactDOMServerRe.renderToString(
-          Error.parser_error(~content=v, ~lexbuf),
-        ),
-      ),
-    )
-  | e =>
-    Js.log(e);
-    raise(e);
-  };
+  );
+
+let usePrintedValue = (~re=true, value: string) => {
+  let (printed, setPrinted) = React.useReducer((_, v) => v, Ok(""));
+
+  React.useEffect2(
+    () => {
+      run.schedule((value, re, setPrinted));
+
+      Some(() => {run.cancel()});
+    },
+    (re, value),
+  );
+
+  printed;
 };

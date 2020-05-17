@@ -14,11 +14,11 @@
   },
   "ppx-flags": [],
   "bsc-flags": ["-bs-super-errors"],
-  "bs-dependencies": ["reason-react"],
+  "bs-dependencies": ["reason-react", "re-debouncer"],
   "refmt": 3,
   "suffix": ".bs.js",
   "generate-merlin": true,
   "warnings": {
-    "number": "-33-44-45-106-30"
+    "number": ""
   }
 }

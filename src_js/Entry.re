@@ -110,6 +110,7 @@ module X = {
   let make = () => {
     let (v, setV) = React.useReducer((_, v) => v, content);
     let (re, setRe) = React.useReducer((_, v) => v, true);
+    let result = BsPrinter.usePrintedValue(~re, v);
 
     <>
       <CodeMirror
@@ -126,19 +127,19 @@ module X = {
           theme: "monokai",
         }
       />
-      {try(
+      {switch (result) {
+       | Ok(printed) =>
          <div className="display">
            <button className="switch-button" onClick={_ => setRe(!re)}>
              (re ? "ReasonML" : "ocaml")->React.string
            </button>
            <pre>
              <Highlight language={re ? "reasonml" : "ocaml"}>
-               {BsPrinter.print(~re, v)}
+               printed
              </Highlight>
            </pre>
          </div>
-       ) {
-       | BsPrinter.ParseError(e) =>
+       | Error(e) =>
          <div
            className="error"
            style={ReactDOMRe.Style.make(~padding="15px", ())}
