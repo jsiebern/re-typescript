@@ -1,4 +1,26 @@
 string only unions › can be generated inline
+module In_arr :
+  sig
+    type t = private string
+    val red : t[@@bs.inline \"red\"]
+    val blue : t[@@bs.inline \"blue\"]
+  end =
+  struct
+    type t = string
+    let red = \"red\"[@@bs.inline ]
+    let blue = \"blue\"[@@bs.inline ]
+  end 
+module Obj :
+  sig
+    type t = private string
+    val red : t[@@bs.inline \"red\"]
+    val blue : t[@@bs.inline \"blue\"]
+  end =
+  struct
+    type t = string
+    let red = \"red\"[@@bs.inline ]
+    let blue = \"blue\"[@@bs.inline ]
+  end 
 type obj = {
-  field: [ `Red  | `Blue ] }
-and in_arr = [ `Red  | `Blue ] array
+  field: Obj.t }
+and in_arr = In_arr.t array

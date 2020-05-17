@@ -1,2 +1,15 @@
 string only unions › can generate simple string unions
-type variant = [ `Str1  | `Str1  | `X__STR ]
+module Variant :
+  sig
+    type t = private string
+    val str1 : t[@@bs.inline \"str1\"]
+    val str1 : t[@@bs.inline \"Str1\"]
+    val x__STR : t[@@bs.inline \"X_$STR\"]
+  end =
+  struct
+    type t = string
+    let str1 = \"str1\"[@@bs.inline ]
+    let str1 = \"Str1\"[@@bs.inline ]
+    let x__STR = \"X_$STR\"[@@bs.inline ]
+  end 
+type variant = Variant.t

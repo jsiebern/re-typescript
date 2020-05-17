@@ -1,2 +1,6 @@
 string only unions › recognizes single string as union
-type variant = [ `Single ]
+module Variant :
+  sig type t = private string val single : t[@@bs.inline \"single\"] end =
+  struct type t = string
+         let single = \"single\"[@@bs.inline ] end 
+type variant = Variant.t

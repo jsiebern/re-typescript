@@ -9,26 +9,19 @@ module Make = (Config: Config) : Ast_generator.T => {
   open Parsetree;
   open Ast_helper;
   open Ast_generator_utils;
+  open Ast_generator_bucklescript_utils;
   open Utils;
-
-  let bs_as_attribute: string => attribute =
-    name => (
-      Location.mknoloc("bs.as"),
-      PStr([Str.eval(Ast_convenience_406.str(name))]),
-    );
-  let generate_nullable_of = wrap_type => {
-    generate_base_type(~inner=[wrap_type], "Js.Nullable.t");
-  };
 
   exception BS_Decode_Error(string);
 
   type gen_config = {
     mutable has_any: bool,
     mutable has_unboxed_number: bool,
+    mutable inject: list(structure_item),
   };
-  let gen_config = {has_any: false, has_unboxed_number: false};
+  let gen_config = {has_any: false, has_unboxed_number: false, inject: []};
 
-  let rec generate_type_def = (~ctx: config, type_def) =>
+  let rec generate_type_def = (~ctx: config, ~parent_name, type_def) =>
     switch (type_def) {
     | Base(base_type) => (
         Ptype_abstract,
@@ -59,7 +52,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                fun
                | RecordField((name, orig_name), type_, _) => (
                    name,
-                   switch (type_ |> generate_type_def(~ctx)) {
+                   switch (type_ |> generate_type_def(~ctx, ~parent_name)) {
                    | (_, None) =>
                      Console.error(type_);
                      raise(BS_Decode_Error("Invalid record field type"));
@@ -82,20 +75,20 @@ module Make = (Config: Config) : Ast_generator.T => {
       )
     | Array(inner) => (
         Ptype_abstract,
-        switch (ctx.array_mode, generate_type_def(~ctx, inner)) {
+        switch (ctx.array_mode, generate_type_def(~ctx, ~parent_name, inner)) {
         | (Array, (_, inner)) => inner |> CCOpt.map(generate_array_of)
         | (List, (_, inner)) => inner |> CCOpt.map(generate_list_of)
         },
       )
     | Optional(inner) => (
         Ptype_abstract,
-        generate_type_def(~ctx, inner)
+        generate_type_def(~ctx, ~parent_name, inner)
         |> snd
         |> CCOpt.map(generate_option_of),
       )
     | Nullable(inner) => (
         Ptype_abstract,
-        generate_type_def(~ctx, inner)
+        generate_type_def(~ctx, ~parent_name, inner)
         |> snd
         |> CCOpt.map(generate_nullable_of),
       )
@@ -123,7 +116,19 @@ module Make = (Config: Config) : Ast_generator.T => {
           ),
           None,
         )
-      | `BsInline => raise(Not_found)
+      | `BsInline =>
+        let module_name = to_valid_module_name(parent_name) |> fst;
+        gen_config.inject = [
+          generate_bs_inline_str(
+            ~module_name,
+            keys |> CCList.map(to_valid_ident),
+          ),
+          ...gen_config.inject,
+        ];
+        (
+          Ptype_abstract,
+          Some(generate_base_type(Printf.sprintf("%s.t", module_name))),
+        );
       }
 
     | VariantInt(keys) => (
@@ -139,7 +144,7 @@ module Make = (Config: Config) : Ast_generator.T => {
         Some(
           generate_tuple_of(
             types
-            |> CCListLabels.map(~f=generate_type_def(~ctx))
+            |> CCListLabels.map(~f=generate_type_def(~ctx, ~parent_name))
             |> CCListLabels.filter_map(~f=snd),
           ),
         ),
@@ -170,6 +175,7 @@ module Make = (Config: Config) : Ast_generator.T => {
   let generate = (~ctx, type_defs) => {
     gen_config.has_any = false;
     gen_config.has_unboxed_number = false;
+    gen_config.inject = [];
     let types =
       !(type_defs |> CCListLabels.is_empty)
         ? [
@@ -180,7 +186,8 @@ module Make = (Config: Config) : Ast_generator.T => {
               |> List.map(type_def => {
                    switch (type_def) {
                    | TypeDeclaration((name, _), type_) =>
-                     let (kind, manifest) = generate_type_def(~ctx, type_);
+                     let (kind, manifest) =
+                       generate_type_def(~ctx, ~parent_name=name, type_);
                      [Type.mk(~kind, ~manifest?, Location.mknoloc(name))];
                    | d =>
                      Console.error(d);
@@ -194,9 +201,9 @@ module Make = (Config: Config) : Ast_generator.T => {
         ]
         : [];
     CCListLabels.concat([
-      gen_config.has_unboxed_number
-        ? Ast_generator_bucklescript_number_unboxed.number_unboxed : [],
+      gen_config.has_unboxed_number ? number_unboxed : [],
       gen_config.has_any ? generate_any() : [],
+      gen_config.inject,
       types,
     ]);
   };

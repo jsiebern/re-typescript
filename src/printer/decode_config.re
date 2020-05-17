@@ -18,9 +18,9 @@ and number_variant_mode_name = {
 };
 
 let default_bucklescript_config = {
-  string_variant_mode: `PolyVariant,
+  string_variant_mode: `BsInline,
   mixed_variant_mode: `BsUnboxed,
-  number_variant_mode: `PolyVariant(Some({prefix: "_", suffix: ""})),
+  number_variant_mode: `BsInline(Some({prefix: "_", suffix: ""})),
 };
 let default_bucklescript_bindings_config = {
   string_variant_mode: `Variant,

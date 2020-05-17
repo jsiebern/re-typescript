@@ -48,7 +48,7 @@ let () = {
           output_type:
             Bucklescript({
               ...Re_typescript_printer.Config.default_bucklescript_config,
-              string_variant_mode: `PolyVariant,
+              string_variant_mode: `BsInline,
             }),
         },
         Parser.main(Lexer.read, lexbuf),

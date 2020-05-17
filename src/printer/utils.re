@@ -92,3 +92,5 @@ let to_valid_variant_constructor = ident => (
   ident |> CCString.capitalize_ascii |> string_replace("$", "_"),
   ident,
 );
+
+let to_valid_module_name = to_valid_variant_constructor;

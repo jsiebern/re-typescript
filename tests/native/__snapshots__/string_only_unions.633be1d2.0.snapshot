@@ -1,2 +1,13 @@
 string only unions › can be generated inside optional
-type variant = [ `Blue  | `Red ] option
+module Variant :
+  sig
+    type t = private string
+    val blue : t[@@bs.inline \"blue\"]
+    val red : t[@@bs.inline \"red\"]
+  end =
+  struct
+    type t = string
+    let blue = \"blue\"[@@bs.inline ]
+    let red = \"red\"[@@bs.inline ]
+  end 
+type variant = Variant.t option
