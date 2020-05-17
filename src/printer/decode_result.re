@@ -7,9 +7,9 @@ type type_def =
   | RecordField((string, string), type_def, bool)
   | Union(list(type_def))
   | VariantEnum(list((string, string)))
-  | VariantString(list((string, string)))
-  | VariantInt(list((string, int)))
-  | VariantMixed(list((string, option(value_type))))
+  | VariantString(list(string))
+  | VariantInt(list(int))
+  | VariantMixed(list(value_type))
   | Array(type_def)
   | Tuple(list(type_def))
 

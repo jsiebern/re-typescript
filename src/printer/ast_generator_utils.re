@@ -38,16 +38,14 @@ let generate_tuple_of = types => {
 let generate_variant_kind = (names: list(string)) => {
   Ptype_variant(
     names
-    |> Tablecloth.List.map(~f=name =>
-         Type.constructor(Location.mknoloc(name))
-       ),
+    |> CCListLabels.map(~f=name => Type.constructor(Location.mknoloc(name))),
   );
 };
 
 let generate_poly_variant = (names: list(string)) => {
   Typ.variant(
     names
-    |> Tablecloth.List.map(~f=name =>
+    |> CCListLabels.map(~f=name =>
          Rtag(Location.mknoloc(name), [], false, [])
        ),
     Closed,

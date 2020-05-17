@@ -7,7 +7,7 @@ module FCP =
 let parser_error = (~content, ~lexbuf: Lexing.lexbuf) => {
   let location =
     FCP.print(
-      content |> Tablecloth.String.trim |> Tablecloth.String.split(~on="\n"),
+      content |> CCString.trim |> CCString.split(~by="\n"),
       ~highlight=(
         (
           lexbuf.Lexing.lex_start_p.pos_lnum,

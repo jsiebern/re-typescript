@@ -8,6 +8,6 @@
 (library
  (name re_typescript_base)
  (public_name re_typescript.base)
- (libraries tablecloth-native batteries file-context-printer.lib pastel.lib)
+ (libraries file-context-printer.lib pastel.lib containers)
  (ocamlopt_flags (-linkall))
  (flags -w -30))

@@ -2,8 +2,6 @@
   "name": "re_typescript",
   "namespace": true,
   "sources": [
-    "src/base",
-    "src/printer",
     {
       "dir": "src_js",
       "subdirs": true
@@ -16,7 +14,7 @@
   },
   "ppx-flags": [],
   "bsc-flags": ["-bs-super-errors"],
-  "bs-dependencies": ["reason-react", "tablecloth-bucklescript"],
+  "bs-dependencies": ["reason-react"],
   "refmt": 3,
   "suffix": ".bs.js",
   "generate-merlin": true,

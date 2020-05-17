@@ -1,6 +1,7 @@
 module type Config = {let config: Decode_config.bucklescript_config;};
 
 module Make = (Config: Config) : Ast_generator.T => {
+  open Config;
   open Decode_result;
   open Decode_config;
   open Migrate_parsetree;
@@ -8,6 +9,7 @@ module Make = (Config: Config) : Ast_generator.T => {
   open Parsetree;
   open Ast_helper;
   open Ast_generator_utils;
+  open Utils;
 
   let bs_as_attribute: string => attribute =
     name => (
@@ -18,7 +20,7 @@ module Make = (Config: Config) : Ast_generator.T => {
     generate_base_type(~inner=[wrap_type], "Js.Nullable.t");
   };
 
-  exception BS_Decode_Error(string, string);
+  exception BS_Decode_Error(string);
 
   type gen_config = {
     mutable has_any: bool,
@@ -59,22 +61,20 @@ module Make = (Config: Config) : Ast_generator.T => {
                    name,
                    switch (type_ |> generate_type_def(~ctx)) {
                    | (_, None) =>
-                     raise(
-                       BS_Decode_Error(
-                         "Invalid record field type",
-                         BatPervasives.dump(type_),
-                       ),
-                     )
+                     Console.error(type_);
+                     raise(BS_Decode_Error("Invalid record field type"));
                    | (_, Some(t)) => t
                    },
                    name != orig_name ? [bs_as_attribute(orig_name)] : [],
                  )
                | d =>
                  raise(
-                   BS_Decode_Error(
-                     "Record only accepts children of type RecordField",
-                     BatPervasives.dump(d),
-                   ),
+                   {
+                     Console.error(d);
+                     BS_Decode_Error(
+                       "Record only accepts children of type RecordField",
+                     );
+                   },
                  ),
              ),
         ),
@@ -83,93 +83,117 @@ module Make = (Config: Config) : Ast_generator.T => {
     | Array(inner) => (
         Ptype_abstract,
         switch (ctx.array_mode, generate_type_def(~ctx, inner)) {
-        | (Array, (_, inner)) =>
-          inner |> Tablecloth.Option.map(~f=generate_array_of)
-        | (List, (_, inner)) =>
-          inner |> Tablecloth.Option.map(~f=generate_list_of)
+        | (Array, (_, inner)) => inner |> CCOpt.map(generate_array_of)
+        | (List, (_, inner)) => inner |> CCOpt.map(generate_list_of)
         },
       )
     | Optional(inner) => (
         Ptype_abstract,
         generate_type_def(~ctx, inner)
         |> snd
-        |> Tablecloth.Option.map(~f=generate_option_of),
+        |> CCOpt.map(generate_option_of),
       )
     | Nullable(inner) => (
         Ptype_abstract,
         generate_type_def(~ctx, inner)
         |> snd
-        |> Tablecloth.Option.map(~f=generate_nullable_of),
+        |> CCOpt.map(generate_nullable_of),
       )
     | VariantEnum(keys) => (
-        generate_variant_kind(keys |> Tablecloth.List.map(~f=fst)),
+        generate_variant_kind(keys |> CCListLabels.map(~f=fst)),
         None,
       )
-    | VariantString(keys) => (
-        Ptype_abstract,
-        Some(generate_poly_variant(keys |> Tablecloth.List.map(~f=fst))),
-      )
+    | VariantString(keys) =>
+      switch (config.string_variant_mode) {
+      | `PolyVariant => (
+          Ptype_abstract,
+          Some(
+            generate_poly_variant(
+              keys
+              |> CCListLabels.map(~f=to_valid_variant_constructor)
+              |> CCListLabels.map(~f=fst),
+            ),
+          ),
+        )
+      | `Variant => (
+          generate_variant_kind(
+            keys
+            |> CCListLabels.map(~f=to_valid_variant_constructor)
+            |> CCListLabels.map(~f=fst),
+          ),
+          None,
+        )
+      | `BsInline => raise(Not_found)
+      }
+
     | VariantInt(keys) => (
         Ptype_abstract,
-        Some(generate_poly_variant(keys |> Tablecloth.List.map(~f=fst))),
+        Some(
+          generate_poly_variant(
+            keys |> CCList.map(to_int_variant_constructor) |> CCList.map(fst),
+          ),
+        ),
       )
     | Tuple(types) => (
         Ptype_abstract,
         Some(
           generate_tuple_of(
             types
-            |> Tablecloth.List.map(~f=generate_type_def(~ctx))
-            |> Tablecloth.List.filter_map(~f=snd),
+            |> CCListLabels.map(~f=generate_type_def(~ctx))
+            |> CCListLabels.filter_map(~f=snd),
           ),
         ),
       )
     | RecordField(_) =>
       raise(
-        BS_Decode_Error(
-          "RecordField is not valid outside of type Record",
-          BatPervasives.dump(type_def),
-        ),
+        {
+          Console.error(type_def);
+          BS_Decode_Error("RecordField is not valid outside of type Record");
+        },
       )
     | TypeDeclaration(_) =>
       raise(
-        BS_Decode_Error(
-          "TypeDeclaration is not valid outside of root",
-          BatPervasives.dump(type_def),
-        ),
+        {
+          Console.error(type_def);
+          BS_Decode_Error("TypeDeclaration is not valid outside of root");
+        },
       )
     | t =>
-      raise(BS_Decode_Error("Not yet implemented", BatPervasives.dump(t)))
+      raise(
+        {
+          Console.error(t);
+          BS_Decode_Error("Not yet implemented");
+        },
+      )
     };
 
   let generate = (~ctx, type_defs) => {
     gen_config.has_any = false;
     gen_config.has_unboxed_number = false;
     let types =
-      !(type_defs |> Tablecloth.List.is_empty)
+      !(type_defs |> CCListLabels.is_empty)
         ? [
           Str.type_(
             Recursive,
             List.concat(
               type_defs
-              |> List.map(type_def =>
+              |> List.map(type_def => {
                    switch (type_def) {
                    | TypeDeclaration((name, _), type_) =>
                      let (kind, manifest) = generate_type_def(~ctx, type_);
                      [Type.mk(~kind, ~manifest?, Location.mknoloc(name))];
                    | d =>
+                     Console.error(d);
                      raise(
-                       BS_Decode_Error(
-                         "Invalid data structure in root",
-                         BatPervasives.dump(d),
-                       ),
-                     )
+                       BS_Decode_Error("Invalid data structure in root"),
+                     );
                    }
-                 ),
+                 }),
             ),
           ),
         ]
         : [];
-    Tablecloth.List.concat([
+    CCListLabels.concat([
       gen_config.has_unboxed_number
         ? Ast_generator_bucklescript_number_unboxed.number_unboxed : [],
       gen_config.has_any ? generate_any() : [],

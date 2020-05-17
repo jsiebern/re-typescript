@@ -22,7 +22,12 @@ and type_ = [
   | `Ref(ref_)
   | `TypeExtract(ref_, list(string))
 ]
-and union_member = [ | `U_String(string) | `U_Number(int) | `U_Type(type_)]
+and union_member = [
+  | `U_String(string)
+  | `U_Number(int)
+  | `U_Type(type_)
+  | `U_Bool(bool)
+]
 and prim_value = [ | `V_String(string) | `V_Number(int)]
 and enum_field = {
   key: string,
@@ -49,19 +54,19 @@ and importName = [
 type extract_wrapper = [ | `T(type_def, bool) | `I(import) | `Empty];
 let make_top_level = (lst: list(extract_wrapper)) =>
   lst
-  |> Tablecloth.List.fold_left(
+  |> CCListLabels.fold_left(
        ~f=
-         (value, p) =>
+         (p, value) =>
            switch (value) {
            | `I(import) => {
                ...p,
-               imports: Tablecloth.List.append(p.imports, [import]),
+               imports: CCListLabels.append(p.imports, [import]),
              }
            | `T(type_def) => {
                ...p,
-               types: Tablecloth.List.append(p.types, [type_def]),
+               types: CCListLabels.append(p.types, [type_def]),
              }
            | `Empty => p
            },
-       ~initial={imports: [], types: []},
+       ~init={imports: [], types: []},
      );

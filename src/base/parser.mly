@@ -130,6 +130,8 @@ let union :=
 let union_value :=
   | s = STRING; { let (s,_,_) = s in `U_String(s) }
   | n = NUMBER; { `U_Number(fst(n) |> int_of_float) }
+  | TRUE; { `U_Bool(true) }
+  | FALSE; { `U_Bool(false) }
   | t = type_; { `U_Type(t) }
   
 

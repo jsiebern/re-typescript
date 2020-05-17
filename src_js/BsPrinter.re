@@ -22,7 +22,7 @@ module Re_typescript_printer = {
 };
 
 let print = (~re=true, v) => {
-  let v = v |> Tablecloth.String.trim;
+  let v = v |> CCString.trim;
   let lexbuf = Lexing.from_string(v);
   try(
     (re ? Reason.printRE : Reason.printML)(

@@ -7,22 +7,25 @@
     "watch-test": "esy x redemon -p tests -p src esy x RunTests.exe",
     "test": "esy x RunTests.exe",
     "test-u": "esy x RunTests.exe -u",
+    "js": "esy dune build ./src/js/re_typescript_js.bc.js",
     "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },
   "dependencies": {
-    "@opam/batteries": "*",
+    "@opam/containers": "2.8.1",
     "@opam/dune": "*",
+    "@opam/js_of_ocaml": "3.6.0",
+    "@opam/js_of_ocaml-ppx": "3.6.0",
     "@opam/menhir": "*",
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/ppx_tools_versioned": "*",
     "@opam/reason": ">=3.6.0",
-    "@opam/tablecloth-native": "*",
     "@reason-native/console": "^0.1.0",
     "@reason-native/file-context-printer": "^0.0.3",
     "@reason-native/pastel": "^0.3.0"
   },
   "devDependencies": {
     "ocaml": "~4.8.0",
+    "@opam/js_of_ocaml-compiler": "3.6.0",
     "refmterr": "~3.3.0",
     "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam",
     "@opam/redemon": "ulrikstrid/redemon:redemon.opam",

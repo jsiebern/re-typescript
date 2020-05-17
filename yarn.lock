@@ -483,11 +483,6 @@ supports-color@^6.1.0:
   dependencies:
     has-flag "^3.0.0"
 
-tablecloth-bucklescript@^0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/tablecloth-bucklescript/-/tablecloth-bucklescript-0.0.7.tgz#635f66b773900cac4ee8287a8d2b21a294b7f038"
-  integrity sha512-LR509lBXGDZcunx74BxdP5AgmeGpNPe4VKbH7edADjHor7hLa1MNFy5EbuL5HgrI893sGxTpBwlQq7nKJ0O9Fg==
-
 ua-parser-js@^0.7.18:
   version "0.7.21"
   resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.21.tgz#853cf9ce93f642f67174273cc34565ae6f308777"

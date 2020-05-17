@@ -21,7 +21,7 @@ let t_of_lexbuf = (lexbuf): t => {
 };
 
 let start_position = (t: t) => {
-  Lexing.pos_fname: Tablecloth.Option.with_default(~default="", t.name),
+  Lexing.pos_fname: CCOpt.get_or(~default="", t.name),
   pos_lnum: t.line,
   pos_bol: t.idx - t.col,
   pos_cnum: t.idx,

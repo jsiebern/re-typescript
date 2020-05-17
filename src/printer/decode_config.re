@@ -3,6 +3,7 @@ open Re_typescript_base;
 type bucklescript_config = {
   string_variant_mode,
   number_variant_mode,
+  mixed_variant_mode,
 }
 and string_variant_mode = [ | `Variant | `PolyVariant | `BsInline]
 and number_variant_mode = [
@@ -10,17 +11,20 @@ and number_variant_mode = [
   | `PolyVariant(option(number_variant_mode_name))
   | `BsInline(option(number_variant_mode_name))
 ]
+and mixed_variant_mode = [ | `BsUnboxed | `BsInline]
 and number_variant_mode_name = {
   prefix: string,
   suffix: string,
 };
 
 let default_bucklescript_config = {
-  string_variant_mode: `BsInline,
-  number_variant_mode: `BsInline(Some({prefix: "_", suffix: ""})),
+  string_variant_mode: `PolyVariant,
+  mixed_variant_mode: `BsUnboxed,
+  number_variant_mode: `PolyVariant(Some({prefix: "_", suffix: ""})),
 };
 let default_bucklescript_bindings_config = {
   string_variant_mode: `Variant,
+  mixed_variant_mode: `BsUnboxed,
   number_variant_mode: `Variant(Some({prefix: "_", suffix: ""})),
 };
 

@@ -35,7 +35,7 @@ type y = number | undefined;
 |};
 
 let () = {
-  let lexbuf = Lexing.from_string(content |> Tablecloth.String.trim);
+  let lexbuf = Lexing.from_string(content |> CCString.trim);
 
   try(
     Printf.fprintf(
@@ -45,6 +45,11 @@ let () = {
         ~ctx={
           ...Re_typescript_printer.Config.default_config,
           number_mode: Int,
+          output_type:
+            Bucklescript({
+              ...Re_typescript_printer.Config.default_bucklescript_config,
+              string_variant_mode: `PolyVariant,
+            }),
         },
         Parser.main(Lexer.read, lexbuf),
       ),

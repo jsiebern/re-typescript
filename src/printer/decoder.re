@@ -2,6 +2,7 @@ open Re_typescript_base;
 open Decode_result;
 open Decode_config;
 open Decode_utils;
+open Utils;
 
 exception Decode_Error(string);
 let types: ref(list(Ts.type_def)) = ref([]);
@@ -10,9 +11,7 @@ let record_cache: Hashtbl.t(string, Decode_result.type_def) =
 let injected: Hashtbl.t(string, Decode_result.type_def) = Hashtbl.create(0);
 let record_referenced = ref([]);
 let has_been_referenced = name =>
-  record_referenced^
-  |> List.find_opt(x => x == name)
-  |> Tablecloth.Option.is_some;
+  record_referenced^ |> List.find_opt(x => x == name) |> CCOpt.is_some;
 
 let rec decode = (~ctx: config=default_config, toplevel: Ts.toplevel) => {
   Hashtbl.clear(injected);
@@ -21,19 +20,18 @@ let rec decode = (~ctx: config=default_config, toplevel: Ts.toplevel) => {
   let types = toplevel.types |> List.map(decode_type_def);
 
   types
-  |> Tablecloth.List.append(
+  |> CCListLabels.append(
        Hashtbl.fold((_, v, p) => [v, ...p], injected, [])
-       |> Tablecloth.List.reverse
-       |> Tablecloth.List.map(
+       |> CCListLabels.rev_map(
             ~f=
               fun
               | TypeDeclaration(_) as type_dec => type_dec
               | _ =>
                 raise(Decode_Error("Only TypeDeclarations can be injected")),
           )
-       |> Tablecloth.List.reverse,
+       |> CCListLabels.rev,
      )
-  |> Tablecloth.List.filter_map(
+  |> CCListLabels.filter_map(
        ~f=
          fun
          | TypeDeclaration((name, _) as n, Record([]))
@@ -57,15 +55,16 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
       let record =
         Record(
           fields
-          |> Tablecloth.List.map(~f=decode_obj_field(~parent_name=name))
-          |> Tablecloth.List.append(decode_extends_ref(extends_ref))
-          |> Tablecloth.List.reverse
-          |> Tablecloth.List.uniqueBy(
-               ~f=
-                 fun
-                 | RecordField((a, _), _, _) => a
-                 | _ => "",
-             ),
+          |> CCListLabels.map(~f=decode_obj_field(~parent_name=name))
+          |> CCListLabels.append(decode_extends_ref(extends_ref))
+          |> CCListLabels.uniq(~eq=(a, b) =>
+               switch (a, b) {
+               | (RecordField((a, _), _, _), RecordField((b, _), _, _)) =>
+                 a == b
+               | _ => false
+               }
+             )
+          |> CCListLabels.rev,
         );
       Hashtbl.add(record_cache, fst(name), record);
       TypeDeclaration(name, record);
@@ -82,14 +81,12 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
 and decode_enum = (members, is_const) => {
   let is_clean =
     members
-    |> Tablecloth.List.all(~f=member =>
-         !(member.Ts.default |> Tablecloth.Option.is_some)
-       );
+    |> CCListLabels.for_all(~f=member => !(member.Ts.default |> CCOpt.is_some));
   if (is_clean) {
     VariantEnum(
       members
-      |> Tablecloth.List.map(~f=(member: Ts.enum_field) => member.key)
-      |> Tablecloth.List.map(~f=to_valid_variant_constructor),
+      |> CCListLabels.map(~f=(member: Ts.enum_field) => member.key)
+      |> CCListLabels.map(~f=to_valid_variant_constructor),
     );
   } else {
     raise(Decode_Error("Unclean enums are not yet supported"));
@@ -139,13 +136,12 @@ and decode_union_int = (members: list(Ts.union_member)) => {
     Some(
       VariantInt(
         members
-        |> Tablecloth.List.map(
+        |> CCListLabels.map(
              ~f=
                fun
                | `U_Number(n) => n
                | _ => raise(No_union_number),
-           )
-        |> Tablecloth.List.map(~f=to_int_variant_constructor),
+           ),
       ),
     )
   ) {
@@ -159,13 +155,12 @@ and decode_union_string = (members: list(Ts.union_member)) => {
     Some(
       VariantString(
         members
-        |> Tablecloth.List.map(
+        |> CCListLabels.map(
              ~f=
                fun
                | `U_String(str) => str
                | _ => raise(No_union_string),
-           )
-        |> Tablecloth.List.map(~f=to_valid_variant_constructor),
+           ),
       ),
     )
   ) {
@@ -176,15 +171,15 @@ and decode_union_string = (members: list(Ts.union_member)) => {
 and decode_union_nullable = (~parent_name, members: list(Ts.union_member)) => {
   let extract_null =
     members
-    |> Tablecloth.List.fold_left(
+    |> CCListLabels.fold_left(
          ~f=
-           (member, (has_null, p)) => {
+           ((has_null, p), member) => {
              switch (member) {
              | `U_Type(`Null) => (true, p)
              | member => (has_null, [member, ...p])
              }
            },
-         ~initial=(false, []),
+         ~init=(false, []),
        );
   switch (extract_null) {
   | (true, [`U_Type(type_)]) =>
@@ -196,15 +191,15 @@ and decode_union_nullable = (~parent_name, members: list(Ts.union_member)) => {
 and decode_union_undefined = (~parent_name, members: list(Ts.union_member)) => {
   let extract_undefined =
     members
-    |> Tablecloth.List.fold_left(
+    |> CCListLabels.fold_left(
          ~f=
-           (member, (has_undefined, p)) => {
+           ((has_undefined, p), member) => {
              switch (member) {
              | `U_Type(`Undefined) => (true, p)
              | member => (has_undefined, [member, ...p])
              }
            },
-         ~initial=(false, []),
+         ~init=(false, []),
        );
   switch (extract_undefined) {
   | (true, [`U_Type(type_)]) =>
@@ -224,7 +219,7 @@ and decode_array = (~parent_name, type_) => {
 and decode_tuple = (~parent_name, types) => {
   Tuple(
     types
-    |> Tablecloth.List.mapi(~f=i =>
+    |> CCListLabels.mapi(~f=i =>
          fun
          | `Obj(fields) =>
            decode_inline_record(
@@ -242,7 +237,7 @@ and decode_inline_record = (~parent_name, ~key, ~fields) => {
   let record =
     Record(
       fields
-      |> Tablecloth.List.map(
+      |> CCListLabels.map(
            ~f=decode_obj_field(~parent_name=(sub_type_name, sub_type_name)),
          ),
     );
@@ -281,7 +276,7 @@ and decode_type_extract = (ref_: Ts.ref_, fields: list(string)) => {
   let fields_in_type = decode_extends_ref(ref_);
   let find_field = name =>
     fields_in_type
-    |> Tablecloth.List.find(
+    |> CCListLabels.find_opt(
          ~f=
            fun
            | RecordField((n, _), _, _) when n == name => true
@@ -329,29 +324,28 @@ and decode_type_extract = (ref_: Ts.ref_, fields: list(string)) => {
 and decode_extends_ref = (ref_: Ts.ref_) => {
   // Only implement this naively for now
   let lookup_name = fst(decode_ref_type_name(ref_));
-  Tablecloth.Option.(
+  CCOpt.(
     Hashtbl.find_opt(record_cache, lookup_name)
     |> map(
-         ~f=
-           fun
-           | Record(fields) => fields
-           | _ => [],
+         fun
+         | Record(fields) => fields
+         | _ => [],
        )
-    |> with_default(~default=[])
+    |> get_or(~default=[])
   );
 }
 and decode_ref_type_name = (ref_: Ts.ref_): (string, string) => {
   let idents =
     ref_
-    |> Tablecloth.List.map(~f=fst)
-    |> Tablecloth.List.map(~f=v => ["_", v])
-    |> Tablecloth.List.concat;
+    |> CCListLabels.map(~f=fst)
+    |> CCListLabels.map(~f=v => ["_", v])
+    |> CCListLabels.concat;
   let ref_resolved =
     (
       switch (idents) {
       | [] => ""
       | [_, ...rest] =>
-        rest |> Tablecloth.List.fold_left(~initial="", ~f=(p, e) => p ++ e)
+        rest |> CCListLabels.fold_left(~init="", ~f=(p, e) => p ++ e)
       }
     )
     |> to_valid_typename;

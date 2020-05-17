@@ -19,17 +19,13 @@ module Config = {
 module type FileContextPrinterConfig = {let config: Config.t;};
 module Make = (UserConfig: FileContextPrinterConfig) => {
   let print = (~highlight, x) => {
-    let l =
-      (
-        x |> Tablecloth.List.length |> string_of_int |> Tablecloth.String.length
-      )
-      + 1;
+    let l = (x |> CCListLabels.length |> string_of_int |> CCString.length) + 1;
     x
     ->Belt.List.mapWithIndex((i, ln) =>
         " "
         ++ i->string_of_int
-        ++ Tablecloth.String.repeat(
-             ~count=l - (i |> string_of_int |> Tablecloth.String.length),
+        ++ CCString.repeat(
+             ~count=l - (i |> string_of_int |> CCString.length),
              " ",
            )
         ++ "|  "
@@ -37,11 +33,8 @@ module Make = (UserConfig: FileContextPrinterConfig) => {
           if (i + 1 === fst(fst(highlight))) {
             ln
             ++ "\n"
-            ++ Tablecloth.String.repeat(
-                 ~count=snd(fst(highlight)) - 1 + l + 4,
-                 " ",
-               )
-            ++ Tablecloth.String.repeat(
+            ++ CCString.repeat(~count=snd(fst(highlight)) - 1 + l + 4, " ")
+            ++ CCString.repeat(
                  ~count=snd(snd(highlight)) - snd(fst(highlight)),
                  {j|↑|j},
                );
