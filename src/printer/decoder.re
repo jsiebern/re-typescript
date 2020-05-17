@@ -74,6 +74,27 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
       let name = name |> to_valid_typename;
       TypeDeclaration(name, decode_type(~parent_name=name, type_));
     }
+  | (`EnumDef(name, members, is_const), _) =>
+    TypeDeclaration(
+      name |> to_valid_typename,
+      decode_enum(members, is_const),
+    )
+and decode_enum = (members, is_const) => {
+  let is_clean =
+    members
+    |> Tablecloth.List.all(~f=member =>
+         !(member.Ts.default |> Tablecloth.Option.is_some)
+       );
+  if (is_clean) {
+    VariantEnum(
+      members
+      |> Tablecloth.List.map(~f=(member: Ts.enum_field) => member.key)
+      |> Tablecloth.List.map(~f=to_valid_variant_constructor),
+    );
+  } else {
+    raise(Decode_Error("Unclean enums are not yet supported"));
+  };
+}
 and decode_type: (~parent_name: (string, string), Ts.type_) => type_def =
   (~parent_name) =>
     fun
@@ -85,7 +106,6 @@ and decode_type: (~parent_name: (string, string), Ts.type_) => type_def =
     | `Array(type_) => decode_array(~parent_name, type_)
     | `Tuple(types) => decode_tuple(~parent_name, types)
     | `Ref(ref_) => Base(Ref(ref_ |> decode_ref_type_name))
-    | `Enum(_)
     | `Union(_) => raise(Decode_Error("Not yet implemented"))
     | `Undefined =>
       raise(Decode_Error("Undefined cannot exist outside of a union"))
@@ -93,12 +113,14 @@ and decode_type: (~parent_name: (string, string), Ts.type_) => type_def =
     | `Obj(_) =>
       raise(Decode_Error("Obj should never be reached in this switch"))
     | `TypeExtract(ref_, names) => decode_type_extract(ref_, names)
-  and decode_array = (~parent_name, type_) => {
-    Array(switch (type_) {
-      | `Obj(fields) => decode_inline_record(~parent_name, ~key="t",~fields)
-      | t => decode_type(~parent_name, t)
-    })
-  }
+and decode_array = (~parent_name, type_) => {
+  Array(
+    switch (type_) {
+    | `Obj(fields) => decode_inline_record(~parent_name, ~key="t", ~fields)
+    | t => decode_type(~parent_name, t)
+    },
+  );
+}
 and decode_tuple = (~parent_name, types) => {
   Tuple(
     types

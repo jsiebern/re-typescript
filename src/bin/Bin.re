@@ -28,8 +28,7 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-type x = {field: string}[];
-type y = Array<{X_field: string}>;
+enum SomeEnum { Red, Green, Blue }
 |};
 
 let () = {

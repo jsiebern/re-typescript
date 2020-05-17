@@ -48,6 +48,8 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [ ] Enum
     - [ ] Keys
     - [ ] Default values
+    - [ ] Computed values
+    - [ ] Const enums
   - [ ] Interfaces / Objects
     - [x] Keyword
     - [x] Keys

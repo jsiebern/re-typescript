@@ -83,6 +83,10 @@ let rec generate_type_def = (~ctx: config, type_def) =>
         inner |> Tablecloth.Option.map(~f=generate_list_of)
       },
     )
+  | VariantEnum(keys) => (
+      generate_variant_kind(keys |> Tablecloth.List.map(~f=fst)),
+      None,
+    )
   | Tuple(types) => (
       Ptype_abstract,
       Some(

@@ -5,6 +5,7 @@ type toplevel = {
 and type_def = [
   | `TypeDef(string, type_)
   | `InterfaceDef(string, ref_, list(obj_field))
+  | `EnumDef(string, list(enum_field), bool)
 ]
 and type_ = [
   | `String
@@ -14,7 +15,6 @@ and type_ = [
   | `Undefined
   | `Void
   | `Any
-  | `Enum(list(enum_field))
   | `Union(list(type_))
   | `Array(type_)
   | `Tuple(list(type_))

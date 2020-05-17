@@ -59,6 +59,8 @@ type n = type_extr['nested']['more']["another"];
 
 type tpl = [string, number, boolean];
 type tpl_inline = [string, { field: number }, boolean];
+
+enum clean_enum { Red, Green, Blue };
 |};
 
 module Highlight = {

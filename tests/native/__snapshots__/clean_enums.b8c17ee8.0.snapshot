@@ -1,0 +1,5 @@
+clean enums › generates variants from clean enums
+type enum =
+  | Red 
+  | Green 
+  | Blue 

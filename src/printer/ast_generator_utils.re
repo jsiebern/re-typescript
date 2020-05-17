@@ -31,6 +31,15 @@ let generate_tuple_of = types => {
   Typ.tuple(types);
 };
 
+let generate_variant_kind = (names: list(string)) => {
+  Ptype_variant(
+    names
+    |> Tablecloth.List.map(~f=name =>
+         Type.constructor(Location.mknoloc(name))
+       ),
+  );
+};
+
 let generate_any = () => [
   {
     pstr_loc: Ast_helper.default_loc.contents,

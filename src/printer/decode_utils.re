@@ -122,3 +122,8 @@ let to_valid_ident = ident => (
 
 let to_valid_typename = tn =>
   tn |> Tablecloth.String.uncapitalize |> to_valid_ident;
+
+let to_valid_variant_constructor = ident => (
+  ident |> Tablecloth.String.capitalize |> string_replace("$", "_"),
+  ident,
+);

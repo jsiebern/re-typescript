@@ -62,8 +62,17 @@ let main :=
   | imports = import*; types = type_def*; EOF; { { types; imports } }
 
 type_def:
-  | export = opt_as_bool(EXPORT); TYPE; name = IDENT; EQUALS; t = type_; SEMICOLON? { (`TypeDef(fst(name), t), export) }
-  | export = opt_as_bool(EXPORT); INTERFACE; name = IDENT; extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON? { (`InterfaceDef(fst(name), extends, obj), export) }
+  | export = opt_as_bool(EXPORT); TYPE; name = IDENT; EQUALS; t = type_; SEMICOLON?; { (`TypeDef(fst(name), t), export) }
+  | export = opt_as_bool(EXPORT); INTERFACE; name = IDENT; extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON?; { (`InterfaceDef(fst(name), extends, obj), export) }
+  | export = opt_as_bool(EXPORT); is_const = opt_as_bool(CONST); ENUM; name = IDENT; LCURLY; members = separated_nonempty_list(COMMA, enum_member); RCURLY; SEMICOLON?; { (`EnumDef(fst(name), members, is_const), export) }
+
+let enum_member :=
+  | name = IDENT; EQUALS; v = prim_value; { { Ts.key=fst(name); default=Some(v) }  }
+  | name = IDENT; { { Ts.key=fst(name); default=None } }
+
+let prim_value :=
+  | s = STRING; { let (s,_,_) = s in `V_String(s) }
+  | n = NUMBER; { `V_Number(fst(n) |> int_of_float) }
 
 let extends :=
   | { [] }
