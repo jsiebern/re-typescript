@@ -8,7 +8,7 @@ include Rely.Make({
 
 open Re_typescript_base;
 
-let config = Re_typescript_printer.Config.defaultConfig;
+let config = Re_typescript_printer.Config.default_config;
 let print = (~ctx=config, value) =>
   Re_typescript_printer.print_from_ts(
     ~ctx,

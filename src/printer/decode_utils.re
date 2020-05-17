@@ -31,8 +31,12 @@ let ts_from_string = (content: string) => {
 
 let get_decoder: Decode_config.output_type => (module Ast_generator.T) =
   fun
-  | Bucklescript
-  | BucklescriptBindings => (module Ast_generator_bucklescript)
+  | Bucklescript(bucklescript_config)
+  | BucklescriptBindings(bucklescript_config) =>
+    (module
+     Ast_generator_bucklescript.Make({
+       let config = bucklescript_config;
+     }))
   | Native => (module Ast_generator_native);
 
 let string_replace = (input, output) =>

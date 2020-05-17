@@ -28,6 +28,8 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
+// Variant
+/* Comment */
 type x = 's1' | 's2' | "s3";
 type y = number | undefined;
 |};
@@ -41,7 +43,7 @@ let () = {
       "%s",
       Re_typescript_printer.print_from_ts(
         ~ctx={
-          ...Re_typescript_printer.Config.defaultConfig,
+          ...Re_typescript_printer.Config.default_config,
           number_mode: Int,
         },
         Parser.main(Lexer.read, lexbuf),

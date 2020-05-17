@@ -14,7 +14,7 @@ let has_been_referenced = name =>
   |> List.find_opt(x => x == name)
   |> Tablecloth.Option.is_some;
 
-let rec decode = (~ctx: config=defaultConfig, toplevel: Ts.toplevel) => {
+let rec decode = (~ctx: config=default_config, toplevel: Ts.toplevel) => {
   Hashtbl.clear(injected);
   types := toplevel.types |> List.map(fst);
   record_referenced := [];

@@ -45,3 +45,23 @@ and importName = [
   | `Star
   | `List(list(importName))
 ];
+
+type extract_wrapper = [ | `T(type_def, bool) | `I(import) | `Empty];
+let make_top_level = (lst: list(extract_wrapper)) =>
+  lst
+  |> Tablecloth.List.fold_left(
+       ~f=
+         (value, p) =>
+           switch (value) {
+           | `I(import) => {
+               ...p,
+               imports: Tablecloth.List.append(p.imports, [import]),
+             }
+           | `T(type_def) => {
+               ...p,
+               types: Tablecloth.List.append(p.types, [type_def]),
+             }
+           | `Empty => p
+           },
+       ~initial={imports: [], types: []},
+     );

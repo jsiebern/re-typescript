@@ -14,4 +14,9 @@ describe("basic syntax for types", ({test, _}) => {
   test("adds extra type for any", ({expect, _}) => {
     expect.string(print("type t_any = any")).toMatchSnapshot()
   });
+
+  test("comments should not throw", ({expect, _}) => {
+    expect.string(print({|// This is a comment|})).toEqual("");
+    expect.string(print({|/* This is a comment */|})).toEqual("");
+  });
 });

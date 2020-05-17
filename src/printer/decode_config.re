@@ -1,8 +1,32 @@
 open Re_typescript_base;
 
+type bucklescript_config = {
+  string_variant_mode,
+  number_variant_mode,
+}
+and string_variant_mode = [ | `Variant | `PolyVariant | `BsInline]
+and number_variant_mode = [
+  | `Variant(option(number_variant_mode_name))
+  | `PolyVariant(option(number_variant_mode_name))
+  | `BsInline(option(number_variant_mode_name))
+]
+and number_variant_mode_name = {
+  prefix: string,
+  suffix: string,
+};
+
+let default_bucklescript_config = {
+  string_variant_mode: `BsInline,
+  number_variant_mode: `BsInline(Some({prefix: "_", suffix: ""})),
+};
+let default_bucklescript_bindings_config = {
+  string_variant_mode: `Variant,
+  number_variant_mode: `Variant(Some({prefix: "_", suffix: ""})),
+};
+
 type output_type =
-  | BucklescriptBindings
-  | Bucklescript
+  | BucklescriptBindings(bucklescript_config)
+  | Bucklescript(bucklescript_config)
   | Native
 and array_mode =
   | List
@@ -20,8 +44,8 @@ and config = {
   generate_parser: bool,
   generate_serializer: bool,
 };
-let defaultConfig: config = {
-  output_type: Bucklescript,
+let default_config: config = {
+  output_type: Bucklescript(default_bucklescript_config),
   array_mode: Array,
   number_mode: Float,
   files: [],

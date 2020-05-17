@@ -60,7 +60,13 @@
 %%
 
 let main :=
-  | imports = import*; types = type_def*; EOF; { { types; imports } }
+  | expr = expr*;  EOF; { Ts.make_top_level(expr) }
+
+let expr :=
+  | import = import; { `I(import) }
+  | type_def = type_def; { `T(type_def) }
+  | COMMENT; { `Empty }
+  | COMMENT_LINE; { `Empty }
 
 type_def:
   | export = opt_as_bool(EXPORT); TYPE; name = IDENT; EQUALS; t = type_or_union; SEMICOLON?; { (`TypeDef(fst(name), t), export) }
