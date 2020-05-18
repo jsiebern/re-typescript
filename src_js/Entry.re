@@ -126,7 +126,11 @@ module X = {
        | Error(e) =>
          <div
            className="error"
-           style={ReactDOMRe.Style.make(~padding="15px", ())}
+           style={ReactDOMRe.Style.make(
+             ~padding="15px",
+             ~whiteSpace="pre",
+             (),
+           )}
            dangerouslySetInnerHTML={"__html": e}
          />
        }}

@@ -23,11 +23,12 @@ let run = (content: Js.t(Js.js_string)) => {
   | Lexer.SyntaxError(msg) =>
     Js.raise_js_error([%js new Js.error_constr](msg |> Js.string))
   | Parser.Error =>
+    Pastel.setMode(HumanReadable);
     Js.raise_js_error(
       [%js new Js.error_constr](
         Error.parser_error(~content, ~lexbuf) |> Js.string,
       ),
-    )
+    );
   | e =>
     Console.error(e);
     raise(e);

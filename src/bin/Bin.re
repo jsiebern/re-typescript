@@ -28,7 +28,7 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-  type a = string;
+  typea = string;
 
   type b<P> = {
       field_1: number,

@@ -77,8 +77,9 @@ let type_args :=
   | LT; args = separated_or_terminated_list(COMMA, type_arg); GT; { args }
 
 let type_arg :=
-  | name = IDENT; EXTENDS; t = type_; { { Ts.constraint_=Some(t); name=fst(name); default=None } }
-  | name = IDENT; EQUALS; t = type_; { { Ts.constraint_=None; name=fst(name); default=Some(t) } }
+  | name = IDENT; EXTENDS; ext = type_; EQUALS; eq = type_; { { Ts.constraint_=Some(ext); name=fst(name); default=Some(eq) } }
+  | name = IDENT; EXTENDS; ext = type_; { { Ts.constraint_=Some(ext); name=fst(name); default=None } }
+  | name = IDENT; EQUALS; eq = type_; { { Ts.constraint_=None; name=fst(name); default=Some(eq) } }
   | name = IDENT; { { Ts.constraint_=None; name=fst(name); default=None } }
 
 let enum_member :=

@@ -8,6 +8,6 @@
 (library
  (name re_typescript_base)
  (public_name re_typescript.base)
- (libraries file-context-printer.lib pastel.lib containers)
+ (libraries file-context-printer.lib pastel.lib console.lib containers)
  (ocamlopt_flags (-linkall))
  (flags -w -30))
