@@ -39,6 +39,7 @@ module Make = (Config: Config) : Ast_generator.T => {
           | Boolean => generate_base_type("bool")
           | Void => generate_base_type("unit")
           | Ref(ref_) => generate_base_type(ref_ |> fst)
+          | Arg(argName) => Typ.var(argName)
           | Any =>
             gen_config.has_any = true;
             generate_base_type("any");
@@ -230,10 +231,25 @@ module Make = (Config: Config) : Ast_generator.T => {
               type_defs
               |> List.map(type_def => {
                    switch (type_def) {
-                   | TypeDeclaration((name, _), type_) =>
+                   | TypeDeclaration((name, _), type_, args) =>
                      let (kind, manifest) =
                        generate_type_def(~ctx, ~parent_name=name, type_);
-                     [Type.mk(~kind, ~manifest?, Location.mknoloc(name))];
+                     [
+                       Type.mk(
+                         ~params=
+                           args
+                           |> CCList.map(
+                                fun
+                                | {name} => (
+                                    Typ.var(name),
+                                    Asttypes.Invariant,
+                                  ),
+                              ),
+                         ~kind,
+                         ~manifest?,
+                         Location.mknoloc(name),
+                       ),
+                     ];
                    | d =>
                      Console.error(d);
                      raise(

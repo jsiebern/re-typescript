@@ -83,8 +83,7 @@ let to_valid_ident = ident => (
   ident,
 );
 
-let to_valid_typename = tn =>
-  tn |> CCString.uncapitalize_ascii |> to_valid_ident;
+let to_valid_typename = to_valid_ident;
 
 let to_int_variant_constructor = (i: int) => (Printf.sprintf("_%#u", i), i);
 

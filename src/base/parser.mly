@@ -69,9 +69,17 @@ let expr :=
   | COMMENT_LINE; { `Empty }
 
 type_def:
-  | export = opt_as_bool(EXPORT); TYPE; name = IDENT; EQUALS; t = type_or_union; SEMICOLON?; { (`TypeDef(fst(name), t), export) }
-  | export = opt_as_bool(EXPORT); INTERFACE; name = IDENT; extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON?; { (`InterfaceDef(fst(name), extends, obj), export) }
+  | export = opt_as_bool(EXPORT); TYPE; name = IDENT; args = opt_as_list(type_args); EQUALS; t = type_or_union; SEMICOLON?; { (`TypeDef(fst(name), t, args), export) }
+  | export = opt_as_bool(EXPORT); INTERFACE; name = IDENT; args = opt_as_list(type_args); extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON?; { (`InterfaceDef(fst(name), extends, obj, args), export) }
   | export = opt_as_bool(EXPORT); is_const = opt_as_bool(CONST); ENUM; name = IDENT; LCURLY; members = separated_nonempty_list(COMMA, enum_member); RCURLY; SEMICOLON?; { (`EnumDef(fst(name), members, is_const), export) }
+
+let type_args :=
+  | LT; args = separated_or_terminated_list(COMMA, type_arg); GT; { args }
+
+let type_arg :=
+  | name = IDENT; EXTENDS; t = type_; { { Ts.constraint_=Some(t); name=fst(name); default=None } }
+  | name = IDENT; EQUALS; t = type_; { { Ts.constraint_=None; name=fst(name); default=Some(t) } }
+  | name = IDENT; { { Ts.constraint_=None; name=fst(name); default=None } }
 
 let enum_member :=
   | name = IDENT; EQUALS; v = prim_value; { { Ts.key=fst(name); default=Some(v) }  }
@@ -159,6 +167,9 @@ separated_or_terminated_list(separator, X):
 
 let opt_as_bool(X) :=
   v = X?; { match v with | None -> false | Some _ -> true }
+
+let opt_as_list(X) :=
+  v = X?; { match v with | None -> [] | Some v -> v }
 
 let obj_separator :=
   | COMMA; { Some(()) }

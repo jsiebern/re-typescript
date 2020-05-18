@@ -3,8 +3,8 @@ type toplevel = {
   imports: list(import),
 }
 and type_def = [
-  | `TypeDef(string, type_)
-  | `InterfaceDef(string, ref_, list(obj_field))
+  | `TypeDef(string, type_, list(type_arg))
+  | `InterfaceDef(string, ref_, list(obj_field), list(type_arg))
   | `EnumDef(string, list(enum_field), bool)
 ]
 and type_ = [
@@ -42,14 +42,19 @@ and obj_field = {
 and ref_ = list((string, list(type_)))
 and import = {
   path: string,
-  name: importName,
+  name: import_name,
 }
-and importName = [
+and import_name = [
   | `Named(string)
-  | `Alias(importName, string)
+  | `Alias(import_name, string)
   | `Star
-  | `List(list(importName))
-];
+  | `List(list(import_name))
+]
+and type_arg = {
+  name: string,
+  constraint_: option(type_),
+  default: option(type_),
+};
 
 type extract_wrapper = [ | `T(type_def, bool) | `I(import) | `Empty];
 let make_top_level = (lst: list(extract_wrapper)) =>

@@ -5,6 +5,10 @@ open Decode_utils;
 open Utils;
 
 exception Decode_Error(string);
+
+/**
+  Utils
+ */
 let types: ref(list(Ts.type_def)) = ref([]);
 let record_cache: Hashtbl.t(string, Decode_result.type_def) =
   Hashtbl.create(0);
@@ -13,11 +17,17 @@ let record_referenced = ref([]);
 let has_been_referenced = name =>
   record_referenced^ |> List.find_opt(x => x == name) |> CCOpt.is_some;
 
+// TODO: Add a type arg map and validate it against it resolving references
+// TODO: Bring the lex location information along with the Ts.* to throw meaningful errors here
+
+/**
+  Functions
+ */
 let rec decode = (~ctx: config=default_config, toplevel: Ts.toplevel) => {
   Hashtbl.clear(injected);
-  types := toplevel.types |> List.map(fst);
+  types := toplevel.types |> CCList.map(fst);
   record_referenced := [];
-  let types = toplevel.types |> List.map(decode_type_def);
+  let types = toplevel.types |> CCList.map(decode_type_def);
 
   types
   |> CCListLabels.append(
@@ -34,29 +44,31 @@ let rec decode = (~ctx: config=default_config, toplevel: Ts.toplevel) => {
   |> CCListLabels.filter_map(
        ~f=
          fun
-         | TypeDeclaration((name, _) as n, Record([]))
+         | TypeDeclaration((name, _) as n, Record([]), _)
              when has_been_referenced(name) =>
-           Some(TypeDeclaration(n, Base(Any)))
-         | TypeDeclaration(_, Record([])) => None
+           Some(TypeDeclaration(n, Base(Any), []))
+         | TypeDeclaration(_, Record([]), _) => None
          | v => Some(v),
      );
 }
 and decode_type_def: ((Ts.type_def, bool)) => type_def =
   fun
-  | (`TypeDef(name, `Obj(fields)), _) => {
+  | (`TypeDef(name, `Obj(fields), args), _) => {
       let name = name |> to_valid_typename;
       let record =
-        Record(fields |> List.map(decode_obj_field(~parent_name=name)));
+        Record(
+          fields |> CCList.map(decode_obj_field(~parent_name=name, ~args)),
+        );
       Hashtbl.add(record_cache, fst(name), record);
-      TypeDeclaration(name, record);
+      TypeDeclaration(name, record, decode_type_args(args));
     }
-  | (`InterfaceDef(name, extends_ref, fields), _) => {
+  | (`InterfaceDef(name, extends_ref, fields, args), _) => {
       let name = name |> to_valid_typename;
       let record =
         Record(
           fields
-          |> CCListLabels.map(~f=decode_obj_field(~parent_name=name))
-          |> CCListLabels.append(decode_extends_ref(extends_ref))
+          |> CCList.map(decode_obj_field(~parent_name=name, ~args))
+          |> CCList.append(decode_extends_ref(extends_ref))
           |> CCListLabels.uniq(~eq=(a, b) =>
                switch (a, b) {
                | (RecordField((a, _), _, _), RecordField((b, _), _, _)) =>
@@ -64,24 +76,34 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
                | _ => false
                }
              )
-          |> CCListLabels.rev,
+          |> CCList.rev,
         );
       Hashtbl.add(record_cache, fst(name), record);
-      TypeDeclaration(name, record);
+      TypeDeclaration(name, record, decode_type_args(args));
     }
-  | (`TypeDef(name, type_), _) => {
+  | (`TypeDef(name, type_, args), _) => {
       let name = name |> to_valid_typename;
-      TypeDeclaration(name, decode_type(~parent_name=name, type_));
+      TypeDeclaration(
+        name,
+        decode_type(~parent_name=name, type_),
+        decode_type_args(args),
+      );
     }
   | (`EnumDef(name, members, is_const), _) =>
     TypeDeclaration(
       name |> to_valid_typename,
       decode_enum(members, is_const),
+      [],
     )
+and decode_type_args = (args: list(Ts.type_arg)) => {
+  args |> CCList.map((arg: Ts.type_arg) => {name: arg.name});
+}
 and decode_enum = (members, is_const) => {
   let is_clean =
     members
-    |> CCListLabels.for_all(~f=member => !(member.Ts.default |> CCOpt.is_some));
+    |> CCList.for_all((member: Ts.enum_field) =>
+         !(member.Ts.default |> CCOpt.is_some)
+       );
   if (is_clean) {
     VariantEnum(
       members
@@ -262,18 +284,22 @@ and decode_inline_record = (~parent_name, ~key, ~fields) => {
     Record(
       fields
       |> CCListLabels.map(
-           ~f=decode_obj_field(~parent_name=(sub_type_name, sub_type_name)),
+           ~f=
+             decode_obj_field(
+               ~parent_name=(sub_type_name, sub_type_name),
+               ~args=[],
+             ),
          ),
     );
   Hashtbl.add(
     injected,
     sub_type_name,
-    TypeDeclaration((sub_type_name, sub_type_name), record),
+    TypeDeclaration((sub_type_name, sub_type_name), record, []),
   );
   Hashtbl.add(record_cache, sub_type_name, record);
   Base(Ref((sub_type_name, sub_type_name)));
 }
-and decode_obj_field = (~parent_name) =>
+and decode_obj_field = (~parent_name, ~args: list(Ts.type_arg)) =>
   fun
   | {key, type_: `Obj(fields), optional, readonly} => {
       let t_ref = decode_inline_record(~parent_name, ~key, ~fields);
@@ -293,7 +319,19 @@ and decode_obj_field = (~parent_name) =>
   | {key, optional: false, readonly, type_} =>
     RecordField(
       key |> to_valid_ident,
-      type_ |> decode_type(~parent_name),
+      switch (type_) {
+      | `Ref(ref_) =>
+        let resolved_ref =
+          ref_ |> decode_ref_type_name(~mark_referenced=false) |> snd;
+        switch (
+          args
+          |> CCList.find_opt((arg: Ts.type_arg) => arg.name == resolved_ref)
+        ) {
+        | Some(_) => Base(Arg(resolved_ref))
+        | None => type_ |> decode_type(~parent_name)
+        };
+      | type_ => type_ |> decode_type(~parent_name)
+      },
       readonly,
     )
 and decode_type_extract = (ref_: Ts.ref_, fields: list(string)) => {
@@ -358,7 +396,8 @@ and decode_extends_ref = (ref_: Ts.ref_) => {
     |> get_or(~default=[])
   );
 }
-and decode_ref_type_name = (ref_: Ts.ref_): (string, string) => {
+and decode_ref_type_name =
+    (~mark_referenced=true, ref_: Ts.ref_): (string, string) => {
   let idents =
     ref_
     |> CCListLabels.map(~f=fst)
@@ -373,6 +412,8 @@ and decode_ref_type_name = (ref_: Ts.ref_): (string, string) => {
       }
     )
     |> to_valid_typename;
-  record_referenced := [ref_resolved |> fst, ...record_referenced^];
+  if (mark_referenced) {
+    record_referenced := [ref_resolved |> fst, ...record_referenced^];
+  };
   ref_resolved;
 };

@@ -2,7 +2,7 @@ type type_def =
   | Base(base_type)
   | Optional(type_def)
   | Nullable(type_def)
-  | TypeDeclaration((string, string), type_def)
+  | TypeDeclaration((string, string), type_def, list(type_arg))
   | Record(list(type_def))
   | RecordField((string, string), type_def, bool)
   | Union(list(type_def))
@@ -12,13 +12,14 @@ type type_def =
   | VariantMixed(list(value_type))
   | Array(type_def)
   | Tuple(list(type_def))
-
+and type_arg = {name: string}
 and base_type =
   | String
   | Number
   | Boolean
   | Void
   | Any
+  | Arg(string)
   | Ref((string, string))
 and value_type =
   | U_String(string)

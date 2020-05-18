@@ -4,10 +4,7 @@ open Parsetree;
 open Ast_helper;
 
 let generate_base_type = (~inner=[], name) => {
-  Typ.constr(
-    {Location.txt: Longident.parse(name), loc: Location.none},
-    inner,
-  );
+  Typ.constr(Location.mknoloc(Longident.parse(name)), inner);
 };
 
 let generate_record_kind =
