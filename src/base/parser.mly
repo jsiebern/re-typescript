@@ -74,7 +74,7 @@ type_def:
   | export = opt_as_bool(EXPORT); is_const = opt_as_bool(CONST); ENUM; name = IDENT; LCURLY; members = separated_nonempty_list(COMMA, enum_member); RCURLY; SEMICOLON?; { (`EnumDef(fst(name), members, is_const), export) }
 
 let type_args :=
-  | LT; args = separated_or_terminated_list(COMMA, type_arg); GT; { args }
+  | LT; args = maybe_separated_or_terminated_list(COMMA, type_arg); GT; { args }
 
 let type_arg :=
   | name = IDENT; EXTENDS; ext = type_; EQUALS; eq = type_; { { Ts.constraint_=Some(ext); name=fst(name); default=Some(eq) } }
