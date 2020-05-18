@@ -1,4 +1,4 @@
-let worker = WebWorkers.create_webworker("./../worker/worker.js");
+let worker = WebWorkers.create_webworker("worker/worker.js");
 
 let set_printed: ref(option(Belt.Result.t(string, string) => unit)) =
   ref(None);
