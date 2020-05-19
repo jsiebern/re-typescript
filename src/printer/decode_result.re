@@ -12,7 +12,10 @@ type type_def =
   | VariantMixed(list(value_type))
   | Array(type_def)
   | Tuple(list(type_def))
-and type_arg = {name: string}
+and type_arg = {
+  name: string,
+  default: option(type_def),
+}
 and base_type =
   | String
   | Number
@@ -20,7 +23,7 @@ and base_type =
   | Void
   | Any
   | Arg(string)
-  | Ref((string, string))
+  | Ref((string, string), list(type_def))
 and value_type =
   | U_String(string)
   | U_Number(int)

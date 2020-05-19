@@ -1,0 +1,12 @@
+type arguments generation & grammar › accepts ts grammar for type arguments
+type ('a1, 'a2) with_arg = {
+  a1: 'a1 ;
+  a2: 'a2 }
+and ('a1, 'a2, 'a3) with_arg_2 = {
+  a1: 'a1 ;
+  a2: 'a2 ;
+  a3: 'a3 }
+and ('a1, 'a2, 'a3) with_arg_3 = {
+  a1: 'a1 ;
+  a2: 'a2 ;
+  a3: 'a3 }

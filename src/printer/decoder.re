@@ -16,8 +16,9 @@ let injected: Hashtbl.t(string, Decode_result.type_def) = Hashtbl.create(0);
 let record_referenced = ref([]);
 let has_been_referenced = name =>
   record_referenced^ |> List.find_opt(x => x == name) |> CCOpt.is_some;
+let type_arg_ref: Hashtbl.t(string, (list(string), list(type_arg))) =
+  Hashtbl.create(0);
 
-// TODO: Add a type arg map and validate it against it resolving references
 // TODO: Bring the lex location information along with the Ts.* to throw meaningful errors here
 
 /**
@@ -25,6 +26,7 @@ let has_been_referenced = name =>
  */
 let rec decode = (~ctx: config=default_config, toplevel: Ts.toplevel) => {
   Hashtbl.clear(injected);
+  Hashtbl.clear(type_arg_ref);
   types := toplevel.types |> CCList.map(fst);
   record_referenced := [];
   let types = toplevel.types |> CCList.map(decode_type_def);
@@ -55,20 +57,34 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
   fun
   | (`TypeDef(name, `Obj(fields), args), _) => {
       let name = name |> to_valid_typename;
-      let record =
-        Record(
-          fields |> CCList.map(decode_obj_field(~parent_name=name, ~args)),
-        );
-      Hashtbl.add(record_cache, fst(name), record);
-      TypeDeclaration(name, record, decode_type_args(args));
-    }
-  | (`InterfaceDef(name, extends_ref, fields, args), _) => {
-      let name = name |> to_valid_typename;
+      let (arg_names, args) = decode_type_args(~name=fst(name), args);
       let record =
         Record(
           fields
-          |> CCList.map(decode_obj_field(~parent_name=name, ~args))
-          |> CCList.append(decode_extends_ref(extends_ref))
+          |> CCList.map(
+               decode_obj_field(~parent_name=name, ~available_args=arg_names),
+             ),
+        );
+      Hashtbl.add(record_cache, fst(name), record);
+
+      TypeDeclaration(name, record, args);
+    }
+  | (`InterfaceDef(name, extends_ref, fields, args), _) => {
+      let name = name |> to_valid_typename;
+      let (arg_names, args) = decode_type_args(~name=fst(name), args);
+      let record =
+        Record(
+          fields
+          |> CCList.map(
+               decode_obj_field(~parent_name=name, ~available_args=arg_names),
+             )
+          |> CCList.append(
+               decode_extends_ref(
+                 ~parent_name=name,
+                 ~available_args=arg_names,
+                 extends_ref,
+               ),
+             )
           |> CCListLabels.uniq(~eq=(a, b) =>
                switch (a, b) {
                | (RecordField((a, _), _, _), RecordField((b, _), _, _)) =>
@@ -79,14 +95,16 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
           |> CCList.rev,
         );
       Hashtbl.add(record_cache, fst(name), record);
-      TypeDeclaration(name, record, decode_type_args(args));
+
+      TypeDeclaration(name, record, args);
     }
   | (`TypeDef(name, type_, args), _) => {
       let name = name |> to_valid_typename;
+      let (arg_names, args) = decode_type_args(~name=fst(name), args);
       TypeDeclaration(
         name,
-        decode_type(~parent_name=name, type_),
-        decode_type_args(args),
+        decode_type(~parent_name=name, ~available_args=arg_names, type_),
+        args,
       );
     }
   | (`EnumDef(name, members, is_const), _) =>
@@ -95,8 +113,35 @@ and decode_type_def: ((Ts.type_def, bool)) => type_def =
       decode_enum(members, is_const),
       [],
     )
-and decode_type_args = (args: list(Ts.type_arg)) => {
-  args |> CCList.map((arg: Ts.type_arg) => {name: arg.name});
+and decode_type_args = (~name: string, args: list(Ts.type_arg)) => {
+  let names = args |> CCList.map((v: Ts.type_arg) => v.name);
+  CCHashtbl.get_or_add(type_arg_ref, ~k=name, ~f=_ =>
+    args
+    |> CCList.map((arg: Ts.type_arg) => {
+         let parent_name = name |> to_valid_typename;
+         (
+           arg.name,
+           {
+             name: arg.name,
+             default:
+               arg.default
+               |> CCOpt.map(
+                    fun
+                    | `Obj(fields) =>
+                      decode_inline_record(
+                        ~parent_name,
+                        ~available_args=names,
+                        ~key=arg.name,
+                        ~fields,
+                      )
+                    | t =>
+                      decode_type(~parent_name, ~available_args=names, t),
+                  ),
+           },
+         );
+       })
+    |> CCList.split
+  );
 }
 and decode_enum = (members, is_const) => {
   let is_clean =
@@ -114,29 +159,47 @@ and decode_enum = (members, is_const) => {
     raise(Decode_Error("Unclean enums are not yet supported"));
   };
 }
-and decode_type: (~parent_name: (string, string), Ts.type_) => type_def =
-  (~parent_name) =>
+and decode_type:
+  (
+    ~parent_name: (string, string),
+    ~available_args: list(string),
+    Ts.type_
+  ) =>
+  type_def =
+  (~parent_name, ~available_args) =>
     fun
     | `String => Base(String)
     | `Number => Base(Number)
     | `Boolean => Base(Boolean)
     | `Void => Base(Void)
     | `Any => Base(Any)
-    | `Array(type_) => decode_array(~parent_name, type_)
-    | `Tuple(types) => decode_tuple(~parent_name, types)
-    | `Ref(ref_) => Base(Ref(ref_ |> decode_ref_type_name))
-    | `Union(members) => decode_union(~parent_name, members)
+    | `Array(type_) => decode_array(~parent_name, ~available_args, type_)
+    | `Tuple(types) => decode_tuple(~parent_name, ~available_args, types)
+    | `Ref(ref_) => {
+        let decoded_ref =
+          decode_ref_type_name(~parent_name, ~available_args, ref_);
+        let decoded_name = decoded_ref |> fst |> snd;
+        switch (available_args |> CCList.find_opt(arg => arg == decoded_name)) {
+        | Some(_) => Base(Arg(decoded_name))
+        | None => Base(Ref(fst(decoded_ref), snd(decoded_ref)))
+        };
+      }
+    | `Union(members) => decode_union(~parent_name, ~available_args, members)
     | `Undefined =>
       raise(Decode_Error("Undefined cannot exist outside of a union"))
     | `Null => raise(Decode_Error("Null cannot exist outside of a union"))
-    | `Obj(_) =>
-      raise(Decode_Error("Obj should never be reached in this switch"))
-    | `TypeExtract(ref_, names) => decode_type_extract(ref_, names)
-and decode_union = (~parent_name, members) => {
-  switch (decode_union_undefined(~parent_name, members)) {
+    | `Obj(o) => {
+        Console.error(o);
+        raise(Decode_Error("Obj should never be reached in this switch"));
+      }
+    | `TypeExtract(ref_, names) =>
+      decode_type_extract(~parent_name, ~available_args, ref_, names)
+and decode_union = (~parent_name, ~available_args, members) => {
+  // TODO: Switch on references in the simple unions to maybe get the same type
+  switch (decode_union_undefined(~parent_name, ~available_args, members)) {
   | Some(t) => t
   | None =>
-    switch (decode_union_nullable(~parent_name, members)) {
+    switch (decode_union_nullable(~parent_name, ~available_args, members)) {
     | Some(t) => t
     | None =>
       switch (decode_union_string(members)) {
@@ -214,7 +277,8 @@ and decode_union_string = (members: list(Ts.union_member)) => {
   | e => raise(e)
   };
 }
-and decode_union_nullable = (~parent_name, members: list(Ts.union_member)) => {
+and decode_union_nullable =
+    (~parent_name, ~available_args, members: list(Ts.union_member)) => {
   let extract_null =
     members
     |> CCListLabels.fold_left(
@@ -229,12 +293,14 @@ and decode_union_nullable = (~parent_name, members: list(Ts.union_member)) => {
        );
   switch (extract_null) {
   | (true, [`U_Type(type_)]) =>
-    Some(Nullable(decode_type(~parent_name, type_)))
-  | (true, members) => Some(Nullable(decode_union(~parent_name, members)))
+    Some(Nullable(decode_type(~parent_name, ~available_args, type_)))
+  | (true, members) =>
+    Some(Nullable(decode_union(~parent_name, ~available_args, members)))
   | (false, _) => None
   };
 }
-and decode_union_undefined = (~parent_name, members: list(Ts.union_member)) => {
+and decode_union_undefined =
+    (~parent_name, ~available_args, members: list(Ts.union_member)) => {
   let extract_undefined =
     members
     |> CCListLabels.fold_left(
@@ -249,20 +315,22 @@ and decode_union_undefined = (~parent_name, members: list(Ts.union_member)) => {
        );
   switch (extract_undefined) {
   | (true, [`U_Type(type_)]) =>
-    Some(Optional(decode_type(~parent_name, type_)))
-  | (true, members) => Some(Optional(decode_union(~parent_name, members)))
+    Some(Optional(decode_type(~parent_name, ~available_args, type_)))
+  | (true, members) =>
+    Some(Optional(decode_union(~parent_name, ~available_args, members)))
   | (false, _) => None
   };
 }
-and decode_array = (~parent_name, type_) => {
+and decode_array = (~parent_name, ~available_args, type_) => {
   Array(
     switch (type_) {
-    | `Obj(fields) => decode_inline_record(~parent_name, ~key="t", ~fields)
-    | t => decode_type(~parent_name, t)
+    | `Obj(fields) =>
+      decode_inline_record(~parent_name, ~available_args, ~key="t", ~fields)
+    | t => decode_type(~parent_name, ~available_args, t)
     },
   );
 }
-and decode_tuple = (~parent_name, types) => {
+and decode_tuple = (~parent_name, ~available_args, types) => {
   Tuple(
     types
     |> CCListLabels.mapi(~f=i =>
@@ -270,14 +338,15 @@ and decode_tuple = (~parent_name, types) => {
          | `Obj(fields) =>
            decode_inline_record(
              ~parent_name,
+             ~available_args,
              ~key=i + 1 |> string_of_int,
              ~fields,
            )
-         | t => decode_type(~parent_name, t)
+         | t => decode_type(~parent_name, ~available_args, t)
        ),
   );
 }
-and decode_inline_record = (~parent_name, ~key, ~fields) => {
+and decode_inline_record = (~parent_name, ~available_args, ~key, ~fields) => {
   let sub_type_name =
     Printf.sprintf("%s_%s", fst(parent_name), key |> to_valid_ident |> fst);
   let record =
@@ -287,7 +356,7 @@ and decode_inline_record = (~parent_name, ~key, ~fields) => {
            ~f=
              decode_obj_field(
                ~parent_name=(sub_type_name, sub_type_name),
-               ~args=[],
+               ~available_args,
              ),
          ),
     );
@@ -297,12 +366,13 @@ and decode_inline_record = (~parent_name, ~key, ~fields) => {
     TypeDeclaration((sub_type_name, sub_type_name), record, []),
   );
   Hashtbl.add(record_cache, sub_type_name, record);
-  Base(Ref((sub_type_name, sub_type_name)));
+  Base(Ref((sub_type_name, sub_type_name), []));
 }
-and decode_obj_field = (~parent_name, ~args: list(Ts.type_arg)) =>
+and decode_obj_field = (~parent_name, ~available_args) =>
   fun
   | {key, type_: `Obj(fields), optional, readonly} => {
-      let t_ref = decode_inline_record(~parent_name, ~key, ~fields);
+      let t_ref =
+        decode_inline_record(~parent_name, ~available_args, ~key, ~fields);
       RecordField(
         key |> to_valid_ident,
         optional ? Optional(t_ref) : t_ref,
@@ -312,30 +382,20 @@ and decode_obj_field = (~parent_name, ~args: list(Ts.type_arg)) =>
   | {key, optional: true, readonly, type_} => {
       RecordField(
         key |> to_valid_ident,
-        Optional(type_ |> decode_type(~parent_name)),
+        Optional(type_ |> decode_type(~parent_name, ~available_args)),
         readonly,
       );
     }
   | {key, optional: false, readonly, type_} =>
     RecordField(
       key |> to_valid_ident,
-      switch (type_) {
-      | `Ref(ref_) =>
-        let resolved_ref =
-          ref_ |> decode_ref_type_name(~mark_referenced=false) |> snd;
-        switch (
-          args
-          |> CCList.find_opt((arg: Ts.type_arg) => arg.name == resolved_ref)
-        ) {
-        | Some(_) => Base(Arg(resolved_ref))
-        | None => type_ |> decode_type(~parent_name)
-        };
-      | type_ => type_ |> decode_type(~parent_name)
-      },
+      type_ |> decode_type(~parent_name, ~available_args),
       readonly,
     )
-and decode_type_extract = (ref_: Ts.ref_, fields: list(string)) => {
-  let fields_in_type = decode_extends_ref(ref_);
+and decode_type_extract =
+    (~parent_name, ~available_args, ref_: Ts.ref_, fields: list(string)) => {
+  let fields_in_type =
+    decode_extends_ref(~parent_name, ~available_args, ref_);
   let find_field = name =>
     fields_in_type
     |> CCListLabels.find_opt(
@@ -358,15 +418,22 @@ and decode_type_extract = (ref_: Ts.ref_, fields: list(string)) => {
           Printf.sprintf(
             "Could not find field %s in %s",
             name,
-            decode_ref_type_name(ref_) |> snd,
+            decode_ref_type_name(~parent_name, ~available_args, ref_)
+            |> fst
+            |> snd,
           ),
         ),
       );
     }
   | [name, ...rest] =>
     switch (find_field(name |> to_valid_typename |> fst)) {
-    | Some(RecordField(_, Base(Ref((ref_name, _))), _)) =>
-      decode_type_extract([(ref_name, [])], rest)
+    | Some(RecordField(_, Base(Ref((ref_name, _), _)), _)) =>
+      decode_type_extract(
+        ~parent_name,
+        ~available_args,
+        [(ref_name, [])],
+        rest,
+      )
     | Some(_)
     | None =>
       // TODO: Decide wether to to just return any here instead of an error
@@ -376,16 +443,19 @@ and decode_type_extract = (ref_: Ts.ref_, fields: list(string)) => {
           Printf.sprintf(
             "Could not find field %s in %s",
             name,
-            decode_ref_type_name(ref_) |> snd,
+            decode_ref_type_name(~parent_name, ~available_args, ref_)
+            |> fst
+            |> snd,
           ),
         ),
       );
     }
   };
 }
-and decode_extends_ref = (ref_: Ts.ref_) => {
+and decode_extends_ref = (~parent_name, ~available_args, ref_: Ts.ref_) => {
   // Only implement this naively for now
-  let lookup_name = fst(decode_ref_type_name(ref_));
+  let lookup_name =
+    decode_ref_type_name(~parent_name, ~available_args, ref_) |> fst |> fst;
   CCOpt.(
     Hashtbl.find_opt(record_cache, lookup_name)
     |> map(
@@ -397,23 +467,94 @@ and decode_extends_ref = (ref_: Ts.ref_) => {
   );
 }
 and decode_ref_type_name =
-    (~mark_referenced=true, ref_: Ts.ref_): (string, string) => {
-  let idents =
-    ref_
-    |> CCListLabels.map(~f=fst)
-    |> CCListLabels.map(~f=v => ["_", v])
-    |> CCListLabels.concat;
+    (~mark_referenced=true, ~parent_name, ~available_args, ref_: Ts.ref_)
+    : ((string, string), list(type_def)) => {
+  let (ref_names, ref_types) = CCList.split(ref_);
   let ref_resolved =
-    (
-      switch (idents) {
-      | [] => ""
-      | [_, ...rest] =>
-        rest |> CCListLabels.fold_left(~init="", ~f=(p, e) => p ++ e)
-      }
-    )
-    |> to_valid_typename;
+    ref_names |> CCList.to_string(~sep=".", v => v) |> to_valid_typename;
+
   if (mark_referenced) {
-    record_referenced := [ref_resolved |> fst, ...record_referenced^];
+    record_referenced := [fst(ref_resolved), ...record_referenced^];
   };
-  ref_resolved;
+
+  let ref_applied_types =
+    ref_types
+    |> CCList.last_opt
+    |> CCOpt.map(args =>
+         args
+         |> CCList.mapi(i =>
+              fun
+              | `Obj(fields) =>
+                decode_inline_record(
+                  ~parent_name=ref_resolved,
+                  ~available_args,
+                  ~key=string_of_int(i),
+                  ~fields,
+                )
+              | t =>
+                decode_type(~parent_name=ref_resolved, ~available_args, t)
+            )
+       )
+    |> CCOpt.get_or(~default=[]);
+
+  let resolved_type_args = CCHashtbl.get(type_arg_ref, fst(ref_resolved));
+  let (n_required, append_defaults) =
+    resolved_type_args
+    |> CCOpt.map_or(~default=(0, []), ((_, arg_types)) => {
+         arg_types
+         |> CCList.fold_left(
+              ((i, lst), arg_type) => {
+                switch (lst, arg_type) {
+                | ([], {default: None, _}) => (i + 1, lst)
+                | (lst, {default: None, _}) =>
+                  raise(
+                    Decode_Error(
+                      "Invalid type reference: Cannot have a required type arg after the first optional",
+                    ),
+                  )
+                | (lst, {name, default: Some(t), _}) => (i, lst @ [t])
+                }
+              },
+              (0, []),
+            )
+       });
+  let l = CCList.length;
+  let n_required = n_required;
+  let n_defaults = l(append_defaults);
+  let n_total = n_required + n_defaults;
+  let n_applied = l(ref_applied_types);
+
+  let ref_applied_types =
+    switch (ref_applied_types) {
+    | applied when n_applied > 0 && resolved_type_args |> Option.is_none =>
+      Console.warn(
+        Printf.sprintf(
+          "Invalid type reference: Arguments passed to a type that is not in scope (%s, %s)",
+          fst(ref_resolved),
+          snd(ref_resolved),
+        ),
+      );
+      applied;
+    | applied when n_applied > n_total || n_applied < n_required =>
+      raise(
+        Decode_Error(
+          Printf.sprintf(
+            "Invalid type reference: Applied %d arguments to a type where a minimum of %d and a maxiumum of %d are expected",
+            n_applied,
+            n_required,
+            n_total,
+          ),
+        ),
+      )
+    | applied when n_applied == n_total => applied
+    | applied when n_applied > n_required =>
+      applied @ CCList.drop(n_total - n_applied, append_defaults)
+    | applied when n_applied == n_required => applied @ append_defaults
+    | _ =>
+      Console.error(ref_resolved);
+      Console.error([n_required, n_total, n_applied]);
+      raise(Decode_Error("This should not be reachable"));
+    };
+
+  (ref_resolved, ref_applied_types);
 };

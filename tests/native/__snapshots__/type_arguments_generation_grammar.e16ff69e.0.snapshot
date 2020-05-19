@@ -1,0 +1,2 @@
+type arguments generation & grammar › prints correct generics for type arguments
+type 'ARG with_arg = 'ARG

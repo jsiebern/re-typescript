@@ -28,16 +28,9 @@ export declare type Subset<T, U> = {
 };
 |};
 let content = {|
-  type a = string;
-
-  type b<> = {
-      field_1: number,
-      field_2: P
-  };
-
-  type c = b<a>;
-
-  interface Pair<T1, T2> { first: T1; second: T2; }
+type orig_arg<a = string> = a;
+type with_arg<a = { b: orig_arg<number> }> = a;
+type call_args = with_arg;
 |};
 
 let () = {

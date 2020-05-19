@@ -1,0 +1,2 @@
+type argument logic › does not throw when construcing a faulty type, but will throw on call site
+type ('a1, 'a2, 'a3) with_arg = 'a3

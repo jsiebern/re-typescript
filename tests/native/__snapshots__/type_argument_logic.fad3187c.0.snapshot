@@ -1,0 +1,3 @@
+type argument logic › can use various default structures
+type 'a with_arg = 'a
+and call_args = (string * float) with_arg

@@ -79,7 +79,8 @@ let to_valid_ident = ident => (
     | e => raise(e)
     }
   )
-  |> string_replace("$", "_"),
+  |> string_replace("$", "_")
+  |> string_replace(".", "_"),
   ident,
 );
 

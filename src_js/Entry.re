@@ -74,6 +74,10 @@ type inline_variant_in_arr = Array<inline_variant['field']>;
 type variant_num = 2 | 4 | 8 | 16;
 
 type x = 1 | 'string' | undefined | false | 3;
+
+type orig_arg<a = string> = a;
+type with_arg<a = { b: orig_arg<number> }> = a;
+type call_args = with_arg;
 |};
 
 module Highlight = {

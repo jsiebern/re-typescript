@@ -38,7 +38,17 @@ module Make = (Config: Config) : Ast_generator.T => {
             }
           | Boolean => generate_base_type("bool")
           | Void => generate_base_type("unit")
-          | Ref(ref_) => generate_base_type(ref_ |> fst)
+          | Ref(ref_, applied_types) =>
+            CCList.(
+              generate_base_type(
+                ~inner=
+                  applied_types
+                  >|= generate_type_def(~ctx, ~parent_name)
+                  >|= snd
+                  |> keep_some,
+                ref_ |> fst,
+              )
+            )
           | Arg(argName) => Typ.var(argName)
           | Any =>
             gen_config.has_any = true;
@@ -240,7 +250,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                            args
                            |> CCList.map(
                                 fun
-                                | {name} => (
+                                | {name, _} => (
                                     Typ.var(name),
                                     Asttypes.Invariant,
                                   ),
