@@ -5,7 +5,7 @@ type type_def =
   | TypeDeclaration((string, string), type_def, list(type_arg))
   | Record(list(type_def))
   | RecordField((string, string), type_def, bool)
-  | Union(list(type_def))
+  | Union(list(union_member))
   | VariantEnum(list((string, string)))
   | VariantString(list(string))
   | VariantInt(list(int))

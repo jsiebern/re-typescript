@@ -241,11 +241,52 @@ and decode_union_type =
          ([], [], false, []),
        );
 
+  let types =
+    types
+    @ (
+      strings
+      |> list_to_opt
+      |> CCOpt.flat_map(decode_union_string)
+      |> CCOpt.to_list
+    )
+    @ (
+      numbers
+      |> list_to_opt
+      |> CCOpt.flat_map(decode_union_int)
+      |> CCOpt.to_list
+    );
   Union(
     types
-    @ (decode_union_string(strings) |> CCOpt.to_list)
-    @ (decode_union_int(numbers) |> CCOpt.to_list),
+    |> CCList.map(t =>
+         {um_type: t, um_classifier: "", um_name: decode_union_type_name(t)}
+       ),
   );
+}
+and decode_union_type_name = (um_type: type_def) => {
+  switch (um_type) {
+  | Base(String) => "string"
+  | Base(Number) => "number"
+  | Base(Boolean) => "boolean"
+  | Base(Void) => "void"
+  | Base(Any) => "any"
+  | Base(Ref((n, _), _)) => n
+  | Base(Arg(_)) => "inferred"
+  | Optional(t)
+  | Nullable(t) => decode_union_type_name(t)
+  | Array(t) => Printf.sprintf("array_%s", decode_union_type_name(t))
+  | Tuple(_) => "tuple"
+  | VariantMixed(_) => "variant"
+  | VariantInt(_) => "num"
+  | VariantString(_) => "literal"
+  | VariantEnum(_) =>
+    raise(Decode_Error("Union is not a valid union member"))
+  | Union(_) => raise(Decode_Error("Union is not a valid union member"))
+  | Record(_) => raise(Decode_Error("Record is not a valid union member"))
+  | RecordField(_) =>
+    raise(Decode_Error("Record is not a valid union member"))
+  | TypeDeclaration(_) =>
+    raise(Decode_Error("TypeDeclaration is not a valid union member"))
+  };
 }
 and decode_union_mixed = (members: list(Ts.union_member)) => {
   exception No_union_mixed;
@@ -353,7 +394,7 @@ and decode_array = (~parent_name, ~available_args, type_) => {
   Array(
     switch (type_) {
     | `Obj(fields) =>
-      decode_inline_record(~parent_name, ~available_args, ~key="t", ~fields)
+      decode_inline_record(~parent_name, ~available_args, ~key="0", ~fields)
     | t => decode_type(~parent_name, ~available_args, t)
     },
   );

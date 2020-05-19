@@ -154,4 +154,98 @@ let generate_bs_unboxed =
   );
 };
 
-let generate_union_unboxed = types => {};
+// module Component: {
+//   type t;
+//   let string: string => t;
+//   let callback: (unit => React.element) => t;
+//   let element: React.element => t;
+// } = {
+//   [@unboxed]
+//   type t =
+//     | Any('a): t;
+//   let string = (v: string) => Any(v);
+//   let callback = (v: unit => React.element) => Any(v);
+//   let element = (v: React.element) => Any(v);
+// };
+let generate_union_unboxed =
+    (~module_name, members: list((string, core_type))) => {
+  let str_members =
+    members
+    |> CCList.map(((name, t)) => {
+         [%stri
+           let [%p Pat.var(Location.mknoloc(name))] = (v: [%t t]) => Any(v)
+         ]
+       });
+  let stri_members =
+    members
+    |> CCList.map(((name, t)) => {
+         Sig.value(Val.mk(Location.mknoloc(name), [%type: [%t t] => t]))
+       });
+
+  Str.module_(
+    Mb.mk(
+      Location.mknoloc(module_name),
+      Mod.constraint_(
+        Mod.mk(
+          Pmod_structure(
+            CCList.concat([
+              [%str
+                [@unboxed]
+                type t =
+                  | Any('a): t
+              ],
+              str_members,
+            ]),
+          ),
+        ),
+        Mty.signature(CCList.concat([[%sig: type t], stri_members])),
+      ),
+    ),
+  );
+};
+
+let generate_type = (~args, ~td_kind, ~td_type, ~name) =>
+  Type.mk(
+    ~params=
+      args
+      |> CCList.map(
+           fun
+           | {name, _} => (Typ.var(name), Asttypes.Invariant),
+         ),
+    ~kind=td_kind,
+    ~manifest=?td_type,
+    Location.mknoloc(name),
+  );
+
+let generate_type_wrap = types => Str.type_(Recursive, types);
+
+type generated_type_def = {
+  td_kind: type_kind,
+  td_type: option(core_type),
+  td_append: option(structure),
+  td_prepend: option(structure),
+};
+
+let map_td = (mapper, type_def) => {
+  ...type_def,
+  td_type: type_def.td_type |> CCOpt.map(mapper),
+};
+
+let get_td_for_list = (~mapper=?, type_defs) => {
+  td_kind: Ptype_abstract,
+  td_type:
+    mapper
+    |> CCOpt.map(mapper =>
+         mapper(type_defs |> CCList.filter_map(({td_type, _}) => td_type))
+       ),
+  td_prepend:
+    type_defs
+    |> CCList.filter_map(({td_prepend, _}) => td_prepend)
+    |> CCList.concat
+    |> list_to_opt,
+  td_append:
+    type_defs
+    |> CCList.filter_map(({td_append, _}) => td_append)
+    |> CCList.concat
+    |> list_to_opt,
+};
