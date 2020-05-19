@@ -36,6 +36,11 @@ describe("failing tests that shouldn't", ({test, _}) => {
     ).
       toThrow()
   });
+  test("string literals with digits at start", ({expect, _}) => {
+    expect.fn(() => print({|
+            type c = '0ab';
+        |})).toThrow()
+  });
   test(
     "ref resolving in string literals (and other primitive unions)",
     ({expect, _}) => {

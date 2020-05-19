@@ -95,6 +95,8 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Basic types
     - [x] Interfaces
       - [x] Nested
+      - [ ] Empty interfaces that extend another can be set to the ref instead of inheriting the fields
+      - [ ] Inline interfaces that use an arg need to carry the args in their definitions
     - [x] Arrays / Lists
     - [ ] Enums
     - [x] Unions
