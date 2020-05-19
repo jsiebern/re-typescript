@@ -1,6 +1,6 @@
 # re-typescript
 
-An opinionated attempt at finally solving typescript interop for `ReasonML` / `OCAML`.
+An opinionated attempt at finally solving typescript interop for `ReasonML` / `OCaml`.
 
 ## Why
 
