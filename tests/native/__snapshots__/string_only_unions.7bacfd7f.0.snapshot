@@ -1,16 +1,5 @@
 string only unions › can be generated inline
-module In_arr :
-  sig
-    type t = private string
-    val red : t[@@bs.inline \"red\"]
-    val blue : t[@@bs.inline \"blue\"]
-  end =
-  struct
-    type t = string
-    let red = \"red\"[@@bs.inline ]
-    let blue = \"blue\"[@@bs.inline ]
-  end 
-module Obj :
+module Obj_field :
   sig
     type t = private string
     val red : t[@@bs.inline \"red\"]
@@ -22,5 +11,16 @@ module Obj :
     let blue = \"blue\"[@@bs.inline ]
   end 
 type obj = {
-  field: Obj.t }
-and in_arr = In_arr.t array
+  field: Obj_field.t }
+module In_arr :
+  sig
+    type t = private string
+    val red : t[@@bs.inline \"red\"]
+    val blue : t[@@bs.inline \"blue\"]
+  end =
+  struct
+    type t = string
+    let red = \"red\"[@@bs.inline ]
+    let blue = \"blue\"[@@bs.inline ]
+  end 
+type in_arr = In_arr.t array

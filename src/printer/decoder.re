@@ -20,6 +20,8 @@ let type_arg_ref: Hashtbl.t(string, (list(string), list(type_arg))) =
   Hashtbl.create(0);
 
 // TODO: Bring the lex location information along with the Ts.* to throw meaningful errors here
+// TODO: Implement a reference / dependency tree that is able hoist certain types up if necessary & avoids duplication of unnecessary types
+// TODO: Properly keep track of the names of types and their dynamically generated subtypes
 
 /**
   Functions

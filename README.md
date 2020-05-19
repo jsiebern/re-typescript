@@ -42,12 +42,12 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [x] Array
   - [x] Tuple
   - [ ] Named tuple (derives from Array<T>)
-  - [ ] Union
+  - [x] Union
     - [x] Simple Nullable / Optional
     - [x] String unions
     - [x] Int unions
     - [x] Mixed unions
-    - [ ] Union of types
+    - [x] Union of types
   - [ ] Enum
     - [x] Keys
     - [ ] Default values
@@ -91,7 +91,6 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Extends keyword
 
 - [ ] Decoding
-  - [ ] Treat type parameters that get used in their type as not actually creating a type def as it needs to be called somewhere to be resolved (`type ab<A,B> = { a: A, b: B };`)
   - [ ] Create representation
     - [x] Basic types
     - [x] Interfaces

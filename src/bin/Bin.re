@@ -1,8 +1,7 @@
 open Re_typescript_base;
 
 let content = {|
-type xyz = { a: string };
-type union = string | xyz;
+type variant = 'str1' | 'Str1' | "X_$STR";
 |};
 
 let () = {

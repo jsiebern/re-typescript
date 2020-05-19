@@ -217,7 +217,10 @@ let generate_type = (~args, ~td_kind, ~td_type, ~name) =>
     Location.mknoloc(name),
   );
 
-let generate_type_wrap = types => Str.type_(Recursive, types);
+let generate_type_wrap =
+  fun
+  | [] => []
+  | types => [Str.type_(Recursive, types)];
 
 type generated_type_def = {
   td_kind: type_kind,

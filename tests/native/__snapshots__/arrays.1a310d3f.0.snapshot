@@ -1,4 +1,4 @@
 arrays › arrays of inline records
-type x_t = {
+type x_0 = {
   field: string }
-and x = x_t array
+and x = x_0 array

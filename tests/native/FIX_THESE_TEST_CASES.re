@@ -39,15 +39,15 @@ describe("failing tests that shouldn't", ({test, _}) => {
   test(
     "ref resolving in string literals (and other primitive unions)",
     ({expect, _}) => {
-    expect.fn(() =>
+    expect.string(
       print(
         {|
             type x = 'x' | 'y';
             type y = 'z' | x;
         |},
-      )
+      ),
     ).
-      toThrow()
+      toMatchSnapshot()
   });
   test(
     "declare keyword, dynamic objects, keyof keyword ternaries",

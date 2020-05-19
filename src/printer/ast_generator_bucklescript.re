@@ -150,14 +150,14 @@ module Make = (Config: Config) : Ast_generator.T => {
           td_kind: Ptype_abstract,
           td_type:
             Some(generate_base_type(Printf.sprintf("%s.t", module_name))),
-          td_append:
+          td_prepend:
             Some([
               generate_bs_inline_str(
                 ~module_name,
                 keys |> CCList.map(to_valid_ident),
               ),
             ]),
-          td_prepend: None,
+          td_append: None,
         };
       }
     | VariantMixed(values) =>
@@ -285,18 +285,21 @@ module Make = (Config: Config) : Ast_generator.T => {
            ((buffer, carry), ((name, _), type_, args)) => {
              switch (generate_type_def(~ctx, ~parent_name=name, type_)) {
              | {td_prepend: Some(prepend), td_append: None, td_kind, td_type} => (
-                 [generate_type(~name, ~args, ~td_kind, ~td_type)],
-                 carry @ [generate_type_wrap(buffer)] @ prepend,
+                 [],
+                 carry
+                 @ generate_type_wrap(buffer)
+                 @ prepend
+                 @ generate_type_wrap([
+                     generate_type(~name, ~args, ~td_kind, ~td_type),
+                   ]),
                )
              | {td_prepend: None, td_append: Some(append), td_kind, td_type} => (
                  [],
                  carry
-                 @ [
-                   generate_type_wrap(
+                 @ generate_type_wrap(
                      buffer
                      @ [generate_type(~name, ~args, ~td_kind, ~td_type)],
-                   ),
-                 ]
+                   )
                  @ append,
                )
              | {
@@ -308,12 +311,10 @@ module Make = (Config: Config) : Ast_generator.T => {
                  [],
                  carry
                  @ prepend
-                 @ [
-                   generate_type_wrap(
+                 @ generate_type_wrap(
                      buffer
                      @ [generate_type(~name, ~args, ~td_kind, ~td_type)],
-                   ),
-                 ]
+                   )
                  @ append,
                )
              | {td_prepend: None, td_append: None, td_kind, td_type} => (
@@ -324,9 +325,7 @@ module Make = (Config: Config) : Ast_generator.T => {
            },
            ([], []),
          );
-    let types =
-      CCList.length(fst(types)) > 0
-        ? snd(types) @ [generate_type_wrap(fst(types))] : snd(types);
+    let types = snd(types) @ generate_type_wrap(fst(types));
 
     CCListLabels.concat([
       gen_config.has_unboxed_number ? number_unboxed : [],
