@@ -13,11 +13,12 @@ let run = (value, re) =>
     Ok((re ? Reason.printRE : Reason.printML)(Reason.parseML(run(value))))
   ) {
   | e =>
+    Js.log(e);
     Error(
       Js.Exn.asJsExn(e)
       ->Belt.Option.flatMap(Js.Exn.message)
       ->Belt.Option.getWithDefault("ERROR"),
-    )
+    );
   };
 
 WebWorkers.setWorkerOnMessage(

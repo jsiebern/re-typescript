@@ -210,14 +210,42 @@ and decode_union = (~parent_name, ~available_args, members) => {
         | None =>
           switch (decode_union_mixed(members)) {
           | Some(t) => t
-          | None =>
-            Console.error(members);
-            raise(Decode_Error("Complex unions are not yet implemented"));
+          | None => decode_union_type(~parent_name, ~available_args, members)
           }
         }
       }
     }
   };
+}
+and decode_union_type =
+    (~parent_name, ~available_args, members: list(Ts.union_member)) => {
+  let (strings, numbers, _, types) =
+    members
+    |> CCList.fold_left(
+         ((str, num, bool, types)) =>
+           fun
+           | `U_String(_) as s => (str @ [s], num, bool, types)
+           | `U_Number(_) as n => (str, num @ [n], bool, types)
+           | `U_Bool(_) => (
+               str,
+               num,
+               true,
+               bool ? types : types @ [Base(Boolean)],
+             )
+           | `U_Type(n) => (
+               str,
+               num,
+               bool,
+               types @ [decode_type(~parent_name, ~available_args, n)],
+             ),
+         ([], [], false, []),
+       );
+
+  Union(
+    types
+    @ (decode_union_string(strings) |> CCOpt.to_list)
+    @ (decode_union_int(numbers) |> CCOpt.to_list),
+  );
 }
 and decode_union_mixed = (members: list(Ts.union_member)) => {
   exception No_union_mixed;

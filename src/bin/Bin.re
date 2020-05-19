@@ -1,36 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-import { Palette } from './createPalette';
-import * as React from 'react';
-import { CSSProperties } from './withStyles';
-
-type x = string;
-type y = number;
-type someObj = {
-    some: boolean,
-    other: string,
-    rec: someObj,
-};
-interface next extends React.CSSProperties<Required<{
-  fontFamily: string;
-  nested: React.SomeOther<{color: number},string,boolean>;
-}>> {
-    has: number;
-    obj: somObj;
-};
-
-type emptyObj = {};
-interface emptyI {};
-
-export declare type Subset<T, U> = {
-  [key in keyof T]: key extends keyof U ? T[key] : never;
-};
-|};
-let content = {|
-type orig_arg<a = string> = a;
-type with_arg<a = { b: orig_arg<number> }> = a;
-type call_args = with_arg;
+type xyz = { a: string };
+type union = string | xyz;
 |};
 
 let () = {

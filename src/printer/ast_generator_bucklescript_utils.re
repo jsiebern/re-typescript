@@ -153,3 +153,5 @@ let generate_bs_unboxed =
     ),
   );
 };
+
+let generate_union_unboxed = types => {};

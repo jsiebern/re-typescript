@@ -42,8 +42,22 @@ describe("failing tests that shouldn't", ({test, _}) => {
     expect.fn(() =>
       print(
         {|
-            type k = 'b';
-            type d = c['a' | k]
+            type x = 'x' | 'y';
+            type y = 'z' | x;
+        |},
+      )
+    ).
+      toThrow()
+  });
+  test(
+    "declare keyword, dynamic objects, keyof keyword ternaries",
+    ({expect, _}) => {
+    expect.fn(() =>
+      print(
+        {|
+          export declare type Subset<T, U> = {
+            [key in keyof T]: key extends keyof U ? T[key] : never;
+          };
         |},
       )
     ).

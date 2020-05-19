@@ -194,17 +194,22 @@ module Make = (Config: Config) : Ast_generator.T => {
           Some(generate_base_type(Printf.sprintf("%s.t", module_name))),
         );
       };
-
     | Tuple(types) => (
         Ptype_abstract,
         Some(
           generate_tuple_of(
             types
-            |> CCListLabels.map(~f=generate_type_def(~ctx, ~parent_name))
-            |> CCListLabels.filter_map(~f=snd),
+            |> CCList.map(generate_type_def(~ctx, ~parent_name))
+            |> CCList.filter_map(snd),
           ),
         ),
       )
+    | Union(types) =>
+      // let types =
+      //   types
+      //   |> CCList.map(generate_type_def(~ctx, ~parent_name))
+      //   |> CCList.filter_map(snd);
+      (Ptype_abstract, None)
     | RecordField(_) =>
       raise(
         {
@@ -217,13 +222,6 @@ module Make = (Config: Config) : Ast_generator.T => {
         {
           Console.error(type_def);
           BS_Decode_Error("TypeDeclaration is not valid outside of root");
-        },
-      )
-    | t =>
-      raise(
-        {
-          Console.error(t);
-          BS_Decode_Error("Not yet implemented");
         },
       )
     };

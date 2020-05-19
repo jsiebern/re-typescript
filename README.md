@@ -85,7 +85,7 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [ ] Exports
   - [ ] Mutators
   - [ ] Type Parameters
-    - [ ] Type definition
+    - [x] Type definition
     - [ ] Interfaces
     - [ ] Classes
     - [ ] Extends keyword
@@ -102,7 +102,7 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Functions
     - [ ] Classes
     - [ ] Intersection types
-    - [ ] Type Parameters
+    - [x] Type Parameters
       - [ ] Throw error if 2 type parameters have the same name
   - [x] Abstracted file loader to resolve import / exports (should work both on web / native)
   - [ ] Implement separate file loaders
@@ -133,7 +133,7 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Classes
     - [ ] Namespaces
     - [ ] Intersection types
-    - [ ] Type Parameters
+    - [x] Type Parameters
   - [ ] Bucklescript Bindings (Full use of bucklescript features and sensible approach of providing externals)
     - [ ] Basic types
     - [ ] Interfaces
@@ -150,6 +150,7 @@ I will update the playground from time to time. It's not great yet, I just wante
 - [ ] Playground
   - [ ] Check if it's really necessary to pull half of the ocaml compiler in
   - [ ] Create a UI
+    - [ ] Add panel with different generator options
   - [x] Add syntax highlighting
   - [ ] Keep source in local storage
   - [x] Add reason / ocaml switch

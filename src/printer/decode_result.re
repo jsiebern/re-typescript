@@ -16,6 +16,11 @@ and type_arg = {
   name: string,
   default: option(type_def),
 }
+and union_member = {
+  um_name: string,
+  um_type: type_def,
+  um_classifier: string,
+}
 and base_type =
   | String
   | Number
