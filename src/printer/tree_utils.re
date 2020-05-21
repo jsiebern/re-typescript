@@ -61,9 +61,9 @@ module Path = {
   let unscoped_to_string = CCList.to_string(~sep="_", a => a);
   let to_string = ((path, sub): t) => path @ sub |> unscoped_to_string;
   let to_ident = path => path |> to_string |> Ident.of_string;
+  let eq_unscoped = CCEqual.list(CCEqual.string);
   let eq = ((path_a, sub_a): t, (path_b, sub_b): t) => {
-    CCEqual.list(CCEqual.string, path_a, path_b)
-    && CCEqual.list(CCEqual.string, sub_a, sub_b);
+    eq_unscoped(path_a, path_b) && eq_unscoped(sub_a, sub_b);
   };
 };
 

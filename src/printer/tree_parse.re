@@ -28,14 +28,21 @@ module Ref = {
     Hashtbl.clear(map);
   };
 
-  let resolve_ref = (~from: Path.t, ~lookup: list(string)): option(Path.t) => {
+  let resolve_ref =
+      (~remember=true, ~from: Path.t, lookup: list(string)): option(Path.t) => {
     let scope = from |> Path.to_scope;
     switch (lookup) {
     | [] => None
     | [_] as one =>
       let path = (scope @ one, []);
-      add(~from, ~to_=path);
-      Type.get(~path) |> CCOpt.map(_ => path);
+      if (Path.eq_unscoped(fst(from), fst(path))) {
+        Some(path);
+      } else {
+        if (remember) {
+          add(~from, ~to_=path);
+        };
+        Type.get(~path) |> CCOpt.map(_ => path);
+      };
     | _ => raise(Exceptions.Parser_error("PATH NOT IMPLEMENTED"))
     };
   };
@@ -62,10 +69,41 @@ let rec parse__type_def =
   | `InterfaceDef(name, extends, fields, args) =>
     let ident = name |> Ident.of_string;
     let t_path = inline ? path : path |> Path.add_ident(ident);
+
+    // TODO: Unclean & naively solved, replace later
+    let (ref_path, ref_types) = CCList.split(extends);
+    let add_fields =
+      switch (
+        Ref.resolve_ref(~from=path, ref_path)
+        |> CCOpt.flat_map(v => Type.get(~path=v))
+      ) {
+      | None => []
+      | Some(ref_type) =>
+        switch (ref_type) {
+        | TypeDeclaration({td_type: Interface(add_fields), _}) => add_fields
+        | _ => []
+        }
+      };
+
     let t =
       TypeDeclaration({
         td_name: ident,
-        td_type: parse__type(~path=t_path, `Obj(fields)),
+        td_type:
+          switch (parse__type(~path=t_path, `Obj(fields))) {
+          | Interface(has_fields) =>
+            Interface(
+              add_fields
+              @ has_fields
+              |> CCList.uniq(
+                   ~eq=({f_name as ident_a, _}, {f_name as ident_b, _}) =>
+                   CCEqual.string(
+                     ident_a |> Ident.ident,
+                     ident_b |> Ident.ident,
+                   )
+                 ),
+            )
+          | v => v
+          },
         td_arguments: parse__type_args(~path=t_path, args),
       });
     Type.add_order(t_path);
@@ -295,7 +333,7 @@ and parse__type_reference = (~path, type_ref: Ts.ref_) => {
 
   Reference({
     tr_path: ref_path,
-    tr_path_resolved: Ref.resolve_ref(~from=path, ~lookup=ref_path),
+    tr_path_resolved: Ref.resolve_ref(~from=path, ref_path),
     tr_parameters:
       ref_types
       |> CCList.last_opt
@@ -363,18 +401,16 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
   | `Null => Base(Null)
   | `Undefined => Base(Undefined)
   | `Enum(members, is_const) => parse__enum(~path, members, is_const)
-  | `Union(members) => parse__union(~path, members)
-  | `Tuple(types) => parse__tuple(~path, types)
+  | `Union(members) as t =>
+    inline ? parse__inline(~path, t) : parse__union(~path, members)
+  | `Tuple(types) as t =>
+    inline ? parse__inline(~path, t) : parse__tuple(~path, types)
   | `Array(t) => parse__array(~path, t)
   | `Ref(ref_) => parse__type_reference(~path, ref_)
   | `TypeExtract(type_ref, names) =>
     parse__type_extraction(~path, type_ref, names)
   | `Obj(fields) as t =>
-    inline
-      ? {
-        parse__inline(~path, t);
-      }
-      : parse__interface(~path, fields)
+    inline ? parse__inline(~path, t) : parse__interface(~path, fields)
   };
 }
 and parse__inline = (~path, type_) => {

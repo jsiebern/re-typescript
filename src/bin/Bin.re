@@ -1,7 +1,9 @@
 open Re_typescript_base;
 
 let content = {|
-interface I_a {}; type x = I_a;
+interface obj {
+        field: 'red' | 'blue',
+      }
 |};
 
 let () = {
