@@ -1,7 +1,7 @@
 open Re_typescript_base;
 
 let content = {|
-type variant = 'str1' | 'Str1' | "X_$STR";
+interface I_a {}; type x = I_a;
 |};
 
 let () = {
@@ -21,7 +21,7 @@ let () = {
               string_variant_mode: `BsInline,
             }),
         },
-        Parser.main(Lexer.read, lexbuf),
+        {...Parser.main(Lexer.read, lexbuf), name: "Entry"},
       ),
     )
   ) {

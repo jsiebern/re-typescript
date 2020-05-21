@@ -43,7 +43,7 @@ and config = {
   output_type,
   array_mode,
   number_mode,
-  files: list((string, Ts.toplevel)),
+  files: list((string, Ts.module_)),
   file_loader: (module File_loader.T),
   generate_parser: bool,
   generate_serializer: bool,

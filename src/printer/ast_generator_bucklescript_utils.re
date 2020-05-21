@@ -4,7 +4,6 @@ open Parsetree;
 open Ast_helper;
 open Ast_generator_utils;
 open Ast_convenience_406;
-open Decode_result;
 open Utils;
 
 let number_unboxed = [%str
@@ -108,19 +107,20 @@ let generate_bs_inline_int = (~module_name, members: list((string, int))) => {
   );
 };
 
-let generate_bs_unboxed =
-    (~module_name, members: list(Decode_result.value_type)) => {
+let generate_bs_unboxed = (~module_name, values: Tree_types.ts_mixed_literal) => {
   let members =
-    members
-    |> CCList.map(
-         fun
-         | U_String(s) => (s |> to_valid_ident |> fst, str(s))
-         | U_Number(n) => (n |> to_int_variant_constructor |> fst, int(n))
-         | U_Bool(b) => (
-             b ? "true" : "false" |> to_valid_ident |> fst,
-             constr(b ? "true" : "false", []),
-           ),
-       );
+    CCList.concat([
+      values.strings
+      |> CCList.map(v => Tree_utils.Ident.(v |> ident, str(v |> value))),
+      values.numbers
+      |> CCList.map(v => Tree_utils.Ident.(v |> of_int |> ident, int(v))),
+      values.bools
+      |> CCList.uniq(~eq=(a, b) => a == b)
+      |> CCList.map(v =>
+           (v ? "true" : "false", constr(v ? "true" : "false", []))
+         ),
+    ]);
+
   let str_members =
     members
     |> CCList.map(((name, value)) => {
@@ -154,19 +154,6 @@ let generate_bs_unboxed =
   );
 };
 
-// module Component: {
-//   type t;
-//   let string: string => t;
-//   let callback: (unit => React.element) => t;
-//   let element: React.element => t;
-// } = {
-//   [@unboxed]
-//   type t =
-//     | Any('a): t;
-//   let string = (v: string) => Any(v);
-//   let callback = (v: unit => React.element) => Any(v);
-//   let element = (v: React.element) => Any(v);
-// };
 let generate_union_unboxed =
     (~module_name, members: list((string, core_type))) => {
   let str_members =
@@ -210,7 +197,10 @@ let generate_type = (~args, ~td_kind, ~td_type, ~name) =>
       args
       |> CCList.map(
            fun
-           | {name, _} => (Typ.var(name), Asttypes.Invariant),
+           | {Tree_types.tda_name, _} => (
+               Typ.var(tda_name |> Tree_utils.Ident.value),
+               Asttypes.Invariant,
+             ),
          ),
     ~kind=td_kind,
     ~manifest=?td_type,

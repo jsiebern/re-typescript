@@ -3,6 +3,6 @@ type i_a_field_3 = {
   inline: bool ;
   nested: string }
 and i_a = {
-  field_3: i_a_field_3 ;
+  field_1: string ;
   field_2: string ;
-  field_1: string }
+  field_3: I_a_field_3 }

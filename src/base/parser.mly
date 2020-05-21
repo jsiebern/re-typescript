@@ -16,6 +16,7 @@
   VAR LET CONST
   FUNCTION
   NAMESPACE
+  MODULE
 
 (* With value *)
 %token <string * Parse_info.t>       IDENT
@@ -56,17 +57,22 @@
 
 %token <Parse_info.t> EOF
 
-%start <Ts.toplevel> main
+%start <Ts.module_> main
 %%
 
 let main :=
-  | expr = expr*;  EOF; { Ts.make_top_level(expr) }
+  | expr = expr*;  EOF; { Ts.make_module(expr) }
 
 let expr :=
+  | module_ = module_; { `T(module_) }
   | import = import; { `I(import) }
   | type_def = type_def; { `T(type_def) }
   | COMMENT; { `Empty }
   | COMMENT_LINE; { `Empty }
+
+let module_ :=
+  | export = opt_as_bool(EXPORT); declare = opt_as_bool(DECLARE); NAMESPACE; name = IDENT; LCURLY; expr = expr*; RCURLY; { let m = Ts.make_module(expr) in (`Module({ m with name = fst(name); is_namespace = true; has_declare = declare; }), export) }
+  | declare = opt_as_bool(DECLARE); MODULE; name = string_or_ident; LCURLY; expr = expr*; RCURLY; { let m = Ts.make_module(expr) in (`Module({ m with name = name; is_namespace = false; has_declare = declare; }), false) }
 
 type_def:
   | export = opt_as_bool(EXPORT); TYPE; name = IDENT; args = opt_as_list(type_args); EQUALS; t = type_or_union; SEMICOLON?; { (`TypeDef(fst(name), t, args), export) }
@@ -77,10 +83,10 @@ let type_args :=
   | LT; args = maybe_separated_or_terminated_list(COMMA, type_arg); GT; { args }
 
 let type_arg :=
-  | name = IDENT; EXTENDS; ext = type_; EQUALS; eq = type_; { { Ts.constraint_=Some(ext); name=fst(name); default=Some(eq) } }
-  | name = IDENT; EXTENDS; ext = type_; { { Ts.constraint_=Some(ext); name=fst(name); default=None } }
-  | name = IDENT; EQUALS; eq = type_; { { Ts.constraint_=None; name=fst(name); default=Some(eq) } }
-  | name = IDENT; { { Ts.constraint_=None; name=fst(name); default=None } }
+  | name = IDENT; EXTENDS; ext = type_; EQUALS; eq = type_; { { Ts.a_constraint_=Some(ext); a_name=fst(name); a_default=Some(eq) } }
+  | name = IDENT; EXTENDS; ext = type_; { { Ts.a_constraint_=Some(ext); a_name=fst(name); a_default=None } }
+  | name = IDENT; EQUALS; eq = type_; { { Ts.a_constraint_=None; a_name=fst(name); a_default=Some(eq) } }
+  | name = IDENT; { { Ts.a_constraint_=None; a_name=fst(name); a_default=None } }
 
 let enum_member :=
   | name = IDENT; EQUALS; v = prim_value; { { Ts.key=fst(name); default=Some(v) }  }
@@ -102,8 +108,8 @@ let ref_part :=
   | name = IDENT; LT; t = separated_or_terminated_list(COMMA, type_or_union); GT; { (fst(name), t) }
 
 obj_field:
-  | ro = opt_as_bool(READONLY); key = STRING; optional = opt_as_bool(QMARK); COLON; t = type_or_union    { let (key,_,_) = key in {Ts.key; type_ = t; optional; readonly = ro } }
-  | ro = opt_as_bool(READONLY); key = IDENT; optional = opt_as_bool(QMARK); COLON; t = type_or_union     { let (key,_) = key in {Ts.key; type_ = t; optional; readonly = ro } } ;
+  | ro = opt_as_bool(READONLY); key = STRING; optional = opt_as_bool(QMARK); COLON; t = type_or_union    { let (key,_,_) = key in {Ts.f_key = key; f_type_ = t; f_optional = optional; f_readonly = ro } }
+  | ro = opt_as_bool(READONLY); key = IDENT; optional = opt_as_bool(QMARK); COLON; t = type_or_union     { let (key,_) = key in {Ts.f_key = key; f_type_ = t; f_optional = optional; f_readonly = ro } } ;
 
 let type_or_union :=
   | u = union; { u }
@@ -145,7 +151,7 @@ let union_value :=
 *)
 
 let import :=
-  | IMPORT; TYPE?; name = import_alias; FROM; path = STRING; SEMICOLON?; { let (path, _, _) = path in { Ts.path; name } }
+  | IMPORT; TYPE?; name = import_alias; FROM; path = STRING; SEMICOLON?; { let (path, _, _) = path in { Ts.i_path = path; i_name = name } }
 
 let import_alias :=
   | name = IDENT; { `Named(fst(name)) }
@@ -183,3 +189,7 @@ let field_access :=
 let boolean_literal :=
   | TRUE; { true }  
   | FALSE; { false }
+
+let string_or_ident :=
+  | string = STRING; { let (s,_,_) = string in s }
+  | ident = IDENT; { fst(ident) }
