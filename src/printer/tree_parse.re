@@ -283,6 +283,7 @@ and parse__type_extraction = (~from_ref=?, ~path, type_ref: Ts.ref_, fields) => 
   let resolved_fields =
     switch (
       Ref.resolve_ref(
+        ~recursive=true,
         ~from=path,
         from_ref |> CCOpt.value(~default=(ref_path, [])),
       )

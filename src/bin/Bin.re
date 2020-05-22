@@ -1,8 +1,15 @@
 open Re_typescript_base;
 
 let content = {|
-type with_arg2<a = string | number> = a;
-      type call_args2 = with_arg2;
+type y = {
+  key_3:string,
+  key_4:{
+    num: number
+  }
+};
+type x = y['key_3']
+type z = y['key_4'];
+type a = z['num'];
 |};
 
 let () = {

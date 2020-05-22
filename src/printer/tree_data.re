@@ -49,8 +49,9 @@ module Ref = {
     Hashtbl.clear(map);
   };
 
-  let resolve_ref =
-      (~remember=true, ~from: Path.t, lookup: Path.t): option(Path.t) => {
+  let rec resolve_ref =
+          (~recursive=false, ~remember=true, ~from: Path.t, lookup: Path.t)
+          : option(Path.t) => {
     let scope = from |> Path.to_scope;
     switch (lookup) {
     | ([], _) => None
@@ -63,7 +64,18 @@ module Ref = {
       if (Path.eq(from, path)) {
         Some(path);
       } else {
-        Type.get(~path) |> CCOpt.map(_ => path);
+        switch (Type.get(~path)) {
+        | None => None
+        | Some(
+            TypeDeclaration({
+              td_type: Reference({tr_path_resolved: Some(path_resolved), _}),
+              _,
+            }),
+          )
+            when CCEqual.bool(recursive, true) =>
+          resolve_ref(~recursive=true, ~remember, ~from, path_resolved)
+        | Some(_) => Type.get(~path) |> CCOpt.map(_ => path)
+        };
       };
     | _ => raise(Exceptions.Parser_error("PATH NOT IMPLEMENTED"))
     };

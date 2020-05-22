@@ -1,19 +1,6 @@
 open TestFramework;
 
 describe("failing tests that shouldn't", ({test, _}) => {
-  test("field access through references", ({expect, _}) => {
-    expect.fn(() => {
-      print(
-        {|
-            type y = {key_3:string};
-            type x = y['key_3']
-        |},
-      )
-      |> ignore;
-      raise(Not_found);
-    }).
-      toThrow()
-  });
   test("string literals in field access", ({expect, _}) => {
     expect.fn(() =>
       print(

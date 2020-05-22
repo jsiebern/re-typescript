@@ -65,4 +65,23 @@ describe("type extractions", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+
+  test("can access recursive references", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+            interface IMain {
+              simple: string,
+              inline: {
+                num: number
+              }
+            };
+            type str = IMain['simple']
+            type obj = IMain['inline'];
+            type num = obj['num'];
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });
