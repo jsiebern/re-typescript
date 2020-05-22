@@ -10,17 +10,7 @@ module Obj_field :
     let red = \"red\"[@@bs.inline ]
     let blue = \"blue\"[@@bs.inline ]
   end 
+type obj_field = Obj_field.t
 type obj = {
-  field: Obj_field.t }
-module In_arr :
-  sig
-    type t = private string
-    val red : t[@@bs.inline \"red\"]
-    val blue : t[@@bs.inline \"blue\"]
-  end =
-  struct
-    type t = string
-    let red = \"red\"[@@bs.inline ]
-    let blue = \"blue\"[@@bs.inline ]
-  end 
-type in_arr = In_arr.t array
+  field: obj_field }
+and in_arr = obj_field array

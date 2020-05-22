@@ -4,6 +4,7 @@ let content = {|
 interface obj {
         field: 'red' | 'blue',
       }
+      type in_arr = Array<obj['field']>;
 |};
 
 let () = {

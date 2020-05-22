@@ -1,9 +1,9 @@
 mixed unions › generates unboxed type
-module X : sig type t val _1 : t val string : t end =
+module X : sig type t val string : t val _1 : t end =
   struct
     type t =
       | Any: 'a -> t [@@unboxed ]
-    let _1 = ((Any (1))[@explicit_arity ])
     let string = ((Any (\"string\"))[@explicit_arity ])
+    let _1 = ((Any (1))[@explicit_arity ])
   end 
 type x = X.t

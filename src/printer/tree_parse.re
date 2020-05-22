@@ -29,13 +29,13 @@ module Ref = {
   };
 
   let resolve_ref =
-      (~remember=true, ~from: Path.t, lookup: list(string)): option(Path.t) => {
+      (~remember=true, ~from: Path.t, lookup: Path.t): option(Path.t) => {
     let scope = from |> Path.to_scope;
     switch (lookup) {
-    | [] => None
-    | [_] as one =>
-      let path = (scope @ one, []);
-      if (Path.eq_unscoped(fst(from), fst(path))) {
+    | ([], _) => None
+    | ([_] as one, sub) =>
+      let path = (scope @ one, sub);
+      if (Path.eq(from, path)) {
         Some(path);
       } else {
         if (remember) {
@@ -74,7 +74,7 @@ let rec parse__type_def =
     let (ref_path, ref_types) = CCList.split(extends);
     let add_fields =
       switch (
-        Ref.resolve_ref(~from=path, ref_path)
+        Ref.resolve_ref(~from=path, (ref_path, []))
         |> CCOpt.flat_map(v => Type.get(~path=v))
       ) {
       | None => []
@@ -316,8 +316,72 @@ and parse__type_args = (~path, args: list(Ts.type_arg)) => {
 /**
     Type extraction
  */
-and parse__type_extraction = (~path, type_ref: Ts.ref_, names) => {
-  Base(Any);
+and parse__type_extraction = (~from_ref=?, ~path, type_ref: Ts.ref_, fields) => {
+  // TODO: Unclean & naively solved, replace later
+  let (ref_path, ref_types) = CCList.split(type_ref);
+  let resolved_fields =
+    switch (
+      Ref.resolve_ref(
+        ~from=path,
+        from_ref |> CCOpt.value(~default=(ref_path, [])),
+      )
+      |> CCOpt.flat_map(v => Type.get(~path=v))
+    ) {
+    | None => []
+    | Some(ref_type) =>
+      switch (ref_type) {
+      | TypeDeclaration({td_type: Interface(add_fields), _}) => add_fields
+      | _ => []
+      }
+    };
+  switch (fields) {
+  | [] => raise(Not_found)
+  | [name] =>
+    switch (
+      resolved_fields
+      |> CCList.find_opt(({f_name, _}) =>
+           CCEqual.string(f_name |> Ident.value, name)
+         )
+    ) {
+    | Some({f_type, _}) => f_type
+    | None =>
+      // TODO: Decide wether to to just return any here instead of an error
+      Console.error(fields);
+      raise(
+        Exceptions.Parser_error(
+          Printf.sprintf(
+            "Code 1 - Could not find field %s in %s",
+            name,
+            ref_path |> CCList.to_string(~sep="_", a => a),
+          ),
+        ),
+      );
+    }
+  | [name, ...rest] =>
+    switch (
+      resolved_fields
+      |> CCList.find_opt(({f_name, _}) =>
+           CCEqual.string(f_name |> Ident.value, name)
+         )
+    ) {
+    | Some({
+        f_type: Reference({tr_path_resolved: Some(tr_path_resolved), _}),
+        _,
+      }) =>
+      parse__type_extraction(~from_ref=tr_path_resolved, ~path, [], rest)
+    | Some(_)
+    | None =>
+      raise(
+        Exceptions.Parser_error(
+          Printf.sprintf(
+            "Code 2 - Could not find field %s in %s",
+            name,
+            ref_path |> CCList.to_string(~sep="_", a => a),
+          ),
+        ),
+      )
+    }
+  };
 }
 /**
     Array
@@ -333,7 +397,7 @@ and parse__type_reference = (~path, type_ref: Ts.ref_) => {
 
   Reference({
     tr_path: ref_path,
-    tr_path_resolved: Ref.resolve_ref(~from=path, ref_path),
+    tr_path_resolved: Ref.resolve_ref(~from=path, (ref_path, [])),
     tr_parameters:
       ref_types
       |> CCList.last_opt

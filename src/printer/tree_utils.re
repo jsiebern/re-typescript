@@ -57,6 +57,7 @@ module Path = {
     | [_] => []
     | [_, ...r] => r |> CCList.rev
     };
+  let to_full_path = ((path, sub): t) => path @ sub;
   let to_unscoped_path = ((path, sub): t) => (path |> CCList.last(1)) @ sub;
   let unscoped_to_string = CCList.to_string(~sep="_", a => a);
   let to_string = ((path, sub): t) => path @ sub |> unscoped_to_string;
