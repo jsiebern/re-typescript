@@ -1,52 +1,7 @@
 open Re_typescript_base;
 open Tree_types;
 open Tree_utils;
-
-module Type = {
-  type t = Hashtbl.t(Path.t, ts_type);
-  let map: t = Hashtbl.create(0);
-  let add = (~path, type_) => Hashtbl.add(map, path, type_);
-  let get = (~path) => Hashtbl.find_opt(map, path);
-  let replace = (~path, type_) => Hashtbl.replace(map, path, type_);
-
-  let order = ref([]);
-  let add_order = (path: Path.t) => {
-    order := order^ @ [path];
-  };
-  let clear = () => {
-    Hashtbl.clear(map);
-    order := [];
-  };
-};
-module Ref = {
-  type t = Hashtbl.t(Path.t, Path.t);
-  let map: t = Hashtbl.create(0);
-  let add = (~from: Path.t, ~to_: Path.t) => Hashtbl.add(map, to_, from);
-  let get = (to_: Path.t) => Hashtbl.find_opt(map, to_);
-  let get_all = (to_: Path.t) => Hashtbl.find_all(map, to_);
-  let clear = () => {
-    Hashtbl.clear(map);
-  };
-
-  let resolve_ref =
-      (~remember=true, ~from: Path.t, lookup: Path.t): option(Path.t) => {
-    let scope = from |> Path.to_scope;
-    switch (lookup) {
-    | ([], _) => None
-    | ([_] as one, sub) =>
-      let path = (scope @ one, sub);
-      if (Path.eq(from, path)) {
-        Some(path);
-      } else {
-        if (remember) {
-          add(~from, ~to_=path);
-        };
-        Type.get(~path) |> CCOpt.map(_ => path);
-      };
-    | _ => raise(Exceptions.Parser_error("PATH NOT IMPLEMENTED"))
-    };
-  };
-};
+open Tree_data;
 
 /**
     Type / Interface / Enum definitions
@@ -397,7 +352,13 @@ and parse__type_reference = (~path, type_ref: Ts.ref_) => {
 
   Reference({
     tr_path: ref_path,
-    tr_path_resolved: Ref.resolve_ref(~from=path, (ref_path, [])),
+    tr_path_resolved:
+      Ref.resolve_ref(
+        ~from=
+          CCEqual.list(CCEqual.string, fst(path), ref_path)
+            ? (fst(path), []) : path,
+        (ref_path, []),
+      ),
     tr_parameters:
       ref_types
       |> CCList.last_opt
@@ -479,6 +440,7 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
 }
 and parse__inline = (~path, type_) => {
   parse__type_def(~inline=true, ~path, `TypeDef(("", type_, [])));
+  Ref.resolve_ref(~from=path, path) |> ignore;
   Reference({
     tr_path: fst(path),
     tr_path_resolved: Some(path),
@@ -500,22 +462,8 @@ and parse__entry_module = (module_: Ts.module_) => {
   Ref.clear();
   parse__type_def(`Module({...module_, name: ""}));
 
-  Type.order^
-  |> CCList.iteri((i, path) => {
-       switch (Type.get(~path)) {
-       | Some(TypeDeclaration({td_type: Interface(fields), _} as td))
-           when fields |> CCList.length == 0 =>
-         if (Ref.get_all(path) |> CCList.length == 0) {
-           Type.order := Type.order^ |> CCList.remove_one(~eq=Path.eq, path);
-         } else {
-           Type.replace(
-             ~path,
-             TypeDeclaration({...td, td_type: Base(Any)}),
-           );
-         }
-       | _ => ()
-       }
-     });
+  // Directly manipulates Type & Ref modules
+  Tree_optimize.optimize();
 
   (Type.order^, Type.map);
 };

@@ -5,4 +5,4 @@ type i_a_field_3 = {
 and i_a = {
   field_1: string ;
   field_2: string ;
-  field_3: I_a_field_3 }
+  field_3: i_a_field_3 }
