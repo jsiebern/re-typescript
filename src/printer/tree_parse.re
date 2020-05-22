@@ -12,11 +12,13 @@ let rec parse__type_def =
   | `TypeDef(name, type_, args) =>
     let ident = name |> Ident.of_string;
     let t_path = inline ? path : path |> Path.add_ident(ident);
+    let arguments = parse__type_args(~path=t_path, args);
+    Arguments.add(~path=fst(t_path), arguments);
     let t =
       TypeDeclaration({
         td_name: ident,
         td_type: parse__type(~path=t_path, type_),
-        td_arguments: parse__type_args(~path=t_path, args),
+        td_arguments: arguments,
       });
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
@@ -40,6 +42,9 @@ let rec parse__type_def =
         }
       };
 
+    let arguments = parse__type_args(~path=t_path, args);
+    Arguments.add(~path=fst(t_path), arguments);
+
     let t =
       TypeDeclaration({
         td_name: ident,
@@ -59,7 +64,7 @@ let rec parse__type_def =
             )
           | v => v
           },
-        td_arguments: parse__type_args(~path=t_path, args),
+        td_arguments: arguments,
       });
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
@@ -255,14 +260,15 @@ and parse__type_args = (~path, args: list(Ts.type_arg)) => {
        (
          {
            let ident = a_name |> Ident.of_string;
-           let arg_path =
-             Path.(path |> add_sub("arg") |> add_sub_ident(ident));
+           let arg_path = Path.(path |> add_sub_ident(ident));
            {
              tda_name: ident,
              tda_extends:
-               a_constraint_ |> CCOpt.map(parse__type(~path=arg_path)),
+               a_constraint_
+               |> CCOpt.map(parse__type(~inline=true, ~path=arg_path)),
              tda_default:
-               a_default |> CCOpt.map(parse__type(~path=arg_path)),
+               a_default
+               |> CCOpt.map(parse__type(~inline=true, ~path=arg_path)),
            };
          }: ts_type_argument
        )
@@ -298,6 +304,13 @@ and parse__type_extraction = (~from_ref=?, ~path, type_ref: Ts.ref_, fields) => 
            CCEqual.string(f_name |> Ident.value, name)
          )
     ) {
+    | Some({
+        f_type:
+          Reference({tr_path_resolved: Some(tr_path_resolved), _}) as f_type,
+        _,
+      }) =>
+      Ref.add(~from=path, ~to_=tr_path_resolved);
+      f_type;
     | Some({f_type, _}) => f_type
     | None =>
       // TODO: Decide wether to to just return any here instead of an error
@@ -323,7 +336,8 @@ and parse__type_extraction = (~from_ref=?, ~path, type_ref: Ts.ref_, fields) => 
         f_type: Reference({tr_path_resolved: Some(tr_path_resolved), _}),
         _,
       }) =>
-      parse__type_extraction(~from_ref=tr_path_resolved, ~path, [], rest)
+      Ref.add(~from=path, ~to_=tr_path_resolved);
+      parse__type_extraction(~from_ref=tr_path_resolved, ~path, [], rest);
     | Some(_)
     | None =>
       raise(
@@ -348,22 +362,110 @@ and parse__array = (~path, type_) => {
     Type reference
  */
 and parse__type_reference = (~path, type_ref: Ts.ref_) => {
-  let (ref_path, ref_types) = CCList.split(type_ref);
+  let (ref_path, _) = CCList.split(type_ref);
 
-  Reference({
-    tr_path: ref_path,
-    tr_path_resolved:
+  let ref_path_ident = ref_path |> Path.unscoped_to_string |> Ident.of_string;
+  switch (Arguments.has_argument(~path=fst(path), ~arg=ref_path_ident)) {
+  | Some(_) => parse__type_argument(~path, ref_path_ident)
+  | None =>
+    let resolved_ref =
       Ref.resolve_ref(
         ~from=
           CCEqual.list(CCEqual.string, fst(path), ref_path)
             ? (fst(path), []) : path,
         (ref_path, []),
+      );
+    let parameters =
+      switch (resolved_ref) {
+      | None => []
+      | Some(resolved_ref) =>
+        parse__apply_ref_parameters(~path, ~resolved_ref, ~type_ref)
+      };
+
+    Reference({
+      tr_path: ref_path,
+      tr_path_resolved: resolved_ref,
+      tr_parameters: parameters,
+    });
+  };
+}
+and parse__apply_ref_parameters = (~path, ~resolved_ref, ~type_ref) => {
+  let (_, ref_types) = CCList.split(type_ref);
+
+  let ref_applied_types =
+    ref_types
+    |> CCList.last_opt
+    |> CCOpt.map_or(
+         ~default=[],
+         CCList.mapi((i, param) => {
+           let path = path |> Path.add_sub(string_of_int(i));
+           parse__type(~inline=true, ~path, param);
+         }),
+       );
+
+  let resolved_type_args = Arguments.get(~path=fst(resolved_ref));
+  let (n_required, append_defaults) =
+    resolved_type_args
+    |> CCOpt.map_or(~default=(0, []), arg_types => {
+         arg_types
+         |> CCList.fold_left(
+              ((i, lst), arg_type) => {
+                switch (lst, arg_type) {
+                | ([], {tda_default: None, _}) => (i + 1, lst)
+                | (lst, {tda_default: None, _}) =>
+                  raise(
+                    Exceptions.Parser_error(
+                      "Invalid type reference: Cannot have a required type arg after the first optional",
+                    ),
+                  )
+                | (lst, {tda_name, tda_default: Some(t), _}) => (
+                    i,
+                    lst @ [t],
+                  )
+                }
+              },
+              (0, []),
+            )
+       });
+  let l = CCList.length;
+  let n_required = n_required;
+  let n_defaults = l(append_defaults);
+  let n_total = n_required + n_defaults;
+  let n_applied = l(ref_applied_types);
+
+  switch (ref_applied_types) {
+  | applied when n_applied > 0 && resolved_type_args |> Option.is_none =>
+    Console.warn(
+      Printf.sprintf(
+        "Invalid type reference: Arguments passed to a type that is not in scope (%s)",
+        resolved_ref |> Path.to_string,
       ),
-    tr_parameters:
-      ref_types
-      |> CCList.last_opt
-      |> CCOpt.map_or(~default=[], CCList.map(parse__type(~path))),
-  });
+    );
+    applied;
+  | applied when n_applied > n_total || n_applied < n_required =>
+    raise(
+      Exceptions.Parser_error(
+        Printf.sprintf(
+          "Invalid type reference: Applied %d arguments to a type where a minimum of %d and a maxiumum of %d are expected (%s)",
+          n_applied,
+          n_required,
+          n_total,
+          resolved_ref |> Path.to_string,
+        ),
+      ),
+    )
+  | applied when n_applied == n_total => applied
+  | applied when n_applied > n_required =>
+    applied @ CCList.drop(n_total - n_applied, append_defaults)
+  | applied when n_applied == n_required => applied @ append_defaults
+  | _ =>
+    Console.error(resolved_ref |> Path.to_string);
+    Console.error([n_required, n_total, n_applied]);
+    raise(Exceptions.Parser_error("This should not be reachable"));
+  };
+}
+and parse__type_argument = (~path, arg: ts_identifier) => {
+  Arg(arg);
 }
 /**
     Enums

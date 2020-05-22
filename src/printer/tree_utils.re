@@ -97,6 +97,7 @@ let rec get_union_type_name = (um_type: ts_type) => {
   | NumericLiteral(_) => "num"
   | StringLiteral(_) => "literal"
   | Enum(_) => "enum"
+  | Arg(i) => i |> Ident.ident
   // | VariantEnum(_) =>
   //   raise(Decode_Error("Union is not a valid union member"))
   | Union(_) =>

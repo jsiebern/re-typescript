@@ -17,6 +17,27 @@ module Type = {
     Hashtbl.clear(map);
     order := [];
   };
+
+  let extract_arguments = (~path) =>
+    switch (get(~path)) {
+    | Some(TypeDeclaration({td_arguments, _})) => Some(td_arguments)
+    | _ => None
+    };
+};
+module Arguments = {
+  type t = Hashtbl.t(list(string), list(ts_type_argument));
+  let map: t = Hashtbl.create(0);
+  let add = (~path, args) => Hashtbl.add(map, path, args);
+  let get = (~path) => Hashtbl.find_opt(map, path);
+  let has_argument = (~path, ~arg: ts_identifier) =>
+    switch (get(~path)) {
+    | Some(args) =>
+      args
+      |> CCList.find_opt(({tda_name, _}) =>
+           CCEqual.string(tda_name |> Ident.value, arg |> Ident.value)
+         )
+    | None => None
+    };
 };
 module Ref = {
   type t = Hashtbl.t(Path.t, Path.t);

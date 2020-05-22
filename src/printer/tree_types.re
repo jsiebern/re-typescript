@@ -100,6 +100,7 @@ and ts_type =
   | TypeDeclaration(ts_type_declaration)
   | Import(ts_import)
   | Module(ts_module)
+  | Arg(ts_identifier)
 and ts_identifier = {
   i_value: string,
   i_ident: string,

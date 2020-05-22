@@ -83,7 +83,12 @@ module Make = (Config: Config) : Ast_generator.T => {
         }
       }
 
-    //         | Arg(argName) => Typ.var(argName)
+    | Arg(argName) => {
+        td_kind: Ptype_abstract,
+        td_type: Some(Typ.var(argName |> Ident.value)),
+        td_prepend: None,
+        td_append: None,
+      }
     | Interface(fields) =>
       let (field_struct, field_types) =
         fields

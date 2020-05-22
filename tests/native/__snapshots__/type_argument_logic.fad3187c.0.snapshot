@@ -1,3 +1,4 @@
 type argument logic › can use various default structures
-type 'a with_arg = 'a
-and call_args = (string * float) with_arg
+type with_arg_a = (string * float)
+and 'a with_arg = 'a
+and call_args = with_arg_a with_arg
