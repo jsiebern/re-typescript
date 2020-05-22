@@ -10,10 +10,10 @@
     let h = Hashtbl.create 31 in
     List.iter (fun (s,f) -> Hashtbl.add h s f ) [
       "false",      (fun ii -> FALSE ii);
+      "true",       (fun ii -> TRUE ii);
       "function",   (fun ii -> FUNCTION ii);
       "in",         (fun ii -> IN ii);
       "instanceof", (fun ii -> INSTANCEOF ii);
-      "true",       (fun ii -> TRUE ii);
       "typeof",     (fun ii -> TYPEOF ii);
       "var",        (fun ii -> VAR ii);
       "let",        (fun ii -> LET ii);

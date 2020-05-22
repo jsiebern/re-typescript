@@ -117,7 +117,10 @@ let generate_bs_unboxed = (~module_name, values: Tree_types.ts_mixed_literal) =>
       values.bools
       |> CCList.uniq(~eq=(a, b) => a == b)
       |> CCList.map(v =>
-           (v ? "true" : "false", constr(v ? "true" : "false", []))
+           (
+             (v ? "true" : "false") |> String_utils.to_valid_ident,
+             constr(v ? "true" : "false", []),
+           )
          ),
     ]);
 
