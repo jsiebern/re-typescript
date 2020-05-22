@@ -84,4 +84,16 @@ describe("type extractions", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+
+  test("can access a string literal of fields", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+            type c = {a: string, b: number};
+            type d = c['a' | 'b']
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

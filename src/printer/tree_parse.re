@@ -277,7 +277,8 @@ and parse__type_args = (~path, args: list(Ts.type_arg)) => {
 /**
     Type extraction
  */
-and parse__type_extraction = (~from_ref=?, ~path, type_ref: Ts.ref_, fields) => {
+and parse__type_extraction =
+    (~from_ref=?, ~path, type_ref: Ts.ref_, fields: list(list(string))) => {
   // TODO: Unclean & naively solved, replace later
   let (ref_path, ref_types) = CCList.split(type_ref);
   let resolved_fields =
@@ -298,7 +299,8 @@ and parse__type_extraction = (~from_ref=?, ~path, type_ref: Ts.ref_, fields) => 
     };
   switch (fields) {
   | [] => raise(Not_found)
-  | [name] =>
+  | [[]] => raise(Not_found)
+  | [[name]] =>
     switch (
       resolved_fields
       |> CCList.find_opt(({f_name, _}) =>
@@ -326,7 +328,19 @@ and parse__type_extraction = (~from_ref=?, ~path, type_ref: Ts.ref_, fields) => 
         ),
       );
     }
-  | [name, ...rest] =>
+  | [[_, ..._] as field_names] =>
+    let field_types =
+      field_names
+      |> CCList.map(name =>
+           parse__type_extraction(~path, type_ref, [[name]])
+         );
+    Union(
+      field_types
+      |> CCList.map(t =>
+           {um_type: t, um_classifier: "", um_ident: get_union_type_name(t)}
+         ),
+    );
+  | [[name], ...rest] =>
     switch (
       resolved_fields
       |> CCList.find_opt(({f_name, _}) =>
@@ -351,6 +365,9 @@ and parse__type_extraction = (~from_ref=?, ~path, type_ref: Ts.ref_, fields) => 
         ),
       )
     }
+  | f =>
+    Console.error(f);
+    raise(Exceptions.Parser_error("Unknown type extraction structure"));
   };
 }
 /**

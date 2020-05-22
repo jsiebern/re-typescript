@@ -26,7 +26,7 @@ and type_ = [
   | `Obj(list(obj_field))
   | `Enum(list(enum_field), bool)
   | `Ref(ref_)
-  | `TypeExtract(ref_, list(string))
+  | `TypeExtract(ref_, list(list(string)))
 ]
 and union_member = [
   | `U_String(string)

@@ -1,17 +1,6 @@
 open TestFramework;
 
 describe("failing tests that shouldn't", ({test, _}) => {
-  test("string literals in field access", ({expect, _}) => {
-    expect.fn(() =>
-      print(
-        {|
-            type c = {a: string, b: number};
-            type d = c['a' | 'b']
-        |},
-      )
-    ).
-      toThrow()
-  });
   // test("string literals with digits at start", ({expect, _}) => {
   //   expect.fn(() => print({|
   //           type c = '0ab';

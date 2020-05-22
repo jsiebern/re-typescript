@@ -1,15 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-type y = {
-  key_3:string,
-  key_4:{
-    num: number
-  }
-};
-type x = y['key_3']
-type z = y['key_4'];
-type a = z['num'];
+type c = {a: string, b: number};
+type d = c['a' | 'b']
 |};
 
 let () = {

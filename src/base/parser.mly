@@ -184,7 +184,7 @@ let obj_separator :=
   | { None }
 
 let field_access :=
-  | LBRACKET; s = STRING; RBRACKET; { let (s,_,_) = s in s }
+  | LBRACKET; s = separated_or_terminated_list(PIPE, STRING); RBRACKET; { s |> (CCList.map (fun (s,_,_)  -> s)) }
 
 let boolean_literal :=
   | TRUE; { true }  
