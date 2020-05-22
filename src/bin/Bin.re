@@ -1,8 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-type c = {a: string, b: number};
-type d = c['a' | 'b']
+type x = 'x' | 'y';
+type y = 'z' | x;
 |};
 
 let () = {
