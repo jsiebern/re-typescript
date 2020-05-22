@@ -1,17 +1,6 @@
 open TestFramework;
 
 describe("failing tests that shouldn't", ({test, _}) => {
-  test("type arg default string literal", ({expect, _}) => {
-    expect.fn(() =>
-      print(
-        {|
-            type with_arg2<a = 'one' | 'two'> = a;
-            type call_args2 = with_arg2;
-        |},
-      )
-    ).
-      toThrow()
-  });
   test("field access through references", ({expect, _}) => {
     expect.fn(() => {
       print(

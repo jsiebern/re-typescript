@@ -1,0 +1,15 @@
+type argument logic › default argument can be a union of any kind
+module With_arg2_a :
+  sig
+    type t = private string
+    val one : t[@@bs.inline \"one\"]
+    val two : t[@@bs.inline \"two\"]
+  end =
+  struct
+    type t = string
+    let one = \"one\"[@@bs.inline ]
+    let two = \"two\"[@@bs.inline ]
+  end 
+type with_arg2_a = With_arg2_a.t
+type 'a with_arg2 = 'a
+and call_args2 = with_arg2_a with_arg2

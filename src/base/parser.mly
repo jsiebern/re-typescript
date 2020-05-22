@@ -83,9 +83,9 @@ let type_args :=
   | LT; args = maybe_separated_or_terminated_list(COMMA, type_arg); GT; { args }
 
 let type_arg :=
-  | name = IDENT; EXTENDS; ext = type_; EQUALS; eq = type_; { { Ts.a_constraint_=Some(ext); a_name=fst(name); a_default=Some(eq) } }
-  | name = IDENT; EXTENDS; ext = type_; { { Ts.a_constraint_=Some(ext); a_name=fst(name); a_default=None } }
-  | name = IDENT; EQUALS; eq = type_; { { Ts.a_constraint_=None; a_name=fst(name); a_default=Some(eq) } }
+  | name = IDENT; EXTENDS; ext = type_; EQUALS; eq = type_or_union; { { Ts.a_constraint_=Some(ext); a_name=fst(name); a_default=Some(eq) } }
+  | name = IDENT; EXTENDS; ext = type_or_union; { { Ts.a_constraint_=Some(ext); a_name=fst(name); a_default=None } }
+  | name = IDENT; EQUALS; eq = type_or_union; { { Ts.a_constraint_=None; a_name=fst(name); a_default=Some(eq) } }
   | name = IDENT; { { Ts.a_constraint_=None; a_name=fst(name); a_default=None } }
 
 let enum_member :=

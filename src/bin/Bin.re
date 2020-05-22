@@ -1,9 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-type orig_arg<a = string> = a;
-type with_arg<a = { b: orig_arg<number> }> = a;
-type call_args = with_arg;
+type with_arg2<a = string | number> = a;
+      type call_args2 = with_arg2;
 |};
 
 let () = {

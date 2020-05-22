@@ -96,4 +96,25 @@ describe("type argument logic", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+
+  test("default argument can be a union of any kind", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      type with_arg2<a = 'one' | 'two'> = a;
+      type call_args2 = with_arg2;
+    |},
+      ),
+    ).
+      toMatchSnapshot();
+    expect.string(
+      print(
+        {|
+      type with_arg2<a = string | number> = a;
+      type call_args2 = with_arg2;
+    |},
+      ),
+    ).
+      toMatchSnapshot();
+  });
 });
