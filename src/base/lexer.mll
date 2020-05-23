@@ -7,7 +7,7 @@
   let tok lexbuf = Lexing.lexeme lexbuf
 
   let keyword_table =
-    let h = Hashtbl.create 31 in
+    let h = Hashtbl.create 32 in
     List.iter (fun (s,f) -> Hashtbl.add h s f ) [
       "false",      (fun ii -> FALSE ii);
       "true",       (fun ii -> TRUE ii);
@@ -101,6 +101,7 @@ rule read =
 
   (* Operators *)
   | '*'                     { STAR (tokinfo lexbuf); }
+  | "=>"                    { ARROW (tokinfo lexbuf); }
   | '='                     { EQUALS (tokinfo lexbuf); }
   | '?'                     { QMARK (tokinfo lexbuf); }
   | '&'                     { AMPERSAND (tokinfo lexbuf); }

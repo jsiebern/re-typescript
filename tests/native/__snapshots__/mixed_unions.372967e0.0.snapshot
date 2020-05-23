@@ -1,5 +1,5 @@
 mixed unions › can be made optional no matter the position of the undefined
-module X : sig type t val string : t val _3 : t val _1 : t val false : t end
+module X : sig type t val string : t val _3 : t val _1 : t val false_ : t end
   =
   struct
     type t =
@@ -7,6 +7,6 @@ module X : sig type t val string : t val _3 : t val _1 : t val false : t end
     let string = ((Any (\"string\"))[@explicit_arity ])
     let _3 = ((Any (3))[@explicit_arity ])
     let _1 = ((Any (1))[@explicit_arity ])
-    let false = ((Any (false))[@explicit_arity ])
+    let false_ = ((Any (false))[@explicit_arity ])
   end 
 type x = X.t option

@@ -58,6 +58,18 @@ and ts_field = {
   f_readonly: bool,
 }
 /**
+  Functions
+ */
+and ts_function = {
+  fu_params: list(ts_function_param),
+  fu_return: ts_type,
+}
+and ts_function_param = {
+  fp_name: ts_identifier,
+  fp_type: ts_type,
+  fp_optional: bool,
+}
+/**
     Base Types
  */
 and ts_base_type =
@@ -85,6 +97,7 @@ and ts_union_member = {
     Types
  */
 and ts_type =
+  | Function(ts_function)
   | Union(list(ts_union_member))
   | MixedLiteral(ts_mixed_literal)
   | NumericLiteral(list(int))

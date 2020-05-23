@@ -1,0 +1,14 @@
+function definitions › function with inline arguments
+module SomeFunction_a :
+  sig type t val string : string -> t val number : float -> t end =
+  struct
+    type t =
+      | Any: 'a -> t [@@unboxed ]
+    let string (v : string) = ((Any (v))[@explicit_arity ])
+    let number (v : float) = ((Any (v))[@explicit_arity ])
+  end 
+type someFunction_a = SomeFunction_a.t
+type someFunction_b = {
+  inline: float }
+and someFunction =
+  a:someFunction_a -> ?b:someFunction_b option -> unit -> string

@@ -1,0 +1,2 @@
+function definitions › simple function
+type someFunction = unit -> unit

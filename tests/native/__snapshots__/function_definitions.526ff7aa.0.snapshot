@@ -1,0 +1,2 @@
+function definitions › functions accept type parameters
+type ('A, 'B, 'C) someFunction = a:'A -> b:'B -> 'C

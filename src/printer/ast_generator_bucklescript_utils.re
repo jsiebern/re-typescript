@@ -194,6 +194,45 @@ let generate_union_unboxed =
   );
 };
 
+let rec generate_arrow_for_params =
+        (
+          ~has_opt=false,
+          types: list((option(string), bool, core_type)),
+          final: core_type,
+        ) => {
+  switch (types) {
+  | [] =>
+    has_opt
+      ? generate_arrow_for_params(
+          ~has_opt=false,
+          [(None, false, generate_base_type("unit"))],
+          final,
+        )
+      : final
+  | [(label, optional, type_), ...rest] =>
+    Typ.arrow(
+      switch (label, optional) {
+      | (None, _) => Nolabel
+      | (Some(l), false) => Labelled(l)
+      | (Some(l), true) => Optional(l)
+      },
+      optional ? generate_base_type(~inner=[type_], "option") : type_,
+      generate_arrow_for_params(
+        ~has_opt=has_opt ? has_opt : optional,
+        rest,
+        final,
+      ),
+    )
+  };
+};
+let generate_arrow =
+    (~params: list((option(string), bool, core_type)), ~return: core_type) => {
+  switch (params) {
+  | [] => generate_arrow_for_params(~has_opt=true, [], return)
+  | lst => generate_arrow_for_params(lst, return)
+  };
+};
+
 let generate_type = (~args, ~td_kind, ~td_type, ~name) =>
   Type.mk(
     ~params=

@@ -227,8 +227,8 @@ and parse__union_undefined = (~path, members: list(Ts.union_member)) => {
          ~init=(false, []),
        );
   switch (extract_undefined) {
-  | (true, [`U_Type(type_)]) => Some(Optional(parse__type(~path, type_)))
-  | (true, members) => Some(Optional(parse__union(~path, members)))
+  | (true, [`U_Type(type_)]) => Some(parse__optional(~path, type_))
+  | (true, members) => Some(parse__optional(~path, `Union(members)))
   | (false, _) => None
   };
 }
@@ -246,8 +246,8 @@ and parse__union_nullable = (~path, members: list(Ts.union_member)) => {
          ~init=(false, []),
        );
   switch (extract_null) {
-  | (true, [`U_Type(type_)]) => Some(Nullable(parse__type(~path, type_)))
-  | (true, members) => Some(Nullable(parse__union(~path, members)))
+  | (true, [`U_Type(type_)]) => Some(parse__nullable(~path, type_))
+  | (true, members) => Some(parse__nullable(~path, `Union(members)))
   | (false, _) => None
   };
 }
@@ -375,6 +375,16 @@ and parse__type_extraction =
  */
 and parse__array = (~path, type_) => {
   Array(parse__type(~inline=true, ~path=path |> Path.add_sub("t"), type_));
+}
+and parse__nullable = (~path, type_) => {
+  Nullable(
+    parse__type(~inline=true, ~path=path |> Path.add_sub("t"), type_),
+  );
+}
+and parse__optional = (~path, type_) => {
+  Optional(
+    parse__type(~inline=true, ~path=path |> Path.add_sub("t"), type_),
+  );
 }
 /**
     Type reference
@@ -556,6 +566,8 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
     parse__type_extraction(~path, type_ref, names)
   | `Obj(fields) as t =>
     inline ? parse__inline(~path, t) : parse__interface(~path, fields)
+  | `Function(args, return) as t =>
+    inline ? parse__inline(~path, t) : parse__function(~path, args, return)
   };
 }
 and parse__inline = (~path, type_) => {
@@ -565,6 +577,38 @@ and parse__inline = (~path, type_) => {
     tr_path: fst(path),
     tr_path_resolved: Some(path),
     tr_parameters: [],
+  });
+}
+/**
+  Function
+ */
+and parse__function =
+    (~path, args: list(Ts.function_arg), return: option(Ts.type_)) => {
+  Function({
+    fu_params:
+      args
+      |> CCList.map((arg: Ts.function_arg) => {
+           let path = path |> Path.add_sub(arg.fa_name);
+           {
+             fp_name: arg.fa_name |> Ident.of_string,
+             fp_type:
+               arg.fa_type
+               |> CCOpt.map_or(
+                    ~default=Base(Any),
+                    parse__type(~inline=true, ~path),
+                  ),
+             fp_optional: arg.fa_optional,
+           };
+         }),
+    fu_return:
+      return
+      |> CCOpt.map_or(
+           ~default=Base(Any),
+           td => {
+             let path = path |> Path.add_sub("return");
+             parse__type(~inline=true, ~path, td);
+           },
+         ),
   });
 }
 /**

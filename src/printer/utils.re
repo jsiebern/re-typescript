@@ -99,3 +99,8 @@ let list_to_opt =
   fun
   | [] => None
   | a => Some(a);
+
+let opt_to_list =
+  fun
+  | None => []
+  | Some(a) => a;

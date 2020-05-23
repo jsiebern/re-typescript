@@ -33,4 +33,7 @@ describe("failing tests that shouldn't", ({test, _}) => {
     ).
       toThrow()
   });
+  // function someFunction<A,B,C>(a: A, b: B): [B,C];
+  // type union = string | number | (a: string, b?: number) => string;
+  // function (a: string, b: (a: string, b?: number) => string): void;
 });

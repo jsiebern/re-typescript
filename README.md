@@ -63,11 +63,12 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Nested interfaces
     - [ ] Dynamic keys
     - [x] Extends keyword
-  - [ ] Functions
-    - [ ] By keyword
-    - [ ] Arrow function
-    - [ ] Arguments
-    - [ ] Return type
+  - [x] Functions
+    - [x] By keyword
+    - [x] Arrow function
+    - [x] Arguments
+    - [x] Return type
+    - [ ] Fix arrow function problems
   - [ ] Classes
     - [ ] Properties
     - [ ] Static
@@ -130,7 +131,8 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Arrays / Lists
     - [x] Enums
     - [x] Unions
-    - [ ] Functions
+    - [x] Functions
+      - [ ] String / Numeric literals in arguments
     - [ ] Classes
     - [ ] Namespaces
     - [ ] Intersection types
@@ -149,7 +151,7 @@ I will update the playground from time to time. It's not great yet, I just wante
 - [ ] Plugin system
   - [ ] ReasonReact
 - [ ] Playground
-  - [ ] Check if it's really necessary to pull half of the ocaml compiler in
+  - [x] Check if it's really necessary to pull half of the ocaml compiler in (solved with `jsoo`)
   - [ ] Create a UI
     - [ ] Add panel with different generator options
   - [x] Add syntax highlighting
@@ -161,6 +163,8 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [x] Provide better error messages on syntax error
   - [x] `array_mode` (Array / List)
   - [x] `number_mode` (Int / Float / Unboxed)
+  - [ ] `uncurried_functions_mode`
+  - [ ] `omit_labels_for_required_args`
   - [ ] Hoist inline variants when generating parsers / serializers (for ease of use together with [@bs.deriving])
   - [ ] Option to throw error if a type can't be resolved while decoding
   - [ ] PPX (far future)

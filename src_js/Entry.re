@@ -98,6 +98,23 @@ interface IParamDefaultInline<P = { is_default: boolean }> {
 }
 type use_default_inline = IParamDefaultInline;
 
+// --- Function definitions
+declare function some_function(): void;
+declare function some_other_function(): { inline: string };
+declare function some_function_args(a: string, b: number): string;
+declare function some_function_opt_args(a: string, b?: number): string;
+declare function some_function_inline_args(a: string | number, b?: { inline: number }): string;
+declare function some_function_as_any();
+declare function some_function_params<A,B,C>(a: A, b: B): C;
+
+// --- Inline function definitions
+interface i_inline_function {
+    field: string;
+    action: (a: string, b?: number) => void;
+}
+type i_inline_access = i_inline_function['action'];
+
+
 
 // --------------------------------------------
 // What doesn't?
@@ -114,17 +131,6 @@ type use_default_inline = IParamDefaultInline;
 //     snd_b: B
 //   }
 // }
-
-// type with_arg2<a = 'one' | 'two'> = a;
-// type call_args2 = with_arg2;
-
-// type y = {key_3:string};
-// type x = y['key_3']
-
-// type c = {a: string, b: number};
-// type d = c['a' | 'b']
-
-// type c = '0ab';
 
 // type x = 'x' | 'y';
 // type y = 'z' | x;

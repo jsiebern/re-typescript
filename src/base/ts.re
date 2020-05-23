@@ -27,6 +27,7 @@ and type_ = [
   | `Enum(list(enum_field), bool)
   | `Ref(ref_)
   | `TypeExtract(ref_, list(list(string)))
+  | `Function(list(function_arg), option(type_))
 ]
 and union_member = [
   | `U_String(string)
@@ -34,6 +35,11 @@ and union_member = [
   | `U_Type(type_)
   | `U_Bool(bool)
 ]
+and function_arg = {
+  fa_name: string,
+  fa_type: option(type_),
+  fa_optional: bool,
+}
 and prim_value = [ | `V_String(string) | `V_Number(int)]
 and enum_field = {
   key: string,

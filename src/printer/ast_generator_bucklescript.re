@@ -42,8 +42,16 @@ module Make = (Config: Config) : Ast_generator.T => {
               }
             | Boolean => generate_base_type("bool")
             | Void => generate_base_type("unit")
-            | Null => generate_base_type("Js.null")
-            | Undefined => generate_base_type("None")
+            | Null =>
+              generate_base_type(
+                ~inner=[generate_base_type("unit")],
+                "Js.null",
+              )
+            | Undefined =>
+              generate_base_type(
+                ~inner=[generate_base_type("unit")],
+                "option",
+              )
             | Any =>
               gen_config.has_any = true;
               generate_base_type("any");
@@ -184,6 +192,48 @@ module Make = (Config: Config) : Ast_generator.T => {
           td_append: None,
         };
       }
+    | Function({fu_params, fu_return}) =>
+      let params =
+        fu_params
+        |> CCList.filter_map(({fp_name, fp_optional, fp_type}) => {
+             let path = path |> Path.add_sub(fp_name |> Ident.ident);
+             let gen = generate_type_def(~ctx, ~path, fp_type);
+             gen.td_type
+             |> CCOpt.map(type_ =>
+                  (
+                    (Some(fp_name |> Ident.ident), fp_optional, type_),
+                    (
+                      opt_to_list(gen.td_prepend),
+                      opt_to_list(gen.td_append),
+                    ),
+                  )
+                );
+           });
+      let return =
+        generate_type_def(
+          ~ctx,
+          ~path={
+            path |> Path.add_sub("return");
+          },
+          fu_return,
+        );
+      let (params, additional) = params |> CCList.split;
+      let (td_prepend, td_append) = additional |> CCList.split;
+      {
+        td_kind: Ptype_abstract,
+        td_type:
+          Some(
+            generate_arrow(~params, ~return=return.td_type |> CCOpt.get_exn),
+          ),
+        td_prepend:
+          list_to_opt(
+            (td_prepend |> CCList.concat) @ opt_to_list(return.td_prepend),
+          ),
+        td_append:
+          list_to_opt(
+            (td_append |> CCList.concat) @ opt_to_list(return.td_append),
+          ),
+      };
     | NumericLiteral(keys) =>
       let keys = pat =>
         keys

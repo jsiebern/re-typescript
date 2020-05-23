@@ -43,6 +43,66 @@ and optimize__single_ref_inline_types = () => {
          | Some(_) => ()
          | None => ()
          }
+       | Some(
+           TypeDeclaration(
+             {
+               td_type:
+                 Optional(
+                   Reference({tr_path_resolved: Some(resolved_path), _}),
+                 ),
+               _,
+             } as td,
+           ),
+         )
+           when
+             snd(resolved_path)
+             |> CCList.length > 0
+             && Ref.get_all(resolved_path)
+             |> CCList.length == 1 =>
+         switch (Type.get(~path=resolved_path)) {
+         | Some(TypeDeclaration({td_type: Interface(_), _})) => ()
+         | Some(TypeDeclaration({td_type, _})) =>
+           // Remove the extra type def from order
+           Type.order :=
+             Type.order^ |> CCList.remove_one(~eq=Path.eq, resolved_path);
+           // An replace the reference inside of the field
+           Type.replace(
+             ~path,
+             TypeDeclaration({...td, td_type: Optional(td_type)}),
+           );
+         | Some(_) => ()
+         | None => ()
+         }
+       | Some(
+           TypeDeclaration(
+             {
+               td_type:
+                 Nullable(
+                   Reference({tr_path_resolved: Some(resolved_path), _}),
+                 ),
+               _,
+             } as td,
+           ),
+         )
+           when
+             snd(resolved_path)
+             |> CCList.length > 0
+             && Ref.get_all(resolved_path)
+             |> CCList.length == 1 =>
+         switch (Type.get(~path=resolved_path)) {
+         | Some(TypeDeclaration({td_type: Interface(_), _})) => ()
+         | Some(TypeDeclaration({td_type, _})) =>
+           // Remove the extra type def from order
+           Type.order :=
+             Type.order^ |> CCList.remove_one(~eq=Path.eq, resolved_path);
+           // An replace the reference inside of the field
+           Type.replace(
+             ~path,
+             TypeDeclaration({...td, td_type: Nullable(td_type)}),
+           );
+         | Some(_) => ()
+         | None => ()
+         }
        | Some(TypeDeclaration({td_type: Interface(fields), _} as td)) =>
          let new_fields =
            fields

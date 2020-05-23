@@ -1,0 +1,4 @@
+type unions › can create a nullable of an interface
+type some_interface_t = {
+  field: bool }
+and some_interface = some_interface_t Js.Nullable.t

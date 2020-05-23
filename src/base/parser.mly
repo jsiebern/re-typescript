@@ -41,6 +41,7 @@
   AMPERSAND
   STAR
   PIPE
+  ARROW
 
 (* Syntax *)
 %token <Parse_info.t>
@@ -75,9 +76,21 @@ let module_ :=
   | declare = opt_as_bool(DECLARE); MODULE; name = string_or_ident; LCURLY; expr = expr*; RCURLY; { let m = Ts.make_module(expr) in (`Module({ m with name = name; is_namespace = false; has_declare = declare; }), false) }
 
 type_def:
-  | export = opt_as_bool(EXPORT); TYPE; name = IDENT; args = opt_as_list(type_args); EQUALS; t = type_or_union; SEMICOLON?; { (`TypeDef(fst(name), t, args), export) }
-  | export = opt_as_bool(EXPORT); INTERFACE; name = IDENT; args = opt_as_list(type_args); extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON?; { (`InterfaceDef(fst(name), extends, obj, args), export) }
-  | export = opt_as_bool(EXPORT); is_const = opt_as_bool(CONST); ENUM; name = IDENT; LCURLY; members = separated_nonempty_list(COMMA, enum_member); RCURLY; SEMICOLON?; { (`EnumDef(fst(name), members, is_const), export) }
+  | DECLARE?; export = opt_as_bool(EXPORT); TYPE; name = IDENT; args = opt_as_list(type_args); EQUALS; t = type_or_union; SEMICOLON?; { (`TypeDef(fst(name), t, args), export) }
+  | DECLARE?; export = opt_as_bool(EXPORT); INTERFACE; name = IDENT; args = opt_as_list(type_args); extends = extends; LCURLY; obj = maybe_separated_or_terminated_list(obj_separator, obj_field); RCURLY; SEMICOLON?; { (`InterfaceDef(fst(name), extends, obj, args), export) }
+  | DECLARE?; export = opt_as_bool(EXPORT); is_const = opt_as_bool(CONST); ENUM; name = IDENT; LCURLY; members = separated_nonempty_list(COMMA, enum_member); RCURLY; SEMICOLON?; { (`EnumDef(fst(name), members, is_const), export) }
+  | DECLARE?; export = opt_as_bool(EXPORT); FUNCTION; name = IDENT; args = opt_as_list(type_args); params = function_params; return_type = function_def_return?; SEMICOLON?; { (`TypeDef(fst(name), `Function(params, return_type), args), export) }
+
+let function_params :=
+  | LPAREN; params = maybe_separated_or_terminated_list(COMMA, function_arg); RPAREN; { params }
+
+let function_arg :=
+  | name = IDENT; optional = opt_as_bool(QMARK); return_type = function_def_return; { { Ts.fa_name = fst(name); fa_type = Some(return_type); fa_optional = optional } }
+  | name = IDENT; QMARK; { { Ts.fa_name = fst(name); fa_type = None; fa_optional = true } }
+  | name = IDENT; { { Ts.fa_name = fst(name); fa_type = None; fa_optional = false } }
+
+let function_def_return :=
+  | COLON; return_type = type_or_union; { return_type }
 
 let type_args :=
   | LT; args = maybe_separated_or_terminated_list(COMMA, type_arg); GT; { args }
@@ -114,6 +127,8 @@ obj_field:
 let type_or_union :=
   | u = union; { u }
   | t = type_; { t }
+  (* Arrow function *)
+  | params = function_params; ARROW; type_ = type_or_union; { `Function(params, Some(type_)) }
 
 type_:
   (* Base types *)
@@ -134,7 +149,7 @@ type_:
   | LPAREN; t = union; RPAREN; LBRACKET; RBRACKET;  { `Array(t) }
   (* Type extraction *)
   | r = ref_; fa = nonempty_list(field_access); { `TypeExtract(r, fa) }
-  (* Reference *)
+  (* Ref *)
   | r = ref_; { `Ref(r) }
   
 let union :=

@@ -1,8 +1,7 @@
 open Re_typescript_base;
 
 let content = {|
-type x = 'x' | 'y';
-type y = 'z' | x;
+type union = string | number | (a: string, b?: number) => string | boolean;
 |};
 
 let () = {

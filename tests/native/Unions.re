@@ -133,3 +133,14 @@ describe("mixed unions", ({test, _}) => {
       toMatchSnapshot()
   });
 });
+
+describe("type unions", ({test, _}) => {
+  test("can create a nullable of an interface", ({expect, _}) => {
+    expect.string(
+      print({|
+      type some_interface = { field: boolean } | null;
+    |}),
+    ).
+      toMatchSnapshot()
+  })
+});
