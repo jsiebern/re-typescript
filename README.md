@@ -69,6 +69,7 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Arguments
     - [x] Return type
     - [ ] Fix arrow function problems
+    - [ ] Method signatures
   - [ ] Classes
     - [ ] Properties
     - [ ] Static
@@ -82,14 +83,16 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Aliased
     - [x] Star aliased
     - [x] List of named
-  - [ ] Namespaces
-  - [ ] Exports
+  - [x] Namespaces
+  - [x] Exports
   - [ ] Mutators
+  - [ ] Conditional types
+  - [ ] Keyof (in keyof) types
   - [ ] Type Parameters
     - [x] Type definition
-    - [ ] Interfaces
+    - [x] Interfaces
     - [ ] Classes
-    - [ ] Extends keyword
+    - [x] Extends keyword
 
 - [ ] Decoding
   - [ ] Create representation

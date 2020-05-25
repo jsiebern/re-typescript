@@ -1,6 +1,16 @@
 open Re_typescript_base;
 
 let content = {|
+export interface Test {
+  /**
+   * The CSS **`align-content`** property sets how the browser distributes space between and around content items along the cross-axis of a flexbox container, and the main-axis of a grid container.
+   *
+   * **Initial value**: `normal`
+   *
+   * ---
+   */
+  field: string;
+}
 type union = string | number | (a: string, b?: number) => string | boolean;
 |};
 

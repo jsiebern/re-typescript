@@ -1,13 +1,13 @@
 {
   open Lexing
-  open Parser
+  open Parser_new
 
   exception SyntaxError of string
 
   let tok lexbuf = Lexing.lexeme lexbuf
 
   let keyword_table =
-    let h = Hashtbl.create 32 in
+    let h = Hashtbl.create 39 in
     List.iter (fun (s,f) -> Hashtbl.add h s f ) [
       "false",      (fun ii -> FALSE ii);
       "true",       (fun ii -> TRUE ii);
@@ -15,10 +15,12 @@
       "in",         (fun ii -> IN ii);
       "instanceof", (fun ii -> INSTANCEOF ii);
       "typeof",     (fun ii -> TYPEOF ii);
+      "this",       (fun ii -> THIS ii);
       "var",        (fun ii -> VAR ii);
       "let",        (fun ii -> LET ii);
       "const",      (fun ii -> CONST ii);
       "default",    (fun ii -> DEFAULT ii);
+      "new",        (fun ii -> NEW ii);
       "extends",    (fun ii -> EXTENDS ii);
       "readonly",   (fun ii -> READONLY ii);
       "import",     (fun ii -> IMPORT ii);
@@ -39,6 +41,11 @@
       "declare",    (fun ii -> DECLARE ii);
       "namespace",  (fun ii -> NAMESPACE ii);
       "module",     (fun ii -> MODULE ii);
+      "unknown",    (fun ii -> UNKNOWN ii);
+      "public",     (fun ii -> PUBLIC ii);
+      "protected",  (fun ii -> PROTECTED ii);
+      "private",    (fun ii -> PRIVATE ii);
+      "symbol",     (fun ii -> SYMBOL ii);
     ];
     h
 
@@ -116,6 +123,7 @@ rule read =
   | ']'                     { RBRACKET (tokinfo lexbuf); }
   | ';'                     { SEMICOLON (tokinfo lexbuf); }
   | ':'                     { COLON (tokinfo lexbuf); }
+  | "..."                   { ELLIPSIS (tokinfo lexbuf); }
   | '.'                     { DOT (tokinfo lexbuf); }
   | '<'                     { LT (tokinfo lexbuf); }
   | '>'                     { GT (tokinfo lexbuf); }
@@ -165,7 +173,7 @@ rule read =
     }
 
   | _ {
-      UNKNOWN (tok lexbuf, tokinfo lexbuf)
+      OTHER (tok lexbuf, tokinfo lexbuf)
     }
   | eof { EOF (tokinfo lexbuf); }
 and string_escape quote buf = parse
