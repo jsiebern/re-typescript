@@ -1,6 +1,6 @@
 {
   open Lexing
-  open Parser_tokens
+  open Parser
 
   exception SyntaxError of string
 

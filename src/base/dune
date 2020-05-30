@@ -1,18 +1,9 @@
 (ocamllex
  (modules lexer))
 
-; Compile tokens.mly into a definition of the type [token].
-
 (menhir
- (modules parser_tokens)
- (flags --only-tokens))
-
-; Compile parser.mly into a parser.
-
-(menhir
- (modules parser parser_tokens)
- (merge_into parser)
- (flags --external-tokens Parser_tokens --unused-tokens))
+ (modules parser)
+ (flags --unused-tokens))
 
 (library
  (name re_typescript_base)

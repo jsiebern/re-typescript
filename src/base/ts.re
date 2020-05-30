@@ -107,7 +107,7 @@ and index_signature = {
 }
 and index_signature_kind =
   | ISString
-  | ISSNumber
+  | ISNumber
 and method_signature = {
   ms_property_name: property_name,
   ms_call_signature: call_signature,
