@@ -7,7 +7,7 @@
   let tok lexbuf = Lexing.lexeme lexbuf
 
   let keyword_table =
-    let h = Hashtbl.create 39 in
+    let h = Hashtbl.create 41 in
     List.iter (fun (s,f) -> Hashtbl.add h s f ) [
       "false",      (fun ii -> FALSE ii);
       "true",       (fun ii -> TRUE ii);
@@ -46,6 +46,10 @@
       "protected",  (fun ii -> PROTECTED ii);
       "private",    (fun ii -> PRIVATE ii);
       "symbol",     (fun ii -> SYMBOL ii);
+      "class",      (fun ii -> CLASS ii);
+      "implements", (fun ii -> IMPLEMENTS ii);
+      "constructor",(fun ii -> CONSTRUCTOR ii);
+      "static",     (fun ii -> STATIC ii);
     ];
     h
 
@@ -72,7 +76,7 @@
     r
 }
 
-let NEWLINE = '\r' | '\n' | "\r\n"
+let NEWLN = '\r' | '\n' | "\r\n"
 let hexa = ['0'-'9''a'-'f''A'-'F']
 let inputCharacter = [^ '\r' '\n' ]
 
@@ -91,7 +95,7 @@ rule read =
   | ("//#" [' ' '\t' ]*
      (['0'-'9']+ as line) [' ' '\t' ]*
      '"' ([^ '"' '\n']* as file) '"' [' ' '\t' ]*
-    ) as raw NEWLINE {
+    ) as raw NEWLN {
       let info = tokinfo lexbuf in
       let line = int_of_string line in
       update_loc lexbuf ~file ~line ~absolute:true 0;
@@ -101,9 +105,9 @@ rule read =
   | [' ' '\t' ]+ {
       read lexbuf
     }
-  | NEWLINE {
+  | NEWLN {
       update_loc lexbuf ~line:1 ~absolute:false 0;
-      read lexbuf
+      NEWLINE (tokinfo lexbuf);
     }
 
   (* Operators *)
@@ -192,10 +196,10 @@ and string_quote q buf = parse
     if Char.(q = q')
     then ()
     else (Buffer.add_char buf q'; string_quote q buf lexbuf) }
-  | "\\" NEWLINE {
+  | "\\" NEWLN {
     update_loc lexbuf ~line:1 ~absolute:false 0;
     string_quote q buf lexbuf }
-  | NEWLINE {
+  | NEWLN {
     Format.eprintf  "LEXER: WEIRD newline in quoted string@.";
     update_loc lexbuf ~line:1 ~absolute:false 0;
     Buffer.add_string buf (tok lexbuf);
@@ -208,7 +212,7 @@ and string_quote q buf = parse
   | eof { Format.eprintf  "LEXER: WEIRD end of file in quoted string@."; ()}
 and st_comment buf = parse
   | "*/" { Buffer.add_string buf (tok lexbuf) }
-  | NEWLINE {
+  | NEWLN {
       update_loc lexbuf ~line:1 ~absolute:false 0;
       Buffer.add_string buf (tok lexbuf);
       st_comment buf lexbuf }

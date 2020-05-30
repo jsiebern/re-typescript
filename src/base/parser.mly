@@ -12,10 +12,13 @@ let main :=
 
 let declaration :=
   | d = declaration_namespace; { d }
+  | d = declaration_module; { d }
   | d = declaration_function; { d }
   | d = declaration_enum; { d }
   | d = declaration_interface; { d }
   | d = declaration_type; { d }
+  | d = declaration_class; { d }
+  | d = declaration_variable; { d }
 
 let type_ :=
   | t = type_union_or_intersection_or_primary; { t }
@@ -43,6 +46,13 @@ let type_parameter :=
   | p = identifier_name; EXTENDS; ex = type_; EQUALS; eq = type_; { Ts.{ tp_ident = p; tp_extends = Some(ex); tp_default = Some(eq) } }
 
 (***************************************
+ *  Modules
+ ***************************************)
+
+let declaration_module :=
+  | pi = MODULE; s = STRING; body = delimited(LPAREN, namespace_body, RPAREN); { let (s, _, _) = s in Ts.Module({ pi; item = { m_name = s; m_declarations = body } }) }
+
+(***************************************
  *  Namespaces
  ***************************************)
 
@@ -53,8 +63,8 @@ let namespace_body :=
   | b = namespace_element+; { b }
 
 let namespace_element :=
-  | d = declaration; { { Ts.ni_item = d; ni_exported = false } }
-  | d = namespace_element_export; { { Ts.ni_item = d; ni_exported = true } }
+  | d = declaration; { { Ts.di_item = d; di_exported = false } }
+  | d = namespace_element_export; { { Ts.di_item = d; di_exported = true } }
 
 let namespace_element_export :=
   | EXPORT; d = declaration; { d }
@@ -160,7 +170,7 @@ let type_member :=
   | s = property_signature; { s }
   | s = call_signature; { Ts.CallSignature(s) }
   | s = construct_signature; { s }
-  | s = index_signature; { s }
+  | s = index_signature; { Ts.IndexSignature(s) }
   | s = method_signature; { s }
 
 let property_signature :=
@@ -170,8 +180,8 @@ let construct_signature :=
   | NEW; cs = call_signature; { Ts.ConstructSignature(cs) }
 
 let index_signature :=
-  | s = delimited(LBRACKET, b = identifier_name; COLON; PRIM_STRING; { b }, RBRACKET); ta = type_annotation; { Ts.IndexSignature(s, ta) }
-  | s = delimited(LBRACKET, b = identifier_name; COLON; PRIM_NUMBER; { b }, RBRACKET); ta = type_annotation; { Ts.IndexSignature(s, ta) }
+  | s = delimited(LBRACKET, b = identifier_name; COLON; PRIM_STRING; { b }, RBRACKET); ta = type_annotation; { { Ts.is_ident = s; is_kind = ISString; is_type_annotation = ta } }
+  | s = delimited(LBRACKET, b = identifier_name; COLON; PRIM_NUMBER; { b }, RBRACKET); ta = type_annotation; { { Ts.is_ident = s; is_kind = ISNumber; is_type_annotation = ta } }
 
 let method_signature :=
   | n = property_name; opt = boption(QMARK); ca = call_signature; { Ts.MethodSignature({ ms_property_name = n; ms_call_signature = ca; ms_optional = opt }) }
@@ -224,6 +234,64 @@ let accessibility_modifier ==
 
 let parameter_optional :=
   | acm = accessibility_modifier?; ib = identifier_or_binding; QMARK; ta = type_annotation?; { Ts.Parameter({ p_optional = true; p_ibinding = ib; p_type_annotation = ta; p_accessibility = acm }) }
+
+(***************************************
+ *  Variables
+ ***************************************)
+
+let declaration_variable :=
+  | pi = variable_prefix; l = separated_or_terminated_list(COMMA, variable_binding); class_body_element_sep; { Ts.Variable({ pi; item = l }) }
+
+let variable_prefix :=
+  | pi = VAR; { pi }
+  | pi = LET; { pi }
+  | pi = CONST; { pi }
+
+let variable_binding :=
+  | i = identifier_name; ta = type_annotation?; { (i, ta) }
+
+(***************************************
+ *  Classes
+ ***************************************)
+
+let declaration_class :=
+  | pi = CLASS; i = identifier_name?; tp = type_parameters?; ch = class_heritage; body = delimited(LCURLY, class_body, RCURLY); { Ts.Class({ pi; item = { c_ident = i; c_parameters = tp; c_extends = fst(ch); c_implements = snd(ch); c_elements = body } }) }
+
+let class_heritage :=
+  | ce = class_extends_clause?; ci = class_implements_clause?; { (ce, ci) }
+
+let class_extends_clause :=
+  | EXTENDS; tr = type_reference; { tr }
+
+let class_implements_clause :=
+  | IMPLEMENTS; ci = class_or_interface_type_list; { ci }
+
+let class_body :=
+  | cbe = loption(class_body_elements); { cbe }
+
+let class_body_elements :=
+  | l = nonempty_list(class_body_element); { l }
+  
+let class_body_element :=
+  | ccd = class_constructor; { ccd }
+  | cis = class_index_signature; { cis }
+  | cpm = class_property_member; { cpm }
+
+let class_index_signature :=
+  | is = index_signature; class_body_element_sep; { Ts.ClassIndexSignature(is) }
+
+let class_constructor :=
+  | CONSTRUCTOR; pl = loption(delimited(LPAREN, parameter_list?, RPAREN)); class_body_element_sep; { Ts.ClassElementConstructor(pl) }
+
+let class_property_member :=
+  | acm = accessibility_modifier?; pn = property_name; ta = type_annotation?; class_body_element_sep; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = false; cp_property_name = pn; cp_type_annotation = ta; cp_call_signature = None }) }
+  | acm = accessibility_modifier?; STATIC; pn = property_name; ta = type_annotation?; class_body_element_sep; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = true; cp_property_name = pn; cp_type_annotation = ta; cp_call_signature = None }) }
+  | acm = accessibility_modifier?; pn = property_name; cs = call_signature; class_body_element_sep; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = false; cp_property_name = pn; cp_type_annotation = None; cp_call_signature = Some(cs) }) }
+  | acm = accessibility_modifier?; STATIC; pn = property_name; cs = call_signature; class_body_element_sep; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = true; cp_property_name = pn; cp_type_annotation = None; cp_call_signature = Some(cs) }) }
+ 
+let class_body_element_sep ==
+  | NEWLINE; { }
+  | SEMICOLON; { }
 
 (***************************************
  *  Interfaces

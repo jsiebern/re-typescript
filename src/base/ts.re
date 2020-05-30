@@ -5,10 +5,32 @@ type with_pi('t) = {
 
 type declaration =
   | Namespace(with_pi(declaration_namespace))
+  | Module(with_pi(declaration_module))
   | Type(with_pi(declaration_type))
   | Interface(with_pi(declaration_interface))
   | Enum(with_pi(declaration_enum))
   | FunctionDec(with_pi(declaration_function))
+  | Class(with_pi(declaration_class))
+  | Variable(with_pi(list((identifier_name, option(type_)))))
+and declaration_class = {
+  c_ident: option(identifier_name),
+  c_parameters: option(type_parameters),
+  c_extends: option(type_reference),
+  c_implements: option(class_implements_clause),
+  c_elements: list(class_body_element),
+}
+and class_body_element =
+  | ClassConstructor(parameter_list)
+  | ClassIndexSignature(index_signature)
+  | ClassPropertyMember(class_property_member)
+and class_property_member = {
+  cp_accessibility: option(accessibility_modifier),
+  cp_static: bool,
+  cp_property_name: property_name,
+  cp_type_annotation: option(type_),
+  cp_call_signature: option(call_signature),
+}
+and class_implements_clause = list(type_reference)
 and declaration_function = {
   f_ident: identifier_name,
   f_call_signature: call_signature,
@@ -76,8 +98,16 @@ and type_member =
   | PropertySignature(property_signature)
   | CallSignature(call_signature)
   | ConstructSignature(call_signature)
-  | IndexSignature(identifier_name, type_)
+  | IndexSignature(index_signature)
   | MethodSignature(method_signature)
+and index_signature = {
+  is_ident: identifier_name,
+  is_kind: index_signature_kind,
+  is_type_annotation: type_,
+}
+and index_signature_kind =
+  | ISString
+  | ISSNumber
 and method_signature = {
   ms_property_name: property_name,
   ms_call_signature: call_signature,
@@ -109,11 +139,15 @@ and parameter = {
 }
 and declaration_namespace = {
   n_ident: list(identifier_name),
-  n_declarations: list(declaration_namespace_item),
+  n_declarations: list(declaration_item),
 }
-and declaration_namespace_item = {
-  ni_item: declaration,
-  ni_exported: bool,
+and declaration_module = {
+  m_name: string,
+  m_declarations: list(declaration_item),
+}
+and declaration_item = {
+  di_item: declaration,
+  di_exported: bool,
 }
 and identifier_or_binding =
   | IdentifierBinding(identifier_name)

@@ -22,6 +22,10 @@
   PUBLIC PROTECTED PRIVATE
   SYMBOL
   NEW
+  CLASS
+  IMPLEMENTS
+  CONSTRUCTOR
+  STATIC
 
 (* With value *)
 %token <string * Parse_info.t>       IDENT
@@ -59,6 +63,7 @@
 
 (* Noise *)
 %token <string * Parse_info.t> OTHER
+%token <Parse_info.t> NEWLINE
 %token <string * Parse_info.t> COMMENT
 %token <string * Parse_info.t> COMMENT_LINE
 
