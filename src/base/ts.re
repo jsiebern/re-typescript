@@ -4,14 +4,44 @@ type with_pi('t) = {
 };
 
 type declaration =
+  | IdentifierReference(identifier_name)
+  | ExportList(with_pi(export_list))
+  | Export(declaration)
+  | ExportAssignment(identifier_name)
+  | ExportDefault(declaration)
+  | Ambient(declaration)
   | Namespace(with_pi(declaration_namespace))
-  | Module(with_pi(declaration_module))
+  | Module(with_pi((string, list(declaration))))
   | Type(with_pi(declaration_type))
   | Interface(with_pi(declaration_interface))
   | Enum(with_pi(declaration_enum))
   | FunctionDec(with_pi(declaration_function))
   | Class(with_pi(declaration_class))
   | Variable(with_pi(list((identifier_name, option(type_)))))
+  | ImportAlias(with_pi((identifier_name, list(identifier_name))))
+  | Import(with_pi(declaration_import))
+and declaration_import = {
+  i_clause: declaration_import_clause,
+  i_from: string,
+}
+and declaration_import_clause =
+  | ImportModuleSpecifier
+  | ImportBinding(identifier_name)
+  | ImportNamespace(identifier_name)
+  | ImportNamed(list(declaration_import_named))
+  | ImportSplitNamespace(identifier_name, identifier_name)
+  | ImportSplitNamed(identifier_name, list(declaration_import_named))
+and declaration_import_named =
+  | ImportNamedIdent(identifier_name)
+  | ImportNamedAs(identifier_name, identifier_name)
+and export_list = {
+  el_items: list(export_list_item),
+  el_from: option(string),
+}
+and export_list_item =
+  | ExportStar
+  | ExportIdent(identifier_name)
+  | ExportAs(identifier_name, identifier_name)
 and declaration_class = {
   c_ident: option(identifier_name),
   c_parameters: option(type_parameters),
@@ -139,15 +169,7 @@ and parameter = {
 }
 and declaration_namespace = {
   n_ident: list(identifier_name),
-  n_declarations: list(declaration_item),
-}
-and declaration_module = {
-  m_name: string,
-  m_declarations: list(declaration_item),
-}
-and declaration_item = {
-  di_item: declaration,
-  di_exported: bool,
+  n_declarations: list(declaration),
 }
 and identifier_or_binding =
   | IdentifierBinding(identifier_name)
