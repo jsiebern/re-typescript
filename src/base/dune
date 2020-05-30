@@ -10,8 +10,8 @@
 ; Compile parser.mly into a parser.
 
 (menhir
- (modules parser_new parser_tokens)
- (merge_into parser_new)
+ (modules parser parser_tokens)
+ (merge_into parser)
  (flags --external-tokens Parser_tokens --unused-tokens))
 
 (library

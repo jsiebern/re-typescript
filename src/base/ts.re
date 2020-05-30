@@ -6,9 +6,35 @@ type with_pi('t) = {
 type declaration =
   | Namespace(with_pi(declaration_namespace))
   | Type(with_pi(declaration_type))
+  | Interface(with_pi(declaration_interface))
+  | Enum(with_pi(declaration_enum))
+  | FunctionDec(with_pi(declaration_function))
+and declaration_function = {
+  f_ident: identifier_name,
+  f_call_signature: call_signature,
+}
+and declaration_enum = {
+  e_ident: identifier_name,
+  e_const: bool,
+  e_members: list(enum_member),
+}
+and enum_member = {
+  em_property_name: property_name,
+  em_value: option(enum_member_value),
+}
+and enum_member_value =
+  | EMVString(with_pi(string))
+  | EMVNumber(with_pi(int))
+and declaration_interface = {
+  i_ident: identifier_name,
+  i_parameters: option(type_parameters),
+  i_extends: option(interface_extends_clause),
+  i_members: option(type_member_list),
+}
+and interface_extends_clause = list(type_reference)
 and declaration_type = {
-  t_ident: list(identifier_name),
-  t_parameters: type_parameters,
+  t_ident: identifier_name,
+  t_parameters: option(type_parameters),
   t_type: type_,
 }
 and type_parameters = list(type_parameter)
@@ -26,9 +52,9 @@ and type_ =
   | Intersection(type_, type_)
   | Union(type_, option(type_))
   | Query(list(identifier_name))
-  | StringLiteral(identifier_name)
+  | StringLiteral(with_pi(string))
   | NumberLiteral(with_pi(int))
-  | TypeReference(list(identifier_name), option(type_arguments))
+  | TypeReference(type_reference)
   | String(Parse_info.t)
   | Number(Parse_info.t)
   | Boolean(Parse_info.t)
@@ -38,15 +64,17 @@ and type_ =
   | Any(Parse_info.t)
   | Symbol(Parse_info.t)
   | This(Parse_info.t)
+and type_reference = (list(identifier_name), option(type_arguments))
 and type_arguments = list(type_)
 and definition_function = {
   f_parameters: option(type_parameters),
-  f_body: list(parameter),
+  f_body: parameter_list,
   f_ret: type_,
 }
 and type_member_list = list(type_member)
 and type_member =
   | PropertySignature(property_signature)
+  | CallSignature(call_signature)
   | ConstructSignature(call_signature)
   | IndexSignature(identifier_name, type_)
   | MethodSignature(method_signature)
@@ -77,7 +105,7 @@ and parameter = {
   p_optional: bool,
   p_ibinding: identifier_or_binding,
   p_type_annotation: option(type_),
-  p_accessibility: accessibility_modifier,
+  p_accessibility: option(accessibility_modifier),
 }
 and declaration_namespace = {
   n_ident: list(identifier_name),
