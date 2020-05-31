@@ -48,7 +48,6 @@
         "@reason-native/pastel@0.3.0@d41d8cd9",
         "@reason-native/file-context-printer@0.0.3@d41d8cd9",
         "@reason-native/console@0.1.0@d41d8cd9",
-        "@opam/reason@opam:3.6.0@2da53ff9",
         "@opam/ppx_tools_versioned@opam:5.4.0@48c10ee1",
         "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47",
         "@opam/menhir@opam:20200211@26571604",
@@ -61,6 +60,7 @@
         "refmterr@3.3.2@d41d8cd9", "ocaml@4.8.1000@d41d8cd9",
         "@reason-native/rely@3.2.1@d41d8cd9",
         "@opam/redemon@github:ulrikstrid/redemon:redemon.opam#0c9a08cb116dab641cf0f89cc291dd6a2f4ec7cc@d41d8cd9",
+        "@opam/reason@opam:3.6.0@2da53ff9",
         "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#38bd51a15c98b4f6ff841e5c914a8cdacee15ea6@d41d8cd9",
         "@opam/js_of_ocaml-compiler@opam:3.6.0@8dfa564d"
       ]

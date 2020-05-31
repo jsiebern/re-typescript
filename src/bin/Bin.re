@@ -1,8 +1,7 @@
 open Re_typescript_base;
 
 let content = {|
-export type Maybe<T> = null | undefined | T;
-type x = Maybe<string>;
+type ValueOrArray<T> = T | Array<ValueOrArray<T>>;
 |};
 
 let () = {
@@ -19,8 +18,8 @@ let () = {
         Random.int(1000000),
       ));
       Console.log("--------------------------------------");
-      Console.log(
-        Re_typescript_printer.print_from_ts(
+      let str =
+        Re_typescript_printer.structure_from_ts(
           ~ctx={
             ...Re_typescript_printer.Config.default_config,
             number_mode: Int,
@@ -31,13 +30,19 @@ let () = {
               }),
           },
           Parser_incr.parse(lexbuf),
-        ),
+        );
+      Reason_toolchain.RE.print_implementation_with_comments(
+        Format.str_formatter,
+        (str, []),
       );
+      Console.log(Format.flush_str_formatter());
+
       Console.log("--------------------------------------");
       print_newline();
     }
   ) {
-  | Lexer.SyntaxError(msg) => Printf.fprintf(stderr, "%s", msg)
+  | Syntaxerr.Error(msg) => Console.error(msg)
+  | Lexer.SyntaxError(msg) => Console.error(msg)
   | Parser_incr.Parsing_error(_)
   | Parser.Error => Console.error(Error.parser_error(~content, ~lexbuf))
   | e =>

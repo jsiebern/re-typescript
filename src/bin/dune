@@ -1,6 +1,6 @@
 (executable
  (name bin)
  (public_name re_typescript)
- (libraries re_typescript.base re_typescript.printer file-context-printer.lib
-   console.lib pastel.lib)
+ (libraries reason re_typescript.base re_typescript.printer
+   file-context-printer.lib console.lib pastel.lib)
  (ocamlopt_flags (-linkall)))
