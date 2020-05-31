@@ -27,10 +27,6 @@ describe("failing tests that shouldn't", ({test, _}) => {
     // ---
     // function someFunction<A,B,C>(a: A, b: B): [B,C];
     // ---
-    // type union = string | number | (a: string, b?: number) => string;
-    // ---
-    // function (a: string, b: (a: string, b?: number) => string): void;
-    // ---
     // type ValueOrArray<T> = T | Array<ValueOrArray<T>>;
     // ---
     // type Json =
@@ -41,9 +37,7 @@ describe("failing tests that shouldn't", ({test, _}) => {
     // | { [property: string]: Json }
     // | Json[];
     // ---
-    //   {
-    //     func1(x: number): number;         // Method signature
-    //     func2: (x: number) => number;     // Function type literal
+    //  interface x {
     //     func3: { (x: number): number };   // Object type literal
     // }
 });

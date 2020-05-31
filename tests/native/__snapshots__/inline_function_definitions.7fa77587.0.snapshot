@@ -1,0 +1,3 @@
+inline function definitions › inline function in a function definition
+type func_b = a:string -> ?b:float option -> unit -> string
+and func = a:string -> b:func_b -> unit

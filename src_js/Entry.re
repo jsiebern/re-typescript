@@ -118,9 +118,17 @@ type i_inline_access = i_inline_function['action'];
 type string_literal_ext = 'x' | 'y';
 type string_literal_ext_base = 'z' | string_literal_ext;
 
+// --- Method signature in interfaces
+// --- (also comments spread through the definitions)
+interface method_signature {
+  func1: (x: number) => number;       // Function type literal
+  func2(x: number): number;           // Method signature
+  func3(x: string, y: boolean): void; // Method signature for extraction
+}
+type extracted_method_signature = method_signature['func3'];
 
 // --------------------------------------------
-// What doesn't?
+// What doesn't? (And a lot more, just a few random cases)
 // --------------------------------------------
 
 // enum enum_2 { Red, Green, Blue = 5 };

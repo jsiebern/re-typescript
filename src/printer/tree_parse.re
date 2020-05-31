@@ -657,10 +657,42 @@ and parse__interface = (~path, members: list(Ts.type_member)) => {
              f_name: ps_ident |> Ident.of_pi,
              f_type: ps_optional ? Optional(parsed_type) : parsed_type,
            };
+         | MethodSignature({
+             ms_property_name: PIdentifier(ms_ident),
+             ms_call_signature: {
+               cs_type_parameters,
+               cs_parameter_list,
+               cs_type_annotation,
+             },
+             ms_optional,
+           }) =>
+           let path = path |> Path.add_sub(ms_ident |> no_pi);
+           let parsed_type =
+             parse__type(
+               ~inline=true,
+               ~path,
+               Ts.Function({
+                 f_parameters: cs_type_parameters,
+                 f_body: cs_parameter_list,
+                 f_ret:
+                   cs_type_annotation
+                   |> CCOpt.value(~default=Ts.Any(Parse_info.zero)),
+               }),
+             );
+           {
+             f_name: ms_ident |> Ident.of_pi,
+             f_type: ms_optional ? Optional(parsed_type) : parsed_type,
+           };
          | PropertySignature(_) =>
            raise(
              Exceptions.Parser_error(
                "PropertySignature with anything but PIdentifier not yet supported in interface",
+             ),
+           )
+         | MethodSignature(_) =>
+           raise(
+             Exceptions.Parser_error(
+               "MethodSignature with anything but PIdentifier not yet supported in interface",
              ),
            )
          | CallSignature(_) =>
@@ -679,12 +711,6 @@ and parse__interface = (~path, members: list(Ts.type_member)) => {
            raise(
              Exceptions.Parser_error(
                "IndexSignature not yet supported in interface",
-             ),
-           )
-         | MethodSignature(_) =>
-           raise(
-             Exceptions.Parser_error(
-               "MethodSignature not yet supported in interface",
              ),
            )
          }

@@ -113,5 +113,15 @@ describe("inline function definitions", ({test, _}) => {
       ),
     ).
       toMatchSnapshot()
-  })
+  });
+  test("inline function in a function definition", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+            export function func(a: string, b: (a: string, b?: number) => string): void;
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

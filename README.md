@@ -132,6 +132,8 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Basic types
     - [x] Interfaces
       - [x] `@bs.as` attribute
+      - [x] Method Signature
+      - [ ] Index Signature
     - [x] Arrays / Lists
     - [x] Enums
     - [x] Unions
