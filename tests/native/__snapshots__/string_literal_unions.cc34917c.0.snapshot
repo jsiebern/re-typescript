@@ -1,4 +1,4 @@
-string only unions › can be generated inside optional
+string literal unions › can be generated inside optional
 module Variant: {
   type t = pri string;
   [@bs.inline \"blue\"]

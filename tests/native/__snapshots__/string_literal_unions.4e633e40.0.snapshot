@@ -1,4 +1,4 @@
-string only unions › can generate simple string unions
+string literal unions › can generate simple string unions
 module Variant: {
   type t = pri string;
   [@bs.inline \"str1\"]

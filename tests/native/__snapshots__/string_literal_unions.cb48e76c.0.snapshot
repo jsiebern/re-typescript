@@ -1,4 +1,4 @@
-string only unions › recognizes single string as union
+string literal unions › recognizes single string as union
 module Variant: {
   type t = pri string;
   [@bs.inline \"single\"]

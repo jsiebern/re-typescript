@@ -1,11 +1,6 @@
 open TestFramework;
 
 describe("failing tests that shouldn't", ({test, _}) => {
-  // test("string literals with digits at start", ({expect, _}) => {
-  //   expect.fn(() => print({|
-  //           type c = '0ab';
-  //       |})).toThrow()
-  // });
   test(
     "declare keyword, dynamic objects, keyof keyword ternaries",
     ({expect, _})
@@ -21,6 +16,10 @@ describe("failing tests that shouldn't", ({test, _}) => {
       ).
         toThrow()
     })
+    // ---
+    // type obj = {
+    //   type: string;
+    // };
     // ---
     // type x = 3 | 4;
     // type y = (1 | x | 2)[];

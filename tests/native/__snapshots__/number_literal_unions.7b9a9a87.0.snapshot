@@ -1,4 +1,4 @@
-number only unions › generates int union from single value
+number literal unions › generates int union from single value
 module Variant: {
   type t = pri int;
   [@bs.inline 32]

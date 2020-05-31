@@ -1,4 +1,4 @@
-string only unions › can be generated inline
+string literal unions › can be generated inline
 module Obj_field: {
   type t = pri string;
   [@bs.inline \"red\"]

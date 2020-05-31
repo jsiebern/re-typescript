@@ -49,7 +49,7 @@ describe("nullable / undefined unions are around types", ({test, _}) => {
   });
 });
 
-describe("string only unions", ({test, _}) => {
+describe("string literal unions", ({test, _}) => {
   test("can generate simple string unions", ({expect, _}) => {
     expect.string(
       print({|
@@ -85,9 +85,14 @@ describe("string only unions", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("can contain a number as first char", ({expect, _}) => {
+    expect.fn(() => print({|
+      type c = '0ab';
+    |})).not.toThrow()
+  });
 });
 
-describe("number only unions", ({test, _}) => {
+describe("number literal unions", ({test, _}) => {
   test("generates simple int union", ({expect, _}) => {
     expect.string(print({|
       type variant = 2 | 4 | 8 | 16;
