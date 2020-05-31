@@ -97,6 +97,30 @@ describe("function definitions", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test(
+    "function returns get merged back if not referenced otherwise",
+    ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+           export function someFunction<A,B,C>(a: A, b: B): [B,C];
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+  test(
+    "function parameters get merged back if not referenced otherwise",
+    ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+           export function someFunction(a: number, b: [ number, { field: string } ]): [string, boolean];
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });
 
 describe("inline function definitions", ({test, _}) => {

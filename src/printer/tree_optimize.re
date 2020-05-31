@@ -319,6 +319,74 @@ and optimize__single_ref_inline_types = () => {
            ~path,
            TypeDeclaration({...td, td_type: Tuple(new_members)}),
          );
+       // ----------------------------------
+       // --- Function Return
+       // ----------------------------------
+       | Some(
+           TypeDeclaration(
+             {td_type: Function({fu_return, fu_params}), _} as td,
+           ),
+         ) =>
+         let new_return =
+           switch (fu_return) {
+           | Reference({tr_path_resolved: Some(resolved_path), _})
+               when
+                 snd(resolved_path)
+                 |> CCList.length > 0
+                 && Ref.get_all(resolved_path)
+                 |> CCList.length == 1 =>
+             switch (Type.get(~path=resolved_path)) {
+             | Some(TypeDeclaration({td_type: Interface(_), _})) => fu_return
+             | Some(TypeDeclaration({td_type, _})) =>
+               // Remove the extra type def from order
+               Type.order :=
+                 Type.order^ |> CCList.remove_one(~eq=Path.eq, resolved_path);
+               // An replace the reference inside of the field
+               td_type;
+             | Some(_) => fu_return
+             | None => fu_return
+             }
+           | _ => fu_return
+           };
+
+         let new_params =
+           fu_params
+           |> CCList.map(param => {
+                switch (param) {
+                | {
+                    fp_type:
+                      Reference({tr_path_resolved: Some(resolved_path), _}),
+                    _,
+                  } as fp
+                    when
+                      snd(resolved_path)
+                      |> CCList.length > 0
+                      && Ref.get_all(resolved_path)
+                      |> CCList.length == 1 =>
+                  switch (Type.get(~path=resolved_path)) {
+                  | Some(TypeDeclaration({td_type: Interface(_), _})) => param
+                  | Some(TypeDeclaration({td_type, _})) =>
+                    // Remove the extra type def from order
+                    Type.order :=
+                      Type.order^
+                      |> CCList.remove_one(~eq=Path.eq, resolved_path);
+                    // An replace the reference inside of the field
+                    {...fp, fp_type: td_type};
+                  | Some(_) => param
+                  | None => param
+                  }
+                | param => param
+                }
+              });
+
+         Type.replace(
+           ~path,
+           TypeDeclaration({
+             ...td,
+             td_type:
+               Function({fu_return: new_return, fu_params: new_params}),
+           }),
+         );
        | _ => ()
        }
      });

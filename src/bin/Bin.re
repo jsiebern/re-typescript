@@ -1,8 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-// export function someFunction<A,B,C>(a: A, b: B): [B,C];
-type tpl = [ string, [ number, boolean ] ];
+//export function someFunction<A,B,C>(a: A, b: B): [B,C];
+export function someFunction(a: number, b: [ number, { field: string } ]): [string, boolean];
 |};
 
 let () = {

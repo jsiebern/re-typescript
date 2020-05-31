@@ -25,8 +25,6 @@ describe("failing tests that shouldn't", ({test, _}) => {
     // type x = 3 | 4;
     // type y = (1 | x | 2)[];
     // ---
-    // export function someFunction<A,B,C>(a: A, b: B): [B,C];
-    // ---
     // type ValueOrArray<T> = T | Array<ValueOrArray<T>>;
     // ---
     // type Json =
