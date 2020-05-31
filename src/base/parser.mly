@@ -58,12 +58,11 @@
   LPAREN RPAREN
   LBRACKET RBRACKET
   LT GT
-  SEMICOLON COLON COMMA
+  SEMICOLON VIRTUAL_SEMICOLON COLON COMMA
   ELLIPSIS
 
 (* Noise *)
 %token <string * Parse_info.t> OTHER
-%token <Parse_info.t> NEWLINE
 %token <string * Parse_info.t> COMMENT
 %token <string * Parse_info.t> COMMENT_LINE
 
@@ -91,29 +90,29 @@ let declaration_module :=
   | d = declaration_module_element+; { d }
 
 let declaration_module_element :=
-  | d = declaration_element;                  { d }
-  | d = declaration_import;                   { d }
-  | d = export_declaration_element;           { d }
-  | d = export_default_declaration_element;   { d }
-  | d = export_list_declaration;              { d }
-  | d = export_assignment;                    { d }
-  
+  | d = declaration_element; semico;                  { d }
+  | d = declaration_import; semico;                   { d }
+  | d = export_declaration_element; semico;           { d }
+  | d = export_default_declaration_element; semico;   { d }
+  | d = export_list_declaration; semico;              { d }
+  | d = export_assignment; semico;                    { d }
+
 let export_declaration_element :=
-  | EXPORT; d = declaration_interface; ln_or_semicolon;      { Ts.Export(d) }
-  | EXPORT; d = declaration_type; ln_or_semicolon;           { Ts.Export(d) }
-  | EXPORT; d = declaration_ambient; ln_or_semicolon;        { Ts.Export(d) }
-  | EXPORT; d = declaration_import_alias; ln_or_semicolon;   { Ts.Export(d) }
-  | EXPORT; d = declaration_variable; ln_or_semicolon;       { Ts.Export(d) }
+  | EXPORT; d = declaration_interface;      { Ts.Export(d) }
+  | EXPORT; d = declaration_type;           { Ts.Export(d) }
+  | EXPORT; d = declaration_ambient;        { Ts.Export(d) }
+  | EXPORT; d = declaration_import_alias;   { Ts.Export(d) }
+  | EXPORT; d = declaration_variable;       { Ts.Export(d) }
 
 let export_default_declaration_element :=
-  | EXPORT; DEFAULT; d = declaration_function; NEWLINE;     { Ts.ExportDefault(d) }
-  | EXPORT; DEFAULT; d = declaration_class; NEWLINE;        { Ts.ExportDefault(d) }
-  | EXPORT; DEFAULT; d = identifier_name; ln_or_semicolon;  { Ts.ExportDefault(IdentifierReference(d)) }
+  | EXPORT; DEFAULT; d = declaration_function;     { Ts.ExportDefault(d) }
+  | EXPORT; DEFAULT; d = declaration_class;        { Ts.ExportDefault(d) }
+  | EXPORT; DEFAULT; d = identifier_name;          { Ts.ExportDefault(IdentifierReference(d)) }
 
 let export_list_declaration :=
-  | pi = EXPORT; STAR; fr = from_clause; ln_or_semicolon;                { Ts.ExportList({ pi; item = { el_items = [ExportStar]; el_from = Some(fr) } }) }
-  | pi = EXPORT; ec = export_clause; fr = from_clause; ln_or_semicolon;  { Ts.ExportList({ pi; item = { el_items = ec; el_from = Some(fr) } }) }
-  | pi = EXPORT; ec = export_clause; ln_or_semicolon;                    { Ts.ExportList({ pi; item = { el_items = ec; el_from = None } }) }
+  | pi = EXPORT; STAR; fr = from_clause; semico;                { Ts.ExportList({ pi; item = { el_items = [ExportStar]; el_from = Some(fr) } }) }
+  | pi = EXPORT; ec = export_clause; fr = from_clause; semico;  { Ts.ExportList({ pi; item = { el_items = ec; el_from = Some(fr) } }) }
+  | pi = EXPORT; ec = export_clause; semico;                    { Ts.ExportList({ pi; item = { el_items = ec; el_from = None } }) }
 
 let export_clause :=
   | l = delimited(LCURLY, separated_or_terminated_list(COMMA, export_clause_item), RCURLY); { l }
@@ -126,14 +125,14 @@ let from_clause :=
   | FROM; s = STRING; { let (s, _, _) = s in s }
 
 let export_assignment :=
-  | EXPORT; EQUALS; eq = identifier_name; ln_or_semicolon; { Ts.ExportAssignment(eq) }
+  | EXPORT; EQUALS; eq = identifier_name; semico; { Ts.ExportAssignment(eq) }
 
 let declaration_script_element :=
   | d = declaration_element;                  { d }
   | DECLARE; d = declaration_module_ambient;  { Ts.Ambient(d) }
 
 let declaration_module_ambient :=
-  | pi = MODULE; ms = module_specifier; dm = loption(delimited(LCURLY, declaration_module, RCURLY)); ln_or_semicolon; { Ts.Module({ pi; item = (ms, dm) }) }
+  | pi = MODULE; ms = module_specifier; dm = loption(delimited(LCURLY, declaration_module, RCURLY)); semico; { Ts.Module({ pi; item = (ms, dm) }) }
 
 let declaration_element :=
   | d = declaration_interface;      { d }
@@ -153,8 +152,8 @@ let declaration_import_alias :=
   | pi = IMPORT; i = identifier_name; EQUALS; eq = identifier_path; { Ts.ImportAlias({ pi; item = (i, eq)}) }
 
 let declaration_import :=
-  | pi = IMPORT; ic = import_clause; fr = from_clause; ln_or_semicolon; { Ts.Import({ pi; item = { i_clause = ic; i_from = fr } }) }
-  | pi = IMPORT; ms = module_specifier; ln_or_semicolon;                { Ts.Import({ pi; item = { i_clause = Ts.ImportModuleSpecifier; i_from = ms }}) }
+  | pi = IMPORT; ic = import_clause; fr = from_clause; semico; { Ts.Import({ pi; item = { i_clause = ic; i_from = fr } }) }
+  | pi = IMPORT; ms = module_specifier; semico;                { Ts.Import({ pi; item = { i_clause = Ts.ImportModuleSpecifier; i_from = ms }}) }
 
 let import_clause :=
   | i = imported_binding;     { Ts.ImportBinding(i) }
@@ -332,7 +331,7 @@ let type_object :=
   | t = delimited(LCURLY, type_member_list?, RCURLY); { t }
 
 let type_member_list :=
-  | l = separated_or_terminated_list(SEMICOLON | COMMA, type_member); { l }
+  | l = separated_or_terminated_list(either(SEMICOLON, COMMA), type_member); { l }
 
 let type_member :=
   | s = property_signature; { s }
@@ -408,7 +407,7 @@ let parameter_optional :=
  ***************************************)
 
 let declaration_variable :=
-  | pi = variable_prefix; l = separated_or_terminated_list(COMMA, variable_binding); ln_or_semicolon; { Ts.Variable({ pi; item = l }) }
+  | pi = variable_prefix; l = separated_or_terminated_list(COMMA, variable_binding); semico; { Ts.Variable({ pi; item = l }) }
 
 let variable_prefix :=
   | pi = VAR; { pi }
@@ -446,23 +445,23 @@ let class_body_element :=
   | cpm = class_property_member; { cpm }
 
 let class_index_signature :=
-  | is = index_signature; ln_or_semicolon; { Ts.ClassIndexSignature(is) }
+  | is = index_signature; semico; { Ts.ClassIndexSignature(is) }
 
 let class_constructor :=
-  | CONSTRUCTOR; pl = loption(delimited(LPAREN, parameter_list, RPAREN)); ln_or_semicolon; { Ts.ClassConstructor(pl) }
+  | CONSTRUCTOR; pl = loption(delimited(LPAREN, parameter_list, RPAREN)); semico; { Ts.ClassConstructor(pl) }
 
 let class_property_member :=
-  | acm = accessibility_modifier?; pn = property_name; ta = type_annotation?; ln_or_semicolon; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = false; cp_property_name = pn; cp_type_annotation = ta; cp_call_signature = None }) }
-  | acm = accessibility_modifier?; STATIC; pn = property_name; ta = type_annotation?; ln_or_semicolon; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = true; cp_property_name = pn; cp_type_annotation = ta; cp_call_signature = None }) }
-  | acm = accessibility_modifier?; pn = property_name; cs = call_signature; ln_or_semicolon; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = false; cp_property_name = pn; cp_type_annotation = None; cp_call_signature = Some(cs) }) }
-  | acm = accessibility_modifier?; STATIC; pn = property_name; cs = call_signature; ln_or_semicolon; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = true; cp_property_name = pn; cp_type_annotation = None; cp_call_signature = Some(cs) }) }
+  | acm = accessibility_modifier?; pn = property_name; ta = type_annotation?; semico; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = false; cp_property_name = pn; cp_type_annotation = ta; cp_call_signature = None }) }
+  | acm = accessibility_modifier?; STATIC; pn = property_name; ta = type_annotation?; semico; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = true; cp_property_name = pn; cp_type_annotation = ta; cp_call_signature = None }) }
+  | acm = accessibility_modifier?; pn = property_name; cs = call_signature; semico; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = false; cp_property_name = pn; cp_type_annotation = None; cp_call_signature = Some(cs) }) }
+  | acm = accessibility_modifier?; STATIC; pn = property_name; cs = call_signature; semico; { Ts.ClassPropertyMember({ cp_accessibility = acm; cp_static = true; cp_property_name = pn; cp_type_annotation = None; cp_call_signature = Some(cs) }) }
 
 (***************************************
  *  Interfaces
  ***************************************)
 
 let declaration_interface :=
-  | i = identifier_name; tp = type_parameters?; ex = interface_extends_clause?; ob = type_object; { Ts.Interface({ pi = i.pi; item = { i_ident = i; i_parameters = tp; i_extends = ex; i_members = ob }}) }
+  | pi = INTERFACE; i = identifier_name; tp = type_parameters?; ex = interface_extends_clause?; ob = type_object; { Ts.Interface({ pi; item = { i_ident = i; i_parameters = tp; i_extends = ex; i_members = ob }}) }
 
 let interface_extends_clause :=
   | EXTENDS; ex = class_or_interface_type_list; { ex }
@@ -528,9 +527,7 @@ let literal_bool :=
  *  Utils
  ***************************************)
 
-let ln_or_semicolon ==
-  | NEWLINE; { }
-  | SEMICOLON; { }
+let semico == either(SEMICOLON, VIRTUAL_SEMICOLON)
 
 let separated_or_terminated_list(separator, X) :=
   | x=X; { [x] }
@@ -542,3 +539,5 @@ let maybe_as_bool(X) :=
 
 let maybe_as_list(X) :=
     v = X?; { match v with | None -> [] | Some v -> v }
+
+either(a, b): a { $1 } | b { $1 }

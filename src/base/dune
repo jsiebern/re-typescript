@@ -3,10 +3,11 @@
 
 (menhir
  (modules parser)
- (flags --unused-tokens))
+ (flags --unused-tokens --table))
 
 (library
  (name re_typescript_base)
  (public_name re_typescript.base)
- (libraries file-context-printer.lib pastel.lib console.lib containers)
+ (libraries file-context-printer.lib pastel.lib console.lib containers
+   menhirLib)
  (ocamlopt_flags (-linkall)))

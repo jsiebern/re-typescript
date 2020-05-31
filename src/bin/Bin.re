@@ -11,7 +11,7 @@ export interface Test {
    */
   field: string;
 }
-type union = string | number | (a: string, b?: number) => string | boolean;
+type union = string | number | boolean | Test;
 |};
 
 let () = {
@@ -32,7 +32,7 @@ let () = {
                 string_variant_mode: `BsInline,
               }),
           },
-          Parser.script(Lexer.read, lexbuf),
+          Parser_incr.parse(lexbuf),
         ),
       );
       Console.log("--------------------------------------");
@@ -40,6 +40,8 @@ let () = {
     }
   ) {
   | Lexer.SyntaxError(msg) => Printf.fprintf(stderr, "%s", msg)
+  | Parser_incr.Parsing_error(_) =>
+    Console.error(Error.parser_error(~content, ~lexbuf))
   | Parser.Error => Console.error(Error.parser_error(~content, ~lexbuf))
   | e =>
     Console.error(e);

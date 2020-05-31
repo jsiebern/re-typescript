@@ -107,7 +107,7 @@ rule read =
     }
   | NEWLN {
       update_loc lexbuf ~line:1 ~absolute:false 0;
-      NEWLINE (tokinfo lexbuf);
+      read lexbuf
     }
 
   (* Operators *)

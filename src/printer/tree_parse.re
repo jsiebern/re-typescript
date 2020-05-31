@@ -9,6 +9,9 @@ open Tree_data;
 let rec parse__type_def =
         (~inline=false, ~path=([], []), type_def: Ts.declaration) => {
   switch (type_def) {
+  | Export(declaration)
+  | ExportDefault(declaration)
+  | Ambient(declaration) => parse__type_def(~inline, ~path, declaration)
   | Type({item: {t_ident, t_parameters, t_type}, _}) =>
     let ident = t_ident |> Ident.of_pi;
     let t_path = inline ? path : path |> Path.add_ident(ident);
