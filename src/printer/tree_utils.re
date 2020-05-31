@@ -72,6 +72,7 @@ module Path = {
 
 module Exceptions = {
   exception Parser_error(string);
+  exception Optimizer_error(string);
 };
 
 let list_to_opt =
@@ -146,4 +147,31 @@ let type_to_string = (t: Re_typescript_base.Ts.type_) =>
   | Symbol(_) => "Symbol"
   | This(_) => "This"
   | UnionTemp(_) => "UnionTemp"
+  };
+
+let ts_to_string = (t: ts_type) =>
+  switch (t) {
+  | Function(_) => "Function"
+  | Union(_) => "Union"
+  | MixedLiteral(_) => "MixedLiteral"
+  | NumericLiteral(_) => "NumericLiteral"
+  | StringLiteral(_) => "StringLiteral"
+  | Enum(_) => "Enum"
+  | Base(String) => "Base_String"
+  | Base(Number) => "Base_Number"
+  | Base(Boolean) => "Base_Boolean"
+  | Base(Void) => "Base_Void"
+  | Base(Any) => "Base_Any"
+  | Base(Null) => "Base_Null"
+  | Base(Undefined) => "Base_Undefined"
+  | Interface(_) => "Interface"
+  | Tuple(_) => "Tuple"
+  | Array(_) => "Array"
+  | Optional(_) => "Optional"
+  | Nullable(_) => "Nullable"
+  | Reference(_) => "Reference"
+  | TypeDeclaration(_) => "TypeDeclaration"
+  | Import(_) => "Import"
+  | Module(_) => "Module"
+  | Arg(_) => "Arg"
   };

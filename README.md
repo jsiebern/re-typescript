@@ -50,18 +50,18 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Union of types
   - [ ] Enum
     - [x] Keys
-    - [ ] Default values
+    - [x] Default values
     - [ ] Computed values
-    - [ ] Const enums
-  - [ ] Intersection types
-  - [ ] Interfaces / Objects
+    - [x] Const enums
+  - [x] Intersection types
+  - [x] Interfaces / Objects
     - [x] Keyword
     - [x] Keys
     - [x] Semicolon / Comma
     - [x] Optional
     - [x] Readonly
     - [x] Nested interfaces
-    - [ ] Dynamic keys
+    - [x] Dynamic keys
     - [x] Extends keyword
   - [x] Functions
     - [x] By keyword
@@ -69,15 +69,15 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Arguments
     - [x] Return type
     - [ ] Fix arrow function problems
-    - [ ] Method signatures
-  - [ ] Classes
-    - [ ] Properties
-    - [ ] Static
-    - [ ] Public / Protected / Private
-    - [ ] Methods
-    - [ ] Inheritance
-    - [ ] Implementations
-    - [ ] Short fields initialization
+    - [x] Method signatures
+  - [x] Classes
+    - [x] Properties
+    - [x] Static
+    - [x] Public / Protected / Private
+    - [x] Methods
+    - [x] Inheritance
+    - [x] Implementations
+    - [x] Short fields initialization
   - [x] Imports
     - [x] Named
     - [x] Aliased
@@ -85,13 +85,14 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] List of named
   - [x] Namespaces
   - [x] Exports
+  - [x] Value bindings
   - [ ] Mutators
   - [ ] Conditional types
-  - [ ] Keyof (in keyof) types
-  - [ ] Type Parameters
+  - [x] Keyof (in keyof) types
+  - [x] Type Parameters
     - [x] Type definition
     - [x] Interfaces
-    - [ ] Classes
+    - [x] Classes
     - [x] Extends keyword
 
 - [ ] Decoding
@@ -153,7 +154,11 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Type Parameters
 - [ ] Plugin system
   - [ ] ReasonReact
+  - [ ] AST Structure
+- [ ] Add more parsers / backends
+  - [ ] Flow
 - [ ] Playground
+  - [ ] Performance improvements
   - [x] Check if it's really necessary to pull half of the ocaml compiler in (solved with `jsoo`)
   - [ ] Create a UI
     - [ ] Add panel with different generator options

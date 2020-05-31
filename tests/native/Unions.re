@@ -142,5 +142,82 @@ describe("type unions", ({test, _}) => {
     |}),
     ).
       toMatchSnapshot()
-  })
+  });
+
+  describe(
+    "type unions should get optimized into literals if possible", ({test, _}) => {
+    test("string literals", ({expect, _}) => {
+      expect.string(
+        print(
+          {|
+        type x = 'x' | 'y';
+        type y = 'z' | x;
+    |},
+        ),
+      ).
+        toMatchSnapshot()
+    });
+    test("string / numeric into mixed literals", ({expect, _}) => {
+      expect.string(
+        print({|
+        type x = 3 | 'y';
+        type y = 'z' | x;
+    |}),
+      ).
+        toMatchSnapshot()
+    });
+    test("string / numeric / bool into mixed literals", ({expect, _}) => {
+      expect.string(
+        print(
+          {|
+        type x = 3 | 'y';
+        type y = 'z' | x | false;
+    |},
+        ),
+      ).
+        toMatchSnapshot()
+    });
+    test("numeric only", ({expect, _}) => {
+      expect.string(
+        print({|
+        type x = 3 | 4;
+        type y = 1 | x | 2;
+    |}),
+      ).
+        toMatchSnapshot()
+    });
+    test("works with optional on the original", ({expect, _}) => {
+      expect.string(
+        print(
+          {|
+        type x = 3 | 4;
+        type y = 1 | x | 2 | undefined;
+    |},
+        ),
+      ).
+        toMatchSnapshot()
+    });
+    test("works with array on the original", ({expect, _}) => {
+      expect.string(
+        print(
+          {|
+        type x = 3 | 4;
+        type y = Array<1 | x | 2>;
+    |},
+        ),
+      ).
+        toMatchSnapshot()
+    });
+    test("works with array / nullable on the original", ({expect, _}) => {
+      expect.string(
+        print(
+          {|
+        type x = 3 | 4;
+        type y = Array<1 | x | 2 | null>;
+    |},
+        ),
+      ).
+        toMatchSnapshot()
+    });
+  });
 });

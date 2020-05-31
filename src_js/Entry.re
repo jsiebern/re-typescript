@@ -114,6 +114,9 @@ interface i_inline_function {
 }
 type i_inline_access = i_inline_function['action'];
 
+// --- Automatic Extension of union literals (keeps around the original)
+type string_literal_ext = 'x' | 'y';
+type string_literal_ext_base = 'z' | string_literal_ext;
 
 
 // --------------------------------------------
@@ -131,9 +134,6 @@ type i_inline_access = i_inline_function['action'];
 //     snd_b: B
 //   }
 // }
-
-// type x = 'x' | 'y';
-// type y = 'z' | x;
 
 // export declare type Subset<T, U> = {
 //  [key in keyof T]: key extends keyof U ? T[key] : never;

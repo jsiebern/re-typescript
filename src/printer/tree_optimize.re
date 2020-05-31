@@ -6,6 +6,146 @@ open Tree_data;
 let rec optimize = () => {
   optimize__empty_obj_references();
   optimize__single_ref_inline_types();
+  optimize__literal_unions();
+}
+and optimize__helper__resolve_reference = (tr: ts_type_reference) => {
+  switch (tr) {
+  | {tr_path_resolved: Some(resolved_path), _} =>
+    Type.get(
+      ~path=
+        Ref.resolve_ref(
+          ~recursive=true,
+          ~remember=false,
+          ~from=([], []),
+          resolved_path,
+        )
+        |> CCOpt.value(~default=resolved_path),
+    )
+  | _ => None
+  };
+}
+and optimize__literal_unions = () => {
+  // If type unions are clean except for a reference to another union of the same type, they can be merged
+  // The original type should be kept around though, in case that restricted value is ever needed somewhere
+  // TODO: If mode is set to PolyVariants, this can be changed into an extended poly variant
+  let optimize = (~td, ~map, ~path, ~members) => {
+    let (non_literal_types, literal_types) =
+      members
+      |> CCList.fold_left(
+           ((nl, l), member) => {
+             switch (member.um_type) {
+             | StringLiteral(_) as t
+             | NumericLiteral(_) as t
+             | MixedLiteral(_) as t => (nl, l @ [t])
+             | Base(Boolean) as t => (nl, l @ [t])
+             | other => (nl @ [other], l)
+             }
+           },
+           ([], []),
+         );
+    let resolved_literals =
+      non_literal_types
+      |> CCList.filter_map(member =>
+           switch (member) {
+           | Reference(r) =>
+             switch (r |> optimize__helper__resolve_reference) {
+             | Some(TypeDeclaration({td_type: StringLiteral(_) as t, _}))
+             | Some(TypeDeclaration({td_type: NumericLiteral(_) as t, _}))
+             | Some(TypeDeclaration({td_type: MixedLiteral(_) as t, _})) =>
+               Some(t)
+             | Some(_)
+             | None => None
+             }
+           | _ => None
+           }
+         );
+    if (CCEqual.int(
+          resolved_literals |> CCList.length,
+          non_literal_types |> CCList.length,
+        )) {
+      let new_type =
+        switch (
+          literal_types
+          @ resolved_literals
+          |> CCList.fold_left(
+               (p, t) =>
+                 switch (t) {
+                 | Base(Boolean) => {...p, bools: p.bools @ [true, false]}
+                 | StringLiteral(l) => {...p, strings: p.strings @ l}
+                 | NumericLiteral(l) => {...p, numbers: p.numbers @ l}
+                 | MixedLiteral({strings, numbers, bools}) => {
+                     strings: p.strings @ strings,
+                     numbers: p.numbers @ numbers,
+                     bools: p.bools @ bools,
+                   }
+                 | t =>
+                   raise(
+                     Exceptions.Optimizer_error(
+                       Printf.sprintf(
+                         "This case should not have happened! (%s)",
+                         ts_to_string(t),
+                       ),
+                     ),
+                   )
+                 },
+               {strings: [], numbers: [], bools: []},
+             )
+        ) {
+        | {strings: l, numbers: [], bools: []} => StringLiteral(l)
+        | {strings: [], numbers: l, bools: []} => NumericLiteral(l)
+        | mixed => MixedLiteral(mixed)
+        };
+      Type.replace(~path, TypeDeclaration({...td, td_type: map(new_type)}));
+    };
+  };
+
+  Type.order^
+  |> CCList.iter(path => {
+       switch (Type.get(~path)) {
+       | Some(
+           TypeDeclaration({td_type: Optional(Union(members)), _} as td),
+         ) =>
+         optimize(~td, ~map=v => Optional(v), ~path, ~members)
+       | Some(
+           TypeDeclaration({td_type: Nullable(Union(members)), _} as td),
+         ) =>
+         optimize(~td, ~map=v => Nullable(v), ~path, ~members)
+       | Some(
+           TypeDeclaration(
+             {td_type: Optional(Nullable(Union(members))), _} as td,
+           ),
+         ) =>
+         optimize(~td, ~map=v => Optional(Nullable(v)), ~path, ~members)
+       | Some(TypeDeclaration({td_type: Array(Union(members)), _} as td)) =>
+         optimize(~td, ~map=v => Array(v), ~path, ~members)
+       | Some(
+           TypeDeclaration(
+             {td_type: Array(Optional(Union(members))), _} as td,
+           ),
+         ) =>
+         optimize(~td, ~map=v => Array(Optional(v)), ~path, ~members)
+       | Some(
+           TypeDeclaration(
+             {td_type: Array(Optional(Nullable(Union(members)))), _} as td,
+           ),
+         ) =>
+         optimize(
+           ~td,
+           ~map=v => Array(Optional(Nullable(v))),
+           ~path,
+           ~members,
+         )
+       | Some(
+           TypeDeclaration(
+             {td_type: Array(Nullable(Union(members))), _} as td,
+           ),
+         ) =>
+         optimize(~td, ~map=v => Array(Nullable(v)), ~path, ~members)
+       | Some(TypeDeclaration({td_type: Union(members), _} as td)) =>
+         optimize(~td, ~map=v => v, ~path, ~members)
+       | _ => ()
+       }
+     });
 }
 and optimize__single_ref_inline_types = () => {
   // If record fields are the only reference to their respective inline types, the type of that field can be replaced with it
@@ -95,7 +235,7 @@ and optimize__single_ref_inline_types = () => {
            // Remove the extra type def from order
            Type.order :=
              Type.order^ |> CCList.remove_one(~eq=Path.eq, resolved_path);
-           // An replace the reference inside of the field
+           // And replace the reference inside of the field
            Type.replace(
              ~path,
              TypeDeclaration({...td, td_type: Nullable(td_type)}),

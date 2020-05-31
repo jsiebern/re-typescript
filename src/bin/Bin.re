@@ -1,11 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-interface iTest {
-    field: string;
-    action: (a: string, b?: number) => void;
-}
-type access = iTest['action'];
+type x = 3 | 'y';
+type y = 'z' | x | false;
 |};
 
 let () = {
@@ -14,6 +11,13 @@ let () = {
   try(
     {
       print_newline();
+      Random.self_init();
+      Console.log((
+        Random.int(1000000),
+        Random.int(1000000),
+        Random.int(1000000),
+        Random.int(1000000),
+      ));
       Console.log("--------------------------------------");
       Console.log(
         Re_typescript_printer.print_from_ts(

@@ -143,22 +143,24 @@ let rec parse__type_def =
     Unions
  */
 and parse__union = (~path, ~left: Ts.type_, ~right: option(Ts.type_)) => {
-  let to_tmp = (type_: Ts.type_): Ts.temp_union_member =>
+  let rec to_tmp = (type_: Ts.type_): Ts.temp_union_member =>
     switch (type_) {
     | Ts.StringLiteral({item, _}) => `U_String(item)
     | Ts.NumberLiteral({item, _}) => `U_Number(item)
     | Ts.BoolLiteral({item, _}) => `U_Bool(item)
     | other => `U_Type(other)
-    };
-  let rec to_temp_union_list =
-          (
-            ~carry: list(Ts.temp_union_member)=[],
-            ~left: Ts.type_,
-            ~right: option(Ts.type_),
-          ) => {
+    }
+  and to_temp_union_list =
+      (
+        ~carry: list(Ts.temp_union_member)=[],
+        ~left: Ts.type_,
+        ~right: option(Ts.type_),
+      ) => {
     let carry =
       switch (right) {
       | None => carry
+      | Some(Union(left, right)) =>
+        to_temp_union_list(~carry, ~left, ~right)
       | Some(t) => carry @ [to_tmp(t)]
       };
 
