@@ -60,7 +60,7 @@ type tpl_1 = [string, string, number];
 type tpl_2 = [boolean, { inline: boolean }];
 
 // --- Enums
-enum enum_1 { Red, Green, Blue };
+export enum enum_1 { Red, Green, Blue };
 
 // --- String literals
 // (String literals have 3 config types: Variant, PolyVariant, BsInline. These will be handled differently for generating the encoder / decoder functions.)
