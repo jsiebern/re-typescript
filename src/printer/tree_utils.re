@@ -11,6 +11,8 @@ module Ident = {
     i_module: str |> to_valid_module_name,
     i_variant: str |> to_valid_variant,
   };
+  let of_pi = ({item, _}: Re_typescript_base.Ts.with_pi(string)) =>
+    of_string(item);
   let of_int = (i: int): t => {
     let str = string_of_int(i);
     {

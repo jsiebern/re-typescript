@@ -32,7 +32,7 @@ let () = {
                 string_variant_mode: `BsInline,
               }),
           },
-          {...Parser.main(Lexer.read, lexbuf), name: "Entry"},
+          Parser.script(Lexer.read, lexbuf),
         ),
       );
       Console.log("--------------------------------------");

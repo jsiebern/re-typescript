@@ -106,6 +106,7 @@ and type_ =
   | Query(list(identifier_name))
   | StringLiteral(with_pi(string))
   | NumberLiteral(with_pi(int))
+  | BoolLiteral(with_pi(bool))
   | TypeReference(type_reference)
   | String(Parse_info.t)
   | Number(Parse_info.t)
@@ -116,6 +117,13 @@ and type_ =
   | Any(Parse_info.t)
   | Symbol(Parse_info.t)
   | This(Parse_info.t)
+  | UnionTemp(list(temp_union_member))
+and temp_union_member = [
+  | `U_String(string)
+  | `U_Number(int)
+  | `U_Type(type_)
+  | `U_Bool(bool)
+]
 and type_reference = (list(identifier_name), option(type_arguments))
 and type_arguments = list(type_)
 and definition_function = {

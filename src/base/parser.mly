@@ -298,6 +298,7 @@ let type_predefined :=
   | pi = SYMBOL;            { Ts.Symbol(pi) }
   | s =  literal_string;    { s }
   | n =  literal_number;    { n }
+  | b =  literal_bool;      { b }
 
 (*
     Type query
@@ -518,6 +519,10 @@ let literal_string :=
 
 let literal_number :=
   | n = NUMBER; { let (n, pi) = n in Ts.NumberLiteral({pi; item = int_of_float(n) }) }
+
+let literal_bool :=
+  | pi = FALSE; { Ts.BoolLiteral({pi; item = false }) }
+  | pi = TRUE; { Ts.BoolLiteral({pi; item = true }) }
 
 (***************************************
  *  Utils

@@ -361,7 +361,7 @@ module Make = (Config: Config) : Ast_generator.T => {
            | _ => None,
          )
       |> CCList.fold_left(
-           ((buffer, carry), (path, {td_name, td_arguments, td_type, _})) => {
+           ((buffer, carry), (path, {td_name, td_parameters, td_type, _})) => {
              let name = path |> Path.to_ident |> Ident.type_;
              switch (generate_type_def(~ctx, ~path, td_type)) {
              | {td_prepend: Some(prepend), td_append: None, td_kind, td_type} => (
@@ -372,7 +372,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                  @ generate_type_wrap([
                      generate_type(
                        ~name,
-                       ~args=td_arguments,
+                       ~parameters=td_parameters,
                        ~td_kind,
                        ~td_type,
                      ),
@@ -386,7 +386,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                      @ [
                        generate_type(
                          ~name,
-                         ~args=td_arguments,
+                         ~parameters=td_parameters,
                          ~td_kind,
                          ~td_type,
                        ),
@@ -408,7 +408,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                      @ [
                        generate_type(
                          ~name,
-                         ~args=td_arguments,
+                         ~parameters=td_parameters,
                          ~td_kind,
                          ~td_type,
                        ),
@@ -421,7 +421,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                  @ [
                    generate_type(
                      ~name,
-                     ~args=td_arguments,
+                     ~parameters=td_parameters,
                      ~td_kind,
                      ~td_type,
                    ),

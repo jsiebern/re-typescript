@@ -233,14 +233,14 @@ let generate_arrow =
   };
 };
 
-let generate_type = (~args, ~td_kind, ~td_type, ~name) =>
+let generate_type = (~parameters, ~td_kind, ~td_type, ~name) =>
   Type.mk(
     ~params=
-      args
+      parameters
       |> CCList.map(
            fun
-           | {Tree_types.tda_name, _} => (
-               Typ.var(tda_name |> Tree_utils.Ident.value),
+           | {Tree_types.tp_name, _} => (
+               Typ.var(tp_name |> Tree_utils.Ident.value),
                Asttypes.Invariant,
              ),
          ),

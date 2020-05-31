@@ -7,49 +7,73 @@ open Tree_data;
     Type / Interface / Enum definitions
  */
 let rec parse__type_def =
-        (~inline=false, ~path=([], []), type_def: Ts.type_def) => {
+        (~inline=false, ~path=([], []), type_def: Ts.declaration) => {
   switch (type_def) {
-  | `TypeDef(name, type_, args) =>
-    let ident = name |> Ident.of_string;
+  | Type({item: {t_ident, t_parameters, t_type}, _}) =>
+    let ident = t_ident |> Ident.of_pi;
     let t_path = inline ? path : path |> Path.add_ident(ident);
-    let arguments = parse__type_args(~path=t_path, args);
-    Arguments.add(~path=fst(t_path), arguments);
+    let parameters =
+      parse__type_parameters(
+        ~path=t_path,
+        t_parameters |> CCOpt.value(~default=[]),
+      );
+    Parameters.add(~path=fst(t_path), parameters);
     let t =
       TypeDeclaration({
         td_name: ident,
-        td_type: parse__type(~path=t_path, type_),
-        td_arguments: arguments,
+        td_type: parse__type(~path=t_path, t_type),
+        td_parameters: parameters,
       });
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
-  | `Module(m) => parse__module(~path, m)
-  | `InterfaceDef(name, extends, fields, args) =>
-    let ident = name |> Ident.of_string;
+  | Module(m) => parse__module(~path, m)
+  | Interface({item: {i_ident, i_parameters, i_extends, i_members}, _}) =>
+    let ident = i_ident |> Ident.of_pi;
     let t_path = inline ? path : path |> Path.add_ident(ident);
 
     // TODO: Unclean & naively solved, replace later
-    let (ref_path, ref_types) = CCList.split(extends);
     let add_fields =
-      switch (
-        Ref.resolve_ref(~from=path, (ref_path, []))
-        |> CCOpt.flat_map(v => Type.get(~path=v))
-      ) {
+      switch (i_extends) {
+      | Some([])
       | None => []
-      | Some(ref_type) =>
-        switch (ref_type) {
-        | TypeDeclaration({td_type: Interface(add_fields), _}) => add_fields
-        | _ => []
-        }
+      | Some(extends) =>
+        extends
+        |> CCList.fold_left(
+             (p, ext) => {
+               switch (ext) {
+               | ([], _) => p
+               | (ref_path, _) =>
+                 let ref_path = ref_path |> CCList.map(no_pi);
+                 switch (
+                   Ref.resolve_ref(~from=path, (ref_path, []))
+                   |> CCOpt.flat_map(v => Type.get(~path=v))
+                 ) {
+                 | None => p
+                 | Some(ref_type) =>
+                   switch (ref_type) {
+                   | TypeDeclaration({td_type: Interface(add_fields), _}) =>
+                     p @ add_fields
+                   | _ => p
+                   }
+                 };
+               }
+             },
+             [],
+           )
       };
 
-    let arguments = parse__type_args(~path=t_path, args);
-    Arguments.add(~path=fst(t_path), arguments);
+    let parameters =
+      parse__type_parameters(
+        ~path=t_path,
+        i_parameters |> CCOpt.value(~default=[]),
+      );
+    Parameters.add(~path=fst(t_path), parameters);
 
     let t =
       TypeDeclaration({
         td_name: ident,
         td_type:
-          switch (parse__type(~path=t_path, `Obj(fields))) {
+          switch (parse__type(~path=t_path, Ts.Object(i_members))) {
           | Interface(has_fields) =>
             Interface(
               add_fields
@@ -64,27 +88,53 @@ let rec parse__type_def =
             )
           | v => v
           },
-        td_arguments: arguments,
+        td_parameters: parameters,
       });
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
-  | `EnumDef(name, members, is_const) =>
-    let ident = name |> Ident.of_string;
+  | Enum({item: {e_ident, e_const, e_members}, _}) =>
+    let ident = e_ident |> Ident.of_pi;
     let t_path = inline ? path : path |> Path.add_ident(ident);
     let t =
       TypeDeclaration({
         td_name: ident,
-        td_type: parse__type(~path=t_path, `Enum((members, is_const))),
-        td_arguments: [],
+        td_type: parse__enum(~path=t_path, e_members, e_const),
+        td_parameters: [],
       });
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
+  | v =>
+    Console.error(v);
+    raise(Exceptions.Parser_error("Declaration not implemented"));
   };
 }
 /**
     Unions
  */
-and parse__union = (~path, members) => {
+and parse__union = (~path, ~left: Ts.type_, ~right: option(Ts.type_)) => {
+  let to_tmp = (type_: Ts.type_): Ts.temp_union_member =>
+    switch (type_) {
+    | Ts.StringLiteral({item, _}) => `U_String(item)
+    | Ts.NumberLiteral({item, _}) => `U_Number(item)
+    | Ts.BoolLiteral({item, _}) => `U_Bool(item)
+    | other => `U_Type(other)
+    };
+  let rec to_temp_union_list =
+          (
+            ~carry: list(Ts.temp_union_member)=[],
+            ~left: Ts.type_,
+            ~right: option(Ts.type_),
+          ) => {
+    let carry = carry @ [to_tmp(left)];
+    switch (right) {
+    | Some(Union(left, right)) => to_temp_union_list(~carry, ~left, ~right)
+    | Some(other) => carry @ [to_tmp(other)]
+    | None => carry
+    };
+  };
+  parse__union_prepared(~path, to_temp_union_list(~carry=[], ~left, ~right));
+}
+and parse__union_prepared = (~path, members: list(Ts.temp_union_member)) => {
   // TODO: Switch on references in the simple unions to maybe get the same type
   switch (parse__union_undefined(~path, members)) {
   | Some(t) => t
@@ -107,7 +157,7 @@ and parse__union = (~path, members) => {
     }
   };
 }
-and parse__union_type = (~path, members: list(Ts.union_member)) => {
+and parse__union_type = (~path, members: list(Ts.temp_union_member)) => {
   let (strings, numbers, _, types) =
     members
     |> CCList.fold_left(
@@ -151,7 +201,7 @@ and parse__union_type = (~path, members: list(Ts.union_member)) => {
        ),
   );
 }
-and parse__mixed_literal = (members: list(Ts.union_member)) => {
+and parse__mixed_literal = (members: list(Ts.temp_union_member)) => {
   exception No_union_mixed;
   try(
     Some(
@@ -176,7 +226,7 @@ and parse__mixed_literal = (members: list(Ts.union_member)) => {
   | e => raise(e)
   };
 }
-and parse__numeric_literal = (members: list(Ts.union_member)) => {
+and parse__numeric_literal = (members: list(Ts.temp_union_member)) => {
   exception No_union_number;
   try(
     Some(
@@ -195,7 +245,7 @@ and parse__numeric_literal = (members: list(Ts.union_member)) => {
   | e => raise(e)
   };
 }
-and parse__string_literal = (members: list(Ts.union_member)) => {
+and parse__string_literal = (members: list(Ts.temp_union_member)) => {
   exception No_union_string;
   try(
     Some(
@@ -213,64 +263,62 @@ and parse__string_literal = (members: list(Ts.union_member)) => {
   | e => raise(e)
   };
 }
-and parse__union_undefined = (~path, members: list(Ts.union_member)) => {
+and parse__union_undefined = (~path, members: list(Ts.temp_union_member)) => {
   let extract_undefined =
     members
-    |> CCListLabels.fold_left(
-         ~f=
-           ((has_undefined, p), member) => {
-             switch (member) {
-             | `U_Type(`Undefined) => (true, p)
-             | member => (has_undefined, [member, ...p])
-             }
-           },
-         ~init=(false, []),
+    |> CCList.fold_left(
+         ((has_undefined, p), member) => {
+           switch (member) {
+           | `U_Type(Ts.Undefined(_)) => (true, p)
+           | member => (has_undefined, [member, ...p])
+           }
+         },
+         (false, []),
        );
   switch (extract_undefined) {
   | (true, [`U_Type(type_)]) => Some(parse__optional(~path, type_))
-  | (true, members) => Some(parse__optional(~path, `Union(members)))
+  | (true, members) => Some(parse__optional(~path, Ts.UnionTemp(members)))
   | (false, _) => None
   };
 }
-and parse__union_nullable = (~path, members: list(Ts.union_member)) => {
+and parse__union_nullable = (~path, members: list(Ts.temp_union_member)) => {
   let extract_null =
     members
-    |> CCListLabels.fold_left(
-         ~f=
-           ((has_null, p), member) => {
-             switch (member) {
-             | `U_Type(`Null) => (true, p)
-             | member => (has_null, [member, ...p])
-             }
-           },
-         ~init=(false, []),
+    |> CCList.fold_left(
+         ((has_null, p), member) => {
+           switch (member) {
+           | `U_Type(Ts.Null(_)) => (true, p)
+           | member => (has_null, [member, ...p])
+           }
+         },
+         (false, []),
        );
   switch (extract_null) {
   | (true, [`U_Type(type_)]) => Some(parse__nullable(~path, type_))
-  | (true, members) => Some(parse__nullable(~path, `Union(members)))
+  | (true, members) => Some(parse__nullable(~path, Ts.UnionTemp(members)))
   | (false, _) => None
   };
 }
 /**
     Type arguments
  */
-and parse__type_args = (~path, args: list(Ts.type_arg)) => {
-  args
-  |> CCList.map(({a_name, a_constraint_, a_default}: Ts.type_arg) =>
+and parse__type_parameters = (~path, parameters: Ts.type_parameters) => {
+  parameters
+  |> CCList.map(({tp_ident, tp_extends, tp_default}: Ts.type_parameter) =>
        (
          {
-           let ident = a_name |> Ident.of_string;
-           let arg_path = Path.(path |> add_sub_ident(ident));
+           let ident = tp_ident |> Ident.of_pi;
+           let param_path = Path.(path |> add_sub_ident(ident));
            {
-             tda_name: ident,
-             tda_extends:
-               a_constraint_
-               |> CCOpt.map(parse__type(~inline=true, ~path=arg_path)),
-             tda_default:
-               a_default
-               |> CCOpt.map(parse__type(~inline=true, ~path=arg_path)),
+             tp_name: ident,
+             tp_extends:
+               tp_extends
+               |> CCOpt.map(parse__type(~inline=true, ~path=param_path)),
+             tp_default:
+               tp_default
+               |> CCOpt.map(parse__type(~inline=true, ~path=param_path)),
            };
-         }: ts_type_argument
+         }: ts_type_parameter
        )
      );
 }
@@ -278,9 +326,15 @@ and parse__type_args = (~path, args: list(Ts.type_arg)) => {
     Type extraction
  */
 and parse__type_extraction =
-    (~from_ref=?, ~path, type_ref: Ts.ref_, fields: list(list(string))) => {
+    (
+      ~from_ref=?,
+      ~path,
+      type_ref: Ts.type_reference,
+      fields: list(list(string)),
+    ) => {
   // TODO: Unclean & naively solved, replace later
-  let (ref_path, ref_types) = CCList.split(type_ref);
+  let ref_path = fst(type_ref) |> CCList.map(no_pi);
+  // let ref_types = snd(type_ref) |> CCOpt.value(~default=[]);
   let resolved_fields =
     switch (
       Ref.resolve_ref(
@@ -352,7 +406,12 @@ and parse__type_extraction =
         _,
       }) =>
       Ref.add(~from=path, ~to_=tr_path_resolved);
-      parse__type_extraction(~from_ref=tr_path_resolved, ~path, [], rest);
+      parse__type_extraction(
+        ~from_ref=tr_path_resolved,
+        ~path,
+        ([], None),
+        rest,
+      );
     | Some(_)
     | None =>
       raise(
@@ -389,11 +448,11 @@ and parse__optional = (~path, type_) => {
 /**
     Type reference
  */
-and parse__type_reference = (~path, type_ref: Ts.ref_) => {
-  let (ref_path, _) = CCList.split(type_ref);
+and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
+  let ref_path = fst(type_ref) |> CCList.map(no_pi);
 
   let ref_path_ident = ref_path |> Path.unscoped_to_string |> Ident.of_string;
-  switch (Arguments.has_argument(~path=fst(path), ~arg=ref_path_ident)) {
+  switch (Parameters.has_parameter(~path=fst(path), ~param=ref_path_ident)) {
   | Some(_) => parse__type_argument(~path, ref_path_ident)
   | None =>
     let resolved_ref =
@@ -407,7 +466,7 @@ and parse__type_reference = (~path, type_ref: Ts.ref_) => {
       switch (resolved_ref) {
       | None => []
       | Some(resolved_ref) =>
-        parse__apply_ref_parameters(~path, ~resolved_ref, ~type_ref)
+        parse__apply_ref_arguments(~path, ~resolved_ref, ~type_ref)
       };
 
     Reference({
@@ -417,12 +476,12 @@ and parse__type_reference = (~path, type_ref: Ts.ref_) => {
     });
   };
 }
-and parse__apply_ref_parameters = (~path, ~resolved_ref, ~type_ref) => {
-  let (_, ref_types) = CCList.split(type_ref);
+and parse__apply_ref_arguments =
+    (~path, ~resolved_ref, ~type_ref: Ts.type_reference) => {
+  let ref_types = snd(type_ref);
 
   let ref_applied_types =
     ref_types
-    |> CCList.last_opt
     |> CCOpt.map_or(
          ~default=[],
          CCList.mapi((i, param) => {
@@ -431,22 +490,22 @@ and parse__apply_ref_parameters = (~path, ~resolved_ref, ~type_ref) => {
          }),
        );
 
-  let resolved_type_args = Arguments.get(~path=fst(resolved_ref));
+  let resolved_type_parameters = Parameters.get(~path=fst(resolved_ref));
   let (n_required, append_defaults) =
-    resolved_type_args
+    resolved_type_parameters
     |> CCOpt.map_or(~default=(0, []), arg_types => {
          arg_types
          |> CCList.fold_left(
               ((i, lst), arg_type) => {
                 switch (lst, arg_type) {
-                | ([], {tda_default: None, _}) => (i + 1, lst)
-                | (lst, {tda_default: None, _}) =>
+                | ([], {tp_default: None, _}) => (i + 1, lst)
+                | (lst, {tp_default: None, _}) =>
                   raise(
                     Exceptions.Parser_error(
                       "Invalid type reference: Cannot have a required type arg after the first optional",
                     ),
                   )
-                | (lst, {tda_name, tda_default: Some(t), _}) => (
+                | (lst, {tp_name, tp_default: Some(t), _}) => (
                     i,
                     lst @ [t],
                   )
@@ -462,7 +521,7 @@ and parse__apply_ref_parameters = (~path, ~resolved_ref, ~type_ref) => {
   let n_applied = l(ref_applied_types);
 
   switch (ref_applied_types) {
-  | applied when n_applied > 0 && resolved_type_args |> Option.is_none =>
+  | applied when n_applied > 0 && resolved_type_parameters |> Option.is_none =>
     Console.warn(
       Printf.sprintf(
         "Invalid type reference: Arguments passed to a type that is not in scope (%s)",
@@ -498,20 +557,32 @@ and parse__type_argument = (~path, arg: ts_identifier) => {
 /**
     Enums
  */
-and parse__enum = (~path, members: list(Ts.enum_field), is_const: bool) => {
+and parse__enum = (~path, members: list(Ts.enum_member), is_const: bool) => {
   let is_clean =
     members
-    |> CCList.for_all((member: Ts.enum_field) =>
-         !(member.Ts.default |> CCOpt.is_some)
+    |> CCList.for_all((member: Ts.enum_member) =>
+         !(member.em_value |> CCOpt.is_some)
+         && (
+           switch (member.em_property_name) {
+           | PIdentifier(_) => true
+           | _ => false
+           }
+         )
        );
   if (is_clean) {
     Enum(
       members
-      |> CCList.map((member: Ts.enum_field) => member.key)
+      |> CCList.map((member: Ts.enum_member) =>
+           switch (member.em_property_name) {
+           | PIdentifier(ident) => ident
+           | _ => raise(Not_found)
+           }
+         )
+      |> CCList.map(no_pi)
       |> CCList.map(Ident.of_string),
     );
   } else {
-    raise(Exceptions.Parser_error("Unclean enums are not yet supported"));
+    raise(Exceptions.Parser_error("Complex enums are not yet supported"));
   };
 }
 /**
@@ -529,49 +600,115 @@ and parse__tuple = (~path, types) => {
 /**
     Interfaces
  */
-and parse__interface = (~path, fields: list(Ts.obj_field)) => {
+and parse__interface = (~path, members: list(Ts.type_member)) => {
   Interface(
-    fields
-    |> CCList.map(({f_key, f_type_, f_optional, f_readonly}: Ts.obj_field) => {
-         let path = path |> Path.add_sub(f_key);
-         let parsed_type = parse__type(~inline=true, ~path, f_type_);
-         {
-           f_name: f_key |> Ident.of_string,
-           f_type: f_optional ? Optional(parsed_type) : parsed_type,
-           f_readonly,
-         };
-       }),
+    members
+    |> CCList.map((member: Ts.type_member) =>
+         switch (member) {
+         | PropertySignature({
+             ps_property_name: PIdentifier(ps_ident),
+             ps_type_annotation,
+             ps_optional,
+           }) =>
+           let path = path |> Path.add_sub(ps_ident |> no_pi);
+           let parsed_type =
+             parse__type(~inline=true, ~path, ps_type_annotation);
+           {
+             f_name: ps_ident |> Ident.of_pi,
+             f_type: ps_optional ? Optional(parsed_type) : parsed_type,
+           };
+         | PropertySignature(_) =>
+           raise(
+             Exceptions.Parser_error(
+               "PropertySignature with anything but PIdentifier not yet supported in interface",
+             ),
+           )
+         | CallSignature(_) =>
+           raise(
+             Exceptions.Parser_error(
+               "CallSignature not yet supported in interface",
+             ),
+           )
+         | ConstructSignature(_) =>
+           raise(
+             Exceptions.Parser_error(
+               "ConstructSignature not yet supported in interface",
+             ),
+           )
+         | IndexSignature(_) =>
+           raise(
+             Exceptions.Parser_error(
+               "IndexSignature not yet supported in interface",
+             ),
+           )
+         | MethodSignature(_) =>
+           raise(
+             Exceptions.Parser_error(
+               "MethodSignature not yet supported in interface",
+             ),
+           )
+         }
+       ),
   );
 }
 /**
     All types
  */
 and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
-  switch (type_) {
-  | `String => Base(String)
-  | `Number => Base(Number)
-  | `Boolean => Base(Boolean)
-  | `Void => Base(Void)
-  | `Any => Base(Any)
-  | `Null => Base(Null)
-  | `Undefined => Base(Undefined)
-  | `Enum(members, is_const) => parse__enum(~path, members, is_const)
-  | `Union(members) as t =>
-    inline ? parse__inline(~path, t) : parse__union(~path, members)
-  | `Tuple(types) as t =>
+  switch ((type_: Ts.type_)) {
+  | String(_) => Base(String)
+  | Number(_) => Base(Number)
+  | Boolean(_) => Base(Boolean)
+  | Void(_) => Base(Void)
+  | Any(_) => Base(Any)
+  | Null(_) => Base(Null)
+  | Undefined(_) => Base(Undefined)
+  | Union(left, right) as t =>
+    inline ? parse__inline(~path, t) : parse__union(~path, ~left, ~right)
+  | UnionTemp(members) as t =>
+    inline ? parse__inline(~path, t) : parse__union_prepared(~path, members)
+  | Tuple(types) as t =>
     inline ? parse__inline(~path, t) : parse__tuple(~path, types)
-  | `Array(t) => parse__array(~path, t)
-  | `Ref(ref_) => parse__type_reference(~path, ref_)
-  | `TypeExtract(type_ref, names) =>
-    parse__type_extraction(~path, type_ref, names)
-  | `Obj(fields) as t =>
-    inline ? parse__inline(~path, t) : parse__interface(~path, fields)
-  | `Function(args, return) as t =>
-    inline ? parse__inline(~path, t) : parse__function(~path, args, return)
+  | Array(t) => parse__array(~path, t)
+  | TypeReference(ref_) => parse__type_reference(~path, ref_)
+  // | TypeExtract(type_ref, names) =>
+  //   parse__type_extraction(~path, type_ref, names)
+  | Object(members) as t =>
+    inline
+      ? parse__inline(~path, t)
+      : parse__interface(~path, members |> CCOpt.value(~default=[]))
+  | Function({f_body, f_ret, _}) as t =>
+    inline ? parse__inline(~path, t) : parse__function(~path, f_body, f_ret)
+  | Constructor({f_body, f_ret, _}) as t =>
+    inline ? parse__inline(~path, t) : parse__function(~path, f_body, f_ret)
+  | StringLiteral(_) as t
+  | NumberLiteral(_) as t
+  | BoolLiteral(_) as t => parse__type(~inline, ~path, Union(t, None))
+  | Intersection(_) =>
+    raise(Exceptions.Parser_error("Intersection type not yet supported"))
+  | Query(_) =>
+    raise(Exceptions.Parser_error("Query type not yet supported"))
+  | Symbol(_) =>
+    raise(Exceptions.Parser_error("Symbol type not yet supported"))
+  | This(_) => raise(Exceptions.Parser_error("This type not yet supported"))
   };
 }
 and parse__inline = (~path, type_) => {
-  parse__type_def(~inline=true, ~path, `TypeDef(("", type_, [])));
+  parse__type_def(
+    ~inline=true,
+    ~path,
+    Ts.Type({
+      pi: Parse_info.zero,
+      item: {
+        t_ident: {
+          pi: Parse_info.zero,
+          item: "",
+        },
+        t_parameters: None,
+        t_type: type_,
+      },
+    }),
+  );
   Ref.resolve_ref(~from=path, path) |> ignore;
   Reference({
     tr_path: fst(path),
@@ -582,49 +719,67 @@ and parse__inline = (~path, type_) => {
 /**
   Function
  */
-and parse__function =
-    (~path, args: list(Ts.function_arg), return: option(Ts.type_)) => {
+and parse__function = (~path, body: Ts.parameter_list, return: Ts.type_) => {
   Function({
     fu_params:
-      args
-      |> CCList.map((arg: Ts.function_arg) => {
-           let path = path |> Path.add_sub(arg.fa_name);
-           {
-             fp_name: arg.fa_name |> Ident.of_string,
-             fp_type:
-               arg.fa_type
-               |> CCOpt.map_or(
-                    ~default=Base(Any),
-                    parse__type(~inline=true, ~path),
-                  ),
-             fp_optional: arg.fa_optional,
-           };
+      body
+      |> CCList.map((param: Ts.parameter_type) => {
+           switch (param) {
+           | Parameter({
+               p_optional,
+               p_ibinding: IdentifierBinding(p_ident),
+               p_type_annotation,
+               _,
+             }) =>
+             let path = path |> Path.add_sub(p_ident |> no_pi);
+             {
+               fp_name: p_ident |> Ident.of_pi,
+               fp_type:
+                 p_type_annotation
+                 |> CCOpt.map_or(
+                      ~default=Base(Any),
+                      parse__type(~inline=true, ~path),
+                    ),
+               fp_optional: p_optional,
+             };
+           | Parameter(_) =>
+             raise(
+               Exceptions.Parser_error(
+                 "Bindings other than IdentifierBinding in function not yet supported",
+               ),
+             )
+           | RestParameter(_) =>
+             raise(
+               Exceptions.Parser_error(
+                 "RestParameter in function not yet supported",
+               ),
+             )
+           }
          }),
-    fu_return:
-      return
-      |> CCOpt.map_or(
-           ~default=Base(Any),
-           td => {
-             let path = path |> Path.add_sub("return");
-             parse__type(~inline=true, ~path, td);
-           },
-         ),
+    fu_return: {
+      let path = path |> Path.add_sub("return");
+      parse__type(~inline=true, ~path, return);
+    },
   });
 }
 /**
     Module
  */
-and parse__module = (~path, module_: Ts.module_) => {
-  module_.types
-  |> CCList.iter(parse__type_def(~path=path |> Path.add(module_.name)));
+and parse__module =
+    (
+      ~path,
+      {item: (name, declarations), _}:
+        Ts.with_pi((string, list(Ts.declaration))),
+    ) => {
+  declarations |> CCList.iter(parse__type_def(~path=path |> Path.add(name)));
 }
 /**
     Entry module
  */
-and parse__entry_module = (module_: Ts.module_) => {
+and parse__entry_module = (declarations: list(Ts.declaration)) => {
   Type.clear();
   Ref.clear();
-  parse__type_def(`Module({...module_, name: ""}));
+  parse__type_def(Module({pi: Parse_info.zero, item: ("", declarations)}));
 
   // Directly manipulates Type & Ref modules
   Tree_optimize.optimize();

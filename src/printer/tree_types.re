@@ -45,17 +45,16 @@ and ts_type_reference = {
 and ts_type_declaration = {
   td_name: ts_identifier,
   td_type: ts_type,
-  td_arguments: list(ts_type_argument),
+  td_parameters: list(ts_type_parameter),
 }
-and ts_type_argument = {
-  tda_name: ts_identifier,
-  tda_extends: option(ts_type),
-  tda_default: option(ts_type),
+and ts_type_parameter = {
+  tp_name: ts_identifier,
+  tp_extends: option(ts_type),
+  tp_default: option(ts_type),
 }
 and ts_field = {
   f_name: ts_identifier,
   f_type: ts_type,
-  f_readonly: bool,
 }
 /**
   Functions

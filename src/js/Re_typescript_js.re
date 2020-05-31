@@ -16,7 +16,7 @@ let run = (content: Js.t(Js.js_string)) => {
             string_variant_mode: `PolyVariant,
           }),
       },
-      Parser.main(Lexer.read, lexbuf),
+      Parser.script(Lexer.read, lexbuf),
     )
     |> Js.string
   ) {

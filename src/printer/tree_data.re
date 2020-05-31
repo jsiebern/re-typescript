@@ -2,6 +2,8 @@ open Re_typescript_base;
 open Tree_types;
 open Tree_utils;
 
+let no_pi: Ts.with_pi('a) => 'a = ({item, _}) => item;
+
 module Type = {
   type t = Hashtbl.t(Path.t, ts_type);
   let map: t = Hashtbl.create(0);
@@ -18,23 +20,23 @@ module Type = {
     order := [];
   };
 
-  let extract_arguments = (~path) =>
+  let extract_parameters = (~path) =>
     switch (get(~path)) {
-    | Some(TypeDeclaration({td_arguments, _})) => Some(td_arguments)
+    | Some(TypeDeclaration({td_parameters, _})) => Some(td_parameters)
     | _ => None
     };
 };
-module Arguments = {
-  type t = Hashtbl.t(list(string), list(ts_type_argument));
+module Parameters = {
+  type t = Hashtbl.t(list(string), list(ts_type_parameter));
   let map: t = Hashtbl.create(0);
   let add = (~path, args) => Hashtbl.add(map, path, args);
   let get = (~path) => Hashtbl.find_opt(map, path);
-  let has_argument = (~path, ~arg: ts_identifier) =>
+  let has_parameter = (~path, ~param: ts_identifier) =>
     switch (get(~path)) {
     | Some(args) =>
       args
-      |> CCList.find_opt(({tda_name, _}) =>
-           CCEqual.string(tda_name |> Ident.value, arg |> Ident.value)
+      |> CCList.find_opt(({tp_name, _}) =>
+           CCEqual.string(tp_name |> Ident.value, param |> Ident.value)
          )
     | None => None
     };
