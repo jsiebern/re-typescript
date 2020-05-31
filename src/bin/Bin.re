@@ -2,7 +2,11 @@ open Re_typescript_base;
 
 let content = {|
 // This is a comment
-export function someFunction(): void;
+interface iTest {
+                field: string;
+                action: (a: string, b?: number) => void;
+            }
+            type access = iTest['action'];
 |};
 
 let () = {

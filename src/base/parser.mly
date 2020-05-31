@@ -261,6 +261,10 @@ let type_primary :=
   | t = type_tuple; { t }
   | t = type_query; { t }
   | t = type_this; { t }
+  | r = type_reference; fa = nonempty_list(field_access); { Ts.TypeExtract(r, fa) }
+
+let field_access :=
+  | l = delimited(LBRACKET, separated_nonempty_list(PIPE, module_specifier), RBRACKET); { l }
 
 // let type_parenthesized :=
 //   | t = delimited(LPAREN, type_, RPAREN); { t }

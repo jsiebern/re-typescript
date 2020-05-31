@@ -702,8 +702,8 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
     inline ? parse__inline(~path, t) : parse__tuple(~path, types)
   | Array(t) => parse__array(~path, t)
   | TypeReference(ref_) => parse__type_reference(~path, ref_)
-  // | TypeExtract(type_ref, names) =>
-  //   parse__type_extraction(~path, type_ref, names)
+  | TypeExtract(type_ref, names) =>
+    parse__type_extraction(~path, type_ref, names)
   | Object(members) as t =>
     inline
       ? parse__inline(~path, t)

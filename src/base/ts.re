@@ -108,6 +108,7 @@ and type_ =
   | NumberLiteral(with_pi(int))
   | BoolLiteral(with_pi(bool))
   | TypeReference(type_reference)
+  | TypeExtract(type_reference, list(list(string)))
   | String(Parse_info.t)
   | Number(Parse_info.t)
   | Boolean(Parse_info.t)
