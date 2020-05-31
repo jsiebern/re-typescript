@@ -114,6 +114,21 @@ describe("inline function definitions", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("method signature in an interface", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+            interface method_signature {
+              func1: (x: number) => number;       // Function type literal
+              func2(x: number): number;           // Method signature
+              func3(x: string, y: boolean): void; // Method signature for extraction
+            }
+            type extracted_method_signature = method_signature['func3'];
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
   test("inline function in a function definition", ({expect, _}) => {
     expect.string(
       print(

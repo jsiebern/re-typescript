@@ -29,8 +29,12 @@ module Type = {
 module Parameters = {
   type t = Hashtbl.t(list(string), list(ts_type_parameter));
   let map: t = Hashtbl.create(0);
-  let add = (~path, args) => Hashtbl.add(map, path, args);
   let get = (~path) => Hashtbl.find_opt(map, path);
+  let add = (~path, params) =>
+    switch (params) {
+    | [] => ()
+    | params => Hashtbl.add(map, path, params)
+    };
   let has_parameter = (~path, ~param: ts_identifier) =>
     switch (get(~path)) {
     | Some(args) =>

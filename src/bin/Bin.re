@@ -1,11 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-type obj = {
-    func1(x: number): number;         // Method signature
-    func2: (x: number) => number;     // Function type literal
-    // func3: { (x: number): number };   // Object type literal
-}
+export type Maybe<T> = null | undefined | T;
+type x = Maybe<string>;
 |};
 
 let () = {

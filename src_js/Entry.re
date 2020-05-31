@@ -127,6 +127,10 @@ interface method_signature {
 }
 type extracted_method_signature = method_signature['func3'];
 
+// --- Flows maybe type
+export type Maybe<T> = null | undefined | T;
+type maybe_string = Maybe<string>;
+
 // --------------------------------------------
 // What doesn't? (And a lot more, just a few random cases)
 // --------------------------------------------

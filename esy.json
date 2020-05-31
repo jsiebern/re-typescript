@@ -3,6 +3,7 @@
   "description": "",
   "scripts": {
     "format": "dune build @fmt --auto-promote --root .",
+    "run": "esy x Re_typescript",
     "watch": "esy x redemon -p ./src esy x Re_typescript",
     "watch-test": "esy x redemon -p tests -p src esy x RunTests.exe",
     "test": "esy x RunTests.exe",

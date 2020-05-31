@@ -8,7 +8,8 @@
     "bs:clean": "bsb -clean-world",
     "fpack": "./node_modules/.bin/fpack build --dev --mock constants:constants-browserify --mock fs --mock child_process --mock tty --preprocess='\\.css$:style-loader!css-loader'",
     "fpack-worker": "./node_modules/.bin/fpack build -c fastpack-worker.json --dev --mock constants:constants-browserify --mock fs --mock child_process --mock tty --preprocess='\\.css$:style-loader!css-loader'",
-    "docs": "./docs.sh"
+    "docs": "./docs.sh",
+    "start": "cd docs; python -m SimpleHTTPServer"
   },
   "devDependencies": {
     "bs-platform": "^7.3.2",
