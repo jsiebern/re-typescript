@@ -28,6 +28,7 @@ module Ident = {
   let type_ = ({i_type, _}: t) => i_type;
   let module_ = ({i_module, _}: t) => i_module;
   let variant = ({i_variant, _}: t) => i_variant;
+  let eq = (i1: t, i2: t) => CCEqual.string(i1 |> ident, i2 |> ident);
 };
 
 module Path = {
@@ -47,6 +48,14 @@ module Path = {
     path @ [ident |> Ident.value],
     sub,
   );
+  let cut_unscoped = l =>
+    switch (l) {
+    | [] => []
+    | [_] => []
+    | l => l |> CCList.remove_at_idx(CCList.length(l) - 1)
+    };
+  let cut_sub = ((path, sub)) => (path, cut_unscoped(sub));
+  let cut = ((path, sub)) => (cut_unscoped(path), sub);
   let to_typename = ((path, sub): t): string =>
     path
     @ sub
@@ -71,6 +80,7 @@ module Path = {
 };
 
 module Exceptions = {
+  exception Parser_unexpected(string);
   exception Parser_error(string);
   exception Optimizer_error(string);
 };

@@ -1,0 +1,16 @@
+type parameters generation & grammar › accepts ts grammar for type parameters
+type with_param('a1, 'a2) = {
+  a1: 'a1,
+  a2: 'a2,
+}
+and with_param_2('a1, 'a2, 'a3) = {
+  a1: 'a1,
+  a2: 'a2,
+  a3: 'a3,
+}
+and with_param_3('a1, 'a2, 'a3) = {
+  a1: 'a1,
+  a2: 'a2,
+  a3: 'a3,
+};
+

@@ -26,8 +26,12 @@ module Type = {
     | _ => None
     };
 };
-module Argument = {
-  type t = Hashtbl.t(Path.t, list(string));
+module Arguments = {
+  type t = Hashtbl.t(Path.t, list(ts_identifier));
+  let map: t = Hashtbl.create(0);
+  let add = (~path, arg: ts_identifier) =>
+    CCHashtbl.add_list(map, path, arg);
+  let get = (~path) => CCHashtbl.get_or(map, path, ~default=[]);
 };
 module Parameters = {
   type t = Hashtbl.t(list(string), list(ts_type_parameter));

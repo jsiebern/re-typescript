@@ -1,5 +1,0 @@
-type argument logic › can use various default structures
-type with_arg_a = (string, float)
-and with_arg('a) = 'a
-and call_args = with_arg(with_arg_a);
-

@@ -1,9 +1,0 @@
-type argument logic › can have inline records at call site
-type with_arg_a2 = {inline: bool}
-and with_arg('a1, 'a2) = {
-  a1: 'a1,
-  a2: 'a2,
-}
-and call_args_0 = {another_inline: float}
-and call_args = with_arg(call_args_0, with_arg_a2);
-

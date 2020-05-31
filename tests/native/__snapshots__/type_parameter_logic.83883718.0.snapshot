@@ -1,0 +1,5 @@
+type parameter logic › can use various default structures
+type with_param_a = (string, float)
+and with_param('a) = 'a
+and call_params = with_param(with_param_a);
+

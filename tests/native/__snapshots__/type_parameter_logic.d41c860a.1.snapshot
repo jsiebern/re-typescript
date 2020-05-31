@@ -1,0 +1,16 @@
+type parameter logic › default parameter can be a union of any kind
+module With_param2_a: {
+  type t;
+  let string: string => t;
+  let number: float => t;
+} = {
+  [@unboxed]
+  type t =
+    | Any('a): t;
+  let string = (v: string) => Any(v);
+  let number = (v: float) => Any(v);
+};
+type with_param2_a = With_param2_a.t;
+type with_param2('a) = 'a
+and call_params2 = with_param2(with_param2_a);
+

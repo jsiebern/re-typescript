@@ -1,3 +1,0 @@
-type arguments generation & grammar › prints correct generics for type arguments
-type with_arg('ARG) = 'ARG;
-

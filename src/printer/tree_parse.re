@@ -592,7 +592,7 @@ and parse__apply_ref_arguments =
   };
 }
 and parse__type_argument = (~path, arg: ts_identifier) => {
-  // Console.log((path, arg |> Ident.value));
+  Arguments.add(~path=path |> Path.cut_sub, arg);
   Arg(arg);
 }
 /**
@@ -776,11 +776,53 @@ and parse__inline = (~path, type_) => {
       },
     }),
   );
+  let args =
+    switch (Arguments.get(~path)) {
+    | [] => []
+    | args =>
+      // If args have been used, we have to replace the type def we have just created
+      // It can only happen after, as the args are only applied during parsing of the type_def
+      switch (Type.get(~path)) {
+      | Some(TypeDeclaration(td)) =>
+        Type.replace(
+          ~path,
+          TypeDeclaration({
+            ...td,
+            td_parameters:
+              CCList.filter_map(
+                param => {
+                  switch (args |> CCList.find_opt(Ident.eq(param.tp_name))) {
+                  | None => Some(param)
+                  | Some(_) => None
+                  }
+                },
+                td.td_parameters,
+              )
+              @ CCList.map(
+                  arg_ident =>
+                    {tp_name: arg_ident, tp_extends: None, tp_default: None},
+                  args,
+                ),
+          }),
+        );
+        args;
+      | Some(_)
+      | None =>
+        raise(
+          Exceptions.Parser_unexpected(
+            Printf.sprintf(
+              "Recently created type_def not found. This should never happen. Path: %s",
+              path |> Path.to_string,
+            ),
+          ),
+        )
+      }
+    };
   Ref.resolve_ref(~from=path, path) |> ignore;
   Reference({
     tr_path: fst(path),
     tr_path_resolved: Some(path),
-    tr_parameters: [],
+    tr_parameters: args |> CCList.map(a => Arg(a)),
   });
 }
 /**

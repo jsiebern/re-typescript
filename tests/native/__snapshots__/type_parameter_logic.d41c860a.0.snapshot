@@ -1,0 +1,18 @@
+type parameter logic › default parameter can be a union of any kind
+module With_param2_a: {
+  type t = pri string;
+  [@bs.inline \"one\"]
+  let one: t;
+  [@bs.inline \"two\"]
+  let two: t;
+} = {
+  type t = string;
+  [@bs.inline]
+  let one = \"one\";
+  [@bs.inline]
+  let two = \"two\";
+};
+type with_param2_a = With_param2_a.t;
+type with_param2('a) = 'a
+and call_params2 = with_param2(with_param2_a);
+

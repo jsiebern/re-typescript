@@ -1,3 +1,0 @@
-type argument logic › does not throw when construcing a faulty type, but will throw on call site
-type with_arg('a1, 'a2, 'a3) = 'a3;
-
