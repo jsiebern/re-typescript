@@ -3,6 +3,7 @@
   TYPE
   INTERFACE
   ARRAY
+  ARRAY_SHORT
   ENUM
   EXTENDS
   READONLY
@@ -253,7 +254,6 @@ let type_intersection_or_primary :=
   | t = type_primary; { t }
 
 let type_primary :=
-  // | t = type_parenthesized; { t }
   | t = type_predefined; { t }
   | t = type_reference; { Ts.TypeReference(t) }
   | t = type_object; { Ts.Object(t) }
@@ -266,14 +266,47 @@ let type_primary :=
 let field_access :=
   | l = delimited(LBRACKET, separated_nonempty_list(PIPE, module_specifier), RBRACKET); { l }
 
-// let type_parenthesized :=
-//   | t = delimited(LPAREN, type_, RPAREN); { t }
+(*
+    Array
+*)
+let type_array :=
+  | t = type_primary; ARRAY_SHORT; { Ts.Array(t) }
+  | t = delimited(LPAREN, type_union_or_intersection_or_primary_paranthesized, RPAREN); ARRAY_SHORT; { Ts.Array(t) }
+  | ARRAY; t = delimited(LT, type_, GT); { Ts.Array(t) }
+
+(*
+    Parenthesized (TODO: THIS IS TEMPORARY)
+*)
+
+// TODO: Fix paranthesized recursive types
+let type_union_or_intersection_or_primary_paranthesized :=
+  | t = type_union_paranthesized; { t }
+  | t = type_intersection_or_primary_paranthesized; { t }
+
+let type_intersection_or_primary_paranthesized :=
+  | t = type_intersection_paranthesized; { t }
+  | t = type_primary_paranthesized; { t }
+
+let type_primary_paranthesized :=
+  | t = type_predefined; { t }
+  | t = type_query; { t }
+  | t = type_this; { t }
+  // | t = type_reference; { t }
+  // | t = type_tuple; { t }
+
+let type_intersection_paranthesized :=
+  | x = type_intersection_or_primary_paranthesized; AMPERSAND; y = type_primary_paranthesized; { Ts.Intersection(x,y) }
+
+let type_union_paranthesized :=
+  | x = type_union_or_intersection_or_primary_paranthesized; PIPE; y = type_intersection_or_primary_paranthesized; { Ts.Union(x,Some(y)) }
 
 (*
   Function
 *)
 let type_function :=
-  | tp = type_parameters?; pl = delimited(LPAREN, loption(parameter_list), RPAREN); ARROW; ret = type_; { Ts.Function({ f_parameters = tp; f_body = pl; f_ret = ret }) }
+  | tp = type_parameters; pl = delimited(LPAREN, loption(parameter_list), RPAREN); ARROW; ret = type_; { Ts.Function({ f_parameters = Some(tp); f_body = pl; f_ret = ret }) }
+  | pl = delimited(LPAREN, loption(parameter_list), RPAREN); ARROW; ret = type_; { Ts.Function({ f_parameters = None; f_body = pl; f_ret = ret }) }
+
 let type_constructor :=
   | NEW; tp = type_parameters?; pl = delimited(LPAREN, loption(parameter_list), RPAREN); ARROW; ret = type_; { Ts.Constructor({ f_parameters = tp; f_body = pl; f_ret = ret }) }
 
@@ -318,17 +351,10 @@ let type_this :=
   | pi = THIS; { Ts.This(pi) }
 
 (*
-    Array
-*)
-let type_array :=
-  | t = type_primary; LBRACKET; RBRACKET; { Ts.Array(t) }
-  | ARRAY; t = delimited(LT, type_, GT); { Ts.Array(t) }
-
-(*
     Tuple
 *)
 let type_tuple :=
-  | l = delimited(LBRACKET, separated_or_terminated_list(COMMA, type_), RBRACKET); { Ts.Tuple(l) }
+  | l = delimited(LBRACKET, separated_nonempty_list(COMMA, type_), RBRACKET); { Ts.Tuple(l) }
 
 (*
     Object
@@ -388,8 +414,8 @@ let call_signature :=
   | tp = type_parameters?; pa = delimited(LPAREN, loption(parameter_list), RPAREN); ta = type_annotation?; { { Ts.cs_type_parameters = tp; cs_parameter_list = pa; cs_type_annotation = ta } }
 
 let parameter_list :=
-  | l = separated_nonempty_list(COMMA, parameter); rp = rest_parameter; { l @ [rp] }
   | l = separated_nonempty_list(COMMA, parameter); { l }
+  | l = separated_nonempty_list(COMMA, parameter); rp = rest_parameter; { l @ [rp] }
 
 let parameter :=
   | rp = parameter_required; { rp }

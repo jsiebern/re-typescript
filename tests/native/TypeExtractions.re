@@ -96,4 +96,15 @@ describe("type extractions", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("can create an array after the access", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+            type c = {a: string, b: number};
+            type d = c['a'][]
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

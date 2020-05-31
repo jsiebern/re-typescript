@@ -123,6 +123,7 @@ rule read =
   | '}'                     { RCURLY (tokinfo lexbuf); }
   | '('                     { LPAREN (tokinfo lexbuf); }
   | ')'                     { RPAREN (tokinfo lexbuf); }
+  | "[]"                    { ARRAY_SHORT (tokinfo lexbuf); }
   | '['                     { LBRACKET (tokinfo lexbuf); }
   | ']'                     { RBRACKET (tokinfo lexbuf); }
   | ';'                     { SEMICOLON (tokinfo lexbuf); }

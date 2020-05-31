@@ -156,14 +156,21 @@ and parse__union = (~path, ~left: Ts.type_, ~right: option(Ts.type_)) => {
             ~left: Ts.type_,
             ~right: option(Ts.type_),
           ) => {
-    let carry = carry @ [to_tmp(left)];
-    switch (right) {
-    | Some(Union(left, right)) => to_temp_union_list(~carry, ~left, ~right)
-    | Some(other) => carry @ [to_tmp(other)]
-    | None => carry
+    let carry =
+      switch (right) {
+      | None => carry
+      | Some(t) => carry @ [to_tmp(t)]
+      };
+
+    switch (left) {
+    | Union(left, right) => to_temp_union_list(~carry, ~left, ~right)
+    | other => carry @ [to_tmp(other)]
     };
   };
-  parse__union_prepared(~path, to_temp_union_list(~carry=[], ~left, ~right));
+  parse__union_prepared(
+    ~path,
+    to_temp_union_list(~carry=[], ~left, ~right) |> CCList.rev,
+  );
 }
 and parse__union_prepared = (~path, members: list(Ts.temp_union_member)) => {
   // TODO: Switch on references in the simple unions to maybe get the same type

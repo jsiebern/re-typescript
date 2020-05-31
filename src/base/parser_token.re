@@ -5,6 +5,7 @@ let info = (t: t): Parse_info.t =>
   | TYPE(ii) => ii
   | INTERFACE(ii) => ii
   | ARRAY(ii) => ii
+  | ARRAY_SHORT(ii) => ii
   | ENUM(ii) => ii
   | EXTENDS(ii) => ii
   | READONLY(ii) => ii

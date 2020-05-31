@@ -120,3 +120,30 @@ let rec get_union_type_name = (um_type: ts_type) => {
     raise(Exceptions.Parser_error("Module is not a valid union member"))
   };
 };
+
+let type_to_string = (t: Re_typescript_base.Ts.type_) =>
+  switch (t) {
+  | Object(_) => "Object"
+  | Tuple(_) => "Tuple"
+  | Array(_) => "Array"
+  | Function(_) => "Function"
+  | Constructor(_) => "Constructor"
+  | Intersection(_) => "Intersection"
+  | Union(_) => "Union"
+  | Query(_) => "Query"
+  | StringLiteral(_) => "StringLiteral"
+  | NumberLiteral(_) => "NumberLiteral"
+  | BoolLiteral(_) => "BoolLiteral"
+  | TypeReference(_) => "TypeReference"
+  | TypeExtract(_) => "TypeExtract"
+  | String(_) => "String"
+  | Number(_) => "Number"
+  | Boolean(_) => "Boolean"
+  | Null(_) => "Null"
+  | Undefined(_) => "Undefined"
+  | Void(_) => "Void"
+  | Any(_) => "Any"
+  | Symbol(_) => "Symbol"
+  | This(_) => "This"
+  | UnionTemp(_) => "UnionTemp"
+  };

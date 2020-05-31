@@ -1,12 +1,11 @@
 open Re_typescript_base;
 
 let content = {|
-// This is a comment
 interface iTest {
-                field: string;
-                action: (a: string, b?: number) => void;
-            }
-            type access = iTest['action'];
+    field: string;
+    action: (a: string, b?: number) => void;
+}
+type access = iTest['action'];
 |};
 
 let () = {
