@@ -1,12 +1,18 @@
 mixed unions › works with all primitives
-module X : sig type t val string : t val _1 : t val _3 : t val false_ : t end
-  =
-  struct
-    type t =
-      | Any: 'a -> t [@@unboxed ]
-    let string = ((Any (\"string\"))[@explicit_arity ])
-    let _1 = ((Any (1))[@explicit_arity ])
-    let _3 = ((Any (3))[@explicit_arity ])
-    let false_ = ((Any (false))[@explicit_arity ])
-  end 
-type x = X.t
+module X: {
+  type t;
+  let string: t;
+  let _1: t;
+  let _3: t;
+  let false_: t;
+} = {
+  [@unboxed]
+  type t =
+    | Any('a): t;
+  let string = Any(\"string\");
+  let _1 = Any(1);
+  let _3 = Any(3);
+  let false_ = Any(false);
+};
+type x = X.t;
+

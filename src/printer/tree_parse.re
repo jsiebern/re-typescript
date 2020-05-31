@@ -592,6 +592,7 @@ and parse__apply_ref_arguments =
   };
 }
 and parse__type_argument = (~path, arg: ts_identifier) => {
+  // Console.log((path, arg |> Ident.value));
   Arg(arg);
 }
 /**

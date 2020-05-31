@@ -16,7 +16,7 @@ describe("basic syntax for types", ({test, _}) => {
   });
 
   test("comments should not throw", ({expect, _}) => {
-    expect.string(print({|// This is a comment|})).toEqual("");
-    expect.string(print({|/* This is a comment */|})).toEqual("");
+    expect.string(print({|// This is a comment|})).toMatch("");
+    expect.string(print({|/* This is a comment */|})).toMatch("");
   });
 });

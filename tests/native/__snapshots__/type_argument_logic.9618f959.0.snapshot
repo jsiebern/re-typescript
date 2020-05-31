@@ -1,6 +1,6 @@
 type argument logic › can have nested default values
-type 'a orig_arg = 'a
-and with_arg_a = {
-  b: float orig_arg }
-and 'a with_arg = 'a
-and call_args = with_arg_a with_arg
+type orig_arg('a) = 'a
+and with_arg_a = {b: orig_arg(float)}
+and with_arg('a) = 'a
+and call_args = with_arg(with_arg_a);
+

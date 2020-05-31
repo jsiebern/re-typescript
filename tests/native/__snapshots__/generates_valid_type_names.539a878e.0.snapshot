@@ -1,2 +1,3 @@
 generates valid type names › capitalized
-type t_string = string
+type t_string = string;
+

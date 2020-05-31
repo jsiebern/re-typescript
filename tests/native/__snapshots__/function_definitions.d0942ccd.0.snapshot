@@ -1,5 +1,5 @@
 function definitions › function with return type
-type someFunction = unit -> string
-and someOtherFunction_return = {
-  inline: string }
-and someOtherFunction = unit -> someOtherFunction_return
+type someFunction = unit => string
+and someOtherFunction_return = {inline: string}
+and someOtherFunction = unit => someOtherFunction_return;
+

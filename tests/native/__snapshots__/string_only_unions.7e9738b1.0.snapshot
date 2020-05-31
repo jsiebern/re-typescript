@@ -1,15 +1,20 @@
 string only unions › can generate simple string unions
-module Variant :
-  sig
-    type t = private string
-    val str1 : t[@@bs.inline \"str1\"]
-    val str1 : t[@@bs.inline \"Str1\"]
-    val x__STR : t[@@bs.inline \"X_$STR\"]
-  end =
-  struct
-    type t = string
-    let str1 = \"str1\"[@@bs.inline ]
-    let str1 = \"Str1\"[@@bs.inline ]
-    let x__STR = \"X_$STR\"[@@bs.inline ]
-  end 
-type variant = Variant.t
+module Variant: {
+  type t = pri string;
+  [@bs.inline \"str1\"]
+  let str1: t;
+  [@bs.inline \"Str1\"]
+  let str1: t;
+  [@bs.inline \"X_$STR\"]
+  let x__STR: t;
+} = {
+  type t = string;
+  [@bs.inline]
+  let str1 = \"str1\";
+  [@bs.inline]
+  let str1 = \"Str1\";
+  [@bs.inline]
+  let x__STR = \"X_$STR\";
+};
+type variant = Variant.t;
+

@@ -1,12 +1,16 @@
 type argument logic › default argument can be a union of any kind
-module With_arg2_a :
-  sig type t val string : string -> t val number : float -> t end =
-  struct
-    type t =
-      | Any: 'a -> t [@@unboxed ]
-    let string (v : string) = ((Any (v))[@explicit_arity ])
-    let number (v : float) = ((Any (v))[@explicit_arity ])
-  end 
-type with_arg2_a = With_arg2_a.t
-type 'a with_arg2 = 'a
-and call_args2 = with_arg2_a with_arg2
+module With_arg2_a: {
+  type t;
+  let string: string => t;
+  let number: float => t;
+} = {
+  [@unboxed]
+  type t =
+    | Any('a): t;
+  let string = (v: string) => Any(v);
+  let number = (v: float) => Any(v);
+};
+type with_arg2_a = With_arg2_a.t;
+type with_arg2('a) = 'a
+and call_args2 = with_arg2(with_arg2_a);
+

@@ -1,2 +1,3 @@
 function definitions › functions accept type parameters
-type ('A, 'B, 'C) someFunction = a:'A -> b:'B -> 'C
+type someFunction('A, 'B, 'C) = (~a: 'A, ~b: 'B) => 'C;
+

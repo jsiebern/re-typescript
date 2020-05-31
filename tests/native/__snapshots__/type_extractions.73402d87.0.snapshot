@@ -1,12 +1,18 @@
 type extractions › can access a string literal of fields
 type c = {
-  a: string ;
-  b: float }
-module D : sig type t val string : string -> t val number : float -> t end =
-  struct
-    type t =
-      | Any: 'a -> t [@@unboxed ]
-    let string (v : string) = ((Any (v))[@explicit_arity ])
-    let number (v : float) = ((Any (v))[@explicit_arity ])
-  end 
-type d = D.t
+  a: string,
+  b: float,
+};
+module D: {
+  type t;
+  let string: string => t;
+  let number: float => t;
+} = {
+  [@unboxed]
+  type t =
+    | Any('a): t;
+  let string = (v: string) => Any(v);
+  let number = (v: float) => Any(v);
+};
+type d = D.t;
+

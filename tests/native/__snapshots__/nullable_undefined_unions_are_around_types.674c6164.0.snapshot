@@ -1,2 +1,3 @@
 nullable / undefined unions are around types › undefined for single base types
-type opt_string = string option
+type opt_string = option(string);
+

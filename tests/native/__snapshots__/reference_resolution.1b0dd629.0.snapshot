@@ -1,7 +1,8 @@
 reference resolution › resolve in interface fields
 type t_str = string
 and i_Ref = {
-  f_num: float ;
-  f_str: t_str }
-and r_ref = {
-  inner: i_Ref }
+  f_num: float,
+  f_str: t_str,
+}
+and r_ref = {inner: i_Ref};
+

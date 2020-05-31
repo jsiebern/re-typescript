@@ -1,27 +1,34 @@
 type unions should get optimized into literals if possible › string literals
-module X :
-  sig
-    type t = private string
-    val x : t[@@bs.inline \"x\"]
-    val y : t[@@bs.inline \"y\"]
-  end =
-  struct
-    type t = string
-    let x = \"x\"[@@bs.inline ]
-    let y = \"y\"[@@bs.inline ]
-  end 
-type x = X.t
-module Y :
-  sig
-    type t = private string
-    val z : t[@@bs.inline \"z\"]
-    val x : t[@@bs.inline \"x\"]
-    val y : t[@@bs.inline \"y\"]
-  end =
-  struct
-    type t = string
-    let z = \"z\"[@@bs.inline ]
-    let x = \"x\"[@@bs.inline ]
-    let y = \"y\"[@@bs.inline ]
-  end 
-type y = Y.t
+module X: {
+  type t = pri string;
+  [@bs.inline \"x\"]
+  let x: t;
+  [@bs.inline \"y\"]
+  let y: t;
+} = {
+  type t = string;
+  [@bs.inline]
+  let x = \"x\";
+  [@bs.inline]
+  let y = \"y\";
+};
+type x = X.t;
+module Y: {
+  type t = pri string;
+  [@bs.inline \"z\"]
+  let z: t;
+  [@bs.inline \"x\"]
+  let x: t;
+  [@bs.inline \"y\"]
+  let y: t;
+} = {
+  type t = string;
+  [@bs.inline]
+  let z = \"z\";
+  [@bs.inline]
+  let x = \"x\";
+  [@bs.inline]
+  let y = \"y\";
+};
+type y = Y.t;
+

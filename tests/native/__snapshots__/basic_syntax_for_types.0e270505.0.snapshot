@@ -1,2 +1,3 @@
 basic syntax for types › basic type definition without semicolon
-type t_string = string
+type t_string = string;
+

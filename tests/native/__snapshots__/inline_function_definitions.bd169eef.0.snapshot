@@ -1,6 +1,8 @@
 inline function definitions › inline function in an interface
-type iTest_action = a:string -> ?b:float option -> unit -> unit
+type iTest_action = (~a: string, ~b: option(float)=?, unit) => unit
 and iTest = {
-  field: string ;
-  action: iTest_action }
-and access = iTest_action
+  field: string,
+  action: iTest_action,
+}
+and access = iTest_action;
+

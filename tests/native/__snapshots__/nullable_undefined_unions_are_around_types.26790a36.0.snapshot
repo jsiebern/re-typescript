@@ -1,2 +1,3 @@
 nullable / undefined unions are around types › undefined & nullable can be nested
-type opt_null_string = string Js.Nullable.t option
+type opt_null_string = option(Js.Nullable.t(string));
+

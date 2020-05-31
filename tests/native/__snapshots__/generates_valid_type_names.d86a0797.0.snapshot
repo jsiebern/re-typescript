@@ -1,2 +1,3 @@
 generates valid type names › reserved keyword
-type rec_ = string
+type rec_ = string;
+

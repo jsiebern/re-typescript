@@ -150,6 +150,9 @@ and optimize__literal_unions = () => {
 and optimize__single_ref_inline_types = () => {
   // If record fields are the only reference to their respective inline types, the type of that field can be replaced with it
   // The same can be done for arrays
+  // The same can be done for tuples
+  // The same can be done for function returns
+  // The same can be done for function parameters
   Type.order^
   |> CCList.iter(path => {
        switch (Type.get(~path)) {
@@ -243,6 +246,9 @@ and optimize__single_ref_inline_types = () => {
          | Some(_) => ()
          | None => ()
          }
+       // ----------------------------------
+       // --- Interface Fields
+       // ----------------------------------
        | Some(TypeDeclaration({td_type: Interface(fields), _} as td)) =>
          let new_fields =
            fields
@@ -278,6 +284,40 @@ and optimize__single_ref_inline_types = () => {
          Type.replace(
            ~path,
            TypeDeclaration({...td, td_type: Interface(new_fields)}),
+         );
+       // ----------------------------------
+       // --- Tuple Members
+       // ----------------------------------
+       | Some(TypeDeclaration({td_type: Tuple(members), _} as td)) =>
+         let new_members =
+           members
+           |> CCList.map(member => {
+                switch (member) {
+                | Reference({tr_path_resolved: Some(resolved_path), _})
+                    when
+                      snd(resolved_path)
+                      |> CCList.length > 0
+                      && Ref.get_all(resolved_path)
+                      |> CCList.length == 1 =>
+                  switch (Type.get(~path=resolved_path)) {
+                  | Some(TypeDeclaration({td_type: Interface(_), _})) => member
+                  | Some(TypeDeclaration({td_type, _})) =>
+                    // Remove the extra type def from order
+                    Type.order :=
+                      Type.order^
+                      |> CCList.remove_one(~eq=Path.eq, resolved_path);
+                    // An replace the reference inside of the field
+                    td_type;
+                  | Some(_) => member
+                  | None => member
+                  }
+                | member => member
+                }
+              });
+
+         Type.replace(
+           ~path,
+           TypeDeclaration({...td, td_type: Tuple(new_members)}),
          );
        | _ => ()
        }

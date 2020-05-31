@@ -1,5 +1,4 @@
 interfaces › empty interface should not be omitted when extened
-type i_b = {
-  field: string }
-and i_a = {
-  field: string }
+type i_b = {field: string}
+and i_a = {field: string};
+

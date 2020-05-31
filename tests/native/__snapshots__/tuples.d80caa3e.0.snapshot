@@ -1,4 +1,4 @@
 tuples › can use inline interfaces
-type tpl_3 = {
-  field: bool }
-and tpl = (string * float * tpl_3)
+type tpl_3 = {field: bool}
+and tpl = (string, float, tpl_3);
+

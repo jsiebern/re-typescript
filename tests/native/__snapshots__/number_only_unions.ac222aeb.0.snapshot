@@ -1,17 +1,24 @@
 number only unions › generates simple int union
-module Variant :
-  sig
-    type t = private int
-    val _2 : t[@@bs.inline 2]
-    val _4 : t[@@bs.inline 4]
-    val _8 : t[@@bs.inline 8]
-    val _16 : t[@@bs.inline 16]
-  end =
-  struct
-    type t = int
-    let _2 = 2[@@bs.inline ]
-    let _4 = 4[@@bs.inline ]
-    let _8 = 8[@@bs.inline ]
-    let _16 = 16[@@bs.inline ]
-  end 
-type variant = Variant.t
+module Variant: {
+  type t = pri int;
+  [@bs.inline 2]
+  let _2: t;
+  [@bs.inline 4]
+  let _4: t;
+  [@bs.inline 8]
+  let _8: t;
+  [@bs.inline 16]
+  let _16: t;
+} = {
+  type t = int;
+  [@bs.inline]
+  let _2 = 2;
+  [@bs.inline]
+  let _4 = 4;
+  [@bs.inline]
+  let _8 = 8;
+  [@bs.inline]
+  let _16 = 16;
+};
+type variant = Variant.t;
+

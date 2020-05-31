@@ -1,7 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-type ValueOrArray<T> = T | Array<ValueOrArray<T>>;
+// export function someFunction<A,B,C>(a: A, b: B): [B,C];
+type tpl = [ string, [ number, boolean ] ];
 |};
 
 let () = {

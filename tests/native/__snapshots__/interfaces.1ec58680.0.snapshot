@@ -1,6 +1,7 @@
 interfaces › empty interface can be target of an extension
+[@unboxed]
 type any =
-  | Any: 'a -> any [@@unboxed ]
+  | Any('a): any;
 type i_a = any
-and i_b = {
-  field: string }
+and i_b = {field: string};
+

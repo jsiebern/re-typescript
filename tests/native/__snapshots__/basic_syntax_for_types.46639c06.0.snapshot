@@ -1,4 +1,6 @@
 basic syntax for types › adds extra type for any
+[@unboxed]
 type any =
-  | Any: 'a -> any [@@unboxed ]
-type t_any = any
+  | Any('a): any;
+type t_any = any;
+

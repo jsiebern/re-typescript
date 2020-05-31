@@ -1,5 +1,6 @@
 clean enums › generates uppercase keys
 type enum =
-  | Red 
-  | Green 
-  | Blue 
+  | Red
+  | Green
+  | Blue;
+

@@ -45,4 +45,15 @@ describe("tuples", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+
+  test("merges extracted tuple members back if possible", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+            type tpl = [ string, [ number, boolean ] ];
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

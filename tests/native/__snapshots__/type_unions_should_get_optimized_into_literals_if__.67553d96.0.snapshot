@@ -1,18 +1,28 @@
 type unions should get optimized into literals if possible › string / numeric into mixed literals
-module X : sig type t val y : t val _3 : t end =
-  struct
-    type t =
-      | Any: 'a -> t [@@unboxed ]
-    let y = ((Any (\"y\"))[@explicit_arity ])
-    let _3 = ((Any (3))[@explicit_arity ])
-  end 
-type x = X.t
-module Y : sig type t val z : t val y : t val _3 : t end =
-  struct
-    type t =
-      | Any: 'a -> t [@@unboxed ]
-    let z = ((Any (\"z\"))[@explicit_arity ])
-    let y = ((Any (\"y\"))[@explicit_arity ])
-    let _3 = ((Any (3))[@explicit_arity ])
-  end 
-type y = Y.t
+module X: {
+  type t;
+  let y: t;
+  let _3: t;
+} = {
+  [@unboxed]
+  type t =
+    | Any('a): t;
+  let y = Any(\"y\");
+  let _3 = Any(3);
+};
+type x = X.t;
+module Y: {
+  type t;
+  let z: t;
+  let y: t;
+  let _3: t;
+} = {
+  [@unboxed]
+  type t =
+    | Any('a): t;
+  let z = Any(\"z\");
+  let y = Any(\"y\");
+  let _3 = Any(3);
+};
+type y = Y.t;
+

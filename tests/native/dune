@@ -2,7 +2,8 @@
  (name re_typescript_test_lib)
  (public_name re_typescript.test_lib)
  (ocamlopt_flags -linkall -g)
- (libraries rely.lib re_typescript.base re_typescript.printer console.lib)
+ (libraries reason rely.lib re_typescript.base re_typescript.printer
+   console.lib containers)
  (modules
   (:standard \ RunTests)))
 

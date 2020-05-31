@@ -1,4 +1,6 @@
 function definitions › untyped return becomes any
+[@unboxed]
 type any =
-  | Any: 'a -> any [@@unboxed ]
-type someFunction = unit -> any
+  | Any('a): any;
+type someFunction = unit => any;
+

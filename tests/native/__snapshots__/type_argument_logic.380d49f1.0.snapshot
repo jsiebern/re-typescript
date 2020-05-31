@@ -1,7 +1,8 @@
 type argument logic › still generates default inline values, even if overriden
-type with_arg_a2 = {
-  inline: bool }
-and ('a1, 'a2) with_arg = {
-  a1: 'a1 ;
-  a2: 'a2 }
-and call_args = (string, float) with_arg
+type with_arg_a2 = {inline: bool}
+and with_arg('a1, 'a2) = {
+  a1: 'a1,
+  a2: 'a2,
+}
+and call_args = with_arg(string, float);
+

@@ -1,3 +1,4 @@
 tuples › can generate an array of tuples
-type tpl_arr = (string * float * bool) array
-and tpl_arr2 = (string * float * bool) array
+type tpl_arr = array((string, float, bool))
+and tpl_arr2 = array((string, float, bool));
+

@@ -1,2 +1,3 @@
 function definitions › simple function
-type someFunction = unit -> unit
+type someFunction = unit => unit;
+

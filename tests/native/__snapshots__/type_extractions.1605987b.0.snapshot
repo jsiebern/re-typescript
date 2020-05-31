@@ -1,9 +1,10 @@
 type extractions › can access recursive references
-type iMain_inline = {
-  num: float }
+type iMain_inline = {num: float}
 and iMain = {
-  simple: string ;
-  inline: iMain_inline }
+  simple: string,
+  inline: iMain_inline,
+}
 and str = string
 and obj = iMain_inline
-and num = float
+and num = float;
+

@@ -1,2 +1,3 @@
 tuples › generates base type tuple
-type tpl = (string * float * bool)
+type tpl = (string, float, bool);
+

@@ -1,4 +1,6 @@
 function definitions › untyped type arguments become any
+[@unboxed]
 type any =
-  | Any: 'a -> any [@@unboxed ]
-type someFunction = a:any -> string
+  | Any('a): any;
+type someFunction = (~a: any) => string;
+

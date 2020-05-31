@@ -26,6 +26,9 @@ module Type = {
     | _ => None
     };
 };
+module Argument = {
+  type t = Hashtbl.t(Path.t, list(string));
+};
 module Parameters = {
   type t = Hashtbl.t(list(string), list(ts_type_parameter));
   let map: t = Hashtbl.create(0);

@@ -1,27 +1,38 @@
 type unions should get optimized into literals if possible › numeric only
-module X :
-  sig
-    type t = private int
-    val _3 : t[@@bs.inline 3]
-    val _4 : t[@@bs.inline 4]
-  end =
-  struct type t = int
-         let _3 = 3[@@bs.inline ]
-         let _4 = 4[@@bs.inline ] end 
-type x = X.t
-module Y :
-  sig
-    type t = private int
-    val _1 : t[@@bs.inline 1]
-    val _2 : t[@@bs.inline 2]
-    val _3 : t[@@bs.inline 3]
-    val _4 : t[@@bs.inline 4]
-  end =
-  struct
-    type t = int
-    let _1 = 1[@@bs.inline ]
-    let _2 = 2[@@bs.inline ]
-    let _3 = 3[@@bs.inline ]
-    let _4 = 4[@@bs.inline ]
-  end 
-type y = Y.t
+module X: {
+  type t = pri int;
+  [@bs.inline 3]
+  let _3: t;
+  [@bs.inline 4]
+  let _4: t;
+} = {
+  type t = int;
+  [@bs.inline]
+  let _3 = 3;
+  [@bs.inline]
+  let _4 = 4;
+};
+type x = X.t;
+module Y: {
+  type t = pri int;
+  [@bs.inline 1]
+  let _1: t;
+  [@bs.inline 2]
+  let _2: t;
+  [@bs.inline 3]
+  let _3: t;
+  [@bs.inline 4]
+  let _4: t;
+} = {
+  type t = int;
+  [@bs.inline]
+  let _1 = 1;
+  [@bs.inline]
+  let _2 = 2;
+  [@bs.inline]
+  let _3 = 3;
+  [@bs.inline]
+  let _4 = 4;
+};
+type y = Y.t;
+

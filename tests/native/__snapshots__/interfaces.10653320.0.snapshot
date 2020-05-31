@@ -1,5 +1,7 @@
 interfaces › empty objects should be referenced as any
+[@unboxed]
 type any =
-  | Any: 'a -> any [@@unboxed ]
+  | Any('a): any;
 type i_a = any
-and x = i_a
+and x = i_a;
+

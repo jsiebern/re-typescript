@@ -1,5 +1,5 @@
 function definitions › inline obj union as function return type
-type someOtherFunction_return_t = {
-  inline: string }
-and someOtherFunction_return = someOtherFunction_return_t Js.Nullable.t
-and someOtherFunction = unit -> someOtherFunction_return
+type someOtherFunction_return_t = {inline: string}
+and someOtherFunction_return = Js.Nullable.t(someOtherFunction_return_t)
+and someOtherFunction = unit => someOtherFunction_return;
+
