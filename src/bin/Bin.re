@@ -1,17 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-export interface Test {
-  /**
-   * The CSS **`align-content`** property sets how the browser distributes space between and around content items along the cross-axis of a flexbox container, and the main-axis of a grid container.
-   *
-   * **Initial value**: `normal`
-   *
-   * ---
-   */
-  field: string;
-}
-type union = string | number | boolean | Test;
+// This is a comment
+export function someFunction(): void;
 |};
 
 let () = {
@@ -40,8 +31,7 @@ let () = {
     }
   ) {
   | Lexer.SyntaxError(msg) => Printf.fprintf(stderr, "%s", msg)
-  | Parser_incr.Parsing_error(_) =>
-    Console.error(Error.parser_error(~content, ~lexbuf))
+  | Parser_incr.Parsing_error(_)
   | Parser.Error => Console.error(Error.parser_error(~content, ~lexbuf))
   | e =>
     Console.error(e);

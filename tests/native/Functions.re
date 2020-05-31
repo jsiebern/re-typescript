@@ -1,10 +1,19 @@
 open TestFramework;
 
 describe("function definitions", ({test, _}) => {
+  test("throws for non declared / exported function", ({expect, _}) => {
+    expect.fn(() =>
+      print({|
+            function someFunction(): void;
+        |})
+    ).
+      toThrow()
+  });
+
   test("simple function", ({expect, _}) => {
     expect.string(
       print({|
-            function someFunction(): void;
+            export function someFunction(): void;
         |}),
     ).
       toMatchSnapshot()
@@ -13,8 +22,8 @@ describe("function definitions", ({test, _}) => {
     expect.string(
       print(
         {|
-            function someFunction(): string;
-            function someOtherFunction(): { inline: string };
+            declare function someFunction(): string;
+            declare function someOtherFunction(): { inline: string };
         |},
       ),
     ).
@@ -24,7 +33,7 @@ describe("function definitions", ({test, _}) => {
     expect.string(
       print(
         {|
-            function someFunction(a: string, b: number): string;
+            export function someFunction(a: string, b: number): string;
         |},
       ),
     ).
@@ -34,7 +43,7 @@ describe("function definitions", ({test, _}) => {
     expect.string(
       print(
         {|
-            function someFunction(a: string, b?: number): string;
+            export function someFunction(a: string, b?: number): string;
         |},
       ),
     ).
@@ -44,7 +53,7 @@ describe("function definitions", ({test, _}) => {
     expect.string(
       print(
         {|
-              function someFunction(a: string | number, b?: { inline: number }): string;
+          declare function someFunction(a: string | number, b?: { inline: number }): string;
           |},
       ),
     ).
@@ -54,7 +63,7 @@ describe("function definitions", ({test, _}) => {
     expect.string(
       print(
         {|
-            function someOtherFunction(): null | { inline: string };
+            export function someOtherFunction(): null | { inline: string };
         |},
       ),
     ).
@@ -62,23 +71,27 @@ describe("function definitions", ({test, _}) => {
   });
   test("untyped type arguments become any", ({expect, _}) => {
     expect.string(
-      print({|
-            function someFunction(a): string;
-        |}),
+      print(
+        {|
+            declare function someFunction(a): string;
+        |},
+      ),
     ).
       toMatchSnapshot()
   });
   test("untyped return becomes any", ({expect, _}) => {
-    expect.string(print({|
-            function someFunction();
-        |})).
+    expect.string(
+      print({|
+           declare function someFunction();
+        |}),
+    ).
       toMatchSnapshot()
   });
   test("functions accept type parameters", ({expect, _}) => {
     expect.string(
       print(
         {|
-            function someFunction<A,B,C>(a: A, b: B): C;
+           export function someFunction<A,B,C>(a: A, b: B): C;
         |},
       ),
     ).

@@ -16,12 +16,13 @@ let run = (content: Js.t(Js.js_string)) => {
             string_variant_mode: `PolyVariant,
           }),
       },
-      Parser.script(Lexer.read, lexbuf),
+      Parser_incr.parse(lexbuf),
     )
     |> Js.string
   ) {
   | Lexer.SyntaxError(msg) =>
     Js.raise_js_error([%js new Js.error_constr](msg |> Js.string))
+  | Parser_incr.Parsing_error(_)
   | Parser.Error =>
     Pastel.setMode(HumanReadable);
     Js.raise_js_error(

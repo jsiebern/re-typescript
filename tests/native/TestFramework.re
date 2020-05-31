@@ -12,5 +12,5 @@ let config = Re_typescript_printer.Config.default_config;
 let print = (~ctx=config, value) =>
   Re_typescript_printer.print_from_ts(
     ~ctx,
-    Parser.script(Lexer.read, Lexing.from_string(value)),
+    Parser_incr.parse(Lexing.from_string(value)),
   );

@@ -12,6 +12,34 @@ let rec parse__type_def =
   | Export(declaration)
   | ExportDefault(declaration)
   | Ambient(declaration) => parse__type_def(~inline, ~path, declaration)
+  | FunctionDec({
+      item: {
+        f_ident,
+        f_call_signature: {
+          cs_type_parameters,
+          cs_parameter_list,
+          cs_type_annotation,
+        },
+      },
+      pi,
+    }) =>
+    parse__type_def(
+      ~inline,
+      ~path,
+      Type({
+        pi,
+        item: {
+          t_ident: f_ident,
+          t_parameters: cs_type_parameters,
+          t_type:
+            Function({
+              f_parameters: None,
+              f_body: cs_parameter_list,
+              f_ret: cs_type_annotation |> CCOpt.value(~default=Ts.Any(pi)),
+            }),
+        },
+      }),
+    )
   | Type({item: {t_ident, t_parameters, t_type}, _}) =>
     let ident = t_ident |> Ident.of_pi;
     let t_path = inline ? path : path |> Path.add_ident(ident);

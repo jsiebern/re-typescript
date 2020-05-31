@@ -84,10 +84,10 @@ let module_ :=
  ***************************************)
 
 let declaration_script :=
-  | d = declaration_script_element+; { d }
+  | d = declaration_script_element*; { d }
 
 let declaration_module :=
-  | d = declaration_module_element+; { d }
+  | d = declaration_module_element*; { d }
 
 let declaration_module_element :=
   | d = declaration_element; semico;                  { d }
@@ -99,10 +99,12 @@ let declaration_module_element :=
 
 let export_declaration_element :=
   | EXPORT; d = declaration_interface;      { Ts.Export(d) }
+  | EXPORT; d = declaration_function;       { Ts.Export(d) }
   | EXPORT; d = declaration_type;           { Ts.Export(d) }
   | EXPORT; d = declaration_ambient;        { Ts.Export(d) }
   | EXPORT; d = declaration_import_alias;   { Ts.Export(d) }
   | EXPORT; d = declaration_variable;       { Ts.Export(d) }
+  | EXPORT; d = declaration_enum;           { Ts.Export(d) }
 
 let export_default_declaration_element :=
   | EXPORT; DEFAULT; d = declaration_function;     { Ts.ExportDefault(d) }
@@ -358,7 +360,7 @@ let method_signature :=
  ***************************************)
 
 let declaration_enum :=
-  | c = boption(CONST); pi = ENUM; i = identifier_name; m = loption(delimited(LPAREN, enum_body, RPAREN)); { Ts.Enum({ pi; item = { e_ident = i; e_const = c; e_members = m } }) }
+  | c = boption(CONST); pi = ENUM; i = identifier_name; m = loption(delimited(LCURLY, enum_body, RCURLY)); { Ts.Enum({ pi; item = { e_ident = i; e_const = c; e_members = m } }) }
 
 let enum_body :=
   | b = separated_or_terminated_list(COMMA, enum_member); { b }
@@ -379,10 +381,11 @@ let declaration_function :=
   | pi = FUNCTION; i = identifier_name; cs = call_signature;  { Ts.FunctionDec({ pi; item = { f_ident = i; f_call_signature = cs } }) }
 
 let call_signature :=
-  | tp = type_parameters?; pa = delimited(LPAREN, parameter_list, RPAREN); ta = type_annotation?; { { Ts.cs_type_parameters = tp; cs_parameter_list = pa; cs_type_annotation = ta } }
+  | tp = type_parameters?; pa = delimited(LPAREN, loption(parameter_list), RPAREN); ta = type_annotation?; { { Ts.cs_type_parameters = tp; cs_parameter_list = pa; cs_type_annotation = ta } }
 
 let parameter_list :=
-  | l = separated_nonempty_list(COMMA, parameter); rp = rest_parameter?; { l @ match rp with | None -> [] | Some(rp) -> [rp] }
+  | l = separated_nonempty_list(COMMA, parameter); rp = rest_parameter; { l @ [rp] }
+  | l = separated_nonempty_list(COMMA, parameter); { l }
 
 let parameter :=
   | rp = parameter_required; { rp }
