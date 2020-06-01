@@ -109,6 +109,8 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Classes
     - [ ] Intersection types
     - [x] Type Parameters
+      - [ ] Apply default params when extending
+      - [ ] Never omit unresolved parameterised interfaces by config
       - [ ] Throw error if 2 type parameters have the same name
   - [x] Abstracted file loader to resolve import / exports (should work both on web / native)
   - [ ] Implement separate file loaders

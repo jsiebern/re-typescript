@@ -82,8 +82,19 @@ let rec parse__type_def =
                  | None => p
                  | Some(ref_type) =>
                    switch (ref_type) {
-                   | TypeDeclaration({td_type: Interface(add_fields, _), _}) =>
-                     p @ add_fields
+                   | TypeDeclaration(
+                       {td_type: Interface(add_fields, _), _} as td,
+                     ) =>
+                     // Now that this td has been extended it needs to be updated
+                     Type.replace(
+                       ~path=(ref_path, []),
+                       TypeDeclaration({
+                         ...td,
+                         td_type: Interface(add_fields, true),
+                       }),
+                     );
+
+                     p @ add_fields;
                    | _ => p
                    }
                  };

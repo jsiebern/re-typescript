@@ -1,0 +1,7 @@
+config flags effects › omit_extended_unreferenced_records - on (extension chain)
+type i_3 = {
+  field1: string,
+  field2: bool,
+  field3: float,
+};
+

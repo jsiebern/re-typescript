@@ -355,6 +355,7 @@ module Make = (Config: Config) : Ast_generator.T => {
       ) => {
     gen_config.has_any = false;
     gen_config.has_unboxed_number = false;
+    gen_config.has_extended_record = false;
     gen_config.inject = [];
 
     let types =

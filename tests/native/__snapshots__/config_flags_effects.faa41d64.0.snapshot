@@ -1,0 +1,6 @@
+config flags effects › omit_extended_unreferenced_records - on
+type i_2 = {
+  field1: string,
+  field2: bool,
+};
+

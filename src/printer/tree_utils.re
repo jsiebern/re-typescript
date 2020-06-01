@@ -159,7 +159,7 @@ let type_to_string = (t: Re_typescript_base.Ts.type_) =>
   | UnionTemp(_) => "UnionTemp"
   };
 
-let ts_to_string = (t: ts_type) =>
+let rec ts_to_string = (t: ts_type) =>
   switch (t) {
   | Function(_) => "Function"
   | Union(_) => "Union"
@@ -174,13 +174,19 @@ let ts_to_string = (t: ts_type) =>
   | Base(Any) => "Base_Any"
   | Base(Null) => "Base_Null"
   | Base(Undefined) => "Base_Undefined"
-  | Interface(_) => "Interface"
+  | Interface(f, extended) =>
+    Printf.sprintf(
+      "Interface (%i, %s)",
+      f |> CCList.length,
+      extended ? "true" : "false",
+    )
   | Tuple(_) => "Tuple"
   | Array(_) => "Array"
   | Optional(_) => "Optional"
   | Nullable(_) => "Nullable"
   | Reference(_) => "Reference"
-  | TypeDeclaration(_) => "TypeDeclaration"
+  | TypeDeclaration({td_type, _}) =>
+    Printf.sprintf("TypeDeclaration_%s", ts_to_string(td_type))
   | Import(_) => "Import"
   | Module(_) => "Module"
   | Arg(_) => "Arg"

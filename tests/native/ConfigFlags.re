@@ -36,15 +36,100 @@ describe("config flags effects", ({test, _}) => {
       toMatchSnapshot();
   });
 
-  test("omit_extended_unreferenced_records", ({expect, _}) => {
+  test("omit_extended_unreferenced_records - off", ({expect, _}) => {
     let ts = "interface i_1 { field1: string }; interface i_2 extends i_1 { field2: boolean }";
     expect.string(
       print(~ctx={...config, omit_extended_unreferenced_records: false}, ts),
     ).
       toMatchSnapshot();
+  });
+  test("omit_extended_unreferenced_records - on", ({expect, _}) => {
+    let ts = "interface i_1 { field1: string }; interface i_2 extends i_1 { field2: boolean }";
     expect.string(
       print(~ctx={...config, omit_extended_unreferenced_records: true}, ts),
     ).
       toMatchSnapshot();
   });
+  test(
+    "omit_extended_unreferenced_records - on (extension chain)",
+    ({expect, _}) => {
+    let ts = {|
+      interface i_1 { field1: string };
+      interface i_2 extends i_1 { field2: boolean }
+      interface i_3 extends i_2 { field3: number }
+    |};
+    expect.string(
+      print(~ctx={...config, omit_extended_unreferenced_records: true}, ts),
+    ).
+      toMatchSnapshot();
+  });
+  test(
+    "omit_extended_unreferenced_records - on (double extension)",
+    ({expect, _}) => {
+    let ts = {|
+      interface i_1 { field1: string };
+      interface i_2 extends i_1 { field2: boolean }
+      interface i_3 extends i_2 { field3: number }
+      interface i_4 extends i_2 { field4: string }
+    |};
+    expect.string(
+      print(~ctx={...config, omit_extended_unreferenced_records: true}, ts),
+    ).
+      toMatchSnapshot();
+  });
+  test(
+    "omit_extended_unreferenced_records - on (double extension, + ref)",
+    ({expect, _}) => {
+    let ts = {|
+      interface i_1 { field1: string };
+      interface i_2 extends i_1 { field2: boolean }
+      interface i_3 extends i_2 { field3: number }
+      interface i_4 extends i_2 { field4: string }
+      type holds_ref = i_2;
+    |};
+    expect.string(
+      print(~ctx={...config, omit_extended_unreferenced_records: true}, ts),
+    ).
+      toMatchSnapshot();
+  });
+  test(
+    "omit_extended_unreferenced_records - on (omits warning if enabled)",
+    ({expect, _}) => {
+    let ts = {|
+      interface i_1 { field1: string };
+      interface i_2 extends i_1 { field2: boolean }
+    |};
+    expect.string(
+      print(
+        ~ctx={
+          ...config,
+          omit_extended_unreferenced_records: true,
+          suppress_warning_for_extended_records: true,
+        },
+        ts,
+      ),
+    ).
+      toMatchSnapshot();
+  });
+  test(
+    "omit_extended_unreferenced_records - on (displays warning if necessary after all)",
+    ({expect, _}) => {
+      let ts = {|
+      interface i_1 { field1: string };
+      interface i_2 extends i_1 { field2: boolean }
+      type holds_ref = i_1;
+    |};
+      expect.string(
+        print(
+          ~ctx={
+            ...config,
+            omit_extended_unreferenced_records: true,
+            suppress_warning_for_extended_records: true,
+          },
+          ts,
+        ),
+      ).
+        toMatchSnapshot();
+    },
+  );
 });

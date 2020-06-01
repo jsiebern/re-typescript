@@ -1,7 +1,11 @@
 open Re_typescript_base;
 
 let content = {|
-type union_1 = string | number | { inline: boolean } | undefined;
+//type union_1 = string | number | { inline: boolean } | undefined;
+interface i_1<A = string> { field1: A };
+interface i_2 extends i_1 { field2: boolean }
+type x = i_2;
+type y = i_1;
 |};
 
 let () = {

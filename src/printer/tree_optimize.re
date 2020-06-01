@@ -13,17 +13,29 @@ let rec optimize = (~ctx: Decode_config.config) => {
 }
 and optimize__omit_extended_unreferenced_records = () => {
   Type.order^
-  |> CCList.iter(path =>
+  |> CCList.iter(path => {
        switch (Type.get(~path)) {
        | Some(TypeDeclaration({td_type: Interface(_, true), _}))
-           when Ref.get_all(path) |> CCList.length <= 0 =>
+           when {
+             let refs = Ref.get_all(path);
+             refs
+             |> CCList.length <= 1
+             || refs
+             |> CCList.for_all(r_path =>
+                  switch (Type.get(~path=r_path)) {
+                  | Some(TypeDeclaration({td_type: Interface(_), _})) => true
+                  | None => true
+                  | Some(_) => false
+                  }
+                );
+           } =>
          // Remove the extra type def from order
          Type.order := Type.order^ |> CCList.remove_one(~eq=Path.eq, path);
          // And replace the reference inside of the field
          Type.remove(~path);
        | _ => ()
        }
-     );
+     });
 }
 and optimize__helper__resolve_reference = (tr: ts_type_reference) => {
   switch (tr) {
