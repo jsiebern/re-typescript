@@ -9,7 +9,7 @@ include Rely.Make({
 open Re_typescript_base;
 module Exceptions = Re_typescript_printer.Tree_utils.Exceptions;
 
-let config = Re_typescript_printer.Config.default_config;
+let config = Re_typescript_config.default_config;
 let print = (~ctx=config, value) => {
   let str =
     Re_typescript_printer.structure_from_ts(

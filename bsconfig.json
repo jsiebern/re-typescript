@@ -14,7 +14,11 @@
   },
   "ppx-flags": [],
   "bsc-flags": ["-bs-super-errors"],
-  "bs-dependencies": ["reason-react", "bs-webworkers"],
+  "bs-dependencies": [
+    "reason-react",
+    "bs-webworkers",
+    "@ahrefs/bs-atdgen-codec-runtime"
+  ],
   "refmt": 3,
   "suffix": ".bs.js",
   "generate-merlin": true,

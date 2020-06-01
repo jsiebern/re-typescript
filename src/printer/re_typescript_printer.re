@@ -1,10 +1,9 @@
 open Migrate_parsetree;
-open Decode_config;
+open Re_typescript_config.Config;
 
-module Config = Decode_config;
 module Tree_utils = Tree_utils;
 
-let get_generator: Decode_config.output_type => (module Ast_generator.T) =
+let get_generator: output_type => (module Ast_generator.T) =
   fun
   | Bucklescript(bucklescript_config)
   | BucklescriptBindings(bucklescript_config) =>

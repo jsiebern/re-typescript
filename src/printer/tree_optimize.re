@@ -3,7 +3,7 @@ open Tree_types;
 open Tree_utils;
 open Tree_data;
 
-let rec optimize = (~ctx: Decode_config.config) => {
+let rec optimize = (~ctx: Re_typescript_config.Config.config) => {
   optimize__literal_unions();
   optimize__empty_obj_references();
   optimize__single_ref_inline_types();

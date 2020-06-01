@@ -1,5 +1,5 @@
 {
-  "checksum": "c5d31285352aa8422489896b763567d8",
+  "checksum": "b495f408ae3f7dd4663ada3ef3992229",
   "root": "re_typescript@link-dev:./esy.json",
   "node": {
     "yarn-pkg-config@github:esy-ocaml/yarn-pkg-config#db3a0b63883606dd57c54a7158d560d6cba8cd79@d41d8cd9": {
@@ -54,14 +54,15 @@
         "@opam/js_of_ocaml-ppx@opam:3.6.0@92f19746",
         "@opam/js_of_ocaml@opam:3.6.0@92f53867",
         "@opam/dune@opam:2.5.0@aef1678b",
-        "@opam/containers@opam:2.8.1@2a391688"
+        "@opam/containers@opam:2.8.1@2a391688",
+        "@opam/atdgen@opam:2.2.1@d73fda11"
       ],
       "devDependencies": [
         "refmterr@3.3.2@d41d8cd9", "ocaml@4.8.1000@d41d8cd9",
         "@reason-native/rely@3.2.1@d41d8cd9",
         "@opam/redemon@github:ulrikstrid/redemon:redemon.opam#0c9a08cb116dab641cf0f89cc291dd6a2f4ec7cc@d41d8cd9",
         "@opam/reason@opam:3.6.0@2da53ff9",
-        "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#38bd51a15c98b4f6ff841e5c914a8cdacee15ea6@d41d8cd9",
+        "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#a83bd0921b7e11de92e878f55b6447918dbb841c@d41d8cd9",
         "@opam/js_of_ocaml-compiler@opam:3.6.0@8dfa564d"
       ]
     },
@@ -649,16 +650,16 @@
         "@opam/dune@opam:2.5.0@aef1678b"
       ]
     },
-    "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#38bd51a15c98b4f6ff841e5c914a8cdacee15ea6@d41d8cd9": {
+    "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#a83bd0921b7e11de92e878f55b6447918dbb841c@d41d8cd9": {
       "id":
-        "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#38bd51a15c98b4f6ff841e5c914a8cdacee15ea6@d41d8cd9",
+        "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#a83bd0921b7e11de92e878f55b6447918dbb841c@d41d8cd9",
       "name": "@opam/ocaml-lsp-server",
       "version":
-        "github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#38bd51a15c98b4f6ff841e5c914a8cdacee15ea6",
+        "github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#a83bd0921b7e11de92e878f55b6447918dbb841c",
       "source": {
         "type": "install",
         "source": [
-          "github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#38bd51a15c98b4f6ff841e5c914a8cdacee15ea6"
+          "github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#a83bd0921b7e11de92e878f55b6447918dbb841c"
         ]
       },
       "overrides": [],

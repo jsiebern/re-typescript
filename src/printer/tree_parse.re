@@ -3,7 +3,7 @@ open Tree_types;
 open Tree_utils;
 open Tree_data;
 
-let config = ref(Decode_config.default_config);
+let config = ref(Re_typescript_config.default_config);
 
 /**
     Type / Interface / Enum definitions
@@ -1053,7 +1053,10 @@ and parse__module =
   Entry module
 */
 and parse__entry_module =
-    (~ctx: Decode_config.config, declarations: list(Ts.declaration)) => {
+    (
+      ~ctx: Re_typescript_config.Config.config,
+      declarations: list(Ts.declaration),
+    ) => {
   // Cleanup
   config := ctx;
   Type.clear();

@@ -2,6 +2,6 @@
  (name re_typescript_printer)
  (public_name re_typescript.printer)
  (libraries reason ocaml-migrate-parsetree re_typescript.base
-   ppx_tools_versioned containers console.lib)
+   re_typescript.config ppx_tools_versioned containers console.lib)
  (preprocess
   (pps ppx_tools_versioned.metaquot_406)))

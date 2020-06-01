@@ -202,21 +202,41 @@ module MonacoEditor = {
     "ControlledEditor";
 };
 
+let tmr: ref(option(Js.Global.timeoutId)) = ref(None);
+module Editor = {
+  [@react.component]
+  let make = (~onChange) => {
+    let (v, setV) = React.useReducer((_, v) => v, content);
+    let tmr = React.useRef((-1)->Obj.magic);
+
+    React.useEffect1(
+      () => {
+        tmr.current = Js.Global.setTimeout(() => {onChange(v)}, 300);
+
+        Some(() => Js.Global.clearTimeout(tmr.current));
+      },
+      [|v|],
+    );
+
+    <MonacoEditor
+      height="100vh"
+      width="70vw"
+      value=v
+      onChange={(_, v) => setV(v)}
+      language=`typescript
+    />;
+  };
+};
+
 module X = {
   [@react.component]
   let make = () => {
-    let (v, setV) = React.useReducer((_, v) => v, content);
+    let (v, setV) = React.useReducer((_, v) => v, "");
     let (re, setRe) = React.useReducer((_, v) => v, true);
     let result = BsPrinter.usePrintedValue(~re, v);
 
     <>
-      <MonacoEditor
-        height="100vh"
-        width="70vw"
-        value=v
-        onChange={(_, v) => setV(v)}
-        language=`typescript
-      />
+      <Editor onChange=setV />
       {switch (result) {
        | Ok(printed) =>
          <div className="display">

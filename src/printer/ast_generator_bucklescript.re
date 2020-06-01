@@ -1,9 +1,10 @@
-module type Config = {let config: Decode_config.bucklescript_config;};
+module type Config = {
+  let config: Re_typescript_config.Config.bucklescript_config;
+};
 
 module Make = (Config: Config) : Ast_generator.T => {
   open Config;
   open Tree_types;
-  open Decode_config;
   open Migrate_parsetree;
   open Ast_406;
   open Parsetree;
@@ -30,7 +31,12 @@ module Make = (Config: Config) : Ast_generator.T => {
   };
 
   let rec generate_type_def =
-          (~ctx: config, ~path: Path.t, type_: ts_type): generated_type_def =>
+          (
+            ~ctx: Re_typescript_config.Config.config,
+            ~path: Path.t,
+            type_: ts_type,
+          )
+          : generated_type_def =>
     switch (type_) {
     | Base(base_type) => {
         td_kind: Ptype_abstract,
@@ -257,7 +263,12 @@ module Make = (Config: Config) : Ast_generator.T => {
                | `PolyVariant(_) => to_int_variant_constructor(v)
                }
              | Some(pat) => (
-                 Printf.sprintf("%s%d%s", pat.prefix, v, pat.suffix),
+                 Printf.sprintf(
+                   "%s%d%s",
+                   pat.Re_typescript_config.Config.prefix,
+                   v,
+                   pat.suffix,
+                 ),
                  v,
                )
              }

@@ -1,0 +1,29 @@
+type config <ocaml from="Config"> = abstract
+
+type parse_language = [
+  | Reason
+  | Ocaml
+] <ocaml repr="classic">
+type parse_request = {
+  language: parse_language;
+  content: string;
+  config: config;
+}
+
+type parse_result = [
+  | Error of (parse_error_kind * string)
+  | Ok of string
+] <ocaml repr="classic">
+
+type parse_error_kind = [
+  | Parser_unexpected
+  | Parser_error
+  | Parser_parameter_error
+  | Parser_unsupported
+  | Optimizer_error
+  | Reason_error
+  | Syntax_error
+  | Base_parser_error
+  | Base_lexer_error
+  | Js_unknown
+] <ocaml repr="classic">

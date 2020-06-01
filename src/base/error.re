@@ -4,23 +4,13 @@ module FCP =
       FileContextPrinter.Config.initialize({linesBefore: 1, linesAfter: 3});
   });
 
-let parser_error = (~content, ~lexbuf: Lexing.lexbuf) => {
+let parser_error = (~content, ~start: Lexing.position, ~end_: Lexing.position) => {
   let location =
     FCP.print(
       content |> CCString.trim |> CCString.split(~by="\n"),
       ~highlight=(
-        (
-          lexbuf.Lexing.lex_start_p.pos_lnum,
-          lexbuf.Lexing.lex_start_p.pos_cnum
-          - lexbuf.Lexing.lex_start_p.pos_bol
-          + 1,
-        ),
-        (
-          lexbuf.Lexing.lex_curr_p.pos_lnum,
-          lexbuf.Lexing.lex_curr_p.pos_cnum
-          - lexbuf.Lexing.lex_curr_p.pos_bol
-          + 1,
-        ),
+        (start.pos_lnum, start.pos_cnum - start.pos_bol + 1),
+        (end_.pos_lnum, end_.pos_cnum - end_.pos_bol + 1),
       ),
     );
   Pastel.(

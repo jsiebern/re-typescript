@@ -9,6 +9,7 @@
     "fpack": "./node_modules/.bin/fpack build --dev --mock constants:constants-browserify --mock fs --mock child_process --mock tty --preprocess='\\.css$:style-loader!css-loader'",
     "fpack-worker": "./node_modules/.bin/fpack build -c fastpack-worker.json --dev --mock constants:constants-browserify --mock fs --mock child_process --mock tty --preprocess='\\.css$:style-loader!css-loader'",
     "docs": "./docs.sh",
+    "types": "./types.sh",
     "start": "cd docs; python -m SimpleHTTPServer"
   },
   "devDependencies": {
@@ -19,13 +20,13 @@
     "style-loader": "^1.2.1"
   },
   "dependencies": {
+    "@ahrefs/bs-atdgen-codec-runtime": "^2.0.1",
     "@babel/runtime": "^7.9.6",
     "@monaco-editor/react": "^3.3.0",
     "bs-webworkers": "^0.2.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-highlight.js": "^1.0.7",
-    "reason": "^3.3.4",
     "reason-react": "^0.8.0"
   }
 }

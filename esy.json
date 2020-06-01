@@ -9,10 +9,13 @@
     "test": "esy x RunTests.exe",
     "test-u": "esy x RunTests.exe -u",
     "js": "esy dune build ./src/js/re_typescript_js.bc.js",
-    "js-release": "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
-    "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
+    "js-release":
+      "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
+    "release-static":
+      "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },
   "dependencies": {
+    "@opam/atdgen": "2.2.1",
     "@opam/containers": "2.8.1",
     "@opam/dune": "*",
     "@opam/js_of_ocaml": "3.6.0",
@@ -35,7 +38,9 @@
   },
   "esy": {
     "build": [
-      ["refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"]
+      [
+        "refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"
+      ]
     ],
     "buildsInSource": "_build"
   }

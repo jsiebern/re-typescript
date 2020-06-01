@@ -1,5 +1,5 @@
 #!/bin/bash
 esy js-release
-yarn bs:build
+./types.sh
 yarn fpack
 yarn fpack-worker

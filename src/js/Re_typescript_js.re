@@ -1,40 +1,152 @@
 open Re_typescript_base;
+open Re_typescript_config;
 open Js_of_ocaml;
 
-let run = (content: Js.t(Js.js_string)) => {
-  let content = content |> Js.to_string;
+type jsstr = Js.t(Js.js_string);
+Pastel.setMode(HumanReadable);
+
+let print__structure = (content, config) => {
+  open Re_typescript_printer.Tree_utils.Exceptions;
   let lexbuf = Lexing.from_string(content |> CCString.trim);
 
   try(
-    Re_typescript_printer.print_from_ts(
-      ~ctx={
-        ...Re_typescript_printer.Config.default_config,
-        number_mode: Int,
-        suppress_warning_for_extended_records: true,
-        output_type:
-          Bucklescript({
-            ...Re_typescript_printer.Config.default_bucklescript_config,
-            string_variant_mode: `PolyVariant,
-          }),
-      },
-      Parser_incr.parse(lexbuf),
+    CCResult.Ok(
+      Re_typescript_printer.structure_from_ts(
+        ~ctx={
+          config;
+        },
+        Parser_incr.parse(lexbuf),
+      ),
     )
-    |> Js.string
   ) {
   | Lexer.SyntaxError(msg) =>
-    Js.raise_js_error([%js new Js.error_constr](msg |> Js.string))
+    CCResult.Error((
+      Bridge.Base_lexer_error,
+      msg
+      ++ "\n\n"
+      ++ Error.parser_error(
+           ~content,
+           ~start=lexbuf.lex_start_p,
+           ~end_=lexbuf.lex_curr_p,
+         ),
+    ))
   | Parser_incr.Parsing_error(_)
   | Parser.Error =>
-    Pastel.setMode(HumanReadable);
-    Js.raise_js_error(
-      [%js new Js.error_constr](
-        Error.parser_error(~content, ~lexbuf) |> Js.string,
+    CCResult.Error((
+      Bridge.Base_parser_error,
+      Error.parser_error(
+        ~content,
+        ~start=lexbuf.lex_start_p,
+        ~end_=lexbuf.lex_curr_p,
       ),
-    );
-  | e =>
-    Console.error(e);
-    raise(e);
+    ))
+
+  | Parser_unexpected(msg) => CCResult.Error((Bridge.Parser_unexpected, msg))
+  | Parser_error(msg) => CCResult.Error((Bridge.Parser_error, msg))
+  | Parser_parameter_error(msg) =>
+    CCResult.Error((Bridge.Parser_parameter_error, msg))
+  | Parser_unsupported(msg) =>
+    CCResult.Error((Bridge.Parser_unsupported, msg))
+  | Optimizer_error(msg) => CCResult.Error((Bridge.Optimizer_error, msg))
+  | other_exn => CCResult.Error((Js_unknown, Printexc.to_string(other_exn)))
   };
 };
+
+let print__reason = (content, config) => {
+  switch (print__structure(content, config)) {
+  | Error(e) => Bridge.Error(e)
+  | Ok(str) =>
+    try(
+      {
+        Reason_toolchain.RE.print_implementation_with_comments(
+          Format.str_formatter,
+          (str, []),
+        );
+        Bridge.Ok(Format.flush_str_formatter() |> CCString.trim);
+      }
+    ) {
+    | Syntaxerr.Error(error) =>
+      let loc = error |> Syntaxerr.location_of_error;
+      let reported_excerpt =
+        Format.flush_str_formatter()
+        |> CCString.trim
+        |> Error.parser_error(
+             ~content=_,
+             ~start=loc.loc_start,
+             ~end_=loc.loc_end,
+           );
+      Bridge.Error((Syntax_error, reported_excerpt));
+    | Reason_errors.Reason_error(err, loc) =>
+      let reported_excerpt =
+        Format.flush_str_formatter()
+        |> CCString.trim
+        |> Error.parser_error(
+             ~content=_,
+             ~start=loc.loc_start,
+             ~end_=loc.loc_end,
+           );
+
+      Reason_errors.report_error(Format.str_formatter, ~loc, err);
+      let reported_error = Format.flush_str_formatter() |> CCString.trim;
+
+      Bridge.Error((
+        Reason_error,
+        Pastel.(
+          <Pastel>
+            <Pastel> "\n" </Pastel>
+            <Pastel bold=true color=Red> {reported_error ++ "\n"} </Pastel>
+            <Pastel bold=true color=Red>
+              "----------------------------------------------------"
+            </Pastel>
+            reported_excerpt
+          </Pastel>
+        ),
+      ));
+    | other_exn => Bridge.Error((Js_unknown, Printexc.to_string(other_exn)))
+    }
+  };
+};
+
+let print__ocaml = (content, config) => {
+  switch (print__structure(content, config)) {
+  | Error(e) => Bridge.Error(e)
+  | Ok(str) =>
+    try(
+      {
+        Reason_toolchain.ML.print_implementation_with_comments(
+          Format.str_formatter,
+          (str, []),
+        );
+        Bridge.Ok(Format.flush_str_formatter() |> CCString.trim);
+      }
+    ) {
+    | Syntaxerr.Error(error) =>
+      let loc = error |> Syntaxerr.location_of_error;
+      let reported_excerpt =
+        Format.flush_str_formatter()
+        |> CCString.trim
+        |> Error.parser_error(
+             ~content=_,
+             ~start=loc.loc_start,
+             ~end_=loc.loc_end,
+           );
+      Bridge.Error((Syntax_error, reported_excerpt));
+    | other_exn => Bridge.Error((Js_unknown, Printexc.to_string(other_exn)))
+    }
+  };
+};
+
+let run = (json: jsstr) =>
+  Bridge.string_of_parse_result(
+    try({
+      let parse_request = Bridge.parse_request_of_string(Js.to_string(json));
+      switch (parse_request) {
+      | {language: Reason, content, config} => print__reason(content, config)
+      | {language: Ocaml, content, config} => print__ocaml(content, config)
+      };
+    }) {
+    | other_exn => Bridge.Error((Js_unknown, Printexc.to_string(other_exn)))
+    },
+  );
 
 Js.export("run", run);
