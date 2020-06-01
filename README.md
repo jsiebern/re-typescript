@@ -86,7 +86,7 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [x] Namespaces
   - [x] Exports
   - [x] Value bindings
-  - [ ] Mutators
+  - [ ] Mapped Types
   - [ ] Conditional types
   - [ ] Type predicates
   - [ ] Type guards (typeof, instanceof)
@@ -127,7 +127,7 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [x] Resolve extension refs for the current type (finalize all fields)
   - [x] Flattened type tree
   - [x] Solve inline interfaces (e.g. in an array)
-  - [ ] Mutators
+  - [ ] Mapped Types
 - [ ] Generating
   - [x] Valid identifiers (Reserved keywords / uppercase variables)
   - [ ] Bucklescript (Make use of bucklescript features, but do not use externals)
@@ -183,8 +183,13 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [x] Provide better error messages on syntax error
   - [x] `array_mode` (Array / List)
   - [x] `number_mode` (Int / Float / Unboxed)
+  - [ ] `intersection_mode` ( { objects, unions, classes, other, tuple_members_optional } )
+    - [ ] Merge
+    - [x] Tuple
+    - [ ] Ignore
+  - [ ] `tagged_union_mode` ( { mode: Default / Tagged, tag: Variant / PolyVariant / Default } )
   - [ ] `uncurried_functions_mode`
-  - [ ] `omit_labels_for_required_args`
+  - [ ] `omit_labels_for_required_function_parameters`
   - [x] `omit_extended_unreferenced_records` (_warning 30_)
   - [x] `suppress_warning_for_extended_records` (_warning 30_)
   - [ ] Hoist inline variants when generating parsers / serializers (for ease of use together with [@bs.deriving])

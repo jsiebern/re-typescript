@@ -83,6 +83,7 @@ module Exceptions = {
   exception Parser_unexpected(string);
   exception Parser_error(string);
   exception Parser_parameter_error(string);
+  exception Parser_unsupported(string);
   exception Optimizer_error(string);
 };
 
@@ -158,6 +159,26 @@ let type_to_string = (t: Re_typescript_base.Ts.type_) =>
   | Symbol(_) => "Symbol"
   | This(_) => "This"
   | UnionTemp(_) => "UnionTemp"
+  };
+
+let rec declaration_to_string = (d: Re_typescript_base.Ts.declaration) =>
+  switch (d) {
+  | IdentifierReference(_) => "IdentifierReference"
+  | ExportList(_) => "ExportList"
+  | Export(d) => Printf.sprintf("Export_%s", declaration_to_string(d))
+  | ExportAssignment(_) => "ExportAssignment"
+  | ExportDefault(d) => Printf.sprintf("Export_%s", declaration_to_string(d))
+  | Ambient(d) => Printf.sprintf("Export_%s", declaration_to_string(d))
+  | Namespace(_) => "Namespace"
+  | Module(_) => "Module"
+  | Type(_) => "Type"
+  | Interface(_) => "Interface"
+  | Enum(_) => "Enum"
+  | FunctionDec(_) => "FunctionDec"
+  | Class(_) => "Class"
+  | Variable(_) => "Variable"
+  | ImportAlias(_) => "ImportAlias"
+  | Import(_) => "Import"
   };
 
 let rec ts_to_string = (t: ts_type) =>

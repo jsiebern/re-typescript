@@ -39,11 +39,24 @@ and number_mode =
   | Int
   | Float
   | Unboxed
+and intersection_def =
+  | Merge
+  | Tuple
+  | Ignore
+and intersection_mode = {
+  objects: intersection_def,
+  unions: intersection_def,
+  classes: intersection_def,
+  functions: intersection_def,
+  other: intersection_def,
+  tuple_members_optional: bool,
+}
 and config = {
   suppress_warning_for_extended_records: bool,
   omit_extended_unreferenced_records: bool,
   output_type,
   array_mode,
+  intersection_mode,
   number_mode,
   files: list((string, list(Ts.declaration))),
   file_loader: (module File_loader.T),
@@ -56,6 +69,14 @@ let default_config: config = {
   output_type: Bucklescript(default_bucklescript_config),
   array_mode: Array,
   number_mode: Float,
+  intersection_mode: {
+    objects: Tuple,
+    unions: Tuple,
+    classes: Tuple,
+    functions: Tuple,
+    other: Tuple,
+    tuple_members_optional: false,
+  },
   files: [],
   file_loader: (module File_loader.Loader_fs),
   generate_parser: false,

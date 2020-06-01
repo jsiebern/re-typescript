@@ -153,6 +153,21 @@ interface Extends_another<PassThrough> extends Extend_me<PassThrough> {
   field_3: PassThrough
 }
 
+// --- Simple intersection (default output mode for intersections is a tuple)
+type inters_as_tpl = string & number;
+interface ErrorHandling {
+  success: boolean;
+  error?: { message: string };
+}
+interface ArtworksData {
+  artworks: { title: string }[];
+}
+interface ArtistsData {
+  artists: { name: string }[];
+}
+type ArtworksResponse = ArtworksData & ErrorHandling;
+type ArtistsResponse = ArtistsData & ErrorHandling;
+
 // --------------------------------------------
 // What doesn't? (And a lot more, just a few random cases)
 // --------------------------------------------

@@ -21,7 +21,7 @@ interface ArtistsData {
 type ArtworksResponse = ArtworksData & ErrorHandling;
 type ArtistsResponse = ArtistsData & ErrorHandling;
 
-export const handleArtistsResponse: (response: ArtistsResponse) => void;
+// export const handleArtistsResponse: (response: ArtistsResponse) => void;
 |};
 
 let () = {

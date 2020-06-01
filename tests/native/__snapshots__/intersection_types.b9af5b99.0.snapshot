@@ -1,0 +1,3 @@
+intersection types › can create simple intersection tuple
+type tpl = (string, float);
+

@@ -17,6 +17,8 @@ describe("failing tests that shouldn't", ({test, _}) => {
         toThrow()
     })
     // ---
+    // type tpl = string & number | undefined;
+    // ---
     // type obj = {
     //   type: string;
     // };

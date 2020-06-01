@@ -3,6 +3,8 @@ open Tree_types;
 open Tree_utils;
 open Tree_data;
 
+let config = ref(Decode_config.default_config);
+
 /**
     Type / Interface / Enum definitions
  */
@@ -197,14 +199,20 @@ let rec parse__type_def =
       });
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
-  | v =>
-    Console.error(v);
-    raise(Exceptions.Parser_error("Declaration not implemented"));
+  | d =>
+    raise(
+      Exceptions.Parser_unsupported(
+        Printf.sprintf(
+          "Declaration not implemented: %s",
+          declaration_to_string(d),
+        ),
+      ),
+    )
   };
 }
 /**
-    Unions
- */
+  Unions
+*/
 and parse__union = (~path, ~left: Ts.type_, ~right: option(Ts.type_)) => {
   let rec to_tmp = (type_: Ts.type_): Ts.temp_union_member =>
     switch (type_) {
@@ -403,8 +411,8 @@ and parse__union_nullable = (~path, members: list(Ts.temp_union_member)) => {
   };
 }
 /**
-    Type arguments
- */
+  Type arguments
+*/
 and parse__type_parameters = (~path, parameters: Ts.type_parameters) => {
   parameters
   |> CCList.map(({tp_ident, tp_extends, tp_default}: Ts.type_parameter) =>
@@ -426,8 +434,8 @@ and parse__type_parameters = (~path, parameters: Ts.type_parameters) => {
      );
 }
 /**
-    Type extraction
- */
+  Type extraction
+*/
 and parse__type_extraction =
     (
       ~from_ref=?,
@@ -533,8 +541,8 @@ and parse__type_extraction =
   };
 }
 /**
-    Array
- */
+  Array
+*/
 and parse__array = (~path, type_) => {
   Array(parse__type(~inline=true, ~path=path |> Path.add_sub("t"), type_));
 }
@@ -549,8 +557,8 @@ and parse__optional = (~path, type_) => {
   );
 }
 /**
-    Type reference
- */
+  Type reference
+*/
 and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
   let ref_path = fst(type_ref) |> CCList.map(no_pi);
 
@@ -579,6 +587,9 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
     });
   };
 }
+/**
+  Reference specific argument
+*/
 and parse__apply_ref_arguments =
     (~path, ~resolved_ref, ~type_ref: Ts.type_reference) => {
   let ref_types = snd(type_ref);
@@ -600,6 +611,9 @@ and parse__apply_ref_arguments =
     ~applied_types=ref_applied_types,
   );
 }
+/**
+  Argument resolver
+*/
 and parse__apply_arguments =
     (
       ~path: Path.t,
@@ -697,8 +711,8 @@ and parse__type_argument = (~path, arg: ts_identifier) => {
   Arg(arg);
 }
 /**
-    Enums
- */
+  Enums
+*/
 and parse__enum = (~path, members: list(Ts.enum_member), is_const: bool) => {
   let is_clean =
     members
@@ -724,12 +738,14 @@ and parse__enum = (~path, members: list(Ts.enum_member), is_const: bool) => {
       |> CCList.map(Ident.of_string),
     );
   } else {
-    raise(Exceptions.Parser_error("Complex enums are not yet supported"));
+    raise(
+      Exceptions.Parser_unsupported("Complex enums are not yet supported"),
+    );
   };
 }
 /**
-    Tuples
- */
+  Tuples
+*/
 and parse__tuple = (~path, types) => {
   Tuple(
     types
@@ -740,8 +756,8 @@ and parse__tuple = (~path, types) => {
   );
 }
 /**
-    Interfaces
- */
+  Interfaces
+*/
 and parse__interface =
     (~path, ~extended=false, members: list(Ts.type_member)) => {
   Interface(
@@ -788,31 +804,31 @@ and parse__interface =
            };
          | PropertySignature(_) =>
            raise(
-             Exceptions.Parser_error(
+             Exceptions.Parser_unsupported(
                "PropertySignature with anything but PIdentifier not yet supported in interface",
              ),
            )
          | MethodSignature(_) =>
            raise(
-             Exceptions.Parser_error(
+             Exceptions.Parser_unsupported(
                "MethodSignature with anything but PIdentifier not yet supported in interface",
              ),
            )
          | CallSignature(_) =>
            raise(
-             Exceptions.Parser_error(
+             Exceptions.Parser_unsupported(
                "CallSignature not yet supported in interface",
              ),
            )
          | ConstructSignature(_) =>
            raise(
-             Exceptions.Parser_error(
+             Exceptions.Parser_unsupported(
                "ConstructSignature not yet supported in interface",
              ),
            )
          | IndexSignature(_) =>
            raise(
-             Exceptions.Parser_error(
+             Exceptions.Parser_unsupported(
                "IndexSignature not yet supported in interface",
              ),
            )
@@ -822,8 +838,8 @@ and parse__interface =
   );
 }
 /**
-    All types
- */
+  All types
+*/
 and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
   switch ((type_: Ts.type_)) {
   | String(_) => Base(String)
@@ -854,15 +870,20 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
   | StringLiteral(_) as t
   | NumberLiteral(_) as t
   | BoolLiteral(_) as t => parse__type(~inline, ~path, Union(t, None))
-  | Intersection(_) =>
-    raise(Exceptions.Parser_error("Intersection type not yet supported"))
+  | Intersection(left, right) as t =>
+    inline
+      ? parse__inline(~path, t) : parse__intersection(~path, ~left, ~right)
   | Query(_) =>
-    raise(Exceptions.Parser_error("Query type not yet supported"))
+    raise(Exceptions.Parser_unsupported("Query type not yet supported"))
   | Symbol(_) =>
-    raise(Exceptions.Parser_error("Symbol type not yet supported"))
-  | This(_) => raise(Exceptions.Parser_error("This type not yet supported"))
+    raise(Exceptions.Parser_unsupported("Symbol type not yet supported"))
+  | This(_) =>
+    raise(Exceptions.Parser_unsupported("This type not yet supported"))
   };
 }
+/**
+  Inline Wrapper
+*/
 and parse__inline = (~path, type_) => {
   parse__type_def(
     ~inline=true,
@@ -929,8 +950,51 @@ and parse__inline = (~path, type_) => {
   });
 }
 /**
+  Intersection
+*/
+and parse__intersection = (~path, ~left: Ts.type_, ~right: Ts.type_) => {
+  let rec types_from_intersection =
+          (~carry=[], ~left: Ts.type_, ~right: Ts.type_) => {
+    let new_carry =
+      switch (left) {
+      | Ts.Intersection(left, right) =>
+        types_from_intersection(~carry, ~left, ~right)
+      | other => carry @ [other]
+      };
+    new_carry @ [right];
+  };
+  let parsed_types = types_from_intersection(~carry=[], ~left, ~right);
+  switch (config^.intersection_mode) {
+  | {
+      objects: Tuple,
+      unions: Tuple,
+      classes: Tuple,
+      functions: Tuple,
+      other: Tuple,
+      tuple_members_optional,
+    } =>
+    parse__type(
+      ~path,
+      Tuple(
+        tuple_members_optional
+          ? parsed_types
+            |> CCList.map(t =>
+                 Ts.Union(t, Some(Ts.Undefined(Parse_info.zero)))
+               )
+          : parsed_types,
+      ),
+    )
+  | _ =>
+    raise(
+      Exceptions.Parser_unsupported(
+        "No intersection mode other than enum is supported yet",
+      ),
+    )
+  };
+}
+/**
   Function
- */
+*/
 and parse__function = (~path, body: Ts.parameter_list, return: Ts.type_) => {
   Function({
     fu_params:
@@ -956,13 +1020,13 @@ and parse__function = (~path, body: Ts.parameter_list, return: Ts.type_) => {
              };
            | Parameter(_) =>
              raise(
-               Exceptions.Parser_error(
+               Exceptions.Parser_unsupported(
                  "Bindings other than IdentifierBinding in function not yet supported",
                ),
              )
            | RestParameter(_) =>
              raise(
-               Exceptions.Parser_error(
+               Exceptions.Parser_unsupported(
                  "RestParameter in function not yet supported",
                ),
              )
@@ -975,8 +1039,8 @@ and parse__function = (~path, body: Ts.parameter_list, return: Ts.type_) => {
   });
 }
 /**
-    Module
- */
+  Module
+*/
 and parse__module =
     (
       ~path,
@@ -986,14 +1050,18 @@ and parse__module =
   declarations |> CCList.iter(parse__type_def(~path=path |> Path.add(name)));
 }
 /**
-    Entry module
- */
+  Entry module
+*/
 and parse__entry_module =
     (~ctx: Decode_config.config, declarations: list(Ts.declaration)) => {
+  // Cleanup
+  config := ctx;
   Type.clear();
   Ref.clear();
   Arguments.clear();
   Parameters.clear();
+
+  // Entry
   parse__type_def(Module({pi: Parse_info.zero, item: ("", declarations)}));
 
   // Directly manipulates Type & Ref modules
