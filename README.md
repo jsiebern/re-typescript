@@ -59,7 +59,7 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Keys
     - [x] Semicolon / Comma
     - [x] Optional
-    - [x] Readonly
+    - [ ] Readonly
     - [x] Nested interfaces
     - [x] Dynamic keys
     - [x] Extends keyword
@@ -88,6 +88,10 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [x] Value bindings
   - [ ] Mutators
   - [ ] Conditional types
+  - [ ] Type predicates
+  - [ ] Type guards (typeof, instanceof)
+  - [ ] in operator
+  - [ ] Comment references
   - [x] Keyof (in keyof) types
   - [x] Type Parameters
     - [x] Type definition
@@ -100,13 +104,18 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Basic types
     - [x] Interfaces
       - [x] Nested
-      - [ ] Empty interfaces that extend another can be set to the ref instead of inheriting the fields
-      - [ ] Inline interfaces that use an arg need to carry the args in their definitions
+      - [x] Empty interfaces that extend another can be set to the ref instead of inheriting the fields (no longer necessary)
+      - [x] Inline interfaces that use an arg need to carry the args in their definitions
     - [x] Arrays / Lists
-    - [ ] Enums
+    - [x] Enums
     - [x] Unions
-    - [ ] Functions
+      - [ ] Prevent multiples of the same identifier in union modules
+    - [ ] Discriminating Unions
+    - [x] Functions
     - [ ] Classes
+    - [ ] Type guards
+    - [ ] Type predicates
+    - [ ] in operator
     - [ ] Intersection types
     - [x] Type Parameters
       - [x] Apply default params when extending
@@ -121,16 +130,6 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [ ] Mutators
 - [ ] Generating
   - [x] Valid identifiers (Reserved keywords / uppercase variables)
-  - [ ] Native (Generate types without bucklescript features)
-    - [ ] Basic types
-    - [ ] Interfaces
-    - [ ] Arrays / Lists
-    - [ ] Enums
-    - [ ] Unions
-    - [ ] Functions
-    - [ ] Classes
-    - [ ] Intersection types
-    - [ ] Type Parameters
   - [ ] Bucklescript (Make use of bucklescript features, but do not use externals)
     - [x] Basic types
     - [x] Interfaces
@@ -142,10 +141,14 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [x] Unions
     - [x] Functions
       - [ ] String / Numeric literals in arguments
+    - [ ] Discriminating Unions (Could try to create ATDs from clean definitions)
     - [ ] Classes
     - [ ] Namespaces
     - [ ] Intersection types
+    - [ ] Type predicates
     - [x] Type Parameters
+    - [ ] Type predicates (in this mode we could actually try to create a reducer function that checks the type, should be relatively easy on unions / literals etc. It will have its limits, but it might be quite useful)
+    - [ ] Type guards
   - [ ] Bucklescript Bindings (Full use of bucklescript features and sensible approach of providing externals)
     - [ ] Basic types
     - [ ] Interfaces
@@ -157,6 +160,8 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Exports as externals
     - [ ] Intersection types
     - [ ] Type Parameters
+    - [ ] Type predicates (here in normal binding mode, just an external that returns bool)
+    - [ ] Type guards
 - [ ] Plugin system
   - [ ] ReasonReact
   - [ ] AST Structure
