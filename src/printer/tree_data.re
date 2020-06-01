@@ -10,6 +10,7 @@ module Type = {
   let add = (~path, type_) => Hashtbl.add(map, path, type_);
   let get = (~path) => Hashtbl.find_opt(map, path);
   let replace = (~path, type_) => Hashtbl.replace(map, path, type_);
+  let remove = (~path) => Hashtbl.remove(map, path);
 
   let order = ref([]);
   let add_order = (path: Path.t) => {

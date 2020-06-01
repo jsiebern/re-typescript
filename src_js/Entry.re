@@ -131,21 +131,22 @@ type extracted_method_signature = method_signature['func3'];
 export type Maybe<T> = null | undefined | T;
 type maybe_string = Maybe<string>;
 
+// --- Type parameters are tracked across generated inlined types
+interface IParamNested<A, B> {
+  field1: A,
+  field2: {
+    field3: B
+  }
+}
+
 // --------------------------------------------
 // What doesn't? (And a lot more, just a few random cases)
 // --------------------------------------------
 
-// enum enum_2 { Red, Green, Blue = 5 };
-// enum enum_3 { Red = "red", Green = "green", Blue = "blue" };
+// export enum enum_2 { Red, Green, Blue = 5 };
+// export enum enum_3 { Red = "red", Green = "green", Blue = "blue" };
 // type union_1 = string | number | { inline: boolean } | undefined;
 // type x<B> = string | B; (might beed to only generate module at the callsite)
-
-// interface IParamNested<A, B> {
-//   a: A,
-//   b: {
-//     snd_b: B
-//   }
-// }
 
 // export declare type Subset<T, U> = {
 //  [key in keyof T]: key extends keyof U ? T[key] : never;

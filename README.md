@@ -176,6 +176,8 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [x] `number_mode` (Int / Float / Unboxed)
   - [ ] `uncurried_functions_mode`
   - [ ] `omit_labels_for_required_args`
+  - [ ] `omit_extended_unreferenced_records` (_warning 30_)
+  - [x] `suppress_warning_for_extended_records` (_warning 30_)
   - [ ] Hoist inline variants when generating parsers / serializers (for ease of use together with [@bs.deriving])
   - [ ] Option to throw error if a type can't be resolved while decoding
   - [ ] PPX (far future)

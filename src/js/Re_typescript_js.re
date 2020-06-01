@@ -10,6 +10,7 @@ let run = (content: Js.t(Js.js_string)) => {
       ~ctx={
         ...Re_typescript_printer.Config.default_config,
         number_mode: Int,
+        suppress_warning_for_extended_records: true,
         output_type:
           Bucklescript({
             ...Re_typescript_printer.Config.default_bucklescript_config,

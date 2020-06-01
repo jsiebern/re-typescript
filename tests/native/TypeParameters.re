@@ -128,4 +128,20 @@ describe("type parameter logic", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test(
+    "reference inline params work inside a nested interface", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface IParamNested<A, B> {
+        field1: A,
+        field2: {
+          field3: B
+        }
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

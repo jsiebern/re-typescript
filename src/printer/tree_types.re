@@ -103,7 +103,7 @@ and ts_type =
   | StringLiteral(list(ts_identifier))
   | Enum(list(ts_identifier))
   | Base(ts_base_type)
-  | Interface(list(ts_field))
+  | Interface(list(ts_field), bool)
   | Tuple(list(ts_type))
   | Array(ts_type)
   | Optional(ts_type)

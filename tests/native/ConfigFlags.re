@@ -17,4 +17,34 @@ describe("config flags effects", ({test, _}) => {
     expect.string(print(~ctx={...config, number_mode: Unboxed}, ts)).
       toMatchSnapshot();
   });
+
+  test("suppress_warning_for_extended_records", ({expect, _}) => {
+    let ts = "interface i_1 { field1: string }; interface i_2 extends i_1 { field2: boolean }";
+    expect.string(
+      print(
+        ~ctx={...config, suppress_warning_for_extended_records: false},
+        ts,
+      ),
+    ).
+      toMatchSnapshot();
+    expect.string(
+      print(
+        ~ctx={...config, suppress_warning_for_extended_records: true},
+        ts,
+      ),
+    ).
+      toMatchSnapshot();
+  });
+
+  test("omit_extended_unreferenced_records", ({expect, _}) => {
+    let ts = "interface i_1 { field1: string }; interface i_2 extends i_1 { field2: boolean }";
+    expect.string(
+      print(~ctx={...config, omit_extended_unreferenced_records: false}, ts),
+    ).
+      toMatchSnapshot();
+    expect.string(
+      print(~ctx={...config, omit_extended_unreferenced_records: true}, ts),
+    ).
+      toMatchSnapshot();
+  });
 });

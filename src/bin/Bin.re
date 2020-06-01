@@ -1,8 +1,7 @@
 open Re_typescript_base;
 
 let content = {|
-type with_param2<a = 'one' | 'two'> = a;
-type call_params2 = with_param2;
+type union_1 = string | number | { inline: boolean } | undefined;
 |};
 
 let () = {

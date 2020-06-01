@@ -82,7 +82,7 @@ let rec parse__type_def =
                  | None => p
                  | Some(ref_type) =>
                    switch (ref_type) {
-                   | TypeDeclaration({td_type: Interface(add_fields), _}) =>
+                   | TypeDeclaration({td_type: Interface(add_fields, _), _}) =>
                      p @ add_fields
                    | _ => p
                    }
@@ -105,7 +105,7 @@ let rec parse__type_def =
         td_name: ident,
         td_type:
           switch (parse__type(~path=t_path, Ts.Object(i_members))) {
-          | Interface(has_fields) =>
+          | Interface(has_fields, extended) =>
             Interface(
               add_fields
               @ has_fields
@@ -116,6 +116,7 @@ let rec parse__type_def =
                      ident_b |> Ident.ident,
                    )
                  ),
+              extended,
             )
           | v => v
           },
@@ -387,7 +388,7 @@ and parse__type_extraction =
     | None => []
     | Some(ref_type) =>
       switch (ref_type) {
-      | TypeDeclaration({td_type: Interface(add_fields), _}) => add_fields
+      | TypeDeclaration({td_type: Interface(add_fields, _), _}) => add_fields
       | _ => []
       }
     };
@@ -641,7 +642,8 @@ and parse__tuple = (~path, types) => {
 /**
     Interfaces
  */
-and parse__interface = (~path, members: list(Ts.type_member)) => {
+and parse__interface =
+    (~path, ~extended=false, members: list(Ts.type_member)) => {
   Interface(
     members
     |> CCList.map((member: Ts.type_member) =>
@@ -716,6 +718,7 @@ and parse__interface = (~path, members: list(Ts.type_member)) => {
            )
          }
        ),
+    extended,
   );
 }
 /**
@@ -885,13 +888,14 @@ and parse__module =
 /**
     Entry module
  */
-and parse__entry_module = (declarations: list(Ts.declaration)) => {
+and parse__entry_module =
+    (~ctx: Decode_config.config, declarations: list(Ts.declaration)) => {
   Type.clear();
   Ref.clear();
   parse__type_def(Module({pi: Parse_info.zero, item: ("", declarations)}));
 
   // Directly manipulates Type & Ref modules
-  Tree_optimize.optimize();
+  Tree_optimize.optimize(~ctx);
 
   (Type.order^, Type.map);
 };

@@ -6,6 +6,8 @@ open Ast_generator_utils;
 open Ast_convenience_406;
 open Utils;
 
+let extended_record_warning = [%str [@warning "-30"]];
+
 let number_unboxed = [%str
   module Number: {
     type t;

@@ -40,6 +40,8 @@ and number_mode =
   | Float
   | Unboxed
 and config = {
+  suppress_warning_for_extended_records: bool,
+  omit_extended_unreferenced_records: bool,
   output_type,
   array_mode,
   number_mode,
@@ -49,6 +51,8 @@ and config = {
   generate_serializer: bool,
 };
 let default_config: config = {
+  suppress_warning_for_extended_records: false,
+  omit_extended_unreferenced_records: false,
   output_type: Bucklescript(default_bucklescript_config),
   array_mode: Array,
   number_mode: Float,

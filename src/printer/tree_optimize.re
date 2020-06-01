@@ -3,10 +3,27 @@ open Tree_types;
 open Tree_utils;
 open Tree_data;
 
-let rec optimize = () => {
+let rec optimize = (~ctx: Decode_config.config) => {
   optimize__literal_unions();
   optimize__empty_obj_references();
   optimize__single_ref_inline_types();
+  if (ctx.omit_extended_unreferenced_records) {
+    optimize__omit_extended_unreferenced_records();
+  };
+}
+and optimize__omit_extended_unreferenced_records = () => {
+  Type.order^
+  |> CCList.iter(path =>
+       switch (Type.get(~path)) {
+       | Some(TypeDeclaration({td_type: Interface(_, true), _}))
+           when Ref.get_all(path) |> CCList.length <= 0 =>
+         // Remove the extra type def from order
+         Type.order := Type.order^ |> CCList.remove_one(~eq=Path.eq, path);
+         // And replace the reference inside of the field
+         Type.remove(~path);
+       | _ => ()
+       }
+     );
 }
 and optimize__helper__resolve_reference = (tr: ts_type_reference) => {
   switch (tr) {
@@ -250,7 +267,9 @@ and optimize__single_ref_inline_types = () => {
        // ----------------------------------
        // --- Interface Fields
        // ----------------------------------
-       | Some(TypeDeclaration({td_type: Interface(fields), _} as td)) =>
+       | Some(
+           TypeDeclaration({td_type: Interface(fields, extended), _} as td),
+         ) =>
          let new_fields =
            fields
            |> CCList.map(field => {
@@ -284,7 +303,10 @@ and optimize__single_ref_inline_types = () => {
 
          Type.replace(
            ~path,
-           TypeDeclaration({...td, td_type: Interface(new_fields)}),
+           TypeDeclaration({
+             ...td,
+             td_type: Interface(new_fields, extended),
+           }),
          );
        // ----------------------------------
        // --- Tuple Members
@@ -457,7 +479,7 @@ and optimize__empty_obj_references = () => {
   Type.order^
   |> CCList.iter(path => {
        switch (Type.get(~path)) {
-       | Some(TypeDeclaration({td_type: Interface(fields), _} as td))
+       | Some(TypeDeclaration({td_type: Interface(fields, _), _} as td))
            when fields |> CCList.length == 0 =>
          if (Ref.get_all(path) |> CCList.length == 0) {
            Type.order := Type.order^ |> CCList.remove_one(~eq=Path.eq, path);

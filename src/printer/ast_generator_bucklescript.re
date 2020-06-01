@@ -19,9 +19,15 @@ module Make = (Config: Config) : Ast_generator.T => {
   type gen_config = {
     mutable has_any: bool,
     mutable has_unboxed_number: bool,
+    mutable has_extended_record: bool,
     mutable inject: list(structure_item),
   };
-  let gen_config = {has_any: false, has_unboxed_number: false, inject: []};
+  let gen_config = {
+    has_any: false,
+    has_extended_record: true,
+    has_unboxed_number: false,
+    inject: [],
+  };
 
   let rec generate_type_def =
           (~ctx: config, ~path: Path.t, type_: ts_type): generated_type_def =>
@@ -97,7 +103,10 @@ module Make = (Config: Config) : Ast_generator.T => {
         td_prepend: None,
         td_append: None,
       }
-    | Interface(fields) =>
+    | Interface(fields, extended) =>
+      if (extended) {
+        gen_config.has_extended_record = true;
+      };
       let (field_struct, field_types) =
         fields
         |> CCList.map(({f_name, f_type, _}) => {
@@ -116,7 +125,6 @@ module Make = (Config: Config) : Ast_generator.T => {
            })
         |> CCList.split;
       let (fields_prepend, fields_append) = field_struct |> CCList.split;
-
       {
         td_kind:
           generate_record_kind(
@@ -434,7 +442,12 @@ module Make = (Config: Config) : Ast_generator.T => {
          );
     let types = snd(types) @ generate_type_wrap(fst(types));
 
+    let append_warning_suppression =
+      ctx.suppress_warning_for_extended_records
+      && gen_config.has_extended_record;
+
     CCList.concat([
+      append_warning_suppression ? extended_record_warning : [],
       gen_config.has_unboxed_number ? number_unboxed : [],
       gen_config.has_any ? generate_any() : [],
       gen_config.inject,
