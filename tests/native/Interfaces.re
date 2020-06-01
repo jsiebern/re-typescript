@@ -95,4 +95,56 @@ describe("interface extension", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+
+  test("incomplete type args throw on extension", ({expect, _}) => {
+    expect.fn(() =>
+      print(
+        {|
+      interface i_1<C, A = string> { field1: A, fieldx: C };
+      interface i_2 extends i_1 {}
+    |},
+      )
+    ).
+      toThrowException(
+      Exceptions.Parser_parameter_error(
+        "Invalid type reference: Applied 0 arguments to a type where a minimum of 1 and a maxiumum of 2 are expected (i_1)",
+      ),
+    )
+  });
+
+  test("resolves extensions completely", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface I_a<A, B = boolean> {
+        field_1: A;
+        field_2: B;
+        field_4: string;
+      }
+      interface I_b extends I_a<string> {
+        field_3: number
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+
+  test("can pass a type param on through an extension", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface I_a<A, B = boolean> {
+        field_1: A;
+        field_2: B;
+        field_4: string;
+      }
+      interface I_b<Local, Ext> extends I_a<string, Ext> {
+        field_3: Local
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

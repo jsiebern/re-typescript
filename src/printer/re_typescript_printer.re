@@ -2,6 +2,7 @@ open Migrate_parsetree;
 open Decode_config;
 
 module Config = Decode_config;
+module Tree_utils = Tree_utils;
 
 let get_generator: Decode_config.output_type => (module Ast_generator.T) =
   fun

@@ -1,0 +1,13 @@
+interface extension › can pass a type param on through an extension
+type i_a('A, 'B) = {
+  field_1: 'A,
+  field_2: 'B,
+  field_4: string,
+}
+and i_b('Local, 'Ext) = {
+  field_1: string,
+  field_2: 'Ext,
+  field_4: string,
+  field_3: 'Local,
+};
+

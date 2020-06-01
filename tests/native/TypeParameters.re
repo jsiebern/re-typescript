@@ -39,6 +39,32 @@ describe("type parameter logic", ({test, _}) => {
     ).
       toThrow();
   });
+  test("throws on 2 or more identical parameter names", ({expect, _}) => {
+    expect.fn(() =>
+      print(
+        {|
+        interface i_1<C, A = string> { field1: A, fieldx: C };
+        interface i_2<B, A, B> extends i_1<A> { field2: B }
+        type x = i_2<boolean, string>;
+        type y = i_1<string>;
+    |},
+      )
+    ).
+      toThrowException(
+      Exceptions.Parser_parameter_error(
+        "Invalid type reference: Duplicate type parameter names detected. The following ident(s) are duplicates: B. Path: i_2.",
+      ),
+    );
+    expect.fn(() =>
+      print(
+        {|
+        type with_param<a1, a2 = string, a3> = a3;
+        type call_params = with_param<string, number, boolean>;
+    |},
+      )
+    ).
+      toThrow();
+  });
   test("can have inline records as defaults", ({expect, _}) => {
     expect.string(
       print(

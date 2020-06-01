@@ -109,9 +109,10 @@ I will update the playground from time to time. It's not great yet, I just wante
     - [ ] Classes
     - [ ] Intersection types
     - [x] Type Parameters
-      - [ ] Apply default params when extending
-      - [ ] Never omit unresolved parameterised interfaces by config
-      - [ ] Throw error if 2 type parameters have the same name
+      - [x] Apply default params when extending
+      - [x] Think about the order of params when applying args as default (solved by throwing an error as its not valid in TS either)
+      - [x] Never omit unresolved parameterised interfaces by config (solved by resolving extensions completely)
+      - [x] Throw error if 2 type parameters have the same name
   - [x] Abstracted file loader to resolve import / exports (should work both on web / native)
   - [ ] Implement separate file loaders
   - [x] Resolve extension refs for the current type (finalize all fields)
@@ -164,6 +165,7 @@ I will update the playground from time to time. It's not great yet, I just wante
 - [ ] Playground
   - [ ] Performance improvements
   - [ ] Implement a warning / error system without failing the whole process
+  - [ ] Display nicer decoding errors
   - [x] Check if it's really necessary to pull half of the ocaml compiler in (solved with `jsoo`)
   - [ ] Create a UI
     - [ ] Add panel with different generator options
@@ -178,10 +180,9 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [x] `number_mode` (Int / Float / Unboxed)
   - [ ] `uncurried_functions_mode`
   - [ ] `omit_labels_for_required_args`
-  - [ ] `omit_extended_unreferenced_records` (_warning 30_)
+  - [x] `omit_extended_unreferenced_records` (_warning 30_)
   - [x] `suppress_warning_for_extended_records` (_warning 30_)
   - [ ] Hoist inline variants when generating parsers / serializers (for ease of use together with [@bs.deriving])
-  - [ ] Option to throw error if a type can't be resolved while decoding
   - [ ] PPX (far future)
     - ```reason
       [%re_typescript "package/def.d.ts"]]

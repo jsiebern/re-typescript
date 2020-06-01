@@ -132,4 +132,20 @@ describe("config flags effects", ({test, _}) => {
         toMatchSnapshot();
     },
   );
+  test(
+    "omit_extended_unreferenced_records - on (resolves type params correctly, even if omitting the interface)",
+    ({expect, _}) => {
+      let ts = {|
+      interface i_1<A, B = boolean> { field1: A, field2: B };
+      interface i_2<A, C> extends i_1<A> { field3: C }
+    |};
+      expect.string(
+        print(
+          ~ctx={...config, omit_extended_unreferenced_records: true},
+          ts,
+        ),
+      ).
+        toMatchSnapshot();
+    },
+  );
 });

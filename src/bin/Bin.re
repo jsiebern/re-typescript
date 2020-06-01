@@ -2,10 +2,10 @@ open Re_typescript_base;
 
 let content = {|
 //type union_1 = string | number | { inline: boolean } | undefined;
-interface i_1<A = string> { field1: A };
-interface i_2 extends i_1 { field2: boolean }
-type x = i_2;
-type y = i_1;
+interface i_1<C, A = string> { field1: A, fieldx: C };
+interface i_2<B, A, B> extends i_1<A> { field2: B }
+type x = i_2<boolean, string>;
+type y = i_1<string>;
 |};
 
 let () = {
@@ -27,6 +27,7 @@ let () = {
           ~ctx={
             ...Re_typescript_printer.Config.default_config,
             number_mode: Int,
+            omit_extended_unreferenced_records: true,
             output_type:
               Bucklescript({
                 ...Re_typescript_printer.Config.default_bucklescript_config,

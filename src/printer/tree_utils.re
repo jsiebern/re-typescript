@@ -82,6 +82,7 @@ module Path = {
 module Exceptions = {
   exception Parser_unexpected(string);
   exception Parser_error(string);
+  exception Parser_parameter_error(string);
   exception Optimizer_error(string);
 };
 

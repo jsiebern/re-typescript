@@ -33,6 +33,7 @@ module Arguments = {
   let add = (~path, arg: ts_identifier) =>
     CCHashtbl.add_list(map, path, arg);
   let get = (~path) => CCHashtbl.get_or(map, path, ~default=[]);
+  let clear = () => Hashtbl.clear(map);
 };
 module Parameters = {
   type t = Hashtbl.t(list(string), list(ts_type_parameter));
@@ -52,6 +53,8 @@ module Parameters = {
          )
     | None => None
     };
+
+  let clear = () => Hashtbl.clear(map);
 };
 module Ref = {
   type t = Hashtbl.t(Path.t, Path.t);

@@ -62,6 +62,14 @@ let rec parse__type_def =
     let ident = i_ident |> Ident.of_pi;
     let t_path = inline ? path : path |> Path.add_ident(ident);
 
+    // Parameters need to be parsed before extension so they can be applied to potentially extended fields
+    let parameters =
+      parse__type_parameters(
+        ~path=t_path,
+        i_parameters |> CCOpt.value(~default=[]),
+      );
+    Parameters.add(~path=fst(t_path), parameters);
+
     // TODO: Unclean & naively solved, replace later
     let add_fields =
       switch (i_extends) {
@@ -73,7 +81,7 @@ let rec parse__type_def =
              (p, ext) => {
                switch (ext) {
                | ([], _) => p
-               | (ref_path, _) =>
+               | (ref_path, args: option(list(Ts.type_))) =>
                  let ref_path = ref_path |> CCList.map(no_pi);
                  switch (
                    Ref.resolve_ref(~from=path, (ref_path, []))
@@ -83,7 +91,7 @@ let rec parse__type_def =
                  | Some(ref_type) =>
                    switch (ref_type) {
                    | TypeDeclaration(
-                       {td_type: Interface(add_fields, _), _} as td,
+                       {td_type: Interface(add_fields, _), td_parameters, _} as td,
                      ) =>
                      // Now that this td has been extended it needs to be updated
                      Type.replace(
@@ -94,6 +102,56 @@ let rec parse__type_def =
                        }),
                      );
 
+                     let args =
+                       args
+                       |> CCOpt.map_or(
+                            ~default=[],
+                            CCList.mapi((i, param) => {
+                              let path =
+                                t_path |> Path.add_sub(string_of_int(i));
+                              parse__type(~inline=true, ~path, param);
+                            }),
+                          );
+
+                     let applied_types =
+                       parse__apply_arguments(
+                         ~path=(ref_path, []),
+                         ~type_parameters=Some(td_parameters),
+                         ~applied_types=args,
+                       )
+                       |> CCList.mapi((i, t) =>
+                            (
+                              CCList.get_at_idx_exn(i, td_parameters).tp_name,
+                              t,
+                            )
+                          );
+
+                     let add_fields =
+                       add_fields
+                       |> CCList.map(field =>
+                            switch (field) {
+                            | {f_type: Arg(arg_ident), _} =>
+                              switch (
+                                applied_types
+                                |> CCList.find_opt(((ident, _)) =>
+                                     Ident.eq(arg_ident, ident)
+                                   )
+                              ) {
+                              | None =>
+                                raise(
+                                  Exceptions.Parser_unexpected(
+                                    Printf.sprintf(
+                                      "Could not satisfy an Arg constraint while extending a record. This should not be possible. Path: %s",
+                                      t_path |> Path.to_string,
+                                    ),
+                                  ),
+                                )
+                              | Some((_, t)) => {...field, f_type: t}
+                              }
+                            | _ => field
+                            }
+                          );
+
                      p @ add_fields;
                    | _ => p
                    }
@@ -103,13 +161,6 @@ let rec parse__type_def =
              [],
            )
       };
-
-    let parameters =
-      parse__type_parameters(
-        ~path=t_path,
-        i_parameters |> CCOpt.value(~default=[]),
-      );
-    Parameters.add(~path=fst(t_path), parameters);
 
     let t =
       TypeDeclaration({
@@ -543,8 +594,46 @@ and parse__apply_ref_arguments =
        );
 
   let resolved_type_parameters = Parameters.get(~path=fst(resolved_ref));
+  parse__apply_arguments(
+    ~path=resolved_ref,
+    ~type_parameters=resolved_type_parameters,
+    ~applied_types=ref_applied_types,
+  );
+}
+and parse__apply_arguments =
+    (
+      ~path: Path.t,
+      ~type_parameters: option(list(ts_type_parameter)),
+      ~applied_types: list(ts_type),
+    ) => {
+  // --- Duplicate Detection
+  let l = CCList.length;
+  let param_idents =
+    switch (type_parameters) {
+    | None => []
+    | Some(params) =>
+      params |> CCList.map(param => param.tp_name |> Ident.value)
+    };
+  let param_idents_uniq = param_idents |> CCList.uniq(~eq=CCEqual.string);
+  if (CCList.compare_lengths(param_idents, param_idents_uniq) > 0) {
+    let duplicates =
+      param_idents
+      |> CCList.filter(i => !CCList.memq(i, param_idents_uniq))
+      |> CCList.to_string(~sep=", ", v => v);
+    raise(
+      Exceptions.Parser_parameter_error(
+        Printf.sprintf(
+          "Invalid type reference: Duplicate type parameter names detected. The following ident(s) are duplicates: %s. Path: %s.",
+          duplicates,
+          path |> Path.to_string,
+        ),
+      ),
+    );
+  };
+
+  // --- Applying
   let (n_required, append_defaults) =
-    resolved_type_parameters
+    type_parameters
     |> CCOpt.map_or(~default=(0, []), arg_types => {
          arg_types
          |> CCList.fold_left(
@@ -553,7 +642,7 @@ and parse__apply_ref_arguments =
                 | ([], {tp_default: None, _}) => (i + 1, lst)
                 | (lst, {tp_default: None, _}) =>
                   raise(
-                    Exceptions.Parser_error(
+                    Exceptions.Parser_parameter_error(
                       "Invalid type reference: Cannot have a required type arg after the first optional",
                     ),
                   )
@@ -566,30 +655,30 @@ and parse__apply_ref_arguments =
               (0, []),
             )
        });
-  let l = CCList.length;
   let n_required = n_required;
   let n_defaults = l(append_defaults);
   let n_total = n_required + n_defaults;
-  let n_applied = l(ref_applied_types);
+  let n_applied = l(applied_types);
 
-  switch (ref_applied_types) {
-  | applied when n_applied > 0 && resolved_type_parameters |> Option.is_none =>
+  // --- Trouble Shooting
+  switch (applied_types) {
+  | applied when n_applied > 0 && type_parameters |> Option.is_none =>
     Console.warn(
       Printf.sprintf(
         "Invalid type reference: Arguments passed to a type that is not in scope (%s)",
-        resolved_ref |> Path.to_string,
+        path |> Path.to_string,
       ),
     );
     applied;
   | applied when n_applied > n_total || n_applied < n_required =>
     raise(
-      Exceptions.Parser_error(
+      Exceptions.Parser_parameter_error(
         Printf.sprintf(
           "Invalid type reference: Applied %d arguments to a type where a minimum of %d and a maxiumum of %d are expected (%s)",
           n_applied,
           n_required,
           n_total,
-          resolved_ref |> Path.to_string,
+          path |> Path.to_string,
         ),
       ),
     )
@@ -598,9 +687,9 @@ and parse__apply_ref_arguments =
     applied @ CCList.drop(n_total - n_applied, append_defaults)
   | applied when n_applied == n_required => applied @ append_defaults
   | _ =>
-    Console.error(resolved_ref |> Path.to_string);
+    Console.error(path |> Path.to_string);
     Console.error([n_required, n_total, n_applied]);
-    raise(Exceptions.Parser_error("This should not be reachable"));
+    raise(Exceptions.Parser_parameter_error("This should not be reachable"));
   };
 }
 and parse__type_argument = (~path, arg: ts_identifier) => {
@@ -903,6 +992,8 @@ and parse__entry_module =
     (~ctx: Decode_config.config, declarations: list(Ts.declaration)) => {
   Type.clear();
   Ref.clear();
+  Arguments.clear();
+  Parameters.clear();
   parse__type_def(Module({pi: Parse_info.zero, item: ("", declarations)}));
 
   // Directly manipulates Type & Ref modules
