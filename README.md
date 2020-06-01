@@ -161,6 +161,7 @@ I will update the playground from time to time. It's not great yet, I just wante
   - [ ] Flow
 - [ ] Playground
   - [ ] Performance improvements
+  - [ ] Implement a warning / error system without failing the whole process
   - [x] Check if it's really necessary to pull half of the ocaml compiler in (solved with `jsoo`)
   - [ ] Create a UI
     - [ ] Add panel with different generator options

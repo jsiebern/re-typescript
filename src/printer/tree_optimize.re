@@ -4,9 +4,9 @@ open Tree_utils;
 open Tree_data;
 
 let rec optimize = () => {
+  optimize__literal_unions();
   optimize__empty_obj_references();
   optimize__single_ref_inline_types();
-  optimize__literal_unions();
 }
 and optimize__helper__resolve_reference = (tr: ts_type_reference) => {
   switch (tr) {
@@ -153,6 +153,7 @@ and optimize__single_ref_inline_types = () => {
   // The same can be done for tuples
   // The same can be done for function returns
   // The same can be done for function parameters
+  // The same can be done for reference parameters
   Type.order^
   |> CCList.iter(path => {
        switch (Type.get(~path)) {
@@ -173,8 +174,8 @@ and optimize__single_ref_inline_types = () => {
              && Ref.get_all(resolved_path)
              |> CCList.length == 1 =>
          switch (Type.get(~path=resolved_path)) {
-         | Some(TypeDeclaration({td_type: Interface(_), _})) => ()
-         | Some(TypeDeclaration({td_type, _})) =>
+         | Some(TypeDeclaration({td_type, _}) as t)
+             when !optimize__has_to_stay_inline(t) =>
            // Remove the extra type def from order
            Type.order :=
              Type.order^ |> CCList.remove_one(~eq=Path.eq, resolved_path);
@@ -203,8 +204,8 @@ and optimize__single_ref_inline_types = () => {
              && Ref.get_all(resolved_path)
              |> CCList.length == 1 =>
          switch (Type.get(~path=resolved_path)) {
-         | Some(TypeDeclaration({td_type: Interface(_), _})) => ()
-         | Some(TypeDeclaration({td_type, _})) =>
+         | Some(TypeDeclaration({td_type, _}) as t)
+             when !optimize__has_to_stay_inline(t) =>
            // Remove the extra type def from order
            Type.order :=
              Type.order^ |> CCList.remove_one(~eq=Path.eq, resolved_path);
@@ -233,8 +234,8 @@ and optimize__single_ref_inline_types = () => {
              && Ref.get_all(resolved_path)
              |> CCList.length == 1 =>
          switch (Type.get(~path=resolved_path)) {
-         | Some(TypeDeclaration({td_type: Interface(_), _})) => ()
-         | Some(TypeDeclaration({td_type, _})) =>
+         | Some(TypeDeclaration({td_type, _}) as t)
+             when !optimize__has_to_stay_inline(t) =>
            // Remove the extra type def from order
            Type.order :=
              Type.order^ |> CCList.remove_one(~eq=Path.eq, resolved_path);
@@ -265,8 +266,8 @@ and optimize__single_ref_inline_types = () => {
                       && Ref.get_all(resolved_path)
                       |> CCList.length == 1 =>
                   switch (Type.get(~path=resolved_path)) {
-                  | Some(TypeDeclaration({td_type: Interface(_), _})) => field
-                  | Some(TypeDeclaration({td_type, _})) =>
+                  | Some(TypeDeclaration({td_type, _}) as t)
+                      when !optimize__has_to_stay_inline(t) =>
                     // Remove the extra type def from order
                     Type.order :=
                       Type.order^
@@ -300,8 +301,8 @@ and optimize__single_ref_inline_types = () => {
                       && Ref.get_all(resolved_path)
                       |> CCList.length == 1 =>
                   switch (Type.get(~path=resolved_path)) {
-                  | Some(TypeDeclaration({td_type: Interface(_), _})) => member
-                  | Some(TypeDeclaration({td_type, _})) =>
+                  | Some(TypeDeclaration({td_type, _}) as t)
+                      when !optimize__has_to_stay_inline(t) =>
                     // Remove the extra type def from order
                     Type.order :=
                       Type.order^
@@ -320,7 +321,7 @@ and optimize__single_ref_inline_types = () => {
            TypeDeclaration({...td, td_type: Tuple(new_members)}),
          );
        // ----------------------------------
-       // --- Function Return
+       // --- Function Return / Parameters
        // ----------------------------------
        | Some(
            TypeDeclaration(
@@ -336,8 +337,8 @@ and optimize__single_ref_inline_types = () => {
                  && Ref.get_all(resolved_path)
                  |> CCList.length == 1 =>
              switch (Type.get(~path=resolved_path)) {
-             | Some(TypeDeclaration({td_type: Interface(_), _})) => fu_return
-             | Some(TypeDeclaration({td_type, _})) =>
+             | Some(TypeDeclaration({td_type, _}) as t)
+                 when !optimize__has_to_stay_inline(t) =>
                // Remove the extra type def from order
                Type.order :=
                  Type.order^ |> CCList.remove_one(~eq=Path.eq, resolved_path);
@@ -364,8 +365,8 @@ and optimize__single_ref_inline_types = () => {
                       && Ref.get_all(resolved_path)
                       |> CCList.length == 1 =>
                   switch (Type.get(~path=resolved_path)) {
-                  | Some(TypeDeclaration({td_type: Interface(_), _})) => param
-                  | Some(TypeDeclaration({td_type, _})) =>
+                  | Some(TypeDeclaration({td_type, _}) as t)
+                      when !optimize__has_to_stay_inline(t) =>
                     // Remove the extra type def from order
                     Type.order :=
                       Type.order^
@@ -391,6 +392,65 @@ and optimize__single_ref_inline_types = () => {
        }
      });
 }
+// --- TODO: Revisit this at some later stage and see if it's feasible to make this work (probably not necessary)
+// and optimize__single_refs = () => {
+//   Type.order^
+//   |> CCList.iter(path =>
+//        switch (Type.get(~path)) {
+//        // ----------------------------------
+//        // --- Reference Parameters
+//        // ----------------------------------
+//        | Some(
+//            TypeDeclaration(
+//              {td_type: Reference({tr_parameters, _} as re), _} as td,
+//            ),
+//          ) =>
+//          let new_params =
+//            tr_parameters
+//            |> CCList.map(param => {
+//                 switch (param) {
+//                 | Reference({tr_path_resolved: Some(resolved_path), _})
+//                     when
+//                       snd(resolved_path)
+//                       |> CCList.length > 0
+//                       && Ref.get_all(resolved_path)
+//                       |> CCList.length == 1 =>
+//                   switch (Type.get(~path=resolved_path)) {
+//                   | Some(TypeDeclaration({td_type, _}) as t)
+//                       when !optimize__has_to_stay_inline(t) =>
+//                     // Remove the extra type def from order
+//                     Type.order :=
+//                       Type.order^
+//                       |> CCList.remove_one(~eq=Path.eq, resolved_path);
+//                     // An replace the reference inside of the field
+//                     td_type;
+//                   | Some(_) => param
+//                   | None => param
+//                   }
+//                 | param => param
+//                 }
+//               });
+
+//          Type.replace(
+//            ~path,
+//            TypeDeclaration({
+//              ...td,
+//              td_type: Reference({...re, tr_parameters: new_params}),
+//            }),
+//          );
+//        | _ => ()
+//        }
+//      );
+// }
+// TODO: Potentially react to the configuration here (poly variants don't need to stay inlined for example)
+and optimize__has_to_stay_inline =
+  fun
+  | TypeDeclaration({
+      td_type: Interface(_),
+      _ // | Union(_) | StringLiteral(_) | NumericLiteral(_),
+    }) =>
+    true
+  | _ => false
 and optimize__empty_obj_references = () => {
   // Empty objects should be removed completely as there is no adequate representation in reason for them
   // If they are referenced by another type however, they will be inserted and marked as type "any"

@@ -1,9 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-// type with_param2<a = 'one' | 'two'> = a;
-// type call_params2 = with_param2;
-export function someFunction<A,B,C>(a: A, b: B): { b: B, c: C };
+type with_param2<a = 'one' | 'two'> = a;
+type call_params2 = with_param2;
 |};
 
 let () = {
