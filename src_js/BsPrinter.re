@@ -1,7 +1,6 @@
 let worker = WebWorkers.create_webworker("worker/worker.js");
 
-let set_printed: ref(option(Belt.Result.t(string, string) => unit)) =
-  ref(None);
+let set_printed: ref(option(Bridge_bs.parse_result => unit)) = ref(None);
 WebWorkers.onMessage(
   worker,
   (e: WebWorkers.MessageEvent.t) => {
@@ -9,16 +8,14 @@ WebWorkers.onMessage(
 
     switch (set_printed^) {
     | None => ()
-    | Some(set_printed) =>
-      set_printed(
-        data##status === "success" ? Ok(data##data) : Error(data##data),
-      )
+    | Some(set_printed) => set_printed(data |> Bridge_bs.read_parse_result)
     };
   },
 );
 
 let usePrintedValue = (~re=true, value: string) => {
-  let (printed, setPrinted) = React.useReducer((_, v) => v, Ok(""));
+  let (printed, setPrinted) =
+    React.useReducer((_, v) => v, Bridge_bs.Ok(""));
   set_printed := Some(setPrinted);
 
   React.useEffect2(

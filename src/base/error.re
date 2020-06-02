@@ -13,9 +13,7 @@ let print_error = (~msg=?, ~content, highlight) => {
   Pastel.(
     <Pastel>
       <Pastel> "\n" </Pastel>
-      <Pastel bold=true color=Red>
-        "               ReTypescript Error\n"
-      </Pastel>
+      <Pastel bold=true color=Red> "ReTypescript Error\n" </Pastel>
       <Pastel bold=true color=Red>
         "----------------------------------------------------"
       </Pastel>
@@ -29,7 +27,7 @@ let print_error = (~msg=?, ~content, highlight) => {
       </Pastel>
       <Pastel italic=true>
         {Printf.sprintf(
-           "\n   %s\n",
+           "\n%s\n",
            msg
            |> CCOpt.value(
                 ~default="Check your input at the corresponding position",

@@ -38,16 +38,19 @@
       }
       .error {
         font-family: "Fira Code";
-        display: inline-block;
-        height: 100vh;
-        width: 50%;
-        background: #282c34;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        padding: 15px;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.8);
         color: white;
-        position: relative;
         display: flex;
         justify-content: center;
         align-items: center;
-        white-space: pre;
+        white-space: pre-wrap;
       }
       .switch-button {
         position: absolute;

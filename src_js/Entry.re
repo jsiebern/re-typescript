@@ -233,33 +233,44 @@ module X = {
   let make = () => {
     let (v, setV) = React.useReducer((_, v) => v, "");
     let (re, setRe) = React.useReducer((_, v) => v, true);
+
+    let (error, setError) = React.useReducer((_, v) => v, None);
+    let (printed, setPrinted) = React.useReducer((_, v) => v, "");
     let result = BsPrinter.usePrintedValue(~re, v);
+
+    React.useEffect1(
+      () => {
+        switch (result) {
+        | Ok(src) =>
+          setPrinted(src);
+          setError(None);
+        | Error((_, msg)) => setError(Some(msg))
+        };
+        None;
+      },
+      [|result|],
+    );
 
     <>
       <Editor onChange=setV />
-      {switch (result) {
-       | Ok(printed) =>
-         <div className="display">
+      <div className="display">
+        {switch (error) {
+         | None =>
            <button className="switch-button" onClick={_ => setRe(!re)}>
              (re ? "ReasonML" : "ocaml")->React.string
            </button>
-           <pre>
-             <Highlight language={re ? "reasonml" : "ocaml"}>
-               printed
-             </Highlight>
-           </pre>
-         </div>
-       | Error(e) =>
-         <div
-           className="error"
-           style={ReactDOMRe.Style.make(
-             ~padding="15px",
-             ~whiteSpace="pre",
-             (),
-           )}
-           dangerouslySetInnerHTML={"__html": e}
-         />
-       }}
+         | Some(e) =>
+           <div className="error">
+             <div
+               style={ReactDOMRe.Style.make(~whiteSpace="pre-wrap", ())}
+               dangerouslySetInnerHTML={"__html": e}
+             />
+           </div>
+         }}
+        <pre>
+          <Highlight language={re ? "reasonml" : "ocaml"}> printed </Highlight>
+        </pre>
+      </div>
     </>;
   };
 };

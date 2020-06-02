@@ -46,26 +46,13 @@ let config = {
 external run: string => string = "run";
 
 let run = (pr: parse_request) =>
-  run(write_parse_request(pr) |> Js.Json.stringify)
-  |> Js.Json.parseExn
-  |> read_parse_result;
+  run(write_parse_request(pr) |> Js.Json.stringify) |> Js.Json.parseExn;
 
 WebWorkers.setWorkerOnMessage(
   WebWorkers.self,
   (e: WebWorkers.MessageEvent.t) => {
     let data = WebWorkers.MessageEvent.data(e);
-    (
-      switch (
-        run({
-          language: data##re ? Reason : Ocaml,
-          content: data##value,
-          config,
-        })
-      ) {
-      | Ok(data) => {"status": "success", "data": data}
-      | Error((_, data)) => {"status": "error", "data": data}
-      }
-    )
+    run({language: data##re ? Reason : Ocaml, content: data##value, config})
     |> WebWorkers.postMessageFromWorker;
   },
 );
