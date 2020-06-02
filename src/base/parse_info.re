@@ -1,10 +1,6 @@
-type t = {
-  src: option(string),
-  name: option(string),
-  col: int,
-  line: int,
-  idx: int,
-};
+open Re_typescript_config.Parse_info;
+
+type t = Re_typescript_config.Parse_info.t;
 
 let zero = {src: None, name: None, col: 0, line: 0, idx: 0};
 

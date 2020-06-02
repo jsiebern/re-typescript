@@ -45,8 +45,11 @@ let print__structure = (content, config) => {
   | Parser_error(msg) => CCResult.Error((Bridge.Parser_error, msg))
   | Parser_parameter_error(msg) =>
     CCResult.Error((Bridge.Parser_parameter_error, msg))
-  | Parser_unsupported(msg) =>
-    CCResult.Error((Bridge.Parser_unsupported, msg))
+  | Parser_unsupported(msg, pos) =>
+    CCResult.Error((
+      Bridge.Parser_unsupported(pos),
+      Error.parser_error_with_info(~msg, ~content, pos),
+    ))
   | Optimizer_error(msg) => CCResult.Error((Bridge.Optimizer_error, msg))
   | other_exn => CCResult.Error((Js_unknown, Printexc.to_string(other_exn)))
   };

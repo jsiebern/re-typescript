@@ -1,4 +1,5 @@
 type config <ocaml from="Config"> = abstract
+type position <ocaml from="Parse_info" t="t"> = abstract
 
 type parse_language = [
   | Reason
@@ -19,7 +20,7 @@ type parse_error_kind = [
   | Parser_unexpected
   | Parser_error
   | Parser_parameter_error
-  | Parser_unsupported
+  | Parser_unsupported of position
   | Optimizer_error
   | Reason_error
   | Syntax_error

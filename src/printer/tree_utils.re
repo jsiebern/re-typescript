@@ -1,3 +1,4 @@
+open Re_typescript_base;
 open String_utils;
 open Tree_types;
 
@@ -83,7 +84,7 @@ module Exceptions = {
   exception Parser_unexpected(string);
   exception Parser_error(string);
   exception Parser_parameter_error(string);
-  exception Parser_unsupported(string);
+  exception Parser_unsupported(string, Parse_info.t);
   exception Optimizer_error(string);
 };
 
@@ -134,7 +135,7 @@ let rec get_union_type_name = (um_type: ts_type) => {
   };
 };
 
-let type_to_string = (t: Re_typescript_base.Ts.type_) =>
+let type_to_string = (t: Ts.type_) =>
   switch (t) {
   | Object(_) => "Object"
   | Tuple(_) => "Tuple"
@@ -161,7 +162,7 @@ let type_to_string = (t: Re_typescript_base.Ts.type_) =>
   | UnionTemp(_) => "UnionTemp"
   };
 
-let rec declaration_to_string = (d: Re_typescript_base.Ts.declaration) =>
+let rec declaration_to_string = (d: Ts.declaration) =>
   switch (d) {
   | IdentifierReference(_) => "IdentifierReference"
   | ExportList(_) => "ExportList"
@@ -180,6 +181,41 @@ let rec declaration_to_string = (d: Re_typescript_base.Ts.declaration) =>
   | ImportAlias(_) => "ImportAlias"
   | Import(_) => "Import"
   };
+
+let rec position_of_declaration: Ts.declaration => Parse_info.t =
+  fun
+  | IdentifierReference({pi, _}) => pi
+  | Export(d) => position_of_declaration(d)
+  | ExportDefault(d) => position_of_declaration(d)
+  | Ambient(d) => position_of_declaration(d)
+  | ExportAssignment({pi, _}) => pi
+  | ExportList({pi, _}) => pi
+  | Namespace({pi, _}) => pi
+  | Module({pi, _}) => pi
+  | Type({pi, _}) => pi
+  | Interface({pi, _}) => pi
+  | Enum({pi, _}) => pi
+  | FunctionDec({pi, _}) => pi
+  | Class({pi, _}) => pi
+  | Variable({pi, _}) => pi
+  | ImportAlias({pi, _}) => pi
+  | Import({pi, _}) => pi;
+
+let position_of_property_name: Ts.property_name => Parse_info.t =
+  fun
+  | PIdentifier({pi, _}) => pi
+  | PString({pi, _}) => pi
+  | PNumber({pi, _}) => pi;
+
+let position_of_type_member: Ts.type_member => Parse_info.t =
+  fun
+  | PropertySignature({ps_property_name, _}) =>
+    ps_property_name |> position_of_property_name
+  | MethodSignature({ms_property_name, _}) =>
+    ms_property_name |> position_of_property_name
+  | CallSignature(_) => Parse_info.zero
+  | ConstructSignature(_) => Parse_info.zero
+  | IndexSignature({is_ident: {pi, _}, _}) => pi;
 
 let rec ts_to_string = (t: ts_type) =>
   switch (t) {

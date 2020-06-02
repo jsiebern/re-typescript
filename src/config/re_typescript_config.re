@@ -1,5 +1,6 @@
 module Config = Config_j;
 module Bridge = Bridge_j;
+module Parse_info = Parse_info_j;
 
 open Config;
 

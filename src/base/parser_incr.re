@@ -16,8 +16,8 @@ let parse_aux = (the_parser, lexbuf) => {
     switch (prev) {
     | [] => true
     | [p, ..._] =>
-      Parser_token.info(p).Parse_info.line
-      != Parser_token.info(tok).Parse_info.line
+      Parser_token.info(p).Re_typescript_config.Parse_info.line
+      != Parser_token.info(tok).Re_typescript_config.Parse_info.line
     };
 
   let rec loop_error = (prev, checkpoint) => {

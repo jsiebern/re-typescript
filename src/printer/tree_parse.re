@@ -4,12 +4,14 @@ open Tree_utils;
 open Tree_data;
 
 let config = ref(Re_typescript_config.default_config);
+let current_position = ref(Parse_info.zero);
 
 /**
     Type / Interface / Enum definitions
  */
 let rec parse__type_def =
         (~inline=false, ~path=([], []), type_def: Ts.declaration) => {
+  current_position := position_of_declaration(type_def);
   switch (type_def) {
   | Export(declaration)
   | ExportDefault(declaration)
@@ -206,6 +208,7 @@ let rec parse__type_def =
           "Declaration not implemented: %s",
           declaration_to_string(d),
         ),
+        position_of_declaration(d),
       ),
     )
   };
@@ -739,7 +742,10 @@ and parse__enum = (~path, members: list(Ts.enum_member), is_const: bool) => {
     );
   } else {
     raise(
-      Exceptions.Parser_unsupported("Complex enums are not yet supported"),
+      Exceptions.Parser_unsupported(
+        "Complex enums are not yet supported",
+        current_position^,
+      ),
     );
   };
 }
@@ -802,34 +808,39 @@ and parse__interface =
              f_name: ms_ident |> Ident.of_pi,
              f_type: ms_optional ? Optional(parsed_type) : parsed_type,
            };
-         | PropertySignature(_) =>
+         | PropertySignature(_) as p =>
            raise(
              Exceptions.Parser_unsupported(
                "PropertySignature with anything but PIdentifier not yet supported in interface",
+               position_of_type_member(p),
              ),
            )
-         | MethodSignature(_) =>
+         | MethodSignature(_) as p =>
            raise(
              Exceptions.Parser_unsupported(
                "MethodSignature with anything but PIdentifier not yet supported in interface",
+               position_of_type_member(p),
              ),
            )
          | CallSignature(_) =>
            raise(
              Exceptions.Parser_unsupported(
                "CallSignature not yet supported in interface",
+               current_position^,
              ),
            )
          | ConstructSignature(_) =>
            raise(
              Exceptions.Parser_unsupported(
                "ConstructSignature not yet supported in interface",
+               current_position^,
              ),
            )
-         | IndexSignature(_) =>
+         | IndexSignature(_) as p =>
            raise(
              Exceptions.Parser_unsupported(
                "IndexSignature not yet supported in interface",
+               position_of_type_member(p),
              ),
            )
          }
@@ -873,12 +884,20 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
   | Intersection(left, right) as t =>
     inline
       ? parse__inline(~path, t) : parse__intersection(~path, ~left, ~right)
+  | Query([{pi, _}])
+  | Query([{pi, _}, _]) =>
+    raise(Exceptions.Parser_unsupported("Query type not yet supported", pi))
   | Query(_) =>
-    raise(Exceptions.Parser_unsupported("Query type not yet supported"))
-  | Symbol(_) =>
-    raise(Exceptions.Parser_unsupported("Symbol type not yet supported"))
-  | This(_) =>
-    raise(Exceptions.Parser_unsupported("This type not yet supported"))
+    raise(
+      Exceptions.Parser_unsupported(
+        "Query type not yet supported",
+        current_position^,
+      ),
+    )
+  | Symbol(pi) =>
+    raise(Exceptions.Parser_unsupported("Symbol type not yet supported", pi))
+  | This(pi) =>
+    raise(Exceptions.Parser_unsupported("This type not yet supported", pi))
   };
 }
 /**
@@ -988,6 +1007,7 @@ and parse__intersection = (~path, ~left: Ts.type_, ~right: Ts.type_) => {
     raise(
       Exceptions.Parser_unsupported(
         "No intersection mode other than enum is supported yet",
+        current_position^,
       ),
     )
   };
@@ -1022,12 +1042,14 @@ and parse__function = (~path, body: Ts.parameter_list, return: Ts.type_) => {
              raise(
                Exceptions.Parser_unsupported(
                  "Bindings other than IdentifierBinding in function not yet supported",
+                 current_position^,
                ),
              )
            | RestParameter(_) =>
              raise(
                Exceptions.Parser_unsupported(
                  "RestParameter in function not yet supported",
+                 current_position^,
                ),
              )
            }
