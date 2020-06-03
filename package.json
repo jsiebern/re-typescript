@@ -36,6 +36,7 @@
     "reactjs-popup": "^1.5.0",
     "reason-react": "^0.8.0",
     "reason-recoil": "^0.8.0",
-    "recoil": "^0.0.8"
+    "recoil": "^0.0.8",
+    "semantic-ui-react": "^0.88.2"
   }
 }

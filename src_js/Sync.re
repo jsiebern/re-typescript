@@ -33,10 +33,6 @@ let default_config: config = {
 let config = {
   ...default_config,
   number_mode: Int,
-  suppress_warning_for_extended_records: true,
-  output_type:
-    Bucklescript({
-      ...default_bucklescript_config,
-      string_variant_mode: `PolyVariant,
-    }),
+  output_type: Bucklescript(default_bucklescript_config),
+  omit_extended_unreferenced_records: true,
 };
