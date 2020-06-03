@@ -486,7 +486,10 @@ let make = (~children: React.element) => {
   SemanticUi.(
     <SidebarPushable>
       <Sidebar visible animation=`overlay direction=`left width=`very_wide>
-        <div className=[%css {|position: relative; margin-top: -2rem;|}]>
+        <div
+          className=[%css
+            {|position: relative; margin-top: -2rem; overflow-y: auto;|}
+          ]>
           <Label
             onClick={(_, _) => setVisible(_ => false)}
             className=[%css {|border-color: $ti; z-index: 103;|}]
