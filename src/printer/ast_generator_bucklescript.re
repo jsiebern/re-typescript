@@ -205,6 +205,14 @@ module Make = (Config: Config) : Ast_generator.T => {
           td_prepend: Some([generate_bs_unboxed(~module_name, values)]),
           td_append: None,
         };
+      | `Variant
+      | `PolyVariant =>
+        raise(
+          Exceptions.Parser_unsupported(
+            "Variant / PolyVariant are not yet supported for mixed literals",
+            Re_typescript_base.Parse_info.zero,
+          ),
+        )
       }
     | Function({fu_params, fu_return}) =>
       let params =

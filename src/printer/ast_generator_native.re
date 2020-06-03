@@ -1,3 +1,8 @@
 open Migrate_parsetree;
 
-let generate = (~ctx, _) => raise(Not_found);
+let generate = (~ctx, _) =>
+  raise(
+    Tree_utils.Exceptions.Parser_unexpected(
+      "Cannot generate native mode yet",
+    ),
+  );

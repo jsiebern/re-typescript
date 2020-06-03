@@ -18,7 +18,8 @@ let default_bucklescript_bindings_config = {
 let default_config: config = {
   suppress_warning_for_extended_records: false,
   omit_extended_unreferenced_records: false,
-  output_type: Bucklescript(default_bucklescript_config),
+  output_type: Bucklescript,
+  bucklescript_config: default_bucklescript_config,
   array_mode: Array,
   number_mode: Float,
   intersection_mode: {

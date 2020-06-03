@@ -4,18 +4,19 @@ open! Bridge_bs;
 let default_bucklescript_config = {
   string_variant_mode: `BsInline,
   mixed_variant_mode: `BsUnboxed,
-  number_variant_mode: `BsInline(Some({prefix: "_", suffix: ""})),
+  number_variant_mode: `BsInline(None),
 };
 let default_bucklescript_bindings_config = {
   string_variant_mode: `Variant,
   mixed_variant_mode: `BsUnboxed,
-  number_variant_mode: `Variant(Some({prefix: "_", suffix: ""})),
+  number_variant_mode: `Variant(None),
 };
 
 let default_config: config = {
   suppress_warning_for_extended_records: false,
   omit_extended_unreferenced_records: false,
-  output_type: Bucklescript(default_bucklescript_config),
+  output_type: Bucklescript,
+  bucklescript_config: default_bucklescript_config,
   array_mode: Array,
   number_mode: Float,
   intersection_mode: {
@@ -33,6 +34,6 @@ let default_config: config = {
 let config = {
   ...default_config,
   number_mode: Int,
-  output_type: Bucklescript(default_bucklescript_config),
+  output_type: Bucklescript,
   omit_extended_unreferenced_records: true,
 };

@@ -8,15 +8,15 @@ type number_variant_mode = [ Variant of number_variant_mode_name option
   | PolyVariant of number_variant_mode_name option 
   | BsInline of number_variant_mode_name option
 ]
-type mixed_variant_mode = [ BsUnboxed ]
+type mixed_variant_mode = [ BsUnboxed | Variant | PolyVariant ]
 type number_variant_mode_name = {
   prefix: string;
   suffix: string;
 }
 
 type output_type = [
-  | BucklescriptBindings of bucklescript_config
-  | Bucklescript of bucklescript_config
+  | BucklescriptBindings
+  | Bucklescript
   | Native
 ] <ocaml repr="classic">
 type array_mode = [
@@ -47,6 +47,7 @@ type config = {
   suppress_warning_for_extended_records: bool;
   omit_extended_unreferenced_records: bool;
   output_type: output_type;
+  bucklescript_config: bucklescript_config;
   array_mode: array_mode;
   intersection_mode: intersection_mode;
   number_mode: number_mode;

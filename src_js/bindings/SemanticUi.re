@@ -465,3 +465,43 @@ module FormSelect = {
     React.element =
     "FormSelect";
 };
+
+module Accordion = {
+  [@react.component] [@bs.module "semantic-ui-react"]
+  external make:
+    (
+      ~className: string=?,
+      ~fluid: bool=?,
+      ~styled: bool=?,
+      ~children: React.element
+    ) =>
+    React.element =
+    "Accordion";
+};
+
+module AccordionTitle = {
+  [@react.component] [@bs.module "semantic-ui-react"]
+  external make:
+    (
+      ~className: string=?,
+      ~active: bool=?,
+      ~icon: string=?,
+      ~index: int=?,
+      ~onClick: (ReactEvent.Mouse.t, 'a) => unit,
+      ~children: React.element
+    ) =>
+    React.element =
+    "AccordionTitle";
+};
+
+module AccordionContent = {
+  [@react.component] [@bs.module "semantic-ui-react"]
+  external make:
+    (~className: string=?, ~active: bool=?, ~children: React.element) =>
+    React.element =
+    "AccordionContent";
+};
+module Divider = {
+  [@react.component] [@bs.module "semantic-ui-react"]
+  external make: unit => React.element = "Divider";
+};

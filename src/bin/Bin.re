@@ -46,11 +46,11 @@ let () = {
             ...Re_typescript_config.default_config,
             number_mode: Int,
             omit_extended_unreferenced_records: true,
-            output_type:
-              Bucklescript({
-                ...Re_typescript_config.default_bucklescript_config,
-                string_variant_mode: `BsInline,
-              }),
+            bucklescript_config: {
+              ...Re_typescript_config.default_bucklescript_config,
+              string_variant_mode: `BsInline,
+            },
+            output_type: Bucklescript,
           },
           Parser_incr.parse(lexbuf),
         );

@@ -3,7 +3,7 @@ let language = Recoil.atom({key: "language", default: Bridge_bs.Reason});
 let ts_source = Recoil.atom({key: "ts_source", default: TsDefault.content});
 
 let config = Recoil.atom({key: "config", default: Sync.config});
-let config_open = Recoil.atom({key: "config_open", default: false});
+let config_open = Recoil.atom({key: "config_open", default: true});
 
 let worker = WebWorkers.create_webworker("worker/worker.js");
 let parsing_complete: ref((. Bridge_bs.parse_result) => unit) =
@@ -209,6 +209,110 @@ let intersection_tuple_members_optional =
             intersection_mode: {
               ...c.intersection_mode,
               tuple_members_optional: value,
+            },
+          };
+        },
+      );
+    },
+  });
+let output_type =
+  Recoil.selectorWithWrite({
+    key: "output_type",
+    get: ({get}) => get(config).output_type,
+    set: ({get, set}, value) => {
+      let c = get(config);
+      set(
+        config,
+        {
+          {...c, output_type: value};
+        },
+      );
+    },
+  });
+let bs_string_variant_mode =
+  Recoil.selectorWithWrite({
+    key: "bs_string_variant_mode",
+    get: ({get}) => get(config).bucklescript_config.string_variant_mode,
+    set: ({get, set}, value) => {
+      let c = get(config);
+      set(
+        config,
+        {
+          {
+            ...c,
+            bucklescript_config: {
+              ...c.bucklescript_config,
+              string_variant_mode: value,
+            },
+          };
+        },
+      );
+    },
+  });
+let bs_number_variant_mode =
+  Recoil.selectorWithWrite({
+    key: "bs_number_variant_mode",
+    get: ({get}) => get(config).bucklescript_config.number_variant_mode,
+    set: ({get, set}, value) => {
+      let c = get(config);
+      set(
+        config,
+        {
+          {
+            ...c,
+            bucklescript_config: {
+              ...c.bucklescript_config,
+              number_variant_mode: value,
+            },
+          };
+        },
+      );
+    },
+  });
+let bs_number_value =
+  Recoil.selectorWithWrite({
+    key: "bs_number_value",
+    get: ({get}) =>
+      switch (get(config).bucklescript_config.number_variant_mode) {
+      | `Variant(a)
+      | `PolyVariant(a)
+      | `BsInline(a) => a
+      },
+    set: ({get, set}, value) => {
+      let c = get(config);
+      set(
+        config,
+        {
+          {
+            ...c,
+            bucklescript_config: {
+              ...c.bucklescript_config,
+              number_variant_mode:
+                switch (c.bucklescript_config.number_variant_mode) {
+                | `Variant(_) => `Variant(value)
+                | `PolyVariant(_) => `PolyVariant(value)
+                | `BsInline(_) => `BsInline(value)
+                },
+            },
+          };
+        },
+      );
+    },
+  });
+let bs_mixed_variant_mode =
+  Recoil.selectorWithWrite({
+    key: "bs_mixed_variant_mode",
+    get: ({get}) => get(config).bucklescript_config.mixed_variant_mode,
+    set: ({get, set}, value) => {
+      let c = get(config);
+      set(
+        config,
+        {
+          {
+            ...c,
+            bucklescript_config: {
+              ...c.bucklescript_config,
+              mixed_variant_mode: value,
             },
           };
         },
