@@ -4,7 +4,6 @@ module Container = [%styled.div
   justify-content: space-between;
   align-items: center;
   padding: 0 15px;
-
   min-height: 50px;
   width: 100%;
   border-bottom: 1px solid #d6d4d4;
@@ -16,9 +15,20 @@ module Headline = [%styled.span {|
 
 module Button = [%styled.button
   {|
-  padding: 5px;
+  height: 50px;
+  display: flex;
+  align-items: center;
   cursor: pointer;
   outline: 0px solid transparent;
+  border: 0px solid transparent;
+  font-size: 1rem;
+  padding: 0 15px;
+  background-color: white;
+  border-bottom: 1px solid #d6d4d4;
+
+  &:hover {
+    color: orange;
+  }
 |}
 ];
 
