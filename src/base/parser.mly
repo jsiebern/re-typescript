@@ -197,6 +197,7 @@ let type_annotation :=
  *  Properties
  ***************************************)
 let property_name :=
+  | READONLY; i = identifier_name; { Ts.PIdentifier(i) }
   | i = identifier_name; { Ts.PIdentifier(i) }
   | s = STRING; { let (s, pi, _) = s in Ts.PString({ Ts.pi; item = s }) }
   | n = NUMBER; { let (n, pi) = n in Ts.PNumber({ Ts.pi; item = int_of_float(n) }) }

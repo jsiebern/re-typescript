@@ -24,6 +24,23 @@ export type SemanticShorthandItem<TProps> =
   | React.ReactNode
   | TProps
   | SemanticShorthandItemFunc<TProps>
+
+// import fs = require("fs");
+
+// declare let $: JQuery;
+// export default $;
+
+// declare namespace myLib {
+//  class Cat {
+//         constructor(n: number);
+
+//         //~ We can read 'c.age' from a 'Cat' instance
+//         readonly age: number;
+
+//         //~ We can invoke 'c.purr()' from a 'Cat' instance
+//         purr(): void;
+//     }
+//   }
 |};
 
 let () = {
