@@ -4,7 +4,7 @@ let ts_source = Recoil.atom({key: "ts_source", default: TsDefault.content});
 
 let config = Recoil.atom({key: "config", default: Sync.config});
 let config_open = Recoil.atom({key: "config_open", default: false});
-let examples_open = Recoil.atom({key: "examples_open", default: true});
+let examples_open = Recoil.atom({key: "examples_open", default: false});
 
 let worker = WebWorkers.create_webworker("worker/worker.js");
 let parsing_complete: ref((. Bridge_bs.parse_result) => unit) =
