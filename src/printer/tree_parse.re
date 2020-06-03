@@ -62,11 +62,11 @@ let rec parse__type_def =
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
   | Namespace({pi, item: {n_ident, n_declarations}}) =>
-    let x: Ts.with_pi((string, list(Ts.declaration))) = {
+    let as_module: Ts.with_pi((string, list(Ts.declaration))) = {
       Ts.pi,
       item: (n_ident |> CCList.get_at_idx_exn(0) |> no_pi, n_declarations),
     };
-    parse__type_def(~path, Module(x));
+    parse__type_def(~path, Module(as_module));
   | Module(m) => parse__module(~path, m)
   | Interface({item: {i_ident, i_parameters, i_extends, i_members}, _}) =>
     let ident = i_ident |> Ident.of_pi;

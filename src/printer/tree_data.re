@@ -94,9 +94,31 @@ module Ref = {
         | Some(_) => Type.get(~path) |> CCOpt.map(_ => path)
         };
       };
-    | p =>
-      Console.warn(p);
-      raise(Exceptions.Parser_error("PATH NOT IMPLEMENTED"));
+    | (p, sub) =>
+      let path = (scope @ p, sub);
+      if (remember) {
+        add(~from, ~to_=path);
+      };
+
+      if (Path.eq(from, path)) {
+        Some(path);
+      } else {
+        switch (Type.get(~path)) {
+        | None => None
+        | Some(
+            TypeDeclaration({
+              td_type: Reference({tr_path_resolved: Some(path_resolved), _}),
+              _,
+            }),
+          )
+            when CCEqual.bool(recursive, true) =>
+          resolve_ref(~recursive=true, ~remember, ~from, path_resolved)
+        | Some(_) => Type.get(~path) |> CCOpt.map(_ => path)
+        };
+      };
+    // | p =>
+    //     Console.warn(p);
+    //     raise(Exceptions.Parser_error("PATH NOT IMPLEMENTED"));
     };
   };
 };

@@ -104,7 +104,11 @@ let rec get_union_type_name = (um_type: ts_type) => {
   | Base(Any) => "any"
   | Function(_) => "func"
   | Reference({tr_path, _}) =>
-    tr_path |> CCList.last_opt |> CCOpt.value(~default="unknown")
+    tr_path
+    |> CCList.last_opt
+    |> CCOpt.value(~default="unknown")
+    |> Ident.of_string
+    |> Ident.ident
   // | Base(Arg(_)) => "inferred"
   | Optional(t)
   | Nullable(t) => get_union_type_name(t)

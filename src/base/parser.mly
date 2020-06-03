@@ -246,6 +246,7 @@ let declaration_type :=
   | pi = TYPE; i = identifier_name; tp = type_parameters?; EQUALS; te = type_; { Ts.Type({ pi; item = {t_ident = i; t_parameters = tp; t_type = te}}) }
 
 let type_union_or_intersection_or_primary :=
+  | PIPE; t = type_union; { t }
   | t = type_union; { t }
   | t = type_intersection_or_primary; { t }
 
@@ -414,8 +415,8 @@ let call_signature :=
   | tp = type_parameters?; pa = delimited(LPAREN, loption(parameter_list), RPAREN); ta = type_annotation?; { { Ts.cs_type_parameters = tp; cs_parameter_list = pa; cs_type_annotation = ta } }
 
 let parameter_list :=
-  | l = separated_nonempty_list(COMMA, parameter); { l }
-  | l = separated_nonempty_list(COMMA, parameter); rp = rest_parameter; { l @ [rp] }
+  | l = separated_or_terminated_list(COMMA, parameter); { l }
+  | l = separated_or_terminated_list(COMMA, parameter); rp = rest_parameter; { l @ [rp] }
 
 let parameter :=
   | rp = parameter_required; { rp }
