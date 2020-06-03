@@ -215,28 +215,28 @@ let type_parameter :=
  ***************************************)
 
 let declaration_namespace :=
-  | pi = NAMESPACE; i = identifier_path; body = delimited(LPAREN, namespace_body, RPAREN); { Ts.Namespace({ pi; item = { n_ident = i; n_declarations = body } }) }
+  | pi = NAMESPACE; i = identifier_path; body = delimited(LCURLY, namespace_body, RCURLY); { Ts.Namespace({ pi; item = { n_ident = i; n_declarations = body } }) }
 
 let namespace_body :=
   | b = namespace_element+; { b }
 
 let namespace_element :=
-  |         d = declaration_variable;     { d }
-  | EXPORT; d = declaration_variable;     { d }
-  |         d = declaration_function;     { d }
-  | EXPORT; d = declaration_function;     { d }
-  |         d = declaration_class;        { d }
-  | EXPORT; d = declaration_class;        { d }
-  |         d = declaration_interface;    { d }
-  | EXPORT; d = declaration_interface;    { d }
-  |         d = declaration_enum;         { d }
-  | EXPORT; d = declaration_enum;         { d }
-  |         d = declaration_namespace;    { d }
-  | EXPORT; d = declaration_namespace;    { d }
-  |         d = declaration_import_alias; { d }
-  | EXPORT; d = declaration_import_alias; { d }
-  |         d = declaration_type;         { d }
-  | EXPORT; d = declaration_type;         { d }
+  |         d = declaration_variable; semico;     { d }
+  | EXPORT; d = declaration_variable; semico;     { d }
+  |         d = declaration_function; semico;     { d }
+  | EXPORT; d = declaration_function; semico;     { d }
+  |         d = declaration_class; semico;        { d }
+  | EXPORT; d = declaration_class; semico;        { d }
+  |         d = declaration_interface; semico;    { d }
+  | EXPORT; d = declaration_interface; semico;    { d }
+  |         d = declaration_enum; semico;         { d }
+  | EXPORT; d = declaration_enum; semico;         { d }
+  |         d = declaration_namespace; semico;    { d }
+  | EXPORT; d = declaration_namespace; semico;    { d }
+  |         d = declaration_import_alias; semico; { d }
+  | EXPORT; d = declaration_import_alias; semico; { d }
+  |         d = declaration_type; semico;         { d }
+  | EXPORT; d = declaration_type; semico;         { d }
 
 (***************************************
  *  Types

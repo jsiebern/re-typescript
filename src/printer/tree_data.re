@@ -94,7 +94,9 @@ module Ref = {
         | Some(_) => Type.get(~path) |> CCOpt.map(_ => path)
         };
       };
-    | _ => raise(Exceptions.Parser_error("PATH NOT IMPLEMENTED"))
+    | p =>
+      Console.warn(p);
+      raise(Exceptions.Parser_error("PATH NOT IMPLEMENTED"));
     };
   };
 };
