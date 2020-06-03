@@ -119,6 +119,8 @@ module Menu = {
       ~className: string=?,
       ~fluid: bool=?,
       ~stackable: bool=?,
+      ~vertical: bool=?,
+      ~tabular: bool=?,
       ~icons: [@bs.string] [ | `labeled]=?,
       ~children: React.element
     ) =>
@@ -264,10 +266,14 @@ module Popup = {
 };
 
 module Sidebar = {
+  [@bs.val] [@bs.module "@stardust-ui/react-component-event-listener"]
+  external documentRef: React.ref(Dom.element) = "documentRef";
+
   type clickReturn = {name: string};
   [@react.component] [@bs.module "semantic-ui-react"]
   external make:
     (
+      ~onHide: ('a, 'b) => unit,
       ~className: string=?,
       ~animation: [@bs.string] [
                     | `overlay
@@ -288,6 +294,7 @@ module Sidebar = {
               ]
                 =?,
       ~vertical: bool=?,
+      ~target: Dom.element=?,
       ~_as: 'a=?,
       ~content: React.element=?,
       ~children: React.element
@@ -504,4 +511,24 @@ module AccordionContent = {
 module Divider = {
   [@react.component] [@bs.module "semantic-ui-react"]
   external make: unit => React.element = "Divider";
+};
+
+module Tab = {
+  type pane = {
+    menuItem: string,
+    render: unit => React.element,
+  };
+  type menu = {
+    fluid: bool,
+    vertical: bool,
+    tabular: bool,
+  };
+
+  [@react.component] [@bs.module "semantic-ui-react"]
+  external make: (~menu: menu, ~panes: array(pane)) => React.element = "Tab";
+};
+
+module TabPane = {
+  [@react.component] [@bs.module "semantic-ui-react"]
+  external make: (~children: React.element) => React.element = "Tab";
 };

@@ -141,7 +141,8 @@ module ConfigForm = {
         height: $panelheight;
         background-color: white;
         padding: 0.8rem;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
         |}
     ];
   };
@@ -485,11 +486,14 @@ let make = (~children: React.element) => {
   let (visible, setVisible) = Recoil.useRecoilState(State.config_open);
   SemanticUi.(
     <SidebarPushable>
-      <Sidebar visible animation=`overlay direction=`left width=`very_wide>
-        <div
-          className=[%css
-            {|position: relative; margin-top: -2rem; overflow-y: auto;|}
-          ]>
+      <ExamplePanel />
+      <Sidebar
+        visible
+        animation=`push
+        direction=`right
+        width=`very_wide
+        onHide={(_, _) => setVisible(_ => false)}>
+        <div className=[%css {|position: relative; margin-top: -2rem;|}]>
           <Label
             onClick={(_, _) => setVisible(_ => false)}
             className=[%css {|border-color: $ti; z-index: 103;|}]
@@ -500,7 +504,7 @@ let make = (~children: React.element) => {
           <ConfigForm />
         </div>
       </Sidebar>
-      <SidebarPusher dimmed=visible> children </SidebarPusher>
+      <SidebarPusher> children </SidebarPusher>
     </SidebarPushable>
   );
 };
