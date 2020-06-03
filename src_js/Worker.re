@@ -45,14 +45,14 @@ let config = {
 [@bs.module "./../../../_build/default/src/js/re_typescript_js.bc.js"]
 external run: string => string = "run";
 
-let run = (pr: parse_request) =>
-  run(write_parse_request(pr) |> Js.Json.stringify) |> Js.Json.parseExn;
-
 WebWorkers.setWorkerOnMessage(
   WebWorkers.self,
   (e: WebWorkers.MessageEvent.t) => {
     let data = WebWorkers.MessageEvent.data(e);
-    run({language: data##re ? Reason : Ocaml, content: data##value, config})
+
+    run(data |> Bridge_bs.write_parse_request |> Js.Json.stringify)
+    |> Js.Json.parseExn
+    |> Bridge_bs.read_parse_result
     |> WebWorkers.postMessageFromWorker;
   },
 );

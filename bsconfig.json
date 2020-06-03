@@ -12,12 +12,14 @@
     "module": "commonjs",
     "in-source": false
   },
-  "ppx-flags": [],
+  "ppx-flags": ["@davesnx/styled-ppx/styled-ppx"],
   "bsc-flags": ["-bs-super-errors"],
   "bs-dependencies": [
     "reason-react",
     "bs-webworkers",
-    "@ahrefs/bs-atdgen-codec-runtime"
+    "@ahrefs/bs-atdgen-codec-runtime",
+    "@ahrefs/bs-emotion",
+    "reason-recoil"
   ],
   "refmt": 3,
   "suffix": ".bs.js",

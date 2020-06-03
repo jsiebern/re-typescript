@@ -21,12 +21,16 @@
   },
   "dependencies": {
     "@ahrefs/bs-atdgen-codec-runtime": "^2.0.1",
+    "@ahrefs/bs-emotion": "^1.0.1",
     "@babel/runtime": "^7.9.6",
+    "@davesnx/styled-ppx": "^0.19.0",
     "@monaco-editor/react": "^3.3.0",
     "bs-webworkers": "^0.2.4",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-highlight.js": "^1.0.7",
-    "reason-react": "^0.8.0"
+    "react-syntax-highlighter": "^12.2.1",
+    "reason-react": "^0.8.0",
+    "reason-recoil": "^0.8.0",
+    "recoil": "^0.0.8"
   }
 }
