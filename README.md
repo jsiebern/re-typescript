@@ -22,3 +22,7 @@ This tool will be opinionated about a few things. Typescripts dynamic nature mak
 
 I will update the playground from time to time. It's not great yet, I just wanted a visual representation for now. You can see the current progress here:
 [re-typescript](https://jsiebern.github.io/re-typescript/)
+
+## Roadmap
+
+See projects section: [re-typescript projects](https://github.com/jsiebern/re-typescript/projects)
