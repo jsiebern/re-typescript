@@ -19,10 +19,10 @@ module Headline = [%styled.div
 |}
 ];
 
-module Button = [%styled.button
+let classButton = [%css
   {|
   height: 50px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   cursor: pointer;
   outline: 0px solid transparent;
@@ -61,7 +61,9 @@ module SwitchLanguageButton = {
   [@react.component]
   let make = () => {
     let (lang, setLang) = Recoil.useRecoilState(State.language);
-    <Button onClick={_ => setLang(lang => lang === Reason ? Ocaml : Reason)}>
+    <button
+      className=classButton
+      onClick={_ => setLang(lang => lang === Reason ? Ocaml : Reason)}>
       {switch (lang) {
        | Reason =>
          <>
@@ -74,7 +76,18 @@ module SwitchLanguageButton = {
            "OCaml"->React.string
          </>
        }}
-    </Button>;
+    </button>;
+  };
+};
+
+module ConfigButton = {
+  [@react.component]
+  let make = () => {
+    let (open_, setOpen) = Recoil.useRecoilState(State.config_open);
+
+    <button className=classButton onClick={_ => setOpen(o => !o)}>
+      {open_ ? "Close Config" : "Open Config"}->React.string
+    </button>;
   };
 };
 
@@ -85,6 +98,6 @@ let make = () => {
       <img className=logo_r src={logo_ret.default} />
       "re-typescript"->React.string
     </Headline>
-    <SwitchLanguageButton />
+    <div> <ConfigButton /> <SwitchLanguageButton /> </div>
   </Container>;
 };

@@ -50,7 +50,7 @@ module Editor = {
 
     <MonacoEditor
       height="100%"
-      width="70vw"
+      width="60vw"
       value
       onChange={(_, v) => setValue(v)}
       language=`typescript
@@ -62,22 +62,23 @@ module Layout = [%styled.div
   {|
   display: flex;
   flex-direction: column;
-  position: fixed;
-
   height: 100vh;
   width: 100vw;
 |}
 ];
 
-module Grid = [%styled.div {|
+module Grid = [%styled.div
+  {|
+  position: relative;
   display: flex;
   flex-grow: 1;
-|}];
+|}
+];
 module Display = [%styled
   (~customheight) => {j|
   position: relative;
   display: inline-block;
-  width: 50%;
+  width: 40vw;
   height: $customheight;
   overflow-y: auto;
   background-color: #282c34;
@@ -86,12 +87,12 @@ module Display = [%styled
 |j}
 ];
 module Error = [%styled.div
-  {|
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  left: 0;
-  top: 0;
+  (~h) => {|
+  position: fixed;
+  width: 40vw;
+  height: $h;
+  right: 0;
+  top: 50px;
   padding: 15px;
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0.8);
@@ -130,7 +131,7 @@ module Result = {
       {switch (error) {
        | None => React.null
        | Some(e) =>
-         <Error key="error">
+         <Error h="calc(100vh - 50px)" key="error">
            <div
              key="sub_error"
              style={ReactDOMRe.Style.make(~whiteSpace="pre-wrap", ())}
@@ -159,6 +160,7 @@ module X = {
     <Layout>
       <Header />
       <Grid>
+        <ConfigPanel />
         <Editor key="editor" />
         <Display customheight="calc(100vh - 50px)" key="display">
           <Result key="result" />
