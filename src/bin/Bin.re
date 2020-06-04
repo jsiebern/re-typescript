@@ -1,9 +1,9 @@
 open Re_typescript_base;
 
 let content = {|
-interface KeyValueProcessor {
-          both: { (key: number, value: string): boolean }
-      };
+type x = string[];
+type a<Props> = | Props | x | y<Props>;
+type y<Props> = { x: Props }
 
 // declare namespace React {
 //   export type ReactType<TProps> = TProps;
@@ -16,7 +16,7 @@ interface KeyValueProcessor {
 //   component: React.ReactType<TProps>,
 //   props: TProps,
 //   children?: React.ReactNode | React.ReactNodeArray,
-// ) => React.ReactElement<any> | null
+// ) => React.ReactElement<any> | undefined
 
 // export type SemanticShorthandCollection<TProps> = SemanticShorthandItem<TProps>[]
 // export type SemanticShorthandContent = React.ReactNode
@@ -40,7 +40,7 @@ interface KeyValueProcessor {
 //         //~ We can invoke 'c.purr()' from a 'Cat' instance
 //         purr(): void;
 //     }
-//   }
+  // }
 |};
 
 let () = {

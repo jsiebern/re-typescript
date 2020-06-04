@@ -4,6 +4,29 @@ open Tree_utils;
 
 let no_pi: Ts.with_pi('a) => 'a = ({item, _}) => item;
 
+module Declarations = {
+  type t = Hashtbl.t(Path.t, (Ts.declaration, bool));
+  let map: t = Hashtbl.create(0);
+  let get = (~path) => Hashtbl.find_opt(map, path);
+  let has = (~path) => get(~path) |> CCOpt.is_some;
+  let is_complete = (~path) =>
+    get(~path) |> CCOpt.map_or(~default=false, snd);
+  let set_complete = (~path) =>
+    CCHashtbl.update(map, ~k=path, ~f=(_, item) =>
+      item |> CCOpt.map(((t, _)) => (t, true))
+    );
+  let get_type_declaration = (~path) =>
+    get(~path) |> CCOpt.map(fst) |> CCOpt.get_exn;
+
+  let add_list = (~path, lst) =>
+    lst
+    |> CCList.iter((dec: Ts.declaration) =>
+         switch (dec, dec |> path_of_declaration(~path)) {
+         | (d, Some(path)) => Hashtbl.add(map, path, (d, false))
+         | _ => ()
+         }
+       );
+};
 module Type = {
   type t = Hashtbl.t(Path.t, ts_type);
   let map: t = Hashtbl.create(0);

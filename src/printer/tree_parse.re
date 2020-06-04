@@ -12,7 +12,15 @@ let current_position = ref(Parse_info.zero);
 let rec parse__type_def =
         (~inline=false, ~path=([], []), type_def: Ts.declaration) => {
   current_position := position_of_declaration(type_def);
+  let decl_path = type_def |> path_of_declaration(~path);
   switch (type_def) {
+  | d
+      when
+        decl_path
+        |> CCOpt.map_or(~default=false, path =>
+             !(path |> Path.has_sub) && Declarations.is_complete(~path)
+           ) =>
+    ()
   | Export(declaration)
   | ExportDefault(declaration)
   | Ambient(declaration) => parse__type_def(~inline, ~path, declaration)
@@ -217,6 +225,11 @@ let rec parse__type_def =
         position_of_declaration(d),
       ),
     )
+  };
+
+  switch (decl_path) {
+  | None => ()
+  | Some(path) => Declarations.set_complete(~path)
   };
 }
 /**
@@ -570,6 +583,22 @@ and parse__optional = (~path, type_) => {
 */
 and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
   let ref_path = fst(type_ref) |> CCList.map(no_pi);
+  let ref_path_p = (ref_path, []);
+
+  if (!Path.eq_unscoped(ref_path, fst(path))) {
+    let acc = ref([]);
+    ref_path
+    |> CCList.iter(p => {
+         acc := acc^ @ [p];
+         let ref_path_p = (acc^, []);
+         if (Declarations.has(~path=ref_path_p)) {
+           parse__type_def(
+             ~path=ref_path_p |> Path.cut,
+             Declarations.get_type_declaration(~path=ref_path_p),
+           );
+         };
+       });
+  };
 
   let ref_path_ident = ref_path |> Path.unscoped_to_string |> Ident.of_string;
   switch (Parameters.has_parameter(~path=fst(path), ~param=ref_path_ident)) {
@@ -580,7 +609,7 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
         ~from=
           CCEqual.list(CCEqual.string, fst(path), ref_path)
             ? (fst(path), []) : path,
-        (ref_path, []),
+        ref_path_p,
       );
     let parameters =
       switch (resolved_ref) {
@@ -591,7 +620,7 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
 
     Reference({
       tr_path: ref_path,
-      tr_path_resolved: resolved_ref,
+      tr_path_resolved: Some(ref_path_p),
       tr_parameters: parameters,
     });
   };
@@ -1094,6 +1123,7 @@ and parse__module =
         Ts.with_pi((string, list(Ts.declaration))),
     ) => {
   let path_with_prefix = path |> Path.add(name);
+  Declarations.add_list(~path, declarations);
   declarations |> CCList.iter(parse__type_def(~path=path_with_prefix));
 }
 /**

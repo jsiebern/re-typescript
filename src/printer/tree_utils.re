@@ -57,6 +57,8 @@ module Path = {
     };
   let cut_sub = ((path, sub)) => (path, cut_unscoped(sub));
   let cut = ((path, sub)) => (cut_unscoped(path), sub);
+  let no_sub = ((path, sub)) => (path, []);
+  let has_sub = ((_, sub): t) => sub |> CCList.length > 0;
   let to_typename = ((path, sub): t): string =>
     path
     @ sub
@@ -138,6 +140,32 @@ let rec get_union_type_name = (um_type: ts_type) => {
     raise(Exceptions.Parser_error("Module is not a valid union member"))
   };
 };
+
+let rec path_of_declaration = (~path, d: Ts.declaration) =>
+  switch (d) {
+  | Type({item: {t_ident: {item, _}, _}, _})
+  | Interface({item: {i_ident: {item, _}, _}, _})
+  | Enum({item: {e_ident: {item, _}, _}, _})
+  | FunctionDec({item: {f_ident: {item, _}, _}, _})
+  | Namespace({item: {n_ident: [{item, _}], _}, _})
+  // | Module({item: (item, _), _})
+  | Class({item: {c_ident: Some({item, _}), _}, _}) =>
+    Some(path |> Path.add(item))
+  | Variable(_) =>
+    // TODO: Need to be split up before reaching this point
+    None
+  | Ambient(d)
+  | Export(d)
+  | ExportDefault(d) => path_of_declaration(~path, d)
+  | Module(_)
+  | Namespace(_)
+  | Class(_)
+  | IdentifierReference(_)
+  | ExportList(_)
+  | ExportAssignment(_)
+  | ImportAlias(_)
+  | Import(_) => None
+  };
 
 let type_to_string = (t: Ts.type_) =>
   switch (t) {
