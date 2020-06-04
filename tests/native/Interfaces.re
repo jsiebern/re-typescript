@@ -147,4 +147,50 @@ describe("interface extension", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+
+  test("resolves single call signatures in an interface", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface KeyValueProcessor {
+          (key: number, value: string): boolean;
+      };
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+
+  test(
+    "resolves single call signatures in an interface inline", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface KeyValueProcessor {
+          both: { (key: number, value: string): boolean }
+      };
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+
+  test(
+    "throws an error if call signature is mixed with a field", ({expect, _}) => {
+    expect.fn(() =>
+      print(
+        {|
+      interface KeyValueProcessor {
+          (key: number, value: string): boolean;
+          field: string;
+      };
+    |},
+      )
+    ).
+      toThrowException(
+      Exceptions.Parser_unexpected(
+        "Don't know what to do with an unnamed call signature in a multi field interface",
+      ),
+    )
+  });
 });

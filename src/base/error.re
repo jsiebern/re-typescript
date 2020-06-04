@@ -46,8 +46,10 @@ let parser_error_with_info = (~msg=?, ~content, pos: Parse_info.t) => {
   );
 };
 
-let parser_error = (~content, ~start: Lexing.position, ~end_: Lexing.position) => {
+let parser_error =
+    (~msg=?, ~content, ~start: Lexing.position, ~end_: Lexing.position) => {
   print_error(
+    ~msg?,
     ~content,
     (
       (start.pos_lnum, start.pos_cnum - start.pos_bol + 1),

@@ -772,87 +772,105 @@ and parse__tuple = (~path, types) => {
 */
 and parse__interface =
     (~path, ~extended=false, members: list(Ts.type_member)) => {
-  Interface(
-    members
-    |> CCList.map((member: Ts.type_member) =>
-         switch (member) {
-         | PropertySignature({
-             ps_property_name: PIdentifier(ps_ident),
-             ps_type_annotation,
-             ps_optional,
-           }) =>
-           let path = path |> Path.add_sub(ps_ident |> no_pi);
-           let parsed_type =
-             parse__type(~inline=true, ~path, ps_type_annotation);
-           {
-             f_name: ps_ident |> Ident.of_pi,
-             f_type: ps_optional ? Optional(parsed_type) : parsed_type,
-           };
-         | MethodSignature({
-             ms_property_name: PIdentifier(ms_ident),
-             ms_call_signature: {
-               cs_type_parameters,
-               cs_parameter_list,
-               cs_type_annotation,
-             },
-             ms_optional,
-           }) =>
-           let path = path |> Path.add_sub(ms_ident |> no_pi);
-           let parsed_type =
-             parse__type(
-               ~inline=true,
-               ~path,
-               Ts.Function({
-                 f_parameters: cs_type_parameters,
-                 f_body: cs_parameter_list,
-                 f_ret:
-                   cs_type_annotation
-                   |> CCOpt.value(~default=Ts.Any(Parse_info.zero)),
-               }),
-             );
-           {
-             f_name: ms_ident |> Ident.of_pi,
-             f_type: ms_optional ? Optional(parsed_type) : parsed_type,
-           };
-         | PropertySignature(_) as p =>
-           raise(
-             Exceptions.Parser_unsupported(
-               "PropertySignature with anything but PIdentifier not yet supported in interface",
-               position_of_type_member(p),
-             ),
-           )
-         | MethodSignature(_) as p =>
-           raise(
-             Exceptions.Parser_unsupported(
-               "MethodSignature with anything but PIdentifier not yet supported in interface",
-               position_of_type_member(p),
-             ),
-           )
-         | CallSignature(_) =>
-           raise(
-             Exceptions.Parser_unsupported(
-               "CallSignature not yet supported in interface",
-               current_position^,
-             ),
-           )
-         | ConstructSignature(_) =>
-           raise(
-             Exceptions.Parser_unsupported(
-               "ConstructSignature not yet supported in interface",
-               current_position^,
-             ),
-           )
-         | IndexSignature(_) as p =>
-           raise(
-             Exceptions.Parser_unsupported(
-               "IndexSignature not yet supported in interface",
-               position_of_type_member(p),
-             ),
-           )
-         }
-       ),
-    extended,
-  );
+  switch (members) {
+  | [
+      CallSignature({
+        cs_type_parameters,
+        cs_parameter_list,
+        cs_type_annotation,
+      }),
+    ] =>
+    parse__type(
+      ~path,
+      Ts.Function({
+        f_parameters: cs_type_parameters,
+        f_body: cs_parameter_list,
+        f_ret:
+          cs_type_annotation |> CCOpt.value(~default=Ts.Any(Parse_info.zero)),
+      }),
+    )
+  | members =>
+    Interface(
+      members
+      |> CCList.map((member: Ts.type_member) =>
+           switch (member) {
+           | PropertySignature({
+               ps_property_name: PIdentifier(ps_ident),
+               ps_type_annotation,
+               ps_optional,
+             }) =>
+             let path = path |> Path.add_sub(ps_ident |> no_pi);
+             let parsed_type =
+               parse__type(~inline=true, ~path, ps_type_annotation);
+             {
+               f_name: ps_ident |> Ident.of_pi,
+               f_type: ps_optional ? Optional(parsed_type) : parsed_type,
+             };
+           | MethodSignature({
+               ms_property_name: PIdentifier(ms_ident),
+               ms_call_signature: {
+                 cs_type_parameters,
+                 cs_parameter_list,
+                 cs_type_annotation,
+               },
+               ms_optional,
+             }) =>
+             let path = path |> Path.add_sub(ms_ident |> no_pi);
+             let parsed_type =
+               parse__type(
+                 ~inline=true,
+                 ~path,
+                 Ts.Function({
+                   f_parameters: cs_type_parameters,
+                   f_body: cs_parameter_list,
+                   f_ret:
+                     cs_type_annotation
+                     |> CCOpt.value(~default=Ts.Any(Parse_info.zero)),
+                 }),
+               );
+             {
+               f_name: ms_ident |> Ident.of_pi,
+               f_type: ms_optional ? Optional(parsed_type) : parsed_type,
+             };
+           | PropertySignature(_) as p =>
+             raise(
+               Exceptions.Parser_unsupported(
+                 "PropertySignature with anything but PIdentifier not yet supported in interface",
+                 position_of_type_member(p),
+               ),
+             )
+           | MethodSignature(_) as p =>
+             raise(
+               Exceptions.Parser_unsupported(
+                 "MethodSignature with anything but PIdentifier not yet supported in interface",
+                 position_of_type_member(p),
+               ),
+             )
+           | CallSignature(_) =>
+             raise(
+               Exceptions.Parser_unexpected(
+                 "Don't know what to do with an unnamed call signature in a multi field interface",
+               ),
+             )
+           | ConstructSignature(_) =>
+             raise(
+               Exceptions.Parser_unsupported(
+                 "ConstructSignature not yet supported in interface",
+                 current_position^,
+               ),
+             )
+           | IndexSignature(_) as p =>
+             raise(
+               Exceptions.Parser_unsupported(
+                 "IndexSignature not yet supported in interface",
+                 position_of_type_member(p),
+               ),
+             )
+           }
+         ),
+      extended,
+    )
+  };
 }
 /**
   All types

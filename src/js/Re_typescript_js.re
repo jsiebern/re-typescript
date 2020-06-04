@@ -22,19 +22,19 @@ let print__structure = (content, config) => {
   | Lexer.SyntaxError(msg) =>
     CCResult.Error((
       Bridge.Base_lexer_error,
-      msg
-      ++ "\n\n"
-      ++ Error.parser_error(
-           ~content,
-           ~start=lexbuf.lex_start_p,
-           ~end_=lexbuf.lex_curr_p,
-         ),
+      Error.parser_error(
+        ~msg,
+        ~content,
+        ~start=lexbuf.lex_start_p,
+        ~end_=lexbuf.lex_curr_p,
+      ),
     ))
   | Parser_incr.Parsing_error(_)
   | Parser.Error =>
     CCResult.Error((
       Bridge.Base_parser_error,
       Error.parser_error(
+        ~msg=?None,
         ~content,
         ~start=lexbuf.lex_start_p,
         ~end_=lexbuf.lex_curr_p,
@@ -74,6 +74,7 @@ let print__reason = (content, config) => {
         Format.flush_str_formatter()
         |> CCString.trim
         |> Error.parser_error(
+             ~msg=?None,
              ~content=_,
              ~start=loc.loc_start,
              ~end_=loc.loc_end,
@@ -84,6 +85,7 @@ let print__reason = (content, config) => {
         Format.flush_str_formatter()
         |> CCString.trim
         |> Error.parser_error(
+             ~msg=?None,
              ~content=_,
              ~start=loc.loc_start,
              ~end_=loc.loc_end,
@@ -129,6 +131,7 @@ let print__ocaml = (content, config) => {
         Format.flush_str_formatter()
         |> CCString.trim
         |> Error.parser_error(
+             ~msg=?None,
              ~content=_,
              ~start=loc.loc_start,
              ~end_=loc.loc_end,

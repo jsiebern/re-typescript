@@ -1,29 +1,29 @@
 open Re_typescript_base;
 
 let content = {|
-// interface x {
-//   func3: { (x: number): number };   // Object type literal
+interface KeyValueProcessor {
+          both: { (key: number, value: string): boolean }
+      };
+
+// declare namespace React {
+//   export type ReactType<TProps> = TProps;
+//   export type ReactNode = string;
+//   export type ReactNodeArray = string[];
+//   export type ReactElement<T> = number;
 // }
 
-declare namespace React {
-  export type ReactType<TProps> = TProps;
-  export type ReactNode = string;
-  export type ReactNodeArray = string[];
-  export type ReactElement<T> = number;
-}
+// export type SemanticShorthandItemFunc<TProps> = (
+//   component: React.ReactType<TProps>,
+//   props: TProps,
+//   children?: React.ReactNode | React.ReactNodeArray,
+// ) => React.ReactElement<any> | null
 
-export type SemanticShorthandItemFunc<TProps> = (
-  component: React.ReactType<TProps>,
-  props: TProps,
-  children?: React.ReactNode | React.ReactNodeArray,
-) => React.ReactElement<any> | null
-
-export type SemanticShorthandCollection<TProps> = SemanticShorthandItem<TProps>[]
-export type SemanticShorthandContent = React.ReactNode
-export type SemanticShorthandItem<TProps> =
-  | React.ReactNode
-  | TProps
-  | SemanticShorthandItemFunc<TProps>
+// export type SemanticShorthandCollection<TProps> = SemanticShorthandItem<TProps>[]
+// export type SemanticShorthandContent = React.ReactNode
+// export type SemanticShorthandItem<TProps> =
+//   | React.ReactNode
+//   | TProps
+//   | SemanticShorthandItemFunc<TProps>
 
 // import fs = require("fs");
 
@@ -83,7 +83,10 @@ let () = {
   ) {
   | Syntaxerr.Error(msg) => Console.error(msg)
   | Lexer.SyntaxError(msg) => Console.error(msg)
-  | Parser_incr.Parsing_error(_)
+  | Re_typescript_printer.Tree_utils.Exceptions.Parser_unsupported(msg, pos) =>
+    Console.error(Error.parser_error_with_info(~msg, ~content, pos))
+  | Parser_incr.Parsing_error(pos) =>
+    Console.error(Error.parser_error_with_info(~content, pos))
   | Parser.Error =>
     Console.error(
       Error.parser_error(
