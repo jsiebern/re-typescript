@@ -643,8 +643,20 @@ and parse__apply_ref_arguments =
     |> CCOpt.map_or(
          ~default=[],
          CCList.mapi((i, param) => {
-           let path = path |> Path.add_sub(string_of_int(i));
-           parse__type(~inline=true, ~path, param);
+           switch (param) {
+           | Ts.TypeReference(([pi], _))
+               when {
+                 Parameters.has_parameter(
+                   ~path=fst(path),
+                   ~param=pi |> Ident.of_pi,
+                 )
+                 |> CCOpt.is_some;
+               } =>
+             parse__type_argument(~path, pi |> Ident.of_pi)
+           | _ =>
+             let path = path |> Path.add_sub(string_of_int(i));
+             parse__type(~inline=true, ~path, param);
+           }
          }),
        );
 
@@ -1065,7 +1077,7 @@ and parse__intersection = (~path, ~left: Ts.type_, ~right: Ts.type_) => {
   | _ =>
     raise(
       Exceptions.Parser_unsupported(
-        "No intersection mode other than enum is supported yet",
+        "No intersection mode other than tuple is supported yet",
         current_position^,
       ),
     )

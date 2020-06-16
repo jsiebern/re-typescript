@@ -1,12 +1,3 @@
-interface IPromise<X> {
-  field: X;
-}
-
-type ResouceResult<T> = T & {
-  promise: IPromise<T>;
-  resolved: boolean;
-};
-
 // --------------------------------------------------------
 
 export interface RecoilRootProps {

@@ -170,4 +170,23 @@ describe("type parameter logic", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test(
+    "type parameters can get referenced back to the parent when being applied",
+    ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface IPromise<X> {
+        field: X;
+      }
+
+      type ResouceResult<T> = T & {
+        promise: IPromise<T>;
+        resolved: boolean;
+      };
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });
