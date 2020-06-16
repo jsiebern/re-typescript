@@ -1,11 +1,16 @@
 open Re_typescript_base;
 
 let content = {|
-// type x = string[];
-// type a<Props> = | Props | x | y<Props>;
-// type y<Props> = { x: Props }
+interface IPromise<X> {
+  field: X;
+}
 
-type ValueOrArray<T> = T | Array<ValueOrArray<T>>;
+type ResouceResult<T> = T & {
+  promise: IPromise<T>;
+  resolved: boolean;
+};
+
+// type union_1 = string | number | { inline: boolean } | undefined
 
 // import fs = require("fs");
 

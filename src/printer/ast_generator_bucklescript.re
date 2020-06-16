@@ -34,6 +34,7 @@ module Make = (Config: Config) : Ast_generator.T => {
           (
             ~ctx: Re_typescript_config.Config.config,
             ~path: Path.t,
+            ~parameters,
             type_: ts_type,
           )
           : generated_type_def =>
@@ -81,7 +82,7 @@ module Make = (Config: Config) : Ast_generator.T => {
             tr_path |> Path.unscoped_to_string,
           ),
         );
-        generate_type_def(~ctx, ~path, Base(Any));
+        generate_type_def(~ctx, ~path, ~parameters, Base(Any));
       | Some(path_resolved) => {
           td_kind: Ptype_abstract,
           td_type:
@@ -90,7 +91,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                 generate_base_type(
                   ~inner=
                     tr_parameters
-                    >|= generate_type_def(~ctx, ~path)
+                    >|= generate_type_def(~ctx, ~path, ~parameters)
                     |> CCList.filter_map(({td_type, _}: generated_type_def) =>
                          td_type
                        ),
@@ -118,7 +119,7 @@ module Make = (Config: Config) : Ast_generator.T => {
         |> CCList.map(({f_name, f_type, _}) => {
              let path = path |> Path.add_sub(f_name |> Ident.ident);
              let {td_type, td_prepend, td_append, _} =
-               generate_type_def(~ctx, ~path, f_type);
+               generate_type_def(~ctx, ~path, f_type, ~parameters);
              (
                (td_prepend, td_append),
                (
@@ -146,7 +147,7 @@ module Make = (Config: Config) : Ast_generator.T => {
           list_to_opt(fields_append |> CCList.keep_some |> CCList.concat),
       };
     | Array(inner) =>
-      generate_type_def(~ctx, ~path, inner)
+      generate_type_def(~ctx, ~path, ~parameters, inner)
       |> map_td(
            switch (ctx.array_mode) {
            | Array => generate_array_of
@@ -154,9 +155,11 @@ module Make = (Config: Config) : Ast_generator.T => {
            },
          )
     | Optional(inner) =>
-      generate_type_def(~ctx, ~path, inner) |> map_td(generate_option_of)
+      generate_type_def(~ctx, ~path, ~parameters, inner)
+      |> map_td(generate_option_of)
     | Nullable(inner) =>
-      generate_type_def(~ctx, ~path, inner) |> map_td(generate_nullable_of)
+      generate_type_def(~ctx, ~path, ~parameters, inner)
+      |> map_td(generate_nullable_of)
     | Enum(keys) => {
         td_kind: generate_variant_kind(keys |> CCList.map(Ident.variant)),
         td_type: None,
@@ -219,7 +222,7 @@ module Make = (Config: Config) : Ast_generator.T => {
         fu_params
         |> CCList.filter_map(({fp_name, fp_optional, fp_type}) => {
              let path = path |> Path.add_sub(fp_name |> Ident.ident);
-             let gen = generate_type_def(~ctx, ~path, fp_type);
+             let gen = generate_type_def(~ctx, ~path, ~parameters, fp_type);
              gen.td_type
              |> CCOpt.map(type_ =>
                   (
@@ -237,6 +240,7 @@ module Make = (Config: Config) : Ast_generator.T => {
           ~path={
             path |> Path.add_sub("return");
           },
+          ~parameters,
           fu_return,
         );
       let (params, additional) = params |> CCList.split;
@@ -304,7 +308,8 @@ module Make = (Config: Config) : Ast_generator.T => {
         };
       };
     | Tuple(types) =>
-      let type_defs = types |> CCList.map(generate_type_def(~ctx, ~path));
+      let type_defs =
+        types |> CCList.map(generate_type_def(~ctx, ~path, ~parameters));
       get_td_for_list(~mapper=generate_tuple_of, type_defs);
 
     | Union(types) =>
@@ -329,7 +334,12 @@ module Make = (Config: Config) : Ast_generator.T => {
 
       // Resolve recursive references to type t rather than itself
       let type_defs =
-        replace_ref_in_union_members(~sub=path, ~by=(["t"], []), type_defs);
+        replace_ref_in_union_members(
+          ~sub=path,
+          ~by=(["t"], []),
+          ~parameters=parameters |> CCList.map(({tp_name, _}) => tp_name),
+          type_defs,
+        );
       // Extract types that need to be created alongside t
       let (type_defs, type_defs_create) =
         type_defs
@@ -349,7 +359,9 @@ module Make = (Config: Config) : Ast_generator.T => {
                          Reference({
                            tr_path: path |> Path.to_unscoped_path,
                            tr_path_resolved: Some(ref_path),
-                           tr_parameters: [],
+                           tr_parameters:
+                             parameters
+                             |> CCList.map(({tp_name, _}) => Arg(tp_name)),
                          }),
                      },
                    ],
@@ -368,6 +380,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                generate_type_def(
                  ~ctx,
                  ~path=path |> Path.add_sub(um_ident),
+                 ~parameters,
                  um_type,
                ),
              )
@@ -375,7 +388,10 @@ module Make = (Config: Config) : Ast_generator.T => {
       let type_defs_create =
         type_defs_create
         |> CCList.map(((p, t)) =>
-             (p |> Path.to_typename, generate_type_def(~ctx, ~path=p, t))
+             (
+               p |> Path.to_typename,
+               generate_type_def(~ctx, ~path=p, ~parameters, t),
+             )
            );
       let (_, type_defs_sep) = type_defs |> CCList.split;
       let (_, type_defs_create_sep) = type_defs_create |> CCList.split;
@@ -384,7 +400,16 @@ module Make = (Config: Config) : Ast_generator.T => {
       {
         td_kind: Ptype_abstract,
         td_type:
-          Some(generate_base_type(Printf.sprintf("%s.t", module_name))),
+          Some(
+            generate_base_type(
+              ~inner=
+                parameters
+                |> CCList.map(({tp_name, _}) =>
+                     Typ.var(tp_name |> Ident.value)
+                   ),
+              Printf.sprintf("%s.t", module_name),
+            ),
+          ),
         td_prepend:
           Some(
             CCList.concat([
@@ -392,6 +417,9 @@ module Make = (Config: Config) : Ast_generator.T => {
               [
                 generate_union_unboxed(
                   ~module_name,
+                  ~parameters=
+                    parameters
+                    |> CCList.map(({tp_name, _}) => tp_name |> Ident.value),
                   type_defs
                   |> CCList.filter_map(((tn, td: generated_type_def)) =>
                        td.td_type |> CCOpt.map(t => (tn, t))
@@ -402,7 +430,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                   |> CCList.map(((tn, {td_kind, td_type, _})) =>
                        generate_type(
                          ~name=tn,
-                         ~parameters=[],
+                         ~parameters,
                          ~td_kind,
                          ~td_type,
                        )
@@ -463,7 +491,14 @@ module Make = (Config: Config) : Ast_generator.T => {
       |> CCList.fold_left(
            ((buffer, carry), (path, {td_name, td_parameters, td_type, _})) => {
              let name = path |> Path.to_ident |> Ident.type_;
-             switch (generate_type_def(~ctx, ~path, td_type)) {
+             switch (
+               generate_type_def(
+                 ~ctx,
+                 ~path,
+                 ~parameters=td_parameters,
+                 td_type,
+               )
+             ) {
              | {td_prepend: Some(prepend), td_append: None, td_kind, td_type} => (
                  [],
                  carry

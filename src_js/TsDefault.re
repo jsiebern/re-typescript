@@ -101,6 +101,10 @@ interface IParamDefaultInline<P = { is_default: boolean }> {
 }
 type use_default_inline = IParamDefaultInline;
 
+// --- Parameterized unions (pulls params into the generated module)
+type ValueOrObj<T> = T | { obj_value: T };
+type ValueOrArray<T> = T | Array<ValueOrArray<T>>;
+
 // --- Function definitions
 declare function some_function(): void;
 declare function some_other_function(): { inline: string };
@@ -178,7 +182,6 @@ type ArtistsResponse = ArtistsData & ErrorHandling;
 // export enum enum_2 { Red, Green, Blue = 5 };
 // export enum enum_3 { Red = "red", Green = "green", Blue = "blue" };
 // type union_1 = string | number | { inline: boolean } | undefined;
-// type x<B> = string | B; (might beed to only generate module at the callsite)
 
 // export declare type Subset<T, U> = {
 //  [key in keyof T]: key extends keyof U ? T[key] : never;

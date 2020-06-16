@@ -1,0 +1,14 @@
+type unions › can use recursion in unions in combination with type params
+module X: {
+  type t('B);
+  let string: string => t('B);
+  let b: 'B => t('B);
+} = {
+  [@unboxed]
+  type t('B) =
+    | Any('a): t('B);
+  let string = (v: string) => Any(v);
+  let b = (v: 'B) => Any(v);
+};
+type x('B) = X.t('B);
+

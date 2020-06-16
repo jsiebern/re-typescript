@@ -164,7 +164,8 @@ let generate_bs_unboxed = (~module_name, values: Tree_types.ts_mixed_literal) =>
   );
 };
 
-let generate_union_unboxed_t = (types_create: list(type_declaration)) => {
+let generate_union_unboxed_t =
+    (~parameters, types_create: list(type_declaration)) => {
   {
     pstr_loc: Location.none,
     pstr_desc:
@@ -182,19 +183,12 @@ let generate_union_unboxed_t = (types_create: list(type_declaration)) => {
                   pcd_attributes: [],
                   pcd_loc: Location.none,
                   pcd_res:
-                    Some({
-                      ptyp_attributes: [],
-                      ptyp_loc: Location.none,
-                      ptyp_desc:
-                        [@implicit_arity]
-                        Ptyp_constr(
-                          {
-                            Asttypes.loc: Location.none,
-                            Asttypes.txt: Longident.Lident("t"),
-                          },
-                          [],
-                        ),
-                    }),
+                    Some(
+                      Ast_helper.Typ.constr(
+                        Location.mknoloc(Longident.Lident("t")),
+                        parameters |> CCList.map(param => Typ.var(param)),
+                      ),
+                    ),
                   pcd_args:
                     Pcstr_tuple([
                       {
@@ -207,7 +201,9 @@ let generate_union_unboxed_t = (types_create: list(type_declaration)) => {
                 },
               ]),
             ptype_cstrs: [],
-            ptype_params: [],
+            ptype_params:
+              parameters
+              |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
             ptype_name: Location.mknoloc("t"),
           },
         ]
@@ -216,16 +212,26 @@ let generate_union_unboxed_t = (types_create: list(type_declaration)) => {
   };
 };
 
-let generate_union_unboxed_t_sig = (types_create: list(type_declaration)) => {
+let generate_union_unboxed_t_sig =
+    (~parameters, types_create: list(type_declaration)) => {
   Ast_helper.Sig.type_(
     Recursive,
-    [Ast_helper.Type.mk(Location.mknoloc("t"))] @ types_create,
+    [
+      Ast_helper.Type.mk(
+        ~params=
+          parameters
+          |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
+        Location.mknoloc("t"),
+      ),
+    ]
+    @ types_create,
   );
 };
 
 let generate_union_unboxed =
     (
       ~module_name,
+      ~parameters: list(string),
       members: list((string, core_type)),
       strings,
       nums,
@@ -259,11 +265,19 @@ let generate_union_unboxed =
          })
     )
     @ str_members;
+
+  let t =
+    Ast_helper.Typ.constr(
+      Location.mknoloc(Longident.Lident("t")),
+      parameters |> CCList.map(param => Typ.var(param)),
+    );
   let stri_members =
     (
       members
-      |> CCList.map(((name, t)) => {
-           Sig.value(Val.mk(Location.mknoloc(name), [%type: [%t t] => t]))
+      |> CCList.map(((name, ty)) => {
+           Sig.value(
+             Val.mk(Location.mknoloc(name), [%type: [%t ty] => [%t t]]),
+           )
          })
     )
     @ stri_members;
@@ -274,11 +288,13 @@ let generate_union_unboxed =
       Mod.constraint_(
         Mod.mk(
           Pmod_structure(
-            [generate_union_unboxed_t(types_create)] @ str_members,
+            [generate_union_unboxed_t(~parameters, types_create)]
+            @ str_members,
           ),
         ),
         Mty.signature(
-          [generate_union_unboxed_t_sig(types_create)] @ stri_members,
+          [generate_union_unboxed_t_sig(~parameters, types_create)]
+          @ stri_members,
         ),
       ),
     ),

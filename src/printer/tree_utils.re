@@ -96,12 +96,16 @@ let list_to_opt =
   | a => Some(a);
 
 let replace_ref_in_union_members =
-    (~sub: Path.t, ~by: Path.t, members: list(ts_union_member)) => {
+    (~sub: Path.t, ~by: Path.t, ~parameters, members: list(ts_union_member)) => {
   let rec run = (t: ts_type) =>
     switch (t) {
     | Reference({tr_path_resolved: Some(tr_path), _} as rf)
         when Path.eq(tr_path, sub) =>
-      Reference({...rf, tr_path_resolved: Some(by)})
+      Reference({
+        ...rf,
+        tr_path_resolved: Some(by),
+        tr_parameters: parameters |> CCList.map(param => Arg(param)),
+      })
     | Array(t) => Array(run(t))
     | Nullable(t) => Nullable(run(t))
     | Optional(t) => Optional(run(t))
@@ -134,7 +138,7 @@ let rec get_union_type_name = (um_type: ts_type) => {
     |> Ident.ident
   | Optional(t)
   | Nullable(t) => get_union_type_name(t)
-  | Array(t) => Printf.sprintf("array_%s", get_union_type_name(t))
+  | Array(t) => Printf.sprintf("arr_%s", get_union_type_name(t))
   | Tuple(_) => "tuple"
   | MixedLiteral(_) => "variant"
   | NumericLiteral(_) => "num"

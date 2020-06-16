@@ -1,0 +1,16 @@
+type unions › can use recursion in nested union types when using type params 2
+module ValueOrObj: {
+  type t('T)
+  and valueOrObj_1('T) = {obj_value: 'T};
+  let t: 'T => t('T);
+  let valueOrObj_1: valueOrObj_1('T) => t('T);
+} = {
+  [@unboxed]
+  type t('T) =
+    | Any('a): t('T)
+  and valueOrObj_1('T) = {obj_value: 'T};
+  let t = (v: 'T) => Any(v);
+  let valueOrObj_1 = (v: valueOrObj_1('T)) => Any(v);
+};
+type valueOrObj('T) = ValueOrObj.t('T);
+
