@@ -78,6 +78,9 @@ type mixed_literal_2 = false | 1;
 // (Creating a variant alongside the unboxed value is planned. Still undecided on how to build the classify structure.)
 type union_1 = string | number | undefined;
 type union_2 = string_literal | string;
+// --- Recursive unions
+type union_3 = string | Array<union_3>;
+type union_4 = string | { field: union_4 };
 
 // --- Type parameters
 type with_param<A> = A;

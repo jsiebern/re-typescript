@@ -263,10 +263,7 @@ module Make = (Config: Config) : Ast_generator.T => {
              switch (pat) {
              | None =>
                switch (config.number_variant_mode) {
-               | `BsInline(_) => (
-                   to_valid_ident(v |> string_of_int) |> fst,
-                   v,
-                 )
+               | `BsInline(_)
                | `Variant(_)
                | `PolyVariant(_) => to_int_variant_constructor(v)
                }
@@ -312,13 +309,77 @@ module Make = (Config: Config) : Ast_generator.T => {
 
     | Union(types) =>
       let module_name = path |> Path.to_ident |> Ident.module_;
+
+      // Split up types if literals should be resolved directly in the union
+      let (type_defs, string_idents, num_idents) =
+        switch (ctx.bucklescript_config.union_mode) {
+        | `ExtractLiterals => (types, [], [])
+        | `KeepLiterals =>
+          types
+          |> CCList.fold_left(
+               ((t, s, n), {um_type, _} as type_) =>
+                 switch (um_type) {
+                 | StringLiteral(idents) => (t, s @ idents, n)
+                 | NumericLiteral(nums) => (t, s, n @ nums)
+                 | other => (t @ [type_], s, n)
+                 },
+               ([], [], []),
+             )
+        };
+
+      // Resolve recursive references to type t rather than itself
       let type_defs =
-        types
-        |> CCList.map(({um_ident, um_type, _}) =>
-             (um_ident, generate_type_def(~ctx, ~path, um_type))
+        replace_ref_in_union_members(~sub=path, ~by=(["t"], []), type_defs);
+      // Extract types that need to be created alongside t
+      let (type_defs, type_defs_create) =
+        type_defs
+        |> CCList.mapi((i, v) => (i, v))
+        |> CCList.fold_left(
+             ((tds, tds_c), (i, {um_ident, um_type, _} as t)) => {
+               switch (um_type) {
+               | Interface(fields, _) as t =>
+                 let ref_path = path |> Path.add_sub(i |> string_of_int);
+                 (
+                   tds
+                   @ [
+                     {
+                       um_ident: ref_path |> Path.to_typename,
+                       um_classifier: "",
+                       um_type:
+                         Reference({
+                           tr_path: path |> Path.to_unscoped_path,
+                           tr_path_resolved: Some(ref_path),
+                           tr_parameters: [],
+                         }),
+                     },
+                   ],
+                   tds_c @ tds_c @ [(ref_path, t)],
+                 );
+               | other => (tds @ [t], tds_c)
+               }
+             },
+             ([], []),
            );
-      let (type_names, type_defs) = type_defs |> CCList.split;
-      let temp_td = get_td_for_list(type_defs);
+      let type_defs =
+        type_defs
+        |> CCList.map(({um_ident, um_type, _}) =>
+             (
+               um_ident,
+               generate_type_def(
+                 ~ctx,
+                 ~path=path |> Path.add_sub(um_ident),
+                 um_type,
+               ),
+             )
+           );
+      let type_defs_create =
+        type_defs_create
+        |> CCList.map(((p, t)) =>
+             (p |> Path.to_typename, generate_type_def(~ctx, ~path=p, t))
+           );
+      let (_, type_defs_sep) = type_defs |> CCList.split;
+      let (_, type_defs_create_sep) = type_defs_create |> CCList.split;
+      let temp_td = get_td_for_list(type_defs_create_sep @ type_defs_sep);
 
       {
         td_kind: Ptype_abstract,
@@ -331,9 +392,20 @@ module Make = (Config: Config) : Ast_generator.T => {
               [
                 generate_union_unboxed(
                   ~module_name,
-                  CCList.combine(type_names, type_defs)
+                  type_defs
                   |> CCList.filter_map(((tn, td: generated_type_def)) =>
                        td.td_type |> CCOpt.map(t => (tn, t))
+                     ),
+                  string_idents,
+                  num_idents,
+                  type_defs_create
+                  |> CCList.map(((tn, {td_kind, td_type, _})) =>
+                       generate_type(
+                         ~name=tn,
+                         ~parameters=[],
+                         ~td_kind,
+                         ~td_type,
+                       )
                      ),
                 ),
               ],

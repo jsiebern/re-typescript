@@ -2,6 +2,7 @@ type bucklescript_config = {
   string_variant_mode: string_variant_mode;
   number_variant_mode: number_variant_mode;
   mixed_variant_mode: mixed_variant_mode;
+  union_mode: union_mode;
 }
 type string_variant_mode = [ Variant  | PolyVariant  | BsInline ]
 type number_variant_mode = [ Variant of number_variant_mode_name option 
@@ -13,7 +14,7 @@ type number_variant_mode_name = {
   prefix: string;
   suffix: string;
 }
-
+type union_mode = [ ExtractLiterals | KeepLiterals ]
 type output_type = [
   | BucklescriptBindings
   | Bucklescript

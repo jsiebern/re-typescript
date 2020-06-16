@@ -95,6 +95,27 @@ let list_to_opt =
   | [] => None
   | a => Some(a);
 
+let replace_ref_in_union_members =
+    (~sub: Path.t, ~by: Path.t, members: list(ts_union_member)) => {
+  let rec run = (t: ts_type) =>
+    switch (t) {
+    | Reference({tr_path_resolved: Some(tr_path), _} as rf)
+        when Path.eq(tr_path, sub) =>
+      Reference({...rf, tr_path_resolved: Some(by)})
+    | Array(t) => Array(run(t))
+    | Nullable(t) => Nullable(run(t))
+    | Optional(t) => Optional(run(t))
+    | Interface(fields, b) =>
+      Interface(
+        fields |> CCList.map(field => {...field, f_type: run(field.f_type)}),
+        b,
+      )
+    | other => other
+    };
+  members
+  |> CCList.map(({um_type, _} as um) => {...um, um_type: run(um_type)});
+};
+
 let rec get_union_type_name = (um_type: ts_type) => {
   switch (um_type) {
   | Base(String) => "string"
@@ -111,7 +132,6 @@ let rec get_union_type_name = (um_type: ts_type) => {
     |> CCOpt.value(~default="unknown")
     |> Ident.of_string
     |> Ident.ident
-  // | Base(Arg(_)) => "inferred"
   | Optional(t)
   | Nullable(t) => get_union_type_name(t)
   | Array(t) => Printf.sprintf("array_%s", get_union_type_name(t))
@@ -121,19 +141,13 @@ let rec get_union_type_name = (um_type: ts_type) => {
   | StringLiteral(_) => "literal"
   | Enum(_) => "enum"
   | Arg(i) => i |> Ident.ident
-  // | VariantEnum(_) =>
-  //   raise(Decode_Error("Union is not a valid union member"))
+  | Interface(_) => "interface"
   | Union(_) =>
     raise(Exceptions.Parser_error("Union is not a valid union member"))
-  // | Record(_) => raise(Decode_Error("Record is not a valid union member"))
-  // | RecordField(_) =>
-  //   raise(Decode_Error("Record is not a valid union member"))
   | TypeDeclaration(_) =>
     raise(
       Exceptions.Parser_error("TypeDeclaration is not a valid union member"),
     )
-  | Interface(_) =>
-    raise(Exceptions.Parser_error("Interface is not a valid union member"))
   | Import(_) =>
     raise(Exceptions.Parser_error("Import is not a valid union member"))
   | Module(_) =>

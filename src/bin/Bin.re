@@ -1,29 +1,11 @@
 open Re_typescript_base;
 
 let content = {|
-type x = string[];
-type a<Props> = | Props | x | y<Props>;
-type y<Props> = { x: Props }
+// type x = string[];
+// type a<Props> = | Props | x | y<Props>;
+// type y<Props> = { x: Props }
 
-// declare namespace React {
-//   export type ReactType<TProps> = TProps;
-//   export type ReactNode = string;
-//   export type ReactNodeArray = string[];
-//   export type ReactElement<T> = number;
-// }
-
-// export type SemanticShorthandItemFunc<TProps> = (
-//   component: React.ReactType<TProps>,
-//   props: TProps,
-//   children?: React.ReactNode | React.ReactNodeArray,
-// ) => React.ReactElement<any> | undefined
-
-// export type SemanticShorthandCollection<TProps> = SemanticShorthandItem<TProps>[]
-// export type SemanticShorthandContent = React.ReactNode
-// export type SemanticShorthandItem<TProps> =
-//   | React.ReactNode
-//   | TProps
-//   | SemanticShorthandItemFunc<TProps>
+type ValueOrArray<T> = T | Array<ValueOrArray<T>>;
 
 // import fs = require("fs");
 

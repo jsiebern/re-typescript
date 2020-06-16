@@ -1,0 +1,14 @@
+type unions › can use recursion in nested union types
+module Rec_x: {
+  type t;
+  let rec_x: t => t;
+  let array_rec_x: array(t) => t;
+} = {
+  [@unboxed]
+  type t =
+    | Any('a): t;
+  let rec_x = (v: t) => Any(v);
+  let array_rec_x = (v: array(t)) => Any(v);
+};
+type rec_x = Rec_x.t;
+

@@ -109,33 +109,38 @@ let generate_bs_inline_int = (~module_name, members: list((string, int))) => {
   );
 };
 
+let generate_unboxed_literal_member:
+  (string, expression) => (structure_item, signature_item) =
+  (name, value) => (
+    [%stri let [%p Pat.var(Location.mknoloc(name))] = Any([%e value])],
+    Sig.value(Val.mk(Location.mknoloc(name), [%type: t])),
+  );
+
 let generate_bs_unboxed = (~module_name, values: Tree_types.ts_mixed_literal) => {
-  let members =
+  let (str_members, stri_members) =
     CCList.concat([
       values.strings
-      |> CCList.map(v => Tree_utils.Ident.(v |> ident, str(v |> value))),
+      |> CCList.map(v =>
+           Tree_utils.Ident.(
+             generate_unboxed_literal_member(v |> ident, str(v |> value))
+           )
+         ),
       values.numbers
-      |> CCList.map(v => Tree_utils.Ident.(v |> of_int |> ident, int(v))),
+      |> CCList.map(v =>
+           Tree_utils.Ident.(
+             generate_unboxed_literal_member(v |> of_int |> ident, int(v))
+           )
+         ),
       values.bools
       |> CCList.uniq(~eq=(a, b) => a == b)
       |> CCList.map(v =>
-           (
+           generate_unboxed_literal_member(
              (v ? "true" : "false") |> String_utils.to_valid_ident,
              constr(v ? "true" : "false", []),
            )
          ),
-    ]);
-
-  let str_members =
-    members
-    |> CCList.map(((name, value)) => {
-         [%stri let [%p Pat.var(Location.mknoloc(name))] = Any([%e value])]
-       });
-  let stri_members =
-    members
-    |> CCList.map(((name, _)) => {
-         Sig.value(Val.mk(Location.mknoloc(name), [%type: t]))
-       });
+    ])
+    |> CCList.split;
 
   Str.module_(
     Mb.mk(
@@ -159,20 +164,109 @@ let generate_bs_unboxed = (~module_name, values: Tree_types.ts_mixed_literal) =>
   );
 };
 
+let generate_union_unboxed_t = (types_create: list(type_declaration)) => {
+  {
+    pstr_loc: Location.none,
+    pstr_desc:
+      Pstr_type(
+        Asttypes.Recursive,
+        [
+          {
+            ptype_loc: Location.none,
+            ptype_attributes: [(Location.mknoloc("unboxed"), PStr([]))],
+            ptype_manifest: None,
+            ptype_private: Asttypes.Public,
+            ptype_kind:
+              Ptype_variant([
+                {
+                  pcd_attributes: [],
+                  pcd_loc: Location.none,
+                  pcd_res:
+                    Some({
+                      ptyp_attributes: [],
+                      ptyp_loc: Location.none,
+                      ptyp_desc:
+                        [@implicit_arity]
+                        Ptyp_constr(
+                          {
+                            Asttypes.loc: Location.none,
+                            Asttypes.txt: Longident.Lident("t"),
+                          },
+                          [],
+                        ),
+                    }),
+                  pcd_args:
+                    Pcstr_tuple([
+                      {
+                        ptyp_attributes: [],
+                        ptyp_loc: Location.none,
+                        ptyp_desc: Ptyp_var("a"),
+                      },
+                    ]),
+                  pcd_name: Location.mknoloc("Any"),
+                },
+              ]),
+            ptype_cstrs: [],
+            ptype_params: [],
+            ptype_name: Location.mknoloc("t"),
+          },
+        ]
+        @ types_create,
+      ),
+  };
+};
+
+let generate_union_unboxed_t_sig = (types_create: list(type_declaration)) => {
+  Ast_helper.Sig.type_(
+    Recursive,
+    [Ast_helper.Type.mk(Location.mknoloc("t"))] @ types_create,
+  );
+};
+
 let generate_union_unboxed =
-    (~module_name, members: list((string, core_type))) => {
+    (
+      ~module_name,
+      members: list((string, core_type)),
+      strings,
+      nums,
+      types_create: list(type_declaration),
+    ) => {
+  let (str_members, stri_members) =
+    CCList.concat([
+      strings
+      |> CCList.map(v =>
+           Tree_utils.Ident.(
+             generate_unboxed_literal_member(v |> ident, str(v |> value))
+           )
+         ),
+      nums
+      |> CCList.map(v =>
+           Tree_utils.Ident.(
+             generate_unboxed_literal_member(v |> of_int |> ident, int(v))
+           )
+         ),
+    ])
+    |> CCList.split;
+
   let str_members =
-    members
-    |> CCList.map(((name, t)) => {
-         [%stri
-           let [%p Pat.var(Location.mknoloc(name))] = (v: [%t t]) => Any(v)
-         ]
-       });
+    (
+      members
+      |> CCList.map(((name, t)) => {
+           [%stri
+             let [%p Pat.var(Location.mknoloc(name))] =
+               (v: [%t t]) => Any(v)
+           ]
+         })
+    )
+    @ str_members;
   let stri_members =
-    members
-    |> CCList.map(((name, t)) => {
-         Sig.value(Val.mk(Location.mknoloc(name), [%type: [%t t] => t]))
-       });
+    (
+      members
+      |> CCList.map(((name, t)) => {
+           Sig.value(Val.mk(Location.mknoloc(name), [%type: [%t t] => t]))
+         })
+    )
+    @ stri_members;
 
   Str.module_(
     Mb.mk(
@@ -180,17 +274,12 @@ let generate_union_unboxed =
       Mod.constraint_(
         Mod.mk(
           Pmod_structure(
-            CCList.concat([
-              [%str
-                [@unboxed]
-                type t =
-                  | Any('a): t
-              ],
-              str_members,
-            ]),
+            [generate_union_unboxed_t(types_create)] @ str_members,
           ),
         ),
-        Mty.signature(CCList.concat([[%sig: type t], stri_members])),
+        Mty.signature(
+          [generate_union_unboxed_t_sig(types_create)] @ stri_members,
+        ),
       ),
     ),
   );

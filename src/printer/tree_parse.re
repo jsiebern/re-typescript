@@ -291,10 +291,10 @@ and parse__union_prepared = (~path, members: list(Ts.temp_union_member)) => {
   };
 }
 and parse__union_type = (~path, members: list(Ts.temp_union_member)) => {
-  let (strings, numbers, _, types) =
+  let (strings, numbers, _, types) as b =
     members
-    |> CCList.fold_left(
-         ((str, num, bool, types)) =>
+    |> CCList.foldi(
+         ((str, num, bool, types), i) =>
            fun
            | `U_String(_) as s => (str @ [s], num, bool, types)
            | `U_Number(_) as n => (str, num @ [n], bool, types)
@@ -308,7 +308,13 @@ and parse__union_type = (~path, members: list(Ts.temp_union_member)) => {
                str,
                num,
                bool,
-               types @ [parse__type(~inline=true, ~path, n)],
+               types
+               @ [
+                 parse__type(
+                   ~path=path |> Path.add_sub(string_of_int(i)),
+                   n,
+                 ),
+               ],
              ),
          ([], [], false, []),
        );

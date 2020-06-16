@@ -149,6 +149,29 @@ describe("type unions", ({test, _}) => {
       toMatchSnapshot()
   });
 
+  test("can use recursion in unions", ({expect, _}) => {
+    expect.string(print({|
+        type rec_x = rec_x | "str" | 3;
+    |})).
+      toMatchSnapshot()
+  });
+  test("can use recursion in nested union types", ({expect, _}) => {
+    expect.string(
+      print({|
+        type rec_x = rec_x | Array<rec_x>;
+    |}),
+    ).
+      toMatchSnapshot()
+  });
+  test("can use recursion in nested union types 2", ({expect, _}) => {
+    expect.string(
+      print({|
+        type rec_y = string | { inline_obj: rec_y };
+    |}),
+    ).
+      toMatchSnapshot()
+  });
+
   describe(
     "type unions should get optimized into literals if possible", ({test, _}) => {
     test("string literals", ({expect, _}) => {

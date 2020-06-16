@@ -5,11 +5,7 @@ let default_bucklescript_config = {
   string_variant_mode: `BsInline,
   mixed_variant_mode: `BsUnboxed,
   number_variant_mode: `BsInline(None),
-};
-let default_bucklescript_bindings_config = {
-  string_variant_mode: `Variant,
-  mixed_variant_mode: `BsUnboxed,
-  number_variant_mode: `Variant(None),
+  union_mode: `KeepLiterals,
 };
 
 let default_config: config = {
