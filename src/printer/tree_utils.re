@@ -59,6 +59,8 @@ module Path = {
   let cut = ((path, sub)) => (cut_unscoped(path), sub);
   let no_sub = ((path, sub)) => (path, []);
   let has_sub = ((_, sub): t) => sub |> CCList.length > 0;
+  let base = ((path, _)) => path;
+  let sub = ((_, sub)) => sub;
   let to_typename = ((path, sub): t): string =>
     path
     @ sub
@@ -94,6 +96,10 @@ let list_to_opt =
   fun
   | [] => None
   | a => Some(a);
+let opt_to_list =
+  fun
+  | None => []
+  | Some(lst) => lst;
 
 let replace_ref_in_union_members =
     (~sub: Path.t, ~by: Path.t, ~parameters, members: list(ts_union_member)) => {

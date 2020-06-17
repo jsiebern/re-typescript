@@ -60,12 +60,13 @@ let rec parse__type_def =
         ~path=t_path,
         t_parameters |> CCOpt.value(~default=[]),
       );
-    Parameters.add(~path=fst(t_path), parameters);
+
+    let t = parse__type(~path=t_path, t_type);
     let t =
       TypeDeclaration({
         td_name: ident,
-        td_type: parse__type(~path=t_path, t_type),
-        td_parameters: parameters,
+        td_type: t,
+        td_parameters: Lazy.force(parameters),
       });
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
@@ -86,7 +87,6 @@ let rec parse__type_def =
         ~path=t_path,
         i_parameters |> CCOpt.value(~default=[]),
       );
-    Parameters.add(~path=fst(t_path), parameters);
 
     // TODO: Unclean & naively solved, replace later
     let add_fields =
@@ -181,26 +181,24 @@ let rec parse__type_def =
       };
 
     let t =
+      switch (parse__type(~path=t_path, Ts.Object(i_members))) {
+      | Interface(has_fields, extended) =>
+        Interface(
+          add_fields
+          @ has_fields
+          |> CCList.uniq(
+               ~eq=({f_name as ident_a, _}, {f_name as ident_b, _}) =>
+               CCEqual.string(ident_a |> Ident.ident, ident_b |> Ident.ident)
+             ),
+          extended,
+        )
+      | v => v
+      };
+    let t =
       TypeDeclaration({
         td_name: ident,
-        td_type:
-          switch (parse__type(~path=t_path, Ts.Object(i_members))) {
-          | Interface(has_fields, extended) =>
-            Interface(
-              add_fields
-              @ has_fields
-              |> CCList.uniq(
-                   ~eq=({f_name as ident_a, _}, {f_name as ident_b, _}) =>
-                   CCEqual.string(
-                     ident_a |> Ident.ident,
-                     ident_b |> Ident.ident,
-                   )
-                 ),
-              extended,
-            )
-          | v => v
-          },
-        td_parameters: parameters,
+        td_type: t,
+        td_parameters: Lazy.force(parameters),
       });
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
@@ -441,25 +439,49 @@ and parse__union_nullable = (~path, members: list(Ts.temp_union_member)) => {
 /**
   Type arguments
 */
-and parse__type_parameters = (~path, parameters: Ts.type_parameters) => {
-  parameters
-  |> CCList.map(({tp_ident, tp_extends, tp_default}: Ts.type_parameter) =>
-       (
-         {
-           let ident = tp_ident |> Ident.of_pi;
-           let param_path = Path.(path |> add_sub_ident(ident));
+and parse__type_parameters =
+    (~path, parameters: Ts.type_parameters): Lazy.t(list(ts_type_parameter)) => {
+  let parameters =
+    parameters
+    |> CCList.map(({tp_ident, tp_extends, tp_default}: Ts.type_parameter) =>
+         (
            {
-             tp_name: ident,
-             tp_extends:
-               tp_extends
-               |> CCOpt.map(parse__type(~inline=true, ~path=param_path)),
-             tp_default:
-               tp_default
-               |> CCOpt.map(parse__type(~inline=true, ~path=param_path)),
-           };
-         }: ts_type_parameter
-       )
-     );
+             let ident = tp_ident |> Ident.of_pi;
+             let param_path = Path.(path |> add_sub_ident(ident));
+             {
+               tp_name: ident,
+               tp_extends:
+                 tp_extends
+                 |> CCOpt.map(parse__type(~inline=true, ~path=param_path)),
+               tp_default:
+                 tp_default
+                 |> CCOpt.map(parse__type(~inline=true, ~path=param_path)),
+             };
+           }: ts_type_parameter
+         )
+       );
+
+  let (t_base, t_sub) = path;
+  let full_length = CCList.(length(t_base) + length(t_sub));
+  switch (t_sub) {
+  | [] => Parameters.add(~path=t_base, parameters)
+  | t_sub =>
+    let t_base = ref((t_base, []));
+    t_sub
+    |> CCList.iter(part => {
+         let current_path = t_base^ |> Path.to_full_path;
+         let from_child =
+           CCList.compare_length_with(current_path, full_length) !== 0;
+         Parameters.add(~path=current_path, ~from_child, parameters);
+         t_base := t_base^ |> Path.add_sub(part);
+       });
+  };
+
+  lazy(
+    {
+      Parameters.get_param_only(~path=path |> Path.to_full_path) |> opt_to_list;
+    }
+  );
 }
 /**
   Type extraction
@@ -660,7 +682,8 @@ and parse__apply_ref_arguments =
          }),
        );
 
-  let resolved_type_parameters = Parameters.get(~path=fst(resolved_ref));
+  let resolved_type_parameters =
+    Parameters.get_param_only(~path=resolved_ref |> Path.to_full_path);
   parse__apply_arguments(
     ~path=resolved_ref,
     ~type_parameters=resolved_type_parameters,
@@ -945,10 +968,14 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
     inline
       ? parse__inline(~path, t)
       : parse__interface(~path, members |> CCOpt.value(~default=[]))
-  | Function({f_body, f_ret, _}) as t =>
-    inline ? parse__inline(~path, t) : parse__function(~path, f_body, f_ret)
-  | Constructor({f_body, f_ret, _}) as t =>
-    inline ? parse__inline(~path, t) : parse__function(~path, f_body, f_ret)
+  | Function({f_body, f_ret, f_parameters}) as t =>
+    inline
+      ? parse__inline(~path, ~parameters=?f_parameters, t)
+      : parse__function(~path, f_body, f_ret)
+  | Constructor({f_body, f_ret, f_parameters}) as t =>
+    inline
+      ? parse__inline(~path, ~parameters=?f_parameters, t)
+      : parse__function(~path, f_body, f_ret)
   | StringLiteral(_) as t
   | NumberLiteral(_) as t
   | BoolLiteral(_) as t => parse__type(~inline, ~path, Union(t, None))
@@ -974,24 +1001,33 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
 /**
   Inline Wrapper
 */
-and parse__inline = (~path, type_) => {
+and parse__inline = (~path, ~parameters=?, type_) => {
   parse__type_def(
     ~inline=true,
     ~path,
-    Ts.Type({
-      pi: Parse_info.zero,
-      item: {
-        t_ident: {
+    Ts.Type(
+      to_pi({
+        Ts.t_ident: {
           pi: Parse_info.zero,
           item: "",
         },
-        t_parameters: None,
+        t_parameters: parameters,
         t_type: type_,
-      },
-    }),
+      }),
+    ),
   );
+
   let args =
-    switch (Arguments.get(~path)) {
+    switch (
+      Arguments.get(~path)
+      @ (
+        Parameters.get(~path=path |> Path.to_full_path)
+        |> opt_to_list
+        |> CCList.filter_map((({tp_name, _}, from_child)) =>
+             from_child ? Some(tp_name) : None
+           )
+      )
+    ) {
     | [] => []
     | args =>
       // If args have been used, we have to replace the type def we have just created

@@ -340,7 +340,7 @@ let generate_arrow =
   };
 };
 
-let generate_type = (~parameters, ~td_kind, ~td_type, ~name) =>
+let generate_type = (~parameters, ~td_kind, ~td_type, ~name) => {
   Type.mk(
     ~params=
       parameters
@@ -355,6 +355,7 @@ let generate_type = (~parameters, ~td_kind, ~td_type, ~name) =>
     ~manifest=?td_type,
     Location.mknoloc(name),
   );
+};
 
 let generate_type_wrap =
   fun

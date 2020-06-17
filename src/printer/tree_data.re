@@ -3,6 +3,8 @@ open Tree_types;
 open Tree_utils;
 
 let no_pi: Ts.with_pi('a) => 'a = ({item, _}) => item;
+let to_pi: 'a => Ts.with_pi('a) =
+  item => {item, pi: Re_typescript_base.Parse_info.zero};
 
 module Declarations = {
   type t = Hashtbl.t(Path.t, (Ts.declaration, bool));
@@ -59,19 +61,25 @@ module Arguments = {
   let clear = () => Hashtbl.clear(map);
 };
 module Parameters = {
-  type t = Hashtbl.t(list(string), list(ts_type_parameter));
+  type t = Hashtbl.t(list(string), list((ts_type_parameter, bool)));
   let map: t = Hashtbl.create(0);
-  let get = (~path) => Hashtbl.find_opt(map, path);
-  let add = (~path, params) =>
+  let get = (~path) => Hashtbl.find_all(map, path) |> CCOpt.of_list;
+  let get_param_only = (~path) =>
+    Hashtbl.find_all(map, path)
+    |> CCList.flatten
+    |> CCList.map(fst)
+    |> list_to_opt;
+  let add = (~path, ~from_child=false, params) =>
     switch (params) {
     | [] => ()
-    | params => Hashtbl.add(map, path, params)
+    | params =>
+      Hashtbl.add(map, path, params |> CCList.map(p => (p, from_child)))
     };
   let has_parameter = (~path, ~param: ts_identifier) =>
     switch (get(~path)) {
     | Some(args) =>
       args
-      |> CCList.find_opt(({tp_name, _}) =>
+      |> CCList.find_opt((({tp_name, _}, _)) =>
            CCEqual.string(tp_name |> Ident.value, param |> Ident.value)
          )
     | None => None

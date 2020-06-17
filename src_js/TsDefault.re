@@ -181,7 +181,6 @@ type ArtistsResponse = ArtistsData & ErrorHandling;
 
 // export enum enum_2 { Red, Green, Blue = 5 };
 // export enum enum_3 { Red = "red", Green = "green", Blue = "blue" };
-// type union_1 = string | number | { inline: boolean } | undefined;
 
 // export declare type Subset<T, U> = {
 //  [key in keyof T]: key extends keyof U ? T[key] : never;

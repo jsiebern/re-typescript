@@ -189,4 +189,46 @@ describe("type parameter logic", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test(
+    "type parameters that are defined inline will be bubbled up the tree",
+    ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      export interface Map<A,B> {
+        a: A;
+        b: B;
+      };
+      export interface RecoilRootProps {
+        initializeState?: (options: {
+          set: <T>(recoilVal: T, newVal: T) => void; // Ignores type params on inline functions
+          setUnvalidatedAtomValues: (atomMap: Map<string, any>) => void;
+        }) => void;
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+  test(
+    "bubbling type parameters can be combined with regular ones",
+    ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      export interface Map<A,B> {
+        a: A;
+        b: B;
+      };
+      export interface RecoilRootProps<C> {
+        initializeState?: (options: {
+          set: <T>(recoilVal: T, newVal: T) => void;
+          setUnvalidatedAtomValues: (atomMap: Map<string, C>) => void;
+        }) => void;
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });
