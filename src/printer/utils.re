@@ -99,8 +99,11 @@ let list_to_opt =
   fun
   | [] => None
   | a => Some(a);
-
 let opt_to_list =
   fun
   | None => []
-  | Some(a) => a;
+  | Some(lst) => lst;
+let list_of_opt = opt_to_list;
+let opt_of_list = list_to_opt;
+
+let pp_bool = b => b ? "Y" : "N";

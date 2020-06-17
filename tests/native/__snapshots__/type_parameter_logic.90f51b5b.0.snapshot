@@ -1,0 +1,15 @@
+type parameter logic › bubbling type parameters can be combined with regular ones
+type map('A, 'B) = {
+  a: 'A,
+  b: 'B,
+}
+and recoilRootProps_initializeState_options('T, 'C) = {
+  set: (~recoilVal: 'T, ~newVal: 'T) => unit,
+  setUnvalidatedAtomValues: (~atomMap: map(string, 'C)) => unit,
+}
+and recoilRootProps_initializeState('T, 'C) =
+  (~options: recoilRootProps_initializeState_options('T, 'C)) => unit
+and recoilRootProps('C, 'T) = {
+  initializeState: option(recoilRootProps_initializeState('T, 'C)),
+};
+

@@ -1,16 +1,14 @@
 open Re_typescript_base;
 
 let content = {|
-export interface Map<A,B> {
-  a: A;
-  b: B;
-};
-export interface RecoilRootProps<C> {
-  initializeState?: (options: {
-    set: <T>(recoilVal: T, newVal: T) => void;
-    setUnvalidatedAtomValues: (atomMap: Map<string, C>) => void;
-  }) => void;
-}
+interface IPromise<X> {
+        field: X;
+      }
+
+      type ResouceResult<T> = T & {
+        promise: IPromise<T>;
+        resolved: boolean;
+      };
 
 // import fs = require("fs");
 

@@ -92,15 +92,6 @@ module Exceptions = {
   exception Optimizer_error(string);
 };
 
-let list_to_opt =
-  fun
-  | [] => None
-  | a => Some(a);
-let opt_to_list =
-  fun
-  | None => []
-  | Some(lst) => lst;
-
 let replace_ref_in_union_members =
     (~sub: Path.t, ~by: Path.t, ~parameters, members: list(ts_union_member)) => {
   let rec run = (t: ts_type) =>

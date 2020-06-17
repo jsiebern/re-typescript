@@ -61,31 +61,121 @@ module Arguments = {
   let clear = () => Hashtbl.clear(map);
 };
 module Parameters = {
-  type t = Hashtbl.t(list(string), list((ts_type_parameter, bool)));
-  let map: t = Hashtbl.create(0);
-  let get = (~path) => Hashtbl.find_all(map, path) |> CCOpt.of_list;
-  let get_param_only = (~path) =>
-    Hashtbl.find_all(map, path)
-    |> CCList.flatten
-    |> CCList.map(fst)
-    |> list_to_opt;
-  let add = (~path, ~from_child=false, params) =>
-    switch (params) {
-    | [] => ()
-    | params =>
-      Hashtbl.add(map, path, params |> CCList.map(p => (p, from_child)))
-    };
-  let has_parameter = (~path, ~param: ts_identifier) =>
-    switch (get(~path)) {
-    | Some(args) =>
-      args
-      |> CCList.find_opt((({tp_name, _}, _)) =>
-           CCEqual.string(tp_name |> Ident.value, param |> Ident.value)
-         )
-    | None => None
-    };
-
+  type t =
+    | Fixed(ts_type_parameter)
+    | FromRoot(ts_type_parameter)
+    | FromChild(ts_type_parameter);
+  type map = Hashtbl.t(Path.t, list(t));
+  let map: map = Hashtbl.create(0);
   let clear = () => Hashtbl.clear(map);
+
+  // --------------------------------
+  // `wrap` / `unwrap` functions
+  // --------------------------------
+  let param_of_t =
+    fun
+    | Fixed(p)
+    | FromRoot(p)
+    | FromChild(p) => p;
+  let ident_of_param = p => p.tp_name;
+  let ident_of_t = p => param_of_t(p).tp_name;
+  let wrap_fixed = p => Fixed(p);
+  let wrap_root = p => FromRoot(p);
+  let wrap_child = p => FromChild(p);
+  let eq = (a, b) =>
+    Ident.eq(param_of_t(a).tp_name, param_of_t(b).tp_name);
+
+  // --------------------------------
+  // `get` functions
+  // --------------------------------
+  let get = (~path) => CCHashtbl.get_or(~default=[], map, path);
+  let get_root = (~path) =>
+    CCHashtbl.get_or(~default=[], map, (fst(path), []));
+  let get_unpacked = (~path) => get(~path) |> CCList.map(param_of_t);
+  let get_root_unpacked = (~path) => get_unpacked(~path=(fst(path), []));
+  let get_fixed = (~path) =>
+    get(~path)
+    |> CCList.filter_map(
+         fun
+         | Fixed(p) => Some(p)
+         | FromRoot(_)
+         | FromChild(_) => None,
+       );
+  let get_root_fixed = (~path) => get_fixed(~path=(fst(path), []));
+  let get_inherited = (~path) =>
+    get(~path)
+    |> CCList.filter_map(
+         fun
+         | Fixed(_) => None
+         | FromRoot(p)
+         | FromChild(p) => Some(p),
+       );
+  let get_root_inherited = (~path) => get_inherited(~path=(fst(path), []));
+
+  // --------------------------------
+  // `add` functions
+  // --------------------------------
+  let add = (~path, param) =>
+    Hashtbl.replace(map, path, get(~path) @ [param]);
+  let add_list = (~path, params: list(t)) =>
+    Hashtbl.replace(map, path, get(~path) @ params);
+  let add_list_fixed = (~path, params: list(ts_type_parameter)) =>
+    add_list(~path, params |> CCList.map(wrap_fixed));
+  let add_list_no_duplicates = (~path, params: list(t)) => {
+    let existing = get(~path);
+    Hashtbl.replace(
+      map,
+      path,
+      existing
+      @ CCList.filter(param => !CCList.mem(~eq, param, existing), params),
+    );
+  };
+
+  // --------------------------------
+  // `has` functions
+  // --------------------------------
+  let has = (~fixed_only=true, ~path, param: ts_identifier) =>
+    (fixed_only ? get_fixed(~path) : get(~path) |> CCList.map(param_of_t))
+    |> CCList.map(p => p.tp_name)
+    |> CCList.find_opt(Ident.eq(param))
+    |> CCOpt.is_some;
+  let has_root = (~fixed_only=true, ~path, param: ts_identifier) =>
+    has(~fixed_only, ~path=(fst(path), []), param);
+
+  // --------------------------------
+  // `spread` / `hoist` functions
+  // --------------------------------
+  let rec spread_to_root = (~path, params: list(ts_type_parameter)) =>
+    switch (path, params) {
+    | ((_, []), _)
+    | (_, []) => ()
+    | (path, params) =>
+      let new_path = path |> Path.cut_sub;
+      add_list_no_duplicates(
+        ~path=new_path,
+        params |> CCList.map(wrap_child),
+      );
+      spread_to_root(~path=new_path, params);
+    };
+  let rec hoist_from_root =
+          (~sub_on=1, ~path, params: list(ts_type_parameter)) =>
+    switch (path, params) {
+    | ((_, []), _)
+    | (_, []) => ()
+    | ((_, p_sub), _) when CCList.length(p_sub) <= sub_on => ()
+    | ((p_root, p_sub), params) =>
+      let new_path = (p_root, p_sub |> CCList.take(sub_on));
+      add_list_no_duplicates(
+        ~path=new_path,
+        params |> CCList.map(wrap_child),
+      );
+      hoist_from_root(~sub_on=sub_on + 1, ~path, params);
+    };
+  let hoist_from_root_by_ident = (~path, ident) => {
+    get_root_unpacked(~path)
+    |> CCList.filter(({tp_name, _}) => Ident.eq(tp_name, ident))
+    |> hoist_from_root(~path);
+  };
 };
 module Ref = {
   type t = Hashtbl.t(Path.t, Path.t);
