@@ -42,7 +42,7 @@ let parser_error_with_info = (~msg=?, ~content, pos: Parse_info.t) => {
   print_error(
     ~msg?,
     ~content,
-    ((pos.line, pos.col), (pos.line, pos.col + pos.idx)),
+    ((pos.line, pos.col + 1), (pos.line, pos.col + pos.idx + 1)),
   );
 };
 

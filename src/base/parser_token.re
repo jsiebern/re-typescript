@@ -71,4 +71,5 @@ let info = (t: t): Parse_info.t =>
   | IDENT((_, ii)) => ii
   | STRING((_, ii, _)) => ii
   | NUMBER((_, ii)) => ii
+  | TRIPLESLASH((_, ii)) => ii
   };

@@ -79,9 +79,13 @@
 let NEWLN = '\r' | '\n' | "\r\n"
 let hexa = ['0'-'9''a'-'f''A'-'F']
 let inputCharacter = [^ '\r' '\n' ]
+let stringCharacter = [^ '"' ]
+let whitespace = [' ' '\t' ]
 
 rule read =
   parse
+  (* Triple slash directives (before comments) *)
+  | ("///" whitespace+ "<reference" whitespace+ "path=" '"' (stringCharacter* as path) '"' whitespace+ "/>" inputCharacter*) { TRIPLESLASH (path, tokinfo lexbuf) }
   (* Noise *)
   | "/*" {
       with_pos lexbuf (fun () ->
@@ -102,7 +106,7 @@ rule read =
       COMMENT_LINE (raw, info)
     }
   | ("//" inputCharacter*) as cmt { COMMENT(cmt, tokinfo lexbuf) }
-  | [' ' '\t' ]+ {
+  | whitespace {
       read lexbuf
     }
   | NEWLN {

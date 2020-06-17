@@ -76,7 +76,7 @@ let parse_aux = (the_parser, lexbuf) => {
       loop(prev, comments, (last_checkpoint, I.resume(checkpoint)))
     | I.Accepted(v) => `Ok((v, prev, comments))
     | I.Rejected => `Error(prev)
-    | I.HandlingError(_) =>
+    | I.HandlingError(e) =>
       let insert_virtual_semmit =
         switch (prev) {
         | []

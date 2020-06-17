@@ -66,6 +66,7 @@
 %token <string * Parse_info.t> OTHER
 %token <string * Parse_info.t> COMMENT
 %token <string * Parse_info.t> COMMENT_LINE
+%token <string * Parse_info.t> TRIPLESLASH
 
 %token <Parse_info.t> EOF
 
@@ -97,6 +98,7 @@ let declaration_module_element :=
   | d = export_default_declaration_element; semico;   { d }
   | d = export_list_declaration; semico;              { d }
   | d = export_assignment; semico;                    { d }
+  | d = declaration_triple_slash_ref;                 { d }
 
 let export_declaration_element :=
   | EXPORT; d = declaration_interface;      { Ts.Export(d) }
@@ -133,6 +135,7 @@ let export_assignment :=
 let declaration_script_element :=
   | d = declaration_element;                  { d }
   | DECLARE; d = declaration_module_ambient;  { Ts.Ambient(d) }
+  | d = declaration_triple_slash_ref;         { d }
 
 let declaration_module_ambient :=
   | pi = MODULE; ms = module_specifier; dm = loption(delimited(LCURLY, declaration_module, RCURLY)); semico; { Ts.Module({ pi; item = (ms, dm) }) }
@@ -150,6 +153,9 @@ let declaration_ambient :=
   | DECLARE; d = declaration_class;       { Ts.Ambient(d) }
   | DECLARE; d = declaration_enum;        { Ts.Ambient(d) }
   | DECLARE; d = declaration_namespace;   { Ts.Ambient(d) }
+
+let declaration_triple_slash_ref :=
+  | t = TRIPLESLASH; { let (path, pi) = t in Ts.Import({ pi; item = { i_clause = Ts.TripleSlashReference; i_from = path }}) }
 
 let declaration_import_alias :=
   | pi = IMPORT; i = identifier_name; EQUALS; eq = identifier_path; { Ts.ImportAlias({ pi; item = (i, eq)}) }

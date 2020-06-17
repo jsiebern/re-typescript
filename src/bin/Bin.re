@@ -1,31 +1,8 @@
 open Re_typescript_base;
 
 let content = {|
-interface IPromise<X> {
-        field: X;
-      }
+/// <reference path="global.d.ts" />
 
-      type ResouceResult<T> = T & {
-        promise: IPromise<T>;
-        resolved: boolean;
-      };
-
-// import fs = require("fs");
-
-// declare let $: JQuery;
-// export default $;
-
-// declare namespace myLib {
-//  class Cat {
-//         constructor(n: number);
-
-//         //~ We can read 'c.age' from a 'Cat' instance
-//         readonly age: number;
-
-//         //~ We can invoke 'c.purr()' from a 'Cat' instance
-//         purr(): void;
-//     }
-  // }
 |};
 
 let () = {

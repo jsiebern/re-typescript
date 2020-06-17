@@ -25,6 +25,7 @@ and declaration_import = {
   i_from: string,
 }
 and declaration_import_clause =
+  | TripleSlashReference
   | ImportModuleSpecifier
   | ImportBinding(identifier_name)
   | ImportNamespace(identifier_name)
