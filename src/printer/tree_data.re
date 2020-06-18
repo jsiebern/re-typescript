@@ -177,6 +177,25 @@ module Parameters = {
     |> hoist_from_root(~path);
   };
 };
+module Imports = {
+  type t = {
+    bindings: list(string),
+    from: string,
+    parsed: bool,
+  };
+  type map = Hashtbl.t(Path.t, list(t));
+  let map: map = Hashtbl.create(0);
+
+  let get = (~path) => CCHashtbl.get_or(~default=[], map, path);
+  let find = (~path, binding) =>
+    get(~path)
+    |> CCList.find_opt(i => i.bindings |> CCList.exists(b => b == binding));
+
+  let add = (~path, import: t) => CCHashtbl.add_list(map, path, import);
+  let add_binding = (~path, ~from, binding) => {
+    add(~path, {bindings: [binding], from, parsed: false});
+  };
+};
 module Ref = {
   type t = Hashtbl.t(Path.t, Path.t);
   let map: t = Hashtbl.create(0);
@@ -190,11 +209,11 @@ module Ref = {
   let rec resolve_ref =
           (~recursive=false, ~remember=true, ~from: Path.t, lookup: Path.t)
           : option(Path.t) => {
-    let scope = from |> Path.to_scope;
+    let from_scope = from |> Path.to_scope;
     switch (lookup) {
     | ([], _) => None
     | ([_] as one, sub) =>
-      let path = (scope @ one, sub);
+      let path = (from_scope @ one, sub);
 
       if (remember) {
         add(~from, ~to_=path);
@@ -216,7 +235,7 @@ module Ref = {
         };
       };
     | (p, sub) =>
-      let path = (scope @ p, sub);
+      let path = (from_scope @ p, sub);
       if (remember) {
         add(~from, ~to_=path);
       };
@@ -237,9 +256,6 @@ module Ref = {
         | Some(_) => Type.get(~path) |> CCOpt.map(_ => path)
         };
       };
-    // | p =>
-    //     Console.warn(p);
-    //     raise(Exceptions.Parser_error("PATH NOT IMPLEMENTED"));
     };
   };
 };

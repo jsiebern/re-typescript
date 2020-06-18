@@ -226,8 +226,12 @@ let rec parse__type_def =
       });
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
-  | Import({item: {i_clause: TripleSlashReference, i_from}, _}) =>
-    parse__direct_reference_module(i_from)
+  // | Import(_) =>
+  //   raise(
+  //     Exceptions.Parser_unexpected(
+  //       "Imports should not be parsed in this function",
+  //     ),
+  //   )
   | d =>
     raise(
       Exceptions.Parser_unsupported(
@@ -1190,13 +1194,38 @@ and parse__module =
         Ts.with_pi((string, list(Ts.declaration))),
     ) => {
   let path_with_prefix = path |> Path.add(name);
+
+  // Triple slash directives need to be parsed always to push things into scope
+  let declarations =
+    declarations
+    |> CCList.filter(
+         fun
+         | Ts.Import({item: import, _}) as d => {
+             Console.log(declaration_to_string(d));
+             Console.log("--------------------------------------");
+             parse__import(~path=path_with_prefix, import);
+             false;
+           }
+         | _ => true,
+       );
+
   Declarations.add_list(~path, declarations);
   declarations |> CCList.iter(parse__type_def(~path=path_with_prefix));
+}
+and parse__import = (~path, {i_from, i_clause}: Ts.declaration_import) => {
+  switch (i_clause) {
+  | TripleSlashReference
+  | ImportModuleSpecifier => parse__direct_reference_module(~path, i_from)
+  | ImportBinding({item, _}) =>
+    let binding_path = path |> Path.add(item);
+    parse__direct_reference_module(~path=binding_path, i_from);
+  | _ => ()
+  };
 }
 /**
   Direct reference module
 */
-and parse__direct_reference_module = (module_specifier: string) => {
+and parse__direct_reference_module = (~path, module_specifier: string) => {
   module Resolver = (val runtime.resolver: Re_typescript_fs.Resolver.T);
 
   let file =
@@ -1205,6 +1234,7 @@ and parse__direct_reference_module = (module_specifier: string) => {
   | Error(e) => raise(Exceptions.File_error(e))
   | Ok((contents, _)) =>
     parse__type_def(
+      ~path,
       Module({
         pi: Parse_info.zero,
         item: (
@@ -1215,6 +1245,7 @@ and parse__direct_reference_module = (module_specifier: string) => {
     )
   };
 }
+
 /**
   Entry module
 */

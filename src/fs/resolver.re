@@ -20,7 +20,7 @@ module Make = (C: Config) : T => {
     module Loader = (val config.loader: Loader.T);
 
     // Do this rudimentary for now, assume that `module_specifier` is a relative path
-    switch (Fp.relative(module_specifier)) {
+    switch (Fp.relative(module_specifier ++ ".d.ts")) {
     | None =>
       Error(
         Printf.sprintf("Invalid relative import path: %s", module_specifier),

@@ -2,9 +2,13 @@ open Re_typescript_base;
 open Re_typescript_fs;
 
 let content = {|
-/// <reference path="global.d.ts" />
+// <reference path="global.d.ts" />
+import Global from './global';
 
-type x = funky;
+type x = Global.funky;
+|};
+let global = {|
+export type funky = (arg: string) => boolean;
 |};
 
 let default_path = Fp.absoluteExn("/bin.d.ts");
@@ -13,11 +17,7 @@ let default_loader: module Loader.T =
    Loader_virtual.Make({
      let tbl = Hashtbl.create(0);
      Hashtbl.replace(tbl, default_path, content);
-     Hashtbl.replace(
-       tbl,
-       Fp.absoluteExn("/global.d.ts"),
-       {|type funky = (arg: string) => boolean;|},
-     );
+     Hashtbl.replace(tbl, Fp.absoluteExn("/global.d.ts"), global);
    }));
 let default_resolver: module Resolver.T =
   (module

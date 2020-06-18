@@ -227,7 +227,19 @@ let rec declaration_to_string = (d: Ts.declaration) =>
   | Class(_) => "Class"
   | Variable(_) => "Variable"
   | ImportAlias(_) => "ImportAlias"
-  | Import(_) => "Import"
+  | Import({item: {i_clause, i_from}, _}) =>
+    switch (i_clause) {
+    | TripleSlashReference =>
+      Printf.sprintf("TripleSlashReference (%s)", i_from)
+    | ImportModuleSpecifier =>
+      Printf.sprintf("ImportModuleSpecifier (%s)", i_from)
+    | ImportBinding(_) => Printf.sprintf("ImportBinding (%s)", i_from)
+    | ImportNamespace(_) => Printf.sprintf("ImportNamespace (%s)", i_from)
+    | ImportNamed(_) => Printf.sprintf("ImportNamed (%s)", i_from)
+    | ImportSplitNamespace(_) =>
+      Printf.sprintf("ImportSplitNamespace (%s)", i_from)
+    | ImportSplitNamed(_) => Printf.sprintf("ImportSplitNamed (%s)", i_from)
+    }
   };
 
 let rec position_of_declaration: Ts.declaration => Parse_info.t =
