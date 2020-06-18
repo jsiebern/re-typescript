@@ -1,9 +1,24 @@
 open Re_typescript_base;
+open Re_typescript_fs;
 
 let content = {|
 /// <reference path="global.d.ts" />
 
+type x = string;
 |};
+
+let default_path = Fp.absoluteExn("/bin.d.ts");
+let default_loader: module Loader.T =
+  (module
+   Loader_virtual.Make({
+     let tbl = Hashtbl.create(0);
+     Hashtbl.replace(tbl, default_path, content);
+   }));
+let default_resolver: module Resolver.T =
+  (module
+   Resolver.Make({
+     let config = {Resolver.loader: default_loader, tsconfig: None};
+   }));
 
 let () = {
   let lexbuf = Lexing.from_string(content |> CCString.trim);
@@ -31,7 +46,9 @@ let () = {
             },
             output_type: Bucklescript,
           },
-          Parser_incr.parse(lexbuf),
+          ~parser=default_parser,
+          ~resolver=default_resolver,
+          default_path,
         );
       Reason_toolchain.RE.print_implementation_with_comments(
         Format.str_formatter,

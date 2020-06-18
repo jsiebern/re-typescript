@@ -4,7 +4,16 @@ open Tree_types;
 open Tree_utils;
 open Tree_data;
 
-let config = ref(Re_typescript_config.default_config);
+type parser_runtime = {
+  mutable config: Re_typescript_config.Config.config,
+  mutable parser: string => CCResult.t(list(Ts.declaration), string),
+  mutable resolver: (module Re_typescript_fs.Resolver.T),
+};
+let runtime = {
+  config: Re_typescript_config.default_config,
+  parser: _ => Error("Undefined parser"),
+  resolver: Re_typescript_fs.default_resolver,
+};
 let current_position = ref(Parse_info.zero);
 
 /**
@@ -1090,7 +1099,7 @@ and parse__intersection = (~path, ~left: Ts.type_, ~right: Ts.type_) => {
     new_carry @ [right];
   };
   let parsed_types = types_from_intersection(~carry=[], ~left, ~right);
-  switch (config^.intersection_mode) {
+  switch (runtime.config.intersection_mode) {
   | {
       objects: Tuple,
       unions: Tuple,
@@ -1183,20 +1192,39 @@ and parse__module =
 /**
   Entry module
 */
-and parse__entry_module =
+and parse__entry =
     (
       ~ctx: Re_typescript_config.Config.config,
-      declarations: list(Ts.declaration),
+      ~resolver: (module Re_typescript_fs.Resolver.T),
+      ~parser: string => CCResult.t(list(Ts.declaration), string),
+      entry: Fp.t(Fp.absolute),
     ) => {
   // Cleanup
-  config := ctx;
+  runtime.config = ctx;
+  runtime.resolver = resolver;
+  runtime.parser = parser;
   Type.clear();
   Ref.clear();
   Arguments.clear();
   Parameters.clear();
 
   // Entry
-  parse__type_def(Module({pi: Parse_info.zero, item: ("", declarations)}));
+  module Resolver = (val runtime.resolver: Re_typescript_fs.Resolver.T);
+  module Loader = (val Resolver.config.loader: Re_typescript_fs.Loader.T);
+  let file = Loader.file_read(entry);
+  switch (file) {
+  | Error(e) => raise(Exceptions.File_error(e))
+  | Ok(contents) =>
+    parse__type_def(
+      Module({
+        pi: Parse_info.zero,
+        item: (
+          "",
+          runtime.parser(contents) |> CCResult.get_or(~default=[]),
+        ),
+      }),
+    )
+  };
 
   // Directly manipulates Type & Ref modules
   Tree_optimize.optimize(~ctx);

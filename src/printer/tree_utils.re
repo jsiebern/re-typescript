@@ -90,6 +90,7 @@ module Exceptions = {
   exception Parser_parameter_error(string);
   exception Parser_unsupported(string, Parse_info.t);
   exception Optimizer_error(string);
+  exception File_error(string);
 };
 
 let replace_ref_in_union_members =

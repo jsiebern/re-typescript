@@ -1,21 +1,45 @@
 open Re_typescript_base;
 open Re_typescript_config;
+open Re_typescript_fs;
 open Js_of_ocaml;
 
 type jsstr = Js.t(Js.js_string);
 Pastel.setMode(HumanReadable);
 
+// TODO: Replace copied content from test framework
+type x = {x: Hashtbl.t(Fp.t(Fp.absolute), string)};
+let x = {x: Hashtbl.create(0)};
+let test_loader: module Loader.T =
+  (module
+   Loader_virtual.Make({
+     let tbl = x.x;
+   }));
+let test_resolver: module Resolver.T =
+  (module
+   Resolver.Make({
+     let config = {Resolver.loader: test_loader, tsconfig: None};
+   }));
+let test_path = Fp.absoluteExn("/test_framework.d.ts");
+
 let print__structure = (content, config) => {
   open Re_typescript_printer.Tree_utils.Exceptions;
+  Hashtbl.replace(x.x, test_path, content);
+
   let lexbuf = Lexing.from_string(content |> CCString.trim);
 
   try(
     CCResult.Ok(
       Re_typescript_printer.structure_from_ts(
-        ~ctx={
-          config;
-        },
-        Parser_incr.parse(lexbuf),
+        ~ctx=config,
+        ~parser=
+          content =>
+            Ok(
+              Parser_incr.parse(
+                Lexing.from_string(content |> CCString.trim),
+              ),
+            ),
+        ~resolver=test_resolver,
+        test_path,
       ),
     )
   ) {

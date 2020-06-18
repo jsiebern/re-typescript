@@ -16,16 +16,35 @@ let get_generator: (~ctx: config) => (module Ast_generator.T) =
     };
 
 let structure_from_ts =
-    (~ctx: config, input: list(Re_typescript_base.Ts.declaration)) => {
+    (
+      ~ctx: config,
+      ~resolver: (module Re_typescript_fs.Resolver.T),
+      ~parser:
+         string =>
+         CCResult.t(list(Re_typescript_base.Ts.declaration), string),
+      entry: Fp.t(Fp.absolute),
+    ) => {
   module Generator = (val get_generator(~ctx): Ast_generator.T);
   let ast =
-    Generator.generate(~ctx, Tree_parse.parse__entry_module(~ctx, input));
+    Generator.generate(
+      ~ctx,
+      Tree_parse.parse__entry(~ctx, ~resolver, ~parser, entry),
+    );
   let migration =
     Versions.migrate(Versions.ocaml_406, Versions.ocaml_current);
 
   migration.copy_structure(ast);
 };
 let print_from_ts =
-    (~ctx: config, input: list(Re_typescript_base.Ts.declaration)) => {
-  Pprintast.string_of_structure(structure_from_ts(~ctx, input));
+    (
+      ~ctx: config,
+      ~resolver: (module Re_typescript_fs.Resolver.T),
+      ~parser:
+         string =>
+         CCResult.t(list(Re_typescript_base.Ts.declaration), string),
+      entry: Fp.t(Fp.absolute),
+    ) => {
+  Pprintast.string_of_structure(
+    structure_from_ts(~ctx, ~resolver, ~parser, entry),
+  );
 };
