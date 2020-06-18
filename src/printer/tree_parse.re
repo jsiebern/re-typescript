@@ -8,11 +8,13 @@ type parser_runtime = {
   mutable config: Re_typescript_config.Config.config,
   mutable parser: string => CCResult.t(list(Ts.declaration), string),
   mutable resolver: (module Re_typescript_fs.Resolver.T),
+  mutable current_file: Fp.t(Fp.absolute),
 };
 let runtime = {
   config: Re_typescript_config.default_config,
   parser: _ => Error("Undefined parser"),
   resolver: Re_typescript_fs.default_resolver,
+  current_file: Fp.absoluteExn("/"),
 };
 let current_position = ref(Parse_info.zero);
 
@@ -224,6 +226,8 @@ let rec parse__type_def =
       });
     Type.add_order(t_path);
     Type.add(~path=t_path, t);
+  | Import({item: {i_clause: TripleSlashReference, i_from}, _}) =>
+    parse__direct_reference_module(i_from)
   | d =>
     raise(
       Exceptions.Parser_unsupported(
@@ -1190,6 +1194,28 @@ and parse__module =
   declarations |> CCList.iter(parse__type_def(~path=path_with_prefix));
 }
 /**
+  Direct reference module
+*/
+and parse__direct_reference_module = (module_specifier: string) => {
+  module Resolver = (val runtime.resolver: Re_typescript_fs.Resolver.T);
+
+  let file =
+    Resolver.resolve(~current_file=runtime.current_file, module_specifier);
+  switch (file) {
+  | Error(e) => raise(Exceptions.File_error(e))
+  | Ok((contents, _)) =>
+    parse__type_def(
+      Module({
+        pi: Parse_info.zero,
+        item: (
+          "",
+          runtime.parser(contents) |> CCResult.get_or(~default=[]),
+        ),
+      }),
+    )
+  };
+}
+/**
   Entry module
 */
 and parse__entry =
@@ -1203,6 +1229,7 @@ and parse__entry =
   runtime.config = ctx;
   runtime.resolver = resolver;
   runtime.parser = parser;
+  runtime.current_file = entry;
   Type.clear();
   Ref.clear();
   Arguments.clear();

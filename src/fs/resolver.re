@@ -8,14 +8,15 @@ module type Config = {let config: config;};
 
 module type T = {
   let config: config;
-  let resolve: (~current_file: path, string) => CCResult.t(string, string);
+  let resolve:
+    (~current_file: path, string) => CCResult.t((string, path), string);
 };
 
 module Make = (C: Config) : T => {
   let config = C.config;
   let resolve =
       (~current_file: path, module_specifier: string)
-      : CCResult.t(string, string) => {
+      : CCResult.t((string, path), string) => {
     module Loader = (val config.loader: Loader.T);
 
     // Do this rudimentary for now, assume that `module_specifier` is a relative path
@@ -26,7 +27,7 @@ module Make = (C: Config) : T => {
       )
     | Some(module_path) =>
       let file_path = Fp.join(current_file |> Fp.dirName, module_path);
-      Loader.file_read(file_path);
+      Loader.file_read(file_path) |> CCResult.map(res => (res, file_path));
     };
   };
 };
