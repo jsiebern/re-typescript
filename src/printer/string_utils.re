@@ -96,4 +96,8 @@ let to_valid_variant = ident =>
   |> string_replace("$", "_")
   |> string_replace(".", "_");
 
-let to_valid_module_name = to_valid_variant;
+let to_valid_module_name = name =>
+  switch (Fp.relative(name) |> CCOpt.flat_map(Fp.baseName)) {
+  | None => to_valid_variant(name)
+  | Some(base_name) => base_name |> to_valid_variant
+  };

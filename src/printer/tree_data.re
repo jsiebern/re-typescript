@@ -177,23 +177,23 @@ module Parameters = {
     |> hoist_from_root(~path);
   };
 };
-module Imports = {
-  type t = {
-    bindings: list(string),
-    from: string,
-    parsed: bool,
-  };
+module NamedImports = {
+  // (local,remote,base_path)
+  type t = (Ident.t, Ident.t, Path.t);
+
   type map = Hashtbl.t(Path.t, list(t));
   let map: map = Hashtbl.create(0);
 
   let get = (~path) => CCHashtbl.get_or(~default=[], map, path);
   let find = (~path, binding) =>
     get(~path)
-    |> CCList.find_opt(i => i.bindings |> CCList.exists(b => b == binding));
+    |> CCList.find_opt(((local, _, _)) => Ident.eq(local, binding))
+    |> CCOpt.map(((_, remote, base_path)) =>
+         base_path |> Path.add_ident(remote)
+       );
 
-  let add = (~path, import: t) => CCHashtbl.add_list(map, path, import);
-  let add_binding = (~path, ~from, binding) => {
-    add(~path, {bindings: [binding], from, parsed: false});
+  let add = (~path, import: list(t)) => {
+    Hashtbl.replace(map, path, get(~path) @ import);
   };
 };
 module Ref = {
@@ -210,6 +210,17 @@ module Ref = {
           (~recursive=false, ~remember=true, ~from: Path.t, lookup: Path.t)
           : option(Path.t) => {
     let from_scope = from |> Path.to_scope;
+    let (from_import, lookup) =
+      switch (lookup) {
+      | ([one], []) =>
+        switch (
+          NamedImports.find(~path=(from_scope, []), Ident.of_string(one))
+        ) {
+        | None => (false, lookup)
+        | Some(p) => (true, p)
+        }
+      | _ => (false, lookup)
+      };
     switch (lookup) {
     | ([], _) => None
     | ([_] as one, sub) =>
@@ -235,7 +246,7 @@ module Ref = {
         };
       };
     | (p, sub) =>
-      let path = (from_scope @ p, sub);
+      let path = from_import ? (p, sub) : (from_scope @ p, sub);
       if (remember) {
         add(~from, ~to_=path);
       };

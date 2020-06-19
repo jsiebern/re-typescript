@@ -88,7 +88,7 @@ let rec parse__type_def =
       item: (n_ident |> CCList.get_at_idx_exn(0) |> no_pi, n_declarations),
     };
     parse__type_def(~path, Module(as_module));
-  | Module(m) => parse__module(~path, m)
+  | Module({item, _}) => parse__module(~path, item)
   | Interface({item: {i_ident, i_parameters, i_extends, i_members}, _}) =>
     let ident = i_ident |> Ident.of_pi;
     let t_path = inline ? path : path |> Path.add_ident(ident);
@@ -613,19 +613,25 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
   let ref_path_p = (ref_path, []);
 
   // Try to render dynamically from the declaration table
+  let check_path =
+    CCOpt.value(
+      ~default=ref_path_p,
+      switch (ref_path) {
+      | [one] =>
+        NamedImports.find(
+          ~path=(Path.to_scope(path), []),
+          Ident.of_string(one),
+        )
+      | _ => None
+      },
+    );
   if (!Path.eq_unscoped(ref_path, fst(path))) {
-    let acc = ref([]);
-    ref_path
-    |> CCList.iter(p => {
-         acc := acc^ @ [p];
-         let ref_path_p = (acc^, []);
-         if (Declarations.has(~path=ref_path_p)) {
-           parse__type_def(
-             ~path=ref_path_p |> Path.cut,
-             Declarations.get_type_declaration(~path=ref_path_p),
-           );
-         };
-       });
+    if (Declarations.has(~path=check_path)) {
+      parse__type_def(
+        ~path=check_path |> Path.cut,
+        Declarations.get_type_declaration(~path=check_path),
+      );
+    };
   };
 
   switch (parse__inline_type_parameter(~path, ref_path_p)) {
@@ -638,6 +644,7 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
             ? (fst(path), []) : path,
         ref_path_p,
       );
+
     let parameters =
       switch (resolved_ref) {
       | None => []
@@ -647,7 +654,8 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
 
     Reference({
       tr_path: ref_path,
-      tr_path_resolved: Some(ref_path_p),
+      tr_path_resolved:
+        Some(resolved_ref |> CCOpt.value(~default=ref_path_p)),
       tr_parameters: parameters,
     });
   };
@@ -1189,13 +1197,13 @@ and parse__function = (~path, body: Ts.parameter_list, return: Ts.type_) => {
 */
 and parse__module =
     (
+      ~prepare_only=false,
       ~path,
-      {item: (name, declarations), _}:
-        Ts.with_pi((string, list(Ts.declaration))),
+      (name, declarations): (string, list(Ts.declaration)),
     ) => {
   let path_with_prefix = path |> Path.add(name);
 
-  // Triple slash directives need to be parsed always to push things into scope
+  // Imports need to be parsed always to push things into scope
   let declarations =
     declarations
     |> CCList.filter(
@@ -1209,15 +1217,39 @@ and parse__module =
          | _ => true,
        );
 
-  Declarations.add_list(~path, declarations);
-  declarations |> CCList.iter(parse__type_def(~path=path_with_prefix));
+  Declarations.add_list(~path=path_with_prefix, declarations);
+  if (!prepare_only) {
+    declarations |> CCList.iter(parse__type_def(~path=path_with_prefix));
+  };
 }
 and parse__import = (~path, {i_from, i_clause}: Ts.declaration_import) => {
   switch (i_clause) {
   | TripleSlashReference
   | ImportModuleSpecifier => parse__direct_reference_module(~path, i_from)
+  | ImportNamespace({item, _})
   | ImportBinding({item, _}) =>
     let binding_path = path |> Path.add(item);
+    parse__direct_reference_module(~path=binding_path, i_from);
+  | ImportNamed(bindings) =>
+    let binding_path =
+      path |> Path.add(i_from |> Ident.of_string |> Ident.module_);
+    NamedImports.add(
+      ~path,
+      bindings
+      |> CCList.map(
+           fun
+           | Ts.ImportNamedIdent({item, _}) => {
+               let ident = Ident.of_string(item);
+               (ident, ident, binding_path);
+             }
+           | ImportNamedAs(remote, local) =>
+             Ident.(
+               of_string(local.item),
+               of_string(remote.item),
+               binding_path,
+             ),
+         ),
+    );
     parse__direct_reference_module(~path=binding_path, i_from);
   | _ => ()
   };
@@ -1233,15 +1265,10 @@ and parse__direct_reference_module = (~path, module_specifier: string) => {
   switch (file) {
   | Error(e) => raise(Exceptions.File_error(e))
   | Ok((contents, _)) =>
-    parse__type_def(
+    parse__module(
+      ~prepare_only=true,
       ~path,
-      Module({
-        pi: Parse_info.zero,
-        item: (
-          "",
-          runtime.parser(contents) |> CCResult.get_or(~default=[]),
-        ),
-      }),
+      ("", runtime.parser(contents) |> CCResult.get_or(~default=[])),
     )
   };
 }

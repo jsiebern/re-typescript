@@ -3,12 +3,14 @@ open Re_typescript_fs;
 
 let content = {|
 // <reference path="global.d.ts" />
-import Global from './global';
+import { funky, other as numeric } from './global';
 
-type x = Global.funky;
+type x = funky;
+type y = numeric;
 |};
 let global = {|
 export type funky = (arg: string) => boolean;
+export type other = number;
 |};
 
 let default_path = Fp.absoluteExn("/bin.d.ts");
