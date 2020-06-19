@@ -55,6 +55,14 @@ module Path = {
     | [_] => []
     | l => l |> CCList.remove_at_idx(CCList.length(l) - 1)
     };
+  let cut_unscoped_keep = l =>
+    switch (l) {
+    | [] => (None, [])
+    | [one] => (Some(one), [])
+    | l =>
+      let i = CCList.length(l) - 1;
+      (l |> CCList.get_at_idx(i), l |> CCList.remove_at_idx(i));
+    };
   let cut_sub = ((path, sub)) => (path, cut_unscoped(sub));
   let cut = ((path, sub)) => (cut_unscoped(path), sub);
   let no_sub = ((path, sub)) => (path, []);
@@ -176,10 +184,10 @@ let rec path_of_declaration = (~path, d: Ts.declaration) =>
   | Module(_)
   | Namespace(_)
   | Class(_)
-  | IdentifierReference(_)
   | ExportList(_)
   | ExportAssignment(_)
   | ImportAlias(_)
+  | IdentifierReference(_)
   | Import(_) => None
   };
 

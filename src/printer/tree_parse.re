@@ -33,6 +33,23 @@ let rec parse__type_def =
              !(path |> Path.has_sub) && Declarations.is_complete(~path)
            ) =>
     ()
+  | ExportDefault(IdentifierReference(i)) =>
+    parse__type_def(
+      ~inline,
+      ~path,
+      Type({
+        pi: i.pi,
+        item: {
+          t_ident: {
+            pi: i.pi,
+            item: "default",
+          },
+          t_parameters: None,
+          t_type:
+            TypeReference((CCList.map(to_pi, fst(path)) @ [i], None)),
+        },
+      }),
+    )
   | Export(declaration)
   | ExportDefault(declaration)
   | Ambient(declaration) => parse__type_def(~inline, ~path, declaration)
@@ -613,25 +630,29 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
   let ref_path_p = (ref_path, []);
 
   // Try to render dynamically from the declaration table
-  let check_path =
-    CCOpt.value(
-      ~default=ref_path_p,
+  if (!Path.eq_unscoped(ref_path, fst(path))) {
+    let paths = [
+      ((path |> Path.to_scope) @ ref_path, []),
+      ref_path_p,
       switch (ref_path) {
       | [one] =>
         NamedImports.find(
           ~path=(Path.to_scope(path), []),
           Ident.of_string(one),
         )
-      | _ => None
+        |> CCOpt.value(~default=([], []))
+      | _ => ([], [])
       },
-    );
-  if (!Path.eq_unscoped(ref_path, fst(path))) {
-    if (Declarations.has(~path=check_path)) {
-      parse__type_def(
-        ~path=check_path |> Path.cut,
-        Declarations.get_type_declaration(~path=check_path),
-      );
-    };
+    ];
+    paths
+    |> CCList.iter(check_path =>
+         if (Declarations.has(~path=check_path)) {
+           parse__type_def(
+             ~path=check_path |> Path.cut,
+             Declarations.get_type_declaration(~path=check_path),
+           );
+         }
+       );
   };
 
   switch (parse__inline_type_parameter(~path, ref_path_p)) {
@@ -1208,15 +1229,12 @@ and parse__module =
     declarations
     |> CCList.filter(
          fun
-         | Ts.Import({item: import, _}) as d => {
-             Console.log(declaration_to_string(d));
-             Console.log("--------------------------------------");
+         | Ts.Import({item: import, _}) => {
              parse__import(~path=path_with_prefix, import);
              false;
            }
          | _ => true,
        );
-
   Declarations.add_list(~path=path_with_prefix, declarations);
   if (!prepare_only) {
     declarations |> CCList.iter(parse__type_def(~path=path_with_prefix));
@@ -1225,11 +1243,49 @@ and parse__module =
 and parse__import = (~path, {i_from, i_clause}: Ts.declaration_import) => {
   switch (i_clause) {
   | TripleSlashReference
-  | ImportModuleSpecifier => parse__direct_reference_module(~path, i_from)
+  | ImportModuleSpecifier =>
+    parse__direct_reference_module(~path, i_from) |> ignore
   | ImportNamespace({item, _})
   | ImportBinding({item, _}) =>
-    let binding_path = path |> Path.add(item);
-    parse__direct_reference_module(~path=binding_path, i_from);
+    let binding_path =
+      path |> Path.add(i_from |> Ident.of_string |> Ident.module_);
+    let raw_declarations =
+      parse__direct_reference_module(~path=binding_path, i_from);
+    switch (
+      raw_declarations
+      |> CCOpt.flat_map(
+           CCList.find_opt(
+             dec => {
+               switch (dec) {
+               | Ts.ExportDefault(_) => true
+               | _ => false
+               }
+             },
+             _,
+           ),
+         )
+    ) {
+    | None => ()
+    | Some(Ts.ExportDefault(IdentifierReference(idref))) =>
+      let local = item |> Ident.of_string;
+      let remote = idref.item |> Ident.of_string;
+      NamedImports.add(~path, [(local, remote, binding_path)]);
+    | Some(ExportDefault(default_dec)) =>
+      let local = item |> Ident.of_string;
+      NamedImports.add(
+        ~path,
+        [(local, "export_default" |> Ident.of_string, binding_path)],
+      );
+    | Some(d) =>
+      raise(
+        Exceptions.Parser_unexpected(
+          Printf.sprintf(
+            "Unexpected declaration: %s",
+            declaration_to_string(d),
+          ),
+        ),
+      )
+    };
   | ImportNamed(bindings) =>
     let binding_path =
       path |> Path.add(i_from |> Ident.of_string |> Ident.module_);
@@ -1250,27 +1306,35 @@ and parse__import = (~path, {i_from, i_clause}: Ts.declaration_import) => {
              ),
          ),
     );
-    parse__direct_reference_module(~path=binding_path, i_from);
+    parse__direct_reference_module(~path=binding_path, i_from) |> ignore;
+  | ImportSplitNamed(import, bindings) =>
+    parse__import(~path, {i_from, i_clause: ImportBinding(import)});
+    parse__import(~path, {i_from, i_clause: ImportNamed(bindings)});
   | _ => ()
   };
 }
 /**
   Direct reference module
 */
-and parse__direct_reference_module = (~path, module_specifier: string) => {
+and parse__direct_reference_module =
+    (~path, module_specifier: string): option(list(Ts.declaration)) => {
   module Resolver = (val runtime.resolver: Re_typescript_fs.Resolver.T);
 
   let file =
     Resolver.resolve(~current_file=runtime.current_file, module_specifier);
+  let raw_declarations = ref(None);
   switch (file) {
   | Error(e) => raise(Exceptions.File_error(e))
   | Ok((contents, _)) =>
+    raw_declarations :=
+      Some(runtime.parser(contents) |> CCResult.get_or(~default=[]));
     parse__module(
       ~prepare_only=true,
       ~path,
-      ("", runtime.parser(contents) |> CCResult.get_or(~default=[])),
-    )
+      ("", raw_declarations^ |> CCOpt.get_exn),
+    );
   };
+  raw_declarations^;
 }
 
 /**

@@ -10,6 +10,12 @@ module Declarations = {
   type t = Hashtbl.t(Path.t, (Ts.declaration, bool));
   let map: t = Hashtbl.create(0);
   let get = (~path) => Hashtbl.find_opt(map, path);
+  let get_scope = (~scope: list(string)) =>
+    CCHashtbl.keys_list(map)
+    |> CCList.filter_map(key =>
+         Path.eq_unscoped(scope, key |> Path.to_scope)
+           ? get(~path=key) |> CCOpt.map(d => (key, d)) : None
+       );
   let has = (~path) => get(~path) |> CCOpt.is_some;
   let is_complete = (~path) =>
     get(~path) |> CCOpt.map_or(~default=false, snd);
