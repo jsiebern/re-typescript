@@ -6,7 +6,8 @@ module Make = (C: Config) : Loader.T => {
   let file_read = (path: Fp.t(Fp.absolute)) =>
     switch (Hashtbl.find_opt(C.tbl, path)) {
     | Some(f) => Ok(f)
-    | None => Error("File does not exist")
+    | None =>
+      Error(Printf.sprintf("File does not exist: %s", path |> Fp.toString))
     };
   let file_exists = path => keys |> CCList.exists(Fp.eq(path));
 };

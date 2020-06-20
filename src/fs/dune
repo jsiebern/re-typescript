@@ -1,6 +1,18 @@
 (library
  (name re_typescript_fs)
  (public_name re_typescript.fs)
- (libraries containers console.lib fp)
+ (libraries containers console.lib fp biniou atdgen)
  (preprocess
   (pps ppx_tools_versioned.metaquot_406)))
+
+(rule
+ (targets package_json_t.ml package_json_t.mli)
+ (deps package_json.atd)
+ (action
+  (run atdgen -t %{deps})))
+
+(rule
+ (targets package_json_j.ml package_json_j.mli)
+ (deps package_json.atd)
+ (action
+  (run atdgen -j -j-std %{deps})))

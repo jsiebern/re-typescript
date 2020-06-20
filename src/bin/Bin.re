@@ -2,7 +2,7 @@ open Re_typescript_base;
 open Re_typescript_fs;
 
 let content = {|
-import Global2 from './global';
+import Global2 from '@types/global';
 // export default function (a: string);
 
 type x = Global2;
@@ -15,13 +15,17 @@ export type other = number;
 export default other;
 |};
 
-let default_path = Fp.absoluteExn("/bin.d.ts");
+let default_path = Fp.absoluteExn("/root/src/bin.d.ts");
 let default_loader: module Loader.T =
   (module
    Loader_virtual.Make({
      let tbl = Hashtbl.create(0);
      Hashtbl.replace(tbl, default_path, content);
-     Hashtbl.replace(tbl, Fp.absoluteExn("/global.d.ts"), global);
+     Hashtbl.replace(
+       tbl,
+       Fp.absoluteExn("/root/src/node_modules/@types/global/index.d.ts"),
+       global,
+     );
    }));
 let default_resolver: module Resolver.T =
   (module
