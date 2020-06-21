@@ -21,16 +21,38 @@ let content = {|
 // }
 // type a_partial = Partial<A>;
 
-interface A {
-  key_1: string;
-  key_2: number;
-  flags: { [K in keyof A]: boolean };
+interface TypeMap {
+    "str": string,
+    "num": number,
+    "bool": boolean,
 }
+
+interface SchemaType {
+    foo: "str",
+    bar: "num",
+    baz: "bool",
+}
+
+type TypeScriptType = {
+    [P in keyof SchemaType]: TypeMap[P]
+};
+
+// interface Keys<A> {
+//   key_1: string;
+//   key_2: number;
+//   key_3: A;
+// }
+// type with_keys = { [K in keyof Keys<{ key_4: boolean }>['key_3']]: boolean };
 
 // ---- WORKS
 // type key = 'just_one_key';
 // type Flags = { [K in key]: boolean };
 
+// interface A {
+//   key_1: string;
+//   key_2: number;
+//   flags: { [K in keyof A]: boolean };
+// }
 
 // type Keys = 'option1' | 'option2';
 // type Flags = { [K in Keys]: boolean };

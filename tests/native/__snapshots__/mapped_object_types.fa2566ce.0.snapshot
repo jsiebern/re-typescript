@@ -1,0 +1,17 @@
+mapped object types › maps over extended interfaces
+type keysExt = {key_3: bool}
+and keys = {
+  key_3: bool,
+  key_1: string,
+  key_2: float,
+}
+and with_keys_k =
+  | Key_3
+  | Key_1
+  | Key_2
+and with_keys = {
+  key_3: bool,
+  key_1: bool,
+  key_2: bool,
+};
+

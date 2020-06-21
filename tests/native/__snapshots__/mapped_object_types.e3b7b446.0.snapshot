@@ -1,0 +1,16 @@
+mapped object types › maps optional types
+type keys = {
+  key_1: string,
+  key_2: float,
+}
+and with_keys_t =
+  | A
+  | B
+and with_keys_k =
+  | Key_1
+  | Key_2
+and with_keys = {
+  key_1: option(with_keys_t),
+  key_2: option(with_keys_t),
+};
+
