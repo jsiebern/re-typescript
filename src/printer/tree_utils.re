@@ -201,6 +201,7 @@ let type_to_string = (t: Ts.type_) =>
   | Intersection(_) => "Intersection"
   | Union(_) => "Union"
   | Query(_) => "Query"
+  | KeyOf(_) => "KeyOf"
   | StringLiteral(_) => "StringLiteral"
   | NumberLiteral(_) => "NumberLiteral"
   | BoolLiteral(_) => "BoolLiteral"

@@ -2,21 +2,26 @@ open Re_typescript_base;
 open Re_typescript_fs;
 
 let content = {|
-import IsOk, * as Others from './import_source';
-import { str } from './import_source';
+// type Pick<T, K extends keyof T> = {
+//     [P in K]: T[P];
+// };
 
-type should_be_bool = IsOk;
-type should_be_string = str;
-type should_be_obj = Others.iImport;
-|};
-let global = {|
-export type str = string;
-interface iImport {
-  get: (a: number) => void;
+// type keys = 'x' | 'y';
+
+interface A {
+  x: string;
+  y: number;
+  z: boolean;
 }
 
-type b = boolean;
-export default b;
+// type stripped = Pick<A, keys>;
+
+type Partial<T> = {
+    [P in keyof T]?: T[P];
+}
+type a_partial = Partial<A>;
+|};
+let global = {|
 |};
 
 let default_path = Fp.absoluteExn("/root/src/bin.d.ts");
@@ -38,7 +43,8 @@ let default_resolver: module Resolver.T =
    }));
 
 let () = {
-  let lexbuf = Lexing.from_string(content |> CCString.trim);
+  let r_content = ref(None);
+  let r_lexbuf = ref(None);
 
   try(
     {
@@ -59,11 +65,17 @@ let () = {
             omit_extended_unreferenced_records: true,
             bucklescript_config: {
               ...Re_typescript_config.default_bucklescript_config,
-              string_variant_mode: `BsInline,
+              string_variant_mode: `Variant,
             },
             output_type: Bucklescript,
           },
-          ~parser=default_parser,
+          ~parser=
+            content => {
+              let lexbuf = Lexing.from_string(content |> CCString.trim);
+              r_content := Some(content);
+              r_lexbuf := Some(lexbuf);
+              Ok(Parser_incr.parse(lexbuf));
+            },
           ~resolver=default_resolver,
           default_path,
         );
@@ -84,13 +96,15 @@ let () = {
   | Parser_incr.Parsing_error(pos) =>
     Console.error(Error.parser_error_with_info(~content, pos))
   | Parser.Error =>
+    let content = r_content^ |> CCOpt.get_exn;
+    let lexbuf = r_lexbuf^ |> CCOpt.get_exn;
     Console.error(
       Error.parser_error(
         ~content,
         ~start=lexbuf.lex_start_p,
         ~end_=lexbuf.lex_curr_p,
       ),
-    )
+    );
   | e =>
     Console.error(e);
     raise(e);

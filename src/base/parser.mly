@@ -14,6 +14,7 @@
   FALSE TRUE
   INSTANCEOF
   TYPEOF
+  KEYOF
   THIS
   VAR LET CONST
   FUNCTION
@@ -268,6 +269,7 @@ let type_primary :=
   | t = type_array; { t }
   | t = type_tuple; { t }
   | t = type_query; { t }
+  | t = key_of; { t }
   | t = type_this; { t }
   | r = type_reference; fa = nonempty_list(field_access); { Ts.TypeExtract(r, fa) }
 
@@ -350,7 +352,13 @@ let type_predefined :=
     Type query
 *)
 let type_query :=
-  | TYPEOF; ip = identifier_path; { Ts.Query(ip) }
+  | pi = TYPEOF; ip = type_reference; { Ts.Query({pi; item = ip}) }
+
+(*
+    KeyOf
+*)
+let key_of :=
+  | pi = KEYOF; item = type_primary; { Ts.KeyOf({pi; item}) }
 
 (*
     This

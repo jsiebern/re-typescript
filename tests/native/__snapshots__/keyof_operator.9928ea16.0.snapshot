@@ -1,0 +1,10 @@
+keyof operator › extracts keys from an optional wrapper
+type a = {
+  x: string,
+  y: float,
+}
+and b = option(a)
+and keys =
+  | X
+  | Y;
+

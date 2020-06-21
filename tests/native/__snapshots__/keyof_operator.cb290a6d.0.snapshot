@@ -1,0 +1,12 @@
+keyof operator › extracts mixed keys if necessary
+type a = {
+  x: string,
+  [@bs.as \"3\"]
+  _3: float,
+  y: bool,
+}
+and keys =
+  | X
+  | _3
+  | Y;
+

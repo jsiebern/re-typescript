@@ -6,3 +6,13 @@
  (preprocess
   (pps js_of_ocaml-ppx))
  (modes js))
+
+(rule
+ (target examples.re)
+ (deps
+  (:folder
+   (source_tree examples))
+  (:script
+   (file generate_examples.js)))
+ (action
+  (run node %{script})))

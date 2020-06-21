@@ -1,0 +1,9 @@
+keyof operator › extracts keys from an object
+type a = {
+  x: string,
+  y: float,
+}
+and keys =
+  | X
+  | Y;
+

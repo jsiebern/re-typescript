@@ -1,0 +1,14 @@
+keyof operator › extracts keys from a type extraction
+type a_b = {
+  z: bool,
+  f: string,
+}
+and a = {
+  x: string,
+  y: float,
+  b: a_b,
+}
+and keys =
+  | Z
+  | F;
+

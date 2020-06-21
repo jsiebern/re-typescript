@@ -1,0 +1,5 @@
+keyof operator › extracts keys from an inline object
+type keys =
+  | X
+  | Y;
+

@@ -1,0 +1,5 @@
+{
+  "name": "Literals",
+  "description": "",
+  "entry": "string_literals.d.ts"
+}

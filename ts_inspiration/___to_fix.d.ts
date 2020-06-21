@@ -8,3 +8,9 @@
 //     export type funky = (arg: other) => boolean;
 //     export type other = number;
 //     |};
+
+type x = keyof { x: string; y: number; 3: boolean };
+type y = keyof {};
+
+export var f: x;
+export var z: typeof f;

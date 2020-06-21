@@ -20,6 +20,7 @@ let info = (t: t): Parse_info.t =>
   | TRUE(ii) => ii
   | INSTANCEOF(ii) => ii
   | TYPEOF(ii) => ii
+  | KEYOF(ii) => ii
   | THIS(ii) => ii
   | VAR(ii) => ii
   | LET(ii) => ii

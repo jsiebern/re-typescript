@@ -920,19 +920,25 @@ and parse__interface =
       |> CCList.map((member: Ts.type_member) =>
            switch (member) {
            | PropertySignature({
-               ps_property_name: PIdentifier(ps_ident),
+               ps_property_name,
                ps_type_annotation,
                ps_optional,
              }) =>
-             let path = path |> Path.add_sub(ps_ident |> no_pi);
+             let ident =
+               switch (ps_property_name) {
+               | PIdentifier(ident)
+               | PString(ident) => ident
+               | PNumber({pi, item}) => {pi, item: item |> string_of_int}
+               };
+             let path = path |> Path.add_sub(ident |> no_pi);
              let parsed_type =
                parse__type(~inline=true, ~path, ps_type_annotation);
              {
-               f_name: ps_ident |> Ident.of_pi,
+               f_name: ident |> Ident.of_pi,
                f_type: ps_optional ? Optional(parsed_type) : parsed_type,
              };
            | MethodSignature({
-               ms_property_name: PIdentifier(ms_ident),
+               ms_property_name,
                ms_call_signature: {
                  cs_type_parameters,
                  cs_parameter_list,
@@ -940,7 +946,13 @@ and parse__interface =
                },
                ms_optional,
              }) =>
-             let path = path |> Path.add_sub(ms_ident |> no_pi);
+             let ident =
+               switch (ms_property_name) {
+               | PIdentifier(ident)
+               | PString(ident) => ident
+               | PNumber({pi, item}) => {pi, item: item |> string_of_int}
+               };
+             let path = path |> Path.add_sub(ident |> no_pi);
              let parsed_type =
                parse__type(
                  ~inline=true,
@@ -954,23 +966,9 @@ and parse__interface =
                  }),
                );
              {
-               f_name: ms_ident |> Ident.of_pi,
+               f_name: ident |> Ident.of_pi,
                f_type: ms_optional ? Optional(parsed_type) : parsed_type,
              };
-           | PropertySignature(_) as p =>
-             raise(
-               Exceptions.Parser_unsupported(
-                 "PropertySignature with anything but PIdentifier not yet supported in interface",
-                 position_of_type_member(p),
-               ),
-             )
-           | MethodSignature(_) as p =>
-             raise(
-               Exceptions.Parser_unsupported(
-                 "MethodSignature with anything but PIdentifier not yet supported in interface",
-                 position_of_type_member(p),
-               ),
-             )
            | CallSignature(_) =>
              raise(
                Exceptions.Parser_unexpected(
@@ -1023,6 +1021,8 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
     inline
       ? parse__inline(~path, t)
       : parse__interface(~path, members |> CCOpt.value(~default=[]))
+  | KeyOf({item, _}) as t =>
+    inline ? parse__inline(~path, t) : parse__keyof(~path, item)
   | Function({f_body, f_ret, f_parameters}) as t =>
     inline
       ? parse__inline(~path, ~parameters=?f_parameters, t)
@@ -1037,9 +1037,6 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
   | Intersection(left, right) as t =>
     inline
       ? parse__inline(~path, t) : parse__intersection(~path, ~left, ~right)
-  | Query([{pi, _}])
-  | Query([{pi, _}, _]) =>
-    raise(Exceptions.Parser_unsupported("Query type not yet supported", pi))
   | Query(_) =>
     raise(
       Exceptions.Parser_unsupported(
@@ -1134,6 +1131,105 @@ and parse__inline = (~path, ~parameters=?, type_) => {
     tr_path_resolved: Some(path),
     tr_parameters: args |> CCList.map(a => Arg(a)),
   });
+}
+and parse__keyof = (~path, type_) => {
+  let rec get_keys_of_ts = (ts: ts_type) =>
+    switch (ts) {
+    | Reference({tr_path_resolved: Some(p), _}) =>
+      switch (Type.get(~path=p)) {
+      | Some(Optional(t))
+      | Some(TypeDeclaration({td_type: Optional(t), _}))
+      | Some(Nullable(t))
+      | Some(TypeDeclaration({td_type: Nullable(t), _}))
+      | Some(Reference(_) as t)
+      | Some(TypeDeclaration({td_type: Reference(_) as t, _})) =>
+        get_keys_of_ts(t)
+      | Some(TypeDeclaration({td_type: Interface(fields, _), _}))
+      | Some(Interface(fields, _)) =>
+        fields
+        |> CCList.map(field =>
+             Ts.StringLiteral({
+               pi: Parse_info.zero,
+               item: field.f_name |> Ident.value,
+             })
+           )
+        |> opt_of_list
+      | None => None
+      | Some(other) =>
+        raise(
+          Exceptions.Parser_unexpected(
+            Printf.sprintf(
+              "Did not expect type %s in a keyof statement",
+              ts_to_string(other),
+            ),
+          ),
+        )
+      }
+    | other =>
+      raise(
+        Exceptions.Parser_unexpected(
+          Printf.sprintf(
+            "Did not expect type %s in a keyof statement",
+            ts_to_string(other),
+          ),
+        ),
+      )
+    };
+  let get_keys = type_ =>
+    switch (type_) {
+    | Ts.TypeReference(ref_) =>
+      get_keys_of_ts(parse__type_reference(~path, ref_))
+    | Ts.TypeExtract(ref_, extract) =>
+      get_keys_of_ts(parse__type_extraction(~path, ref_, extract))
+    | Ts.Object(members) =>
+      members
+      |> CCOpt.map(
+           CCList.filter_map(
+             fun
+             | Ts.PropertySignature({ps_property_name, _}) =>
+               Some(
+                 switch (ps_property_name) {
+                 | PIdentifier(item)
+                 | PString(item) => Ts.StringLiteral(item)
+                 | PNumber(item) => Ts.NumberLiteral(item)
+                 },
+               )
+             | IndexSignature({is_ident, _}) =>
+               Some(Ts.StringLiteral(is_ident))
+             | MethodSignature({ms_property_name, _}) =>
+               Some(
+                 switch (ms_property_name) {
+                 | PIdentifier(item)
+                 | PString(item) => Ts.StringLiteral(item)
+                 | PNumber(item) => Ts.NumberLiteral(item)
+                 },
+               )
+             | CallSignature(_)
+             | ConstructSignature(_) => None,
+           ),
+         )
+    | other =>
+      raise(
+        Exceptions.Parser_unexpected(
+          Printf.sprintf(
+            "Did not expect type %s in a keyof statement",
+            type_to_string(other),
+          ),
+        ),
+      )
+    };
+  let rec chain_of_list = lst =>
+    switch (lst) {
+    | [] => raise(Not_found)
+    | [l] => Ts.Union(l, None)
+    | [l, r] => Ts.Union(l, Some(r))
+    | [l, ...r] => Ts.Union(l, Some(chain_of_list(r)))
+    };
+  let keys = get_keys(type_) |> CCOpt.map(chain_of_list);
+  switch (keys) {
+  | None => parse__type(~path, Ts.Any(Parse_info.zero))
+  | Some(types) => parse__type(~path, types)
+  };
 }
 /**
   Intersection
