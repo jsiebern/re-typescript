@@ -30,7 +30,7 @@ module Declarations = {
     lst
     |> CCList.iter((dec: Ts.declaration) =>
          switch (dec, dec |> path_of_declaration(~path)) {
-         | (d, Some(path)) => Hashtbl.add(map, path, (d, false))
+         | (d, Some(path)) => Hashtbl.replace(map, path, (d, false))
          | _ => ()
          }
        );
@@ -202,6 +202,22 @@ module NamedImports = {
     Hashtbl.replace(map, path, get(~path) @ import);
   };
 };
+module NamespaceImports = {
+  type t = (Ident.t, Path.t);
+
+  type map = Hashtbl.t(Path.t, list(t));
+  let map: map = Hashtbl.create(0);
+
+  let get = (~path) => CCHashtbl.get_or(~default=[], map, path);
+  let find = (~path, binding) =>
+    get(~path)
+    |> CCList.find_opt(((local, _)) => Ident.eq(local, binding))
+    |> CCOpt.map(snd);
+
+  let add = (~path, binding: t) => {
+    Hashtbl.replace(map, path, get(~path) @ [binding]);
+  };
+};
 module Ref = {
   type t = Hashtbl.t(Path.t, Path.t);
   let map: t = Hashtbl.create(0);
@@ -224,6 +240,16 @@ module Ref = {
         ) {
         | None => (false, lookup)
         | Some(p) => (true, p)
+        }
+      | ([one, ...rest], []) =>
+        switch (
+          NamespaceImports.find(
+            ~path=(from_scope, []),
+            Ident.of_string(one),
+          )
+        ) {
+        | Some((ns_path, _)) => (true, (ns_path @ rest, []))
+        | None => (false, lookup)
         }
       | _ => (false, lookup)
       };

@@ -631,19 +631,33 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
 
   // Try to render dynamically from the declaration table
   if (!Path.eq_unscoped(ref_path, fst(path))) {
-    let paths = [
-      ((path |> Path.to_scope) @ ref_path, []),
-      ref_path_p,
-      switch (ref_path) {
-      | [one] =>
-        NamedImports.find(
-          ~path=(Path.to_scope(path), []),
-          Ident.of_string(one),
-        )
-        |> CCOpt.value(~default=([], []))
-      | _ => ([], [])
-      },
-    ];
+    let paths =
+      [
+        Some(((path |> Path.to_scope) @ ref_path, [])),
+        Some(ref_path_p),
+        switch (ref_path) {
+        | [one] =>
+          NamedImports.find(
+            ~path=(Path.to_scope(path), []),
+            Ident.of_string(one),
+          )
+        | _ => None
+        },
+        switch (ref_path) {
+        | [one, ...rest] =>
+          switch (
+            NamespaceImports.find(
+              ~path=(Path.to_scope(path), []),
+              Ident.of_string(one),
+            )
+          ) {
+          | Some((ns_path, _)) => Some((ns_path @ rest, []))
+          | None => None
+          }
+        | _ => None
+        },
+      ]
+      |> CCList.keep_some;
     paths
     |> CCList.iter(check_path =>
          if (Declarations.has(~path=check_path)) {
@@ -1245,7 +1259,11 @@ and parse__import = (~path, {i_from, i_clause}: Ts.declaration_import) => {
   | TripleSlashReference
   | ImportModuleSpecifier =>
     parse__direct_reference_module(~path, i_from) |> ignore
-  | ImportNamespace({item, _})
+  | ImportNamespace({item, _}) =>
+    let binding_path =
+      path |> Path.add(i_from |> Ident.of_string |> Ident.module_);
+    parse__direct_reference_module(~path=binding_path, i_from) |> ignore;
+    NamespaceImports.add(~path, (item |> Ident.of_string, binding_path));
   | ImportBinding({item, _}) =>
     let binding_path =
       path |> Path.add(i_from |> Ident.of_string |> Ident.module_);
@@ -1265,7 +1283,8 @@ and parse__import = (~path, {i_from, i_clause}: Ts.declaration_import) => {
            ),
          )
     ) {
-    | None => ()
+    | None =>
+      NamespaceImports.add(~path, (item |> Ident.of_string, binding_path))
     | Some(Ts.ExportDefault(IdentifierReference(idref))) =>
       let local = item |> Ident.of_string;
       let remote = idref.item |> Ident.of_string;
@@ -1310,7 +1329,9 @@ and parse__import = (~path, {i_from, i_clause}: Ts.declaration_import) => {
   | ImportSplitNamed(import, bindings) =>
     parse__import(~path, {i_from, i_clause: ImportBinding(import)});
     parse__import(~path, {i_from, i_clause: ImportNamed(bindings)});
-  | _ => ()
+  | ImportSplitNamespace(import, ns) =>
+    parse__import(~path, {i_from, i_clause: ImportBinding(import)});
+    parse__import(~path, {i_from, i_clause: ImportNamespace(ns)});
   };
 }
 /**

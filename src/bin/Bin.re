@@ -2,17 +2,21 @@ open Re_typescript_base;
 open Re_typescript_fs;
 
 let content = {|
-import Global2 from '@types/global';
-// export default function (a: string);
+import IsOk, * as Others from './import_source';
+import { str } from './import_source';
 
-type x = Global2;
-// type y = Global.other;
+type should_be_bool = IsOk;
+type should_be_string = str;
+type should_be_obj = Others.iImport;
 |};
 let global = {|
-export type funky = (arg: other) => boolean;
-export type other = number;
-// export default function(a: string): number;
-export default other;
+export type str = string;
+interface iImport {
+  get: (a: number) => void;
+}
+
+type b = boolean;
+export default b;
 |};
 
 let default_path = Fp.absoluteExn("/root/src/bin.d.ts");
@@ -23,7 +27,7 @@ let default_loader: module Loader.T =
      Hashtbl.replace(tbl, default_path, content);
      Hashtbl.replace(
        tbl,
-       Fp.absoluteExn("/root/src/node_modules/@types/global/index.d.ts"),
+       Fp.absoluteExn("/root/src/import_source.d.ts"),
        global,
      );
    }));
