@@ -1,13 +1,50 @@
-let language = Recoil.atom({key: "language", default: Bridge_bs.Reason});
+exception Unexpected_worker_result;
 
-let ts_source = Recoil.atom({key: "ts_source", default: TsDefault.content});
+// --- Global
+let language = Recoil.atom({key: "language", default: Bridge_bs.Reason});
+let ts_source = Recoil.atom({key: "ts_source", default: None});
 
 let config = Recoil.atom({key: "config", default: Sync.config});
 let config_open = Recoil.atom({key: "config_open", default: false});
 let examples_open = Recoil.atom({key: "examples_open", default: false});
 
+// --- Examples / Files
+let source_salt = Recoil.atom({key: "source_salt", default: 0.});
+type selected = {
+  file: option(string),
+  example: option(string),
+};
+let selected =
+  Recoil.atom({
+    key: "selected",
+    default: {
+      file: None,
+      example: None,
+    },
+  });
+let selected_file =
+  Recoil.selectorWithWrite({
+    key: "selected_file",
+    get: ({get}) => get(selected).file,
+    set: ({get, set}, value) =>
+      if (get(selected).file != value) {
+        set(source_salt, Js.Math.random());
+        set(ts_source, None);
+        set(selected, {...get(selected), file: value});
+      },
+  });
+let selected_example =
+  Recoil.selectorWithWrite({
+    key: "selected_example",
+    get: ({get}) => get(selected).example,
+    set: ({get, set}, value) => {
+      set(selected, {...get(selected), example: value});
+    },
+  });
+
+// --- Worker specific
 let worker = WebWorkers.create_webworker("worker/worker.js");
-let parsing_complete: ref((. Bridge_bs.parse_result) => unit) =
+let parsing_complete: ref((. Bridge_bs.worker_response) => unit) =
   ref((. _) => ());
 let working = ref(false);
 WebWorkers.onMessage(
@@ -21,26 +58,69 @@ let parse_result: Recoil.readOnly(Bridge_bs.parse_result) =
   Recoil.asyncSelector({
     key: "parse_result",
     get: ({get}) => {
+      let _salt = get(source_salt);
       let content = get(ts_source);
       let language = get(language);
       let config = get(config);
+      let selected_file = get(selected_file);
       Js.Promise.make((~resolve, ~reject) =>
-        if (! working^) {
-          parsing_complete := resolve;
-
+        switch (selected_file, working^) {
+        | (_, true)
+        | (None, _) => reject(. Not_found)
+        | (Some(path), false) =>
+          parsing_complete :=
+            (
+              (. res) =>
+                switch (res) {
+                | Bridge_bs.Res_Parse(res) => resolve(. res)
+                | _ => raise(Unexpected_worker_result)
+                }
+            );
           working := true;
           WebWorkers.postMessage(
             worker,
-            Bridge_bs.{content, language, config},
+            Bridge_bs.Parse(
+              Bridge_bs.{content, language, config, file_path: path},
+            ),
           );
-        } else {
-          reject(. Not_found);
         }
       );
     },
   });
 
-// Config elements
+let example_list: Recoil.readOnly(array(Bridge_bs.example)) =
+  Recoil.asyncSelector({
+    key: "example_list",
+    get: _ => {
+      Js.Promise.make((~resolve, ~reject as _) => {
+        parsing_complete :=
+          (
+            (. res) =>
+              switch (res) {
+              | Bridge_bs.Res_ExampleList(res) =>
+                resolve(. res->Belt.List.toArray)
+              | _ => raise(Unexpected_worker_result)
+              }
+          );
+        working := true;
+        WebWorkers.postMessage(worker, Bridge_bs.ExampleList);
+      });
+    },
+  });
+
+let selected_example_t =
+  Recoil.selector({
+    key: "selected_example_t",
+    get: ({get}) => {
+      let examples = get(example_list);
+      let selected_example = get(selected_example);
+      selected_example->Belt.Option.flatMap(path =>
+        examples->Belt.Array.keep(e => e.path === path)->Belt.Array.get(0)
+      );
+    },
+  });
+
+// --- Config elements
 let suppress_warning_for_extended_records =
   Recoil.selectorWithWrite({
     key: "suppress_warning_for_extended_records",

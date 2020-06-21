@@ -149,6 +149,7 @@ module MenuItem = {
       ~name: string=?,
       ~active: bool=?,
       ~fitted: bool=?,
+      ~style: ReactDOMRe.Style.t=?,
       ~onClick: (ReactEvent.Mouse.t, clickReturn) => unit=?,
       ~children: React.element
     ) =>
@@ -515,7 +516,7 @@ module Divider = {
 
 module Tab = {
   type pane = {
-    menuItem: string,
+    menuItem: React.element,
     render: unit => React.element,
   };
   type menu = {
@@ -525,10 +526,11 @@ module Tab = {
   };
 
   [@react.component] [@bs.module "semantic-ui-react"]
-  external make: (~menu: menu, ~panes: array(pane)) => React.element = "Tab";
+  external make: (~menu: menu=?, ~panes: array(pane)) => React.element =
+    "Tab";
 };
 
 module TabPane = {
   [@react.component] [@bs.module "semantic-ui-react"]
-  external make: (~children: React.element) => React.element = "Tab";
+  external make: (~children: React.element) => React.element = "TabPane";
 };

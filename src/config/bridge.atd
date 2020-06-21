@@ -7,13 +7,14 @@ type parse_language = [
 ] <ocaml repr="classic">
 type parse_request = {
   language: parse_language;
-  content: string;
+  content: string option;
   config: config;
+  file_path: string;
 }
 
 type parse_result = [
   | Error of (parse_error_kind * string)
-  | Ok of string
+  | Ok of (string * string option)
 ] <ocaml repr="classic">
 
 type parse_error_kind = [
@@ -27,4 +28,32 @@ type parse_error_kind = [
   | Base_parser_error
   | Base_lexer_error
   | Js_unknown
+] <ocaml repr="classic">
+
+type example_meta = {
+  name: string;
+  description: string;
+  entry: string;
+}
+
+type example_tree = [
+  | Folder of (string * example_tree list)
+  | File of string
+] <ocaml repr="classic">
+
+type example = {
+  path: string;
+  meta: example_meta;
+  files: example_tree list;
+}
+type example_list = example list
+
+type worker_request = [
+  | Parse of parse_request
+  | ExampleList
+] <ocaml repr="classic">
+
+type worker_response = [
+  | Res_Parse of parse_result
+  | Res_ExampleList of example_list
 ] <ocaml repr="classic">

@@ -47,22 +47,17 @@ module Container = [%styled.div
 |}
 ];
 
-[@react.component]
-let make = () => {
-  let lang = Recoil.useRecoilValue(State.language);
+let useParsedResult = () => {
   let result = Recoil.useRecoilValueLoadable(State.parse_result);
-  let (printed, setPrinted) = React.useReducer((_, v) => v, "");
-  let (error, setError) = React.useReducer((_, v) => v, None);
+  let (res, setRes) = React.useReducer((_, v) => v, Ok(("", None)));
 
   React.useEffect1(
     () => {
       switch (result->Recoil.Loadable.state) {
       | state when state === Recoil.Loadable.State.hasValue =>
         switch (result->Recoil.Loadable.getValue) {
-        | Ok(src) =>
-          setPrinted(src);
-          setError(None);
-        | Error((_, msg)) => setError(Some(msg))
+        | Ok(r) => setRes(Ok(r))
+        | Error((_, msg)) => setRes(Error(msg))
         }
       | _ => ()
       };
@@ -70,10 +65,29 @@ let make = () => {
     },
     [|result|],
   );
+
+  res;
+};
+
+[@react.component]
+let make = () => {
+  let lang = Recoil.useRecoilValue(State.language);
+  let result = useParsedResult();
+  let (lastOk, setLastOk) = React.useReducer((_, v) => v, "");
+  React.useEffect1(
+    () => {
+      switch (result) {
+      | Ok((src, _)) => setLastOk(src)
+      | Error(_) => ()
+      };
+      None;
+    },
+    [|result|],
+  );
+
   <Container h="calc(100vh - 65px)">
-    {switch (error) {
-     | None => React.null
-     | Some(e) =>
+    {switch (result) {
+     | Error(e) =>
        <Error h="calc(100vh - 65px)" key="error">
          <div
            key="sub_error"
@@ -81,6 +95,7 @@ let make = () => {
            dangerouslySetInnerHTML={"__html": e}
          />
        </Error>
+     | Ok(_) => React.null
      }}
     <ReactSyntaxHighlighter
       showLineNumbers=true
@@ -91,7 +106,7 @@ let make = () => {
         | Ocaml => `Ocaml
         }
       }>
-      printed
+      lastOk
     </ReactSyntaxHighlighter>
   </Container>;
 };
