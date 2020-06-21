@@ -1,0 +1,10 @@
+mapped object types › map over predefined keys through a reference
+type keys =
+  | Option1
+  | Option2
+and keysRef = keys
+and flags = {
+  option1: bool,
+  option2: bool,
+};
+

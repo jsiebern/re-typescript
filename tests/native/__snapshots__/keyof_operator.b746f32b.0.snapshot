@@ -1,5 +1,9 @@
 keyof operator › extracts keys from an inline object
-type keys =
+type keys_t = {
+  x: string,
+  y: float,
+}
+and keys =
   | X
   | Y;
 

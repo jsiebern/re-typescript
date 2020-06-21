@@ -121,6 +121,14 @@ and type_ =
   | Symbol(Parse_info.t)
   | This(Parse_info.t)
   | UnionTemp(list(temp_union_member))
+  | MappedObject(with_pi(mapped_object))
+and mapped_object = {
+  mo_readonly: bool,
+  mo_ident: identifier_name,
+  mo_type: type_,
+  mo_optional: bool,
+  mo_type_annotation: option(type_),
+}
 and temp_union_member = [
   | `U_String(string)
   | `U_Number(int)

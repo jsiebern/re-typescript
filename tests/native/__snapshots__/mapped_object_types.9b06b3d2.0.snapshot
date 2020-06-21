@@ -1,0 +1,5 @@
+mapped object types › map over a single string literal
+type key =
+  | Just_one_key
+and flags = {just_one_key: bool};
+

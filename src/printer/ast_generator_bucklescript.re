@@ -462,6 +462,13 @@ module Make = (Config: Config) : Ast_generator.T => {
           BS_Decode_Error("Module is not valid outside of root");
         },
       )
+    | Lazy(_) =>
+      raise(
+        {
+          Console.error(type_);
+          BS_Decode_Error("Lazy should be resolved by now");
+        },
+      )
     };
 
   let generate =

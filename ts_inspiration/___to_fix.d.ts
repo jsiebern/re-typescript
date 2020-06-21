@@ -1,16 +1,25 @@
-// let content = {|
-//     import { funky, other } from './global';
+interface A {
+  x: string;
+  y: number;
+  z: boolean;
+}
 
-//     type x = funky;
-//     type y = other;
-//     |};
-//     let global = {|
-//     export type funky = (arg: other) => boolean;
-//     export type other = number;
-//     |};
+type PartialX<T> = {
+  [P in keyof T]?: T[P];
+};
 
-type x = keyof { x: string; y: number; 3: boolean };
-type y = keyof {};
+type PartialWithNewMember<T> = {
+  [P in keyof T]?: T[P];
+} & { newMember: boolean };
 
-export var f: x;
-export var z: typeof f;
+type a_partial = PartialX<A>;
+type b_partial = PartialWithNewMember<A>;
+
+type Keys = "option1" | "option2";
+type Flags = { [K in Keys]: boolean };
+
+interface C {
+  key_1: string;
+  key_2: number;
+  flags: { [K in keyof C]: boolean };
+}

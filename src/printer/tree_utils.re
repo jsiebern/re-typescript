@@ -162,6 +162,8 @@ let rec get_union_type_name = (um_type: ts_type) => {
     raise(Exceptions.Parser_error("Import is not a valid union member"))
   | Module(_) =>
     raise(Exceptions.Parser_error("Module is not a valid union member"))
+  | Lazy(_) =>
+    raise(Exceptions.Parser_error("Lazy is not a valid union member"))
   };
 };
 
@@ -191,9 +193,11 @@ let rec path_of_declaration = (~path, d: Ts.declaration) =>
   | Import(_) => None
   };
 
-let type_to_string = (t: Ts.type_) =>
+let rec type_to_string = (t: Ts.type_) =>
   switch (t) {
   | Object(_) => "Object"
+  | MappedObject({item: {mo_type, _}, _}) =>
+    Printf.sprintf("MappedObject_%s", type_to_string(mo_type))
   | Tuple(_) => "Tuple"
   | Array(_) => "Array"
   | Function(_) => "Function"
@@ -205,7 +209,11 @@ let type_to_string = (t: Ts.type_) =>
   | StringLiteral(_) => "StringLiteral"
   | NumberLiteral(_) => "NumberLiteral"
   | BoolLiteral(_) => "BoolLiteral"
-  | TypeReference(_) => "TypeReference"
+  | TypeReference((path, _)) =>
+    Printf.sprintf(
+      "TypeReference: %s",
+      path |> CCList.to_string(~sep=".", p => p.Ts.item),
+    )
   | TypeExtract(_) => "TypeExtract"
   | String(_) => "String"
   | Number(_) => "Number"
@@ -292,7 +300,11 @@ let rec ts_to_string = (t: ts_type) =>
   | Union(_) => "Union"
   | MixedLiteral(_) => "MixedLiteral"
   | NumericLiteral(_) => "NumericLiteral"
-  | StringLiteral(_) => "StringLiteral"
+  | StringLiteral(lst) =>
+    Printf.sprintf(
+      "StringLiteral: %s",
+      lst |> CCList.to_string(~sep=",", Ident.value),
+    )
   | Enum(_) => "Enum"
   | Base(String) => "Base_String"
   | Base(Number) => "Base_Number"
@@ -311,10 +323,17 @@ let rec ts_to_string = (t: ts_type) =>
   | Array(_) => "Array"
   | Optional(_) => "Optional"
   | Nullable(_) => "Nullable"
-  | Reference(_) => "Reference"
+  | Reference({tr_path, tr_path_resolved, tr_parameters}) =>
+    Printf.sprintf(
+      "Reference ('%s', '%s', '%i')",
+      Path.unscoped_to_string(tr_path),
+      Path.to_string(tr_path_resolved |> CCOpt.get_exn),
+      tr_parameters |> CCList.length,
+    )
   | TypeDeclaration({td_type, _}) =>
     Printf.sprintf("TypeDeclaration_%s", ts_to_string(td_type))
   | Import(_) => "Import"
   | Module(_) => "Module"
+  | Lazy(_) => "Lazy"
   | Arg(_) => "Arg"
   };

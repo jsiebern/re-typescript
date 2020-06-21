@@ -509,25 +509,28 @@ and parse__type_extraction =
       type_ref: Ts.type_reference,
       fields: list(list(string)),
     ) => {
-  // TODO: Unclean & naively solved, replace later
   let ref_path = fst(type_ref) |> CCList.map(no_pi);
-  // let ref_types = snd(type_ref) |> CCOpt.value(~default=[]);
   let resolved_fields =
-    switch (
-      Ref.resolve_ref(
-        ~recursive=true,
-        ~from=path,
-        from_ref |> CCOpt.value(~default=(ref_path, [])),
-      )
-      |> CCOpt.flat_map(v => Type.get(~path=v))
-    ) {
-    | None => []
-    | Some(ref_type) =>
-      switch (ref_type) {
-      | TypeDeclaration({td_type: Interface(add_fields, _), _}) => add_fields
-      | _ => []
-      }
-    };
+    resolve__to_final_type_ts(
+      ~path,
+      Reference(
+        from_ref
+        |> CCOpt.value(
+             ~default={
+               tr_path: ref_path,
+               tr_path_resolved: Some((ref_path, [])),
+               tr_parameters: [],
+             },
+           ),
+      ),
+    )
+    |> CCOpt.flat_map(
+         fun
+         | Interface(add_fields, _) => Some(add_fields)
+         | _ => None,
+       )
+    |> list_of_opt;
+
   switch (fields) {
   | [] => raise(Not_found)
   | [[]] => raise(Not_found)
@@ -579,16 +582,14 @@ and parse__type_extraction =
          )
     ) {
     | Some({
-        f_type: Reference({tr_path_resolved: Some(tr_path_resolved), _}),
+        f_type:
+          Reference(
+            {tr_path, tr_path_resolved: Some(tr_path_resolved), _} as tr,
+          ),
         _,
       }) =>
       Ref.add(~from=path, ~to_=tr_path_resolved);
-      parse__type_extraction(
-        ~from_ref=tr_path_resolved,
-        ~path,
-        ([], None),
-        rest,
-      );
+      parse__type_extraction(~from_ref=tr, ~path, ([], None), rest);
     | Some(_)
     | None =>
       raise(
@@ -1044,6 +1045,8 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
         current_position^,
       ),
     )
+  | MappedObject({item, _}) as t =>
+    inline ? parse__inline(~path, t) : parse__mapped_object(~path, item)
   | Symbol(pi) =>
     raise(Exceptions.Parser_unsupported("Symbol type not yet supported", pi))
   | This(pi) =>
@@ -1132,92 +1135,109 @@ and parse__inline = (~path, ~parameters=?, type_) => {
     tr_parameters: args |> CCList.map(a => Arg(a)),
   });
 }
-and parse__keyof = (~path, type_) => {
-  let rec get_keys_of_ts = (ts: ts_type) =>
-    switch (ts) {
-    | Reference({tr_path_resolved: Some(p), _}) =>
-      switch (Type.get(~path=p)) {
-      | Some(Optional(t))
-      | Some(TypeDeclaration({td_type: Optional(t), _}))
-      | Some(Nullable(t))
-      | Some(TypeDeclaration({td_type: Nullable(t), _}))
-      | Some(Reference(_) as t)
-      | Some(TypeDeclaration({td_type: Reference(_) as t, _})) =>
-        get_keys_of_ts(t)
-      | Some(TypeDeclaration({td_type: Interface(fields, _), _}))
-      | Some(Interface(fields, _)) =>
-        fields
-        |> CCList.map(field =>
-             Ts.StringLiteral({
-               pi: Parse_info.zero,
-               item: field.f_name |> Ident.value,
-             })
-           )
-        |> opt_of_list
-      | None => None
-      | Some(other) =>
-        raise(
-          Exceptions.Parser_unexpected(
-            Printf.sprintf(
-              "Did not expect type %s in a keyof statement",
-              ts_to_string(other),
+
+/**
+    Mapped object
+*/
+and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
+  let {Ts.mo_ident, mo_type, mo_optional, mo_type_annotation, _} = mapped_object;
+
+  let type_annotation =
+    mo_type_annotation
+    |> CCOpt.map(parse__type(~inline=true, ~path=path |> Path.add("t")))
+    |> CCOpt.value(~default=Base(Any));
+  let type_annotation =
+    mo_optional ? Optional(type_annotation) : type_annotation;
+
+  let resolve =
+    fun
+    | StringLiteral(keys) =>
+      Interface(
+        keys |> CCList.map(key => {f_name: key, f_type: type_annotation}),
+        false,
+      )
+    | _ =>
+      raise(
+        Exceptions.Parser_unexpected("Unexpected lazy result for mapped_obj"),
+      );
+
+  switch (resolve__to_final_type(~maybe_add="k", ~path, mo_type)) {
+  | Some(StringLiteral(_) as t) => resolve(t)
+  | Some(Lazy(l)) =>
+    Lazy(
+      lazy(
+        {
+          (() => resolve(Lazy.force(l, ())));
+        }
+      ),
+    )
+  | Some(other) =>
+    Console.warn(
+      Printf.sprintf(
+        "Warning: Type '%s' cannot be used in a mapped object type. String or string literal required.",
+        ts_to_string(other),
+      ),
+    );
+    Base(Any);
+  | None =>
+    Console.warn(
+      Printf.sprintf(
+        "Warning: Raw type '%s' cannot be used in a mapped object type. String or string literal required.",
+        type_to_string(mo_type),
+      ),
+    );
+    Base(Any);
+  };
+}
+and resolve__to_final_type_ts = (~path, ts: ts_type) =>
+  switch (ts) {
+  | TypeDeclaration({td_type: Reference({tr_path_resolved: Some(p), _}), _})
+  | Reference({tr_path_resolved: Some(p), _}) =>
+    switch (Type.get(~path=p)) {
+    | Some(Optional(t))
+    | Some(TypeDeclaration({td_type: Optional(t), _}))
+    | Some(Nullable(t))
+    | Some(TypeDeclaration({td_type: Nullable(t), _}))
+    | Some(Reference(_) as t)
+    | Some(TypeDeclaration({td_type: Reference(_) as t, _})) =>
+      resolve__to_final_type_ts(~path, t)
+    | Some(TypeDeclaration({td_type: t, _}))
+    | Some(t) => resolve__to_final_type_ts(~path, t)
+    | None =>
+      if (Path.eq_unscoped(fst(path), fst(p)) && Declarations.has(~path=p)) {
+        Some(
+          Lazy(
+            lazy(
+              {
+                (() => resolve__to_final_type_ts(~path, ts) |> CCOpt.get_exn);
+              }
             ),
           ),
-        )
+        );
+      } else {
+        None;
       }
-    | other =>
-      raise(
-        Exceptions.Parser_unexpected(
-          Printf.sprintf(
-            "Did not expect type %s in a keyof statement",
-            ts_to_string(other),
-          ),
-        ),
-      )
-    };
-  let get_keys = type_ =>
-    switch (type_) {
-    | Ts.TypeReference(ref_) =>
-      get_keys_of_ts(parse__type_reference(~path, ref_))
-    | Ts.TypeExtract(ref_, extract) =>
-      get_keys_of_ts(parse__type_extraction(~path, ref_, extract))
-    | Ts.Object(members) =>
-      members
-      |> CCOpt.map(
-           CCList.filter_map(
-             fun
-             | Ts.PropertySignature({ps_property_name, _}) =>
-               Some(
-                 switch (ps_property_name) {
-                 | PIdentifier(item)
-                 | PString(item) => Ts.StringLiteral(item)
-                 | PNumber(item) => Ts.NumberLiteral(item)
-                 },
-               )
-             | IndexSignature({is_ident, _}) =>
-               Some(Ts.StringLiteral(is_ident))
-             | MethodSignature({ms_property_name, _}) =>
-               Some(
-                 switch (ms_property_name) {
-                 | PIdentifier(item)
-                 | PString(item) => Ts.StringLiteral(item)
-                 | PNumber(item) => Ts.NumberLiteral(item)
-                 },
-               )
-             | CallSignature(_)
-             | ConstructSignature(_) => None,
-           ),
-         )
-    | other =>
-      raise(
-        Exceptions.Parser_unexpected(
-          Printf.sprintf(
-            "Did not expect type %s in a keyof statement",
-            type_to_string(other),
-          ),
-        ),
-      )
-    };
+    }
+  | Optional(t)
+  | TypeDeclaration({td_type: Optional(t), _})
+  | Nullable(t)
+  | TypeDeclaration({td_type: Nullable(t), _})
+  | Reference(_) as t
+  | TypeDeclaration({td_type: Reference(_) as t, _}) =>
+    resolve__to_final_type_ts(~path, t)
+  | final => Some(final)
+  }
+and resolve__to_final_type = (~maybe_add=?, ~path, type_) => {
+  let path =
+    maybe_add
+    |> CCOpt.map(add => path |> Path.add_sub(add))
+    |> CCOpt.value(~default=path);
+  resolve__to_final_type_ts(~path, parse__type(~inline=true, ~path, type_));
+}
+/**
+    KeyOf
+*/
+and parse__keyof = (~path, type_) => {
   let rec chain_of_list = lst =>
     switch (lst) {
     | [] => raise(Not_found)
@@ -1225,10 +1245,59 @@ and parse__keyof = (~path, type_) => {
     | [l, r] => Ts.Union(l, Some(r))
     | [l, ...r] => Ts.Union(l, Some(chain_of_list(r)))
     };
-  let keys = get_keys(type_) |> CCOpt.map(chain_of_list);
-  switch (keys) {
-  | None => parse__type(~path, Ts.Any(Parse_info.zero))
-  | Some(types) => parse__type(~path, types)
+  // It might happen, that we want to get a keyof in recursion. As the parent has not been fully parsed yet, it can't be referenced
+  // So we'll do a parent check here & try to extract the keys later
+  let resolved =
+    switch (resolve__to_final_type(~maybe_add="t", ~path, type_)) {
+    | Some(Interface(_) as t) => Ok(t)
+    | Some(Lazy(_) as t) => Error(t)
+    | Some(other) =>
+      raise(
+        Exceptions.Parser_unexpected(
+          Printf.sprintf(
+            "Did not expect type '%s' in a keyof statement",
+            ts_to_string(other),
+          ),
+        ),
+      )
+    | None =>
+      raise(
+        Exceptions.Parser_unexpected(
+          Printf.sprintf(
+            "Did not expect raw type '%s' in a keyof statement",
+            type_to_string(type_),
+          ),
+        ),
+      )
+    };
+
+  let finish = resolved => {
+    switch (resolved) {
+    | Interface(fields, _) =>
+      fields
+      |> CCList.map(field =>
+           Ts.StringLiteral({
+             pi: Parse_info.zero,
+             item: field.f_name |> Ident.value,
+           })
+         )
+      |> chain_of_list
+      |> parse__type(~path)
+    | _ => parse__type(~path, Ts.Any(Parse_info.zero))
+    };
+  };
+  switch (resolved) {
+  | Ok(t) => finish(t)
+  | Error(Lazy(res)) =>
+    Lazy(
+      lazy(
+        {
+          (() => finish((res |> Lazy.force)()));
+        }
+      ),
+    )
+  | Error(_) =>
+    raise(Exceptions.Parser_unexpected("Unexpected error in keyof"))
   };
 }
 /**
@@ -1492,6 +1561,8 @@ and parse__entry =
     )
   };
 
+  // Resolve leftover lazies if there are any
+  Type.resolve_lazies();
   // Directly manipulates Type & Ref modules
   Tree_optimize.optimize(~ctx);
 

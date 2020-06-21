@@ -7,19 +7,33 @@ let content = {|
 // };
 
 // type keys = 'x' | 'y';
-
-interface A {
-  x: string;
-  y: number;
-  z: boolean;
-}
-
 // type stripped = Pick<A, keys>;
 
-type Partial<T> = {
-    [P in keyof T]?: T[P];
+// interface A {
+//   x: string;
+//   y: number;
+//   z: boolean;
+// }
+
+
+// type Partial<T> = {
+//     [P in keyof T]?: T[P];
+// }
+// type a_partial = Partial<A>;
+
+interface A {
+  key_1: string;
+  key_2: number;
+  flags: { [K in keyof A]: boolean };
 }
-type a_partial = Partial<A>;
+
+// ---- WORKS
+// type key = 'just_one_key';
+// type Flags = { [K in key]: boolean };
+
+
+// type Keys = 'option1' | 'option2';
+// type Flags = { [K in Keys]: boolean };
 |};
 let global = {|
 |};

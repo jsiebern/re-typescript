@@ -38,10 +38,57 @@ module Declarations = {
 module Type = {
   type t = Hashtbl.t(Path.t, ts_type);
   let map: t = Hashtbl.create(0);
-  let add = (~path, type_) => Hashtbl.add(map, path, type_);
+
+  let lazies = ref([]);
+  let add_lazy = (path: Path.t) => {
+    lazies := lazies^ @ [path];
+  };
+
+  let add = (~path, type_) => {
+    switch (type_) {
+    | Optional(Lazy(_))
+    | TypeDeclaration({td_type: Optional(Lazy(_)), _})
+    | Nullable(Lazy(_))
+    | TypeDeclaration({td_type: Nullable(Lazy(_)), _})
+    | Lazy(_)
+    | TypeDeclaration({td_type: Lazy(_), _}) => add_lazy(path)
+    | _ => ()
+    };
+    Hashtbl.add(map, path, type_);
+  };
   let get = (~path) => Hashtbl.find_opt(map, path);
   let replace = (~path, type_) => Hashtbl.replace(map, path, type_);
   let remove = (~path) => Hashtbl.remove(map, path);
+
+  let resolve_lazies = () => {
+    lazies^
+    |> CCList.iter(l_path => {
+         switch (get(~path=l_path)) {
+         | Some(Optional(Lazy(l))) =>
+           replace(~path=l_path, Optional(Lazy.force(l, ())))
+         | Some(TypeDeclaration({td_type: Optional(Lazy(l)), _} as td)) =>
+           replace(
+             ~path=l_path,
+             TypeDeclaration({...td, td_type: Optional(Lazy.force(l, ()))}),
+           )
+         | Some(Nullable(Lazy(l))) =>
+           replace(~path=l_path, Nullable(Lazy.force(l, ())))
+         | Some(TypeDeclaration({td_type: Nullable(Lazy(l)), _} as td)) =>
+           replace(
+             ~path=l_path,
+             TypeDeclaration({...td, td_type: Nullable(Lazy.force(l, ()))}),
+           )
+         | Some(Lazy(l)) => replace(~path=l_path, Lazy.force(l, ()))
+         | Some(TypeDeclaration({td_type: Lazy(l), _} as td)) =>
+           replace(
+             ~path=l_path,
+             TypeDeclaration({...td, td_type: Lazy.force(l, ())}),
+           )
+         | Some(_)
+         | None => ()
+         }
+       });
+  };
 
   let order = ref([]);
   let add_order = (path: Path.t) => {
@@ -50,6 +97,7 @@ module Type = {
   let clear = () => {
     Hashtbl.clear(map);
     order := [];
+    lazies := [];
   };
 
   let extract_parameters = (~path) =>

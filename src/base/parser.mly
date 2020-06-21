@@ -266,6 +266,7 @@ let type_primary :=
   | t = type_predefined; { t }
   | t = type_reference; { Ts.TypeReference(t) }
   | t = type_object; { Ts.Object(t) }
+  | t = type_mapped_object; { t }
   | t = type_array; { t }
   | t = type_tuple; { t }
   | t = type_query; { t }
@@ -275,6 +276,18 @@ let type_primary :=
 
 let field_access :=
   | l = delimited(LBRACKET, separated_nonempty_list(PIPE, module_specifier), RBRACKET); { l }
+
+(*
+    Mapped object types
+*)
+let type_mapped_object :=
+  | LCURLY; READONLY; LBRACKET; ident = identifier_name; pi = IN; t = type_; RBRACKET; QMARK; ta = type_annotation; RCURLY; { Ts.MappedObject({ pi; item = { mo_readonly = true; mo_ident = ident; mo_type = t; mo_optional = true; mo_type_annotation = Some(ta) } }) }
+  | LCURLY; LBRACKET; ident = identifier_name; pi = IN; t = type_; RBRACKET; QMARK; ta = type_annotation; RCURLY; { Ts.MappedObject({ pi; item = { mo_readonly = false; mo_ident = ident; mo_type = t; mo_optional = true; mo_type_annotation = Some(ta) } }) }
+  | LCURLY; READONLY; LBRACKET; ident = identifier_name; pi = IN; t = type_; RBRACKET; ta = type_annotation; RCURLY; { Ts.MappedObject({ pi; item = { mo_readonly = true; mo_ident = ident; mo_type = t; mo_optional = false; mo_type_annotation = Some(ta) } }) }
+  | LCURLY; LBRACKET; ident = identifier_name; pi = IN; t = type_; RBRACKET; ta = type_annotation; RCURLY; { Ts.MappedObject({ pi; item = { mo_readonly = false; mo_ident = ident; mo_type = t; mo_optional = false; mo_type_annotation = Some(ta) } }) }
+  | LCURLY; LBRACKET; ident = identifier_name; pi = IN; t = type_; RBRACKET; QMARK; RCURLY; { Ts.MappedObject({ pi; item = { mo_readonly = false; mo_ident = ident; mo_type = t; mo_optional = true; mo_type_annotation = None } }) }
+  | LCURLY; READONLY; LBRACKET; ident = identifier_name; pi = IN; t = type_; RBRACKET; RCURLY; { Ts.MappedObject({ pi; item = { mo_readonly = true; mo_ident = ident; mo_type = t; mo_optional = false; mo_type_annotation = None } }) }
+  | LCURLY; LBRACKET; ident = identifier_name; pi = IN; t = type_; RBRACKET; RCURLY; { Ts.MappedObject({ pi; item = { mo_readonly = false; mo_ident = ident; mo_type = t; mo_optional = false; mo_type_annotation = None } }) }
 
 (*
     Array
