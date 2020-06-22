@@ -90,6 +90,19 @@ module Path = {
   let eq = ((path_a, sub_a): t, (path_b, sub_b): t) => {
     eq_unscoped(path_a, path_b) && eq_unscoped(sub_a, sub_b);
   };
+
+  let pp_unscoped = (~sep=".", sub: list(string)) =>
+    sub |> CCList.to_string(~sep, a => a);
+  let pp = (~sep=?, p) =>
+    switch (p) {
+    | (path, []) => Printf.sprintf("'%s'", pp_unscoped(~sep?, path))
+    | (path, sub) =>
+      Printf.sprintf(
+        "'%s -> %s'",
+        pp_unscoped(~sep?, path),
+        pp_unscoped(~sep?, sub),
+      )
+    };
 };
 
 module Exceptions = {
@@ -136,9 +149,12 @@ let rec get_union_type_name = (um_type: ts_type) => {
   | Base(Undefined) => "undefined"
   | Base(Any) => "any"
   | Function(_) => "func"
-  | Reference({tr_path, _}) =>
-    tr_path
-    |> CCList.last_opt
+  | Reference({tr_path_resolved, _}) =>
+    tr_path_resolved
+    |> CCOpt.flat_map(((path, sub)) =>
+         CCList.last_opt(path)
+         |> CCOpt.map(l => [l] @ sub |> CCList.to_string(~sep="_", a => a))
+       )
     |> CCOpt.value(~default="unknown")
     |> Ident.of_string
     |> Ident.ident
@@ -315,9 +331,17 @@ let rec ts_to_string = (t: ts_type) =>
   | Base(Undefined) => "Base_Undefined"
   | Interface(f, extended) =>
     Printf.sprintf(
-      "Interface (%i, %s)",
+      "Interface (%i, extended: %s, fields: %s)",
       f |> CCList.length,
       extended ? "true" : "false",
+      f
+      |> CCList.to_string(~sep=" | ", f =>
+           Printf.sprintf(
+             "(%s: %s)",
+             f.f_name.i_value,
+             ts_to_string(f.f_type),
+           )
+         ),
     )
   | Tuple(_) => "Tuple"
   | Array(_) => "Array"

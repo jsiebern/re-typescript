@@ -1,5 +1,5 @@
 mapped object types › map over inlined keys
-type flags_k =
+type flags_K =
   | Option1
   | Option2
 and flags = {

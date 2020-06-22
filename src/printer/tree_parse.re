@@ -504,107 +504,180 @@ and parse__type_parameters =
 */
 and parse__type_extraction =
     (
-      ~from_ref=?,
       ~path,
-      type_ref: Ts.type_reference,
-      fields: list(list(string)),
+      source: Ts.type_extract_source,
+      access_fields: list(list(Ts.field_access_item)),
     ) => {
-  let ref_path = fst(type_ref) |> CCList.map(no_pi);
-  let resolved_fields =
-    resolve__to_final_type_ts(
-      ~path,
-      Reference(
-        from_ref
-        |> CCOpt.value(
-             ~default={
-               tr_path: ref_path,
-               tr_path_resolved: Some((ref_path, [])),
-               tr_parameters: [],
-             },
-           ),
-      ),
-    )
-    |> CCOpt.flat_map(
-         fun
-         | Interface(add_fields, _) => Some(add_fields)
-         | _ => None,
-       )
-    |> list_of_opt;
+  // First, if this is a direct object extraction, we need to parse the source type
+  // If it's a reference, we need to render that all the way through
+  let lookup_base =
+    switch (source) {
+    | Ts.TeObject(fields) =>
+      let local_path = path |> Path.add_sub("t");
+      parse__type(~inline=true, ~path=local_path, Ts.Object(fields))
+      |> ignore;
+      local_path;
+    | Ts.TeTypeReference(tr) => resolve__type_reference_path(~path, tr)
+    };
+  // Next, validate the format of the access_fields
+  // Only the last element should contain multiple keys, if any
+  // Also, all references should be resolved and validated as string / string literal types
+  let access_path =
+    access_fields
+    |> CCList.take(CCList.length(access_fields) - 1)
+    |> CCList.map(field =>
+         switch (field) {
+         | [Ts.FaString(str)] => no_pi(str)
+         | [Ts.FaIdentifier(ident_path)] =>
+           switch (
+             resolve__to_final_type(
+               ~path,
+               Ts.TypeReference((ident_path, None)),
+             )
+           ) {
+           | Some(StringLiteral([one])) => Ident.value(one)
+           | Some(other) =>
+             raise(
+               Exceptions.Parser_parameter_error(
+                 Printf.sprintf(
+                   "Error: Resolved type is not a String Literal, but a %s (at path: %s -> %s)",
+                   ts_to_string(other),
+                   Path.pp(path),
+                   ident_path |> CCList.to_string(~sep=".", no_pi),
+                 ),
+               ),
+             )
+           | None =>
+             raise(
+               Exceptions.Parser_parameter_error(
+                 Printf.sprintf(
+                   "Error: Could not resolve to final type for type extraction (at path: %s -> %s)",
+                   Path.pp(path),
+                   ident_path |> CCList.to_string(~sep=".", no_pi),
+                 ),
+               ),
+             )
+           }
+         | v =>
+           Console.error(v);
+           raise(
+             Exceptions.Parser_parameter_error(
+               Printf.sprintf(
+                 "Error: Cannot parse field access with multiple keys before the last element (at path: %s)",
+                 Path.pp(path),
+               ),
+             ),
+           );
+         }
+       );
+  let access_fields =
+    access_fields
+    |> CCList.get_at_idx_exn(CCList.length(access_fields) - 1)
+    |> CCList.fold_left(
+         (p, field) =>
+           switch (field) {
+           | Ts.FaString(str) => p @ [no_pi(str)]
+           | Ts.FaIdentifier(ident_path) =>
+             switch (
+               resolve__to_final_type(
+                 ~path,
+                 Ts.TypeReference((ident_path, None)),
+               )
+             ) {
+             | Some(StringLiteral(vals)) => vals |> CCList.map(Ident.value)
+             | Some(other) =>
+               raise(
+                 Exceptions.Parser_parameter_error(
+                   Printf.sprintf(
+                     "Error: Resolved type is not a String Literal, but a %s at access_fields (at path: %s -> %s -> %s)",
+                     ts_to_string(other),
+                     Path.pp(path),
+                     Path.pp(lookup_base),
+                     ident_path |> CCList.to_string(~sep=".", no_pi),
+                   ),
+                 ),
+               )
+             | None =>
+               raise(
+                 Exceptions.Parser_parameter_error(
+                   Printf.sprintf(
+                     "Error: Could not resolve to final type for type extraction at access_fields (at path: %s -> %s -> %s)",
+                     Path.pp(path),
+                     Path.pp(lookup_base),
+                     ident_path |> CCList.to_string(~sep=".", no_pi),
+                   ),
+                 ),
+               )
+             }
+           },
+         [],
+       );
 
-  switch (fields) {
-  | [] => raise(Not_found)
-  | [[]] => raise(Not_found)
-  | [[name]] =>
+  // Now that all necessary types are parsed, it should be easy to construct a path
+  // That path should be all parts of access_fields but the last one
+  let lookup_path =
+    access_path
+    |> CCList.fold_left((p, part) => p |> Path.add_sub(part), lookup_base);
+
+  let get_field_type = (fields, one) =>
     switch (
-      resolved_fields
-      |> CCList.find_opt(({f_name, _}) =>
-           CCEqual.string(f_name |> Ident.value, name)
-         )
+      fields |> CCList.find_opt(({f_name, _}) => f_name.i_value == one)
     ) {
-    | Some({
-        f_type:
-          Reference({tr_path_resolved: Some(tr_path_resolved), _}) as f_type,
-        _,
-      }) =>
-      Ref.add(~from=path, ~to_=tr_path_resolved);
-      f_type;
     | Some({f_type, _}) => f_type
     | None =>
-      // TODO: Decide wether to to just return any here instead of an error
-      Console.error(fields);
-      raise(
-        Exceptions.Parser_error(
-          Printf.sprintf(
-            "Code 1 - Could not find field %s in %s",
-            name,
-            ref_path |> CCList.to_string(~sep="_", a => a),
-          ),
+      Console.warn(
+        Printf.sprintf(
+          "Warning: Field %s not found in interface (at path: %s -> %s, %s)",
+          one,
+          Path.pp(path),
+          Path.pp(lookup_path),
+          ts_to_string(Interface(fields, false)),
         ),
       );
-    }
-  | [[_, ..._] as field_names] =>
-    let field_types =
-      field_names
-      |> CCList.map(name =>
-           parse__type_extraction(~path, type_ref, [[name]])
-         );
-    Union(
-      field_types
-      |> CCList.map(t =>
-           {um_type: t, um_classifier: "", um_ident: get_union_type_name(t)}
-         ),
-    );
-  | [[name], ...rest] =>
-    switch (
-      resolved_fields
-      |> CCList.find_opt(({f_name, _}) =>
-           CCEqual.string(f_name |> Ident.value, name)
-         )
-    ) {
-    | Some({
-        f_type:
-          Reference(
-            {tr_path, tr_path_resolved: Some(tr_path_resolved), _} as tr,
-          ),
-        _,
-      }) =>
-      Ref.add(~from=path, ~to_=tr_path_resolved);
-      parse__type_extraction(~from_ref=tr, ~path, ([], None), rest);
-    | Some(_)
-    | None =>
-      raise(
-        Exceptions.Parser_error(
-          Printf.sprintf(
-            "Code 2 - Could not find field %s in %s",
-            name,
-            ref_path |> CCList.to_string(~sep="_", a => a),
-          ),
-        ),
+      Base(Any);
+    };
+
+  switch (follow__to_final_by_path(~path=lookup_path)) {
+  | Ok((Interface(fields, _), _)) =>
+    switch (access_fields) {
+    | [one] =>
+      Ref.add(~from=path, ~to_=lookup_path |> Path.add_sub(one));
+      get_field_type(fields, one);
+    | lst =>
+      Union(
+        lst
+        |> CCList.map(one => {
+             Ref.add(~from=path, ~to_=lookup_path |> Path.add_sub(one));
+             let t = get_field_type(fields, one);
+             {
+               um_ident: get_union_type_name(t),
+               um_type: t,
+               um_classifier: "",
+             };
+           }),
       )
     }
-  | f =>
-    Console.error(f);
-    raise(Exceptions.Parser_error("Unknown type extraction structure"));
+  | Ok((other, history)) =>
+    Console.warn(
+      Printf.sprintf(
+        "Warning: Interface type for field access not found. Got type '%s' instead (at path: %s -> %s, , followed through: %s)",
+        ts_to_string(other),
+        Path.pp(path),
+        Path.pp(lookup_path),
+        CCList.to_string(~sep=" | ", Path.pp, history),
+      ),
+    );
+    Base(Any);
+  | Error(history) =>
+    Console.warn(
+      Printf.sprintf(
+        "Warning: Interface type for field access not found (at path: %s -> %s, followed through: %s)",
+        Path.pp(path),
+        Path.pp(lookup_path),
+        CCList.to_string(~sep=" | ", Path.pp, history),
+      ),
+    );
+    Base(Any);
   };
 }
 /**
@@ -626,7 +699,7 @@ and parse__optional = (~path, type_) => {
 /**
   Type reference
 */
-and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
+and parse__type_reference = (~path, type_ref: Ts.type_reference): ts_type => {
   let ref_path = fst(type_ref) |> CCList.map(no_pi);
   let ref_path_p = (ref_path, []);
 
@@ -688,10 +761,14 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference) => {
         parse__apply_ref_arguments(~path, ~resolved_ref, ~type_ref)
       };
 
+    let resolved = resolved_ref |> CCOpt.value(~default=ref_path_p);
+    // If this is a sub field, make a reference to it
+    if (Path.has_sub(path)) {
+      RefInline.add(~path, resolved);
+    };
     Reference({
       tr_path: ref_path,
-      tr_path_resolved:
-        Some(resolved_ref |> CCOpt.value(~default=ref_path_p)),
+      tr_path_resolved: Some(resolved),
       tr_parameters: parameters,
     });
   };
@@ -780,7 +857,7 @@ and parse__apply_arguments = (~path: Path.t, ~applied_types: list(ts_type)) => {
         Printf.sprintf(
           "Invalid type reference: Duplicate type parameter names detected. The following ident(s) are duplicates: %s. Path: %s.",
           duplicates,
-          path |> Path.to_string,
+          path |> Path.pp,
         ),
       ),
     );
@@ -815,7 +892,7 @@ and parse__apply_arguments = (~path: Path.t, ~applied_types: list(ts_type)) => {
     Console.warn(
       Printf.sprintf(
         "Invalid type reference: Arguments passed to a type that is not in scope (%s)",
-        path |> Path.to_string,
+        path |> Path.pp,
       ),
     );
     applied;
@@ -827,7 +904,7 @@ and parse__apply_arguments = (~path: Path.t, ~applied_types: list(ts_type)) => {
           n_applied,
           n_required,
           n_total,
-          path |> Path.to_string,
+          path |> Path.pp,
         ),
       ),
     )
@@ -836,7 +913,7 @@ and parse__apply_arguments = (~path: Path.t, ~applied_types: list(ts_type)) => {
     applied @ CCList.drop(n_total - n_applied, append_defaults)
   | applied when n_applied == n_required => applied @ append_defaults
   | _ =>
-    Console.error(path |> Path.to_string);
+    Console.error(path |> Path.pp);
     Console.error([n_required, n_total, n_applied]);
     raise(Exceptions.Parser_parameter_error("This should not be reachable"));
   };
@@ -1016,8 +1093,8 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
     inline ? parse__inline(~path, t) : parse__tuple(~path, types)
   | Array(t) => parse__array(~path, t)
   | TypeReference(ref_) => parse__type_reference(~path, ref_)
-  | TypeExtract(type_ref, names) =>
-    parse__type_extraction(~path, type_ref, names)
+  | TypeExtract(type_ref, items) =>
+    parse__type_extraction(~path, type_ref, items)
   | Object(members) as t =>
     inline
       ? parse__inline(~path, t)
@@ -1142,18 +1219,37 @@ and parse__inline = (~path, ~parameters=?, type_) => {
 and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
   let {Ts.mo_ident, mo_type, mo_optional, mo_type_annotation, _} = mapped_object;
 
-  let type_annotation =
-    mo_type_annotation
-    |> CCOpt.map(parse__type(~inline=true, ~path=path |> Path.add("t")))
-    |> CCOpt.value(~default=Base(Any));
-  let type_annotation =
-    mo_optional ? Optional(type_annotation) : type_annotation;
+  let mo_ident_str = no_pi(mo_ident);
+  let apply_type_annotation =
+    switch (mo_type_annotation) {
+    | Some(Ts.TypeExtract(source, [[Ts.FaIdentifier([{item, _}])]]))
+        when item == mo_ident_str => (
+        key =>
+          parse__type_extraction(
+            ~path,
+            source,
+            [[Ts.FaString(to_pi(key))]],
+          )
+      )
+    | Some(other) =>
+      let t = parse__type(~inline=true, ~path=path |> Path.add("t"), other);
+      (_ => t);
+    | None =>
+      let t = Base(Any);
+      (_ => t);
+    };
+  let apply_type_annotation =
+    mo_optional
+      ? key => Optional(apply_type_annotation(key)) : apply_type_annotation;
 
   let resolve =
     fun
     | StringLiteral(keys) =>
       Interface(
-        keys |> CCList.map(key => {f_name: key, f_type: type_annotation}),
+        keys
+        |> CCList.map(key =>
+             {f_name: key, f_type: apply_type_annotation(Ident.value(key))}
+           ),
         false,
       )
     | _ =>
@@ -1161,7 +1257,7 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
         Exceptions.Parser_unexpected("Unexpected lazy result for mapped_obj"),
       );
 
-  switch (resolve__to_final_type(~maybe_add="k", ~path, mo_type)) {
+  switch (resolve__to_final_type(~maybe_add=no_pi(mo_ident), ~path, mo_type)) {
   | Some(StringLiteral(_) as t) => resolve(t)
   | Some(Lazy(l)) =>
     Lazy(
@@ -1189,6 +1285,53 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
     Base(Any);
   };
 }
+and resolve__type_reference_path = (~path, tr: Ts.type_reference) => {
+  switch (parse__type_reference(~path, tr)) {
+  | Reference({tr_path_resolved: Some(ref_path), _}) => ref_path
+  | other =>
+    raise(
+      Exceptions.Parser_unexpected(
+        Printf.sprintf(
+          "Unexpected type '%s' from a type reference parse (parse__type_extraction)",
+          ts_to_string(other),
+        ),
+      ),
+    )
+  };
+}
+/**
+    Follow helpers
+    (These will only try to resolve from already parsed types)
+*/
+and follow__to_final_by_path =
+    (~path: Path.t): Result.t((ts_type, list(Path.t)), list(Path.t)) => {
+  let rec follow = (~history=[], path) => {
+    let path =
+      switch (RefInline.get(~path)) {
+      | None => path
+      | Some(resolved) => resolved
+      };
+    switch (Type.get(~path) |> CCOpt.map(resolve__to_clean_ts)) {
+    | Some(Reference({tr_path_resolved: Some(next_path), _})) =>
+      follow(~history=history @ [path], next_path)
+    | Some(other) => Ok((other, history))
+    | None => Error(history)
+    };
+  };
+  follow(path);
+}
+/**
+    Resolve helpers
+    (These will parse along the way)
+*/
+and resolve__to_clean_ts = (ts: ts_type) =>
+  switch (ts) {
+  | TypeDeclaration({td_type, _}) => resolve__to_clean_ts(td_type)
+  | Optional(t)
+  | Nullable(t)
+  | Array(t) => resolve__to_clean_ts(t)
+  | other => other
+  }
 and resolve__to_final_type_ts = (~path, ts: ts_type) =>
   switch (ts) {
   | TypeDeclaration({td_type: Reference({tr_path_resolved: Some(p), _}), _})
@@ -1227,7 +1370,7 @@ and resolve__to_final_type_ts = (~path, ts: ts_type) =>
     resolve__to_final_type_ts(~path, t)
   | final => Some(final)
   }
-and resolve__to_final_type = (~maybe_add=?, ~path, type_) => {
+and resolve__to_final_type = (~maybe_add=?, ~path, type_): option(ts_type) => {
   let path =
     maybe_add
     |> CCOpt.map(add => path |> Path.add_sub(add))
@@ -1540,6 +1683,7 @@ and parse__entry =
   runtime.current_file = entry;
   Type.clear();
   Ref.clear();
+  RefInline.clear();
   Arguments.clear();
   Parameters.clear();
 

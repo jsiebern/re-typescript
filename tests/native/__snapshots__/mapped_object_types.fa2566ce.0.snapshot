@@ -5,7 +5,7 @@ and keys = {
   key_1: string,
   key_2: float,
 }
-and with_keys_k =
+and with_keys_K =
   | Key_3
   | Key_1
   | Key_2

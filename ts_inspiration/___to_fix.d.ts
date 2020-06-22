@@ -1,19 +1,19 @@
-interface A {
-  x: string;
-  y: number;
-  z: boolean;
-}
+// interface A {
+//   x: string;
+//   y: number;
+//   z: boolean;
+// }
 
-type PartialX<T> = {
-  [P in keyof T]?: T[P];
-};
+// type PartialX<T> = {
+//   [P in keyof T]?: T[P];
+// };
 
-type PartialWithNewMember<T> = {
-  [P in keyof T]?: T[P];
-} & { newMember: boolean };
+// type PartialWithNewMember<T> = {
+//   [P in keyof T]?: T[P];
+// } & { newMember: boolean };
 
-type a_partial = PartialX<A>;
-type b_partial = PartialWithNewMember<A>;
+// type a_partial = PartialX<A>;
+// type b_partial = PartialWithNewMember<A>;
 
 // type Keys = "option1" | "option2";
 // type Flags = { [K in Keys]: boolean };
@@ -24,9 +24,24 @@ type b_partial = PartialWithNewMember<A>;
 //   flags: { [K in keyof C]: boolean };
 // }
 
-interface Keys<A> {
-  key_1: string;
-  key_2: number;
-  key_3: A;
+// interface Keys {
+//   key_1: string;
+//   key_2: number;
+//   key_3: {
+//     snd: boolean;
+//   };
+// }
+
+// type XX = "key_1" | "key_2";
+// type y = Keys[XX | "key_3"];
+// type xbla = { key: string; snd: number }["key"];
+
+interface SchemaType {
+  foo: string;
+  bar: number;
+  baz: boolean;
 }
-type with_keys = { [K in keyof Keys<{ key_4: boolean }>["key_3"]]: boolean };
+
+type TypeScriptType = {
+  [P in keyof SchemaType]: SchemaType[P];
+};

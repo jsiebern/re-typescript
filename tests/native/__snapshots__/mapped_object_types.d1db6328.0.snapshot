@@ -3,7 +3,7 @@ type keys = {
   key_1: string,
   key_2: float,
 }
-and with_keys_1_k =
+and with_keys_1_K =
   | Key_1
   | Key_2
 and with_keys_1 = {

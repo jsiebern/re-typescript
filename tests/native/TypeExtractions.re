@@ -107,4 +107,19 @@ describe("type extractions", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("extracts multiple key types as refs if necessary", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+            interface method_signature {
+              func1: (x: number) => number;
+              func2(x: number): number;
+              func3(x: string, y: boolean): void;
+            }
+            type extracted_method_signature = method_signature['func3' | 'func2'];
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

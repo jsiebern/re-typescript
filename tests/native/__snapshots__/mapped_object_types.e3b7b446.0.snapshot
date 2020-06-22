@@ -6,7 +6,7 @@ type keys = {
 and with_keys_t =
   | A
   | B
-and with_keys_k =
+and with_keys_K =
   | Key_1
   | Key_2
 and with_keys = {

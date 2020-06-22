@@ -107,7 +107,7 @@ describe("interface extension", ({test, _}) => {
     ).
       toThrowException(
       Exceptions.Parser_parameter_error(
-        "Invalid type reference: Applied 0 arguments to a type where a minimum of 1 and a maxiumum of 2 are expected (i_1)",
+        "Invalid type reference: Applied 0 arguments to a type where a minimum of 1 and a maxiumum of 2 are expected ('i_1')",
       ),
     )
   });

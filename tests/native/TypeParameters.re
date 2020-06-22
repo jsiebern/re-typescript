@@ -52,7 +52,7 @@ describe("type parameter logic", ({test, _}) => {
     ).
       toThrowException(
       Exceptions.Parser_parameter_error(
-        "Invalid type reference: Duplicate type parameter names detected. The following ident(s) are duplicates: B. Path: i_2.",
+        "Invalid type reference: Duplicate type parameter names detected. The following ident(s) are duplicates: B. Path: 'i_2'.",
       ),
     );
     expect.fn(() =>

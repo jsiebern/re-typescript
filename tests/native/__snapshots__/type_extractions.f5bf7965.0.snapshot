@@ -1,0 +1,21 @@
+type extractions › extracts multiple key types as refs if necessary
+type method_signature_func2 = (~x: float) => float
+and method_signature_func3 = (~x: string, ~y: bool) => unit
+and method_signature = {
+  func1: (~x: float) => float,
+  func2: method_signature_func2,
+  func3: method_signature_func3,
+};
+module Extracted_method_signature: {
+  type t;
+  let method_signature_func3: method_signature_func3 => t;
+  let method_signature_func2: method_signature_func2 => t;
+} = {
+  [@unboxed]
+  type t =
+    | Any('a): t;
+  let method_signature_func3 = (v: method_signature_func3) => Any(v);
+  let method_signature_func2 = (v: method_signature_func2) => Any(v);
+};
+type extracted_method_signature = Extracted_method_signature.t;
+

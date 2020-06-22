@@ -110,7 +110,7 @@ and type_ =
   | NumberLiteral(with_pi(int))
   | BoolLiteral(with_pi(bool))
   | TypeReference(type_reference)
-  | TypeExtract(type_reference, list(list(string)))
+  | TypeExtract(type_extract_source, list(list(field_access_item)))
   | String(Parse_info.t)
   | Number(Parse_info.t)
   | Boolean(Parse_info.t)
@@ -122,6 +122,12 @@ and type_ =
   | This(Parse_info.t)
   | UnionTemp(list(temp_union_member))
   | MappedObject(with_pi(mapped_object))
+and type_extract_source =
+  | TeTypeReference(type_reference)
+  | TeObject(option(type_member_list))
+and field_access_item =
+  | FaIdentifier(identifier_path)
+  | FaString(identifier_name)
 and mapped_object = {
   mo_readonly: bool,
   mo_ident: identifier_name,
@@ -198,4 +204,5 @@ and accessibility_modifier =
   | Public
   | Protected
   | Private
-and identifier_name = with_pi(string);
+and identifier_name = with_pi(string)
+and identifier_path = list(identifier_name);

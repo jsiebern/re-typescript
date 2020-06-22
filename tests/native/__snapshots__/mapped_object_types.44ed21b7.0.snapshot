@@ -1,5 +1,5 @@
 mapped object types › maps over recursively defined interfaces
-type a_flags_k =
+type a_flags_K =
   | Key_1
   | Key_2
   | Flags

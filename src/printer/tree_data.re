@@ -266,6 +266,17 @@ module NamespaceImports = {
     Hashtbl.replace(map, path, get(~path) @ [binding]);
   };
 };
+module RefInline = {
+  type t = Hashtbl.t(Path.t, Path.t);
+  let map: t = Hashtbl.create(0);
+
+  let add = (~path, resolved) => Hashtbl.replace(map, path, resolved);
+  let get = (~path) => Hashtbl.find_opt(map, path);
+
+  let clear = () => {
+    Hashtbl.clear(map);
+  };
+};
 module Ref = {
   type t = Hashtbl.t(Path.t, Path.t);
   let map: t = Hashtbl.create(0);
