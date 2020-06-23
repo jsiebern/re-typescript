@@ -1300,20 +1300,6 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
           Ts.TeTypeReference((fst(ref_path) |> CCList.map(to_pi), None)),
           [[Ts.FaString(to_pi(key))]],
         )
-      // apply_type_annotation(
-      //   ~maybe_params=?None,
-      //   ~ta=
-      //     Some(
-      //       Ts.TypeExtract(
-      //         Ts.TeTypeReference((
-      //           fst(ref_path) |> CCList.map(to_pi),
-      //           Some([Number(Parse_info.zero)]),
-      //         )),
-      //         fields,
-      //       ),
-      //     ),
-      //   key,
-      // )
       | Some(_)
       | None => apply_type_annotation(~maybe_params=?None, ~ta, key)
       }
@@ -1350,9 +1336,14 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
            ),
         false,
       )
-    | _ =>
+    | other =>
       raise(
-        Exceptions.Parser_unexpected("Unexpected lazy result for mapped_obj"),
+        Exceptions.Parser_unexpected(
+          Printf.sprintf(
+            "Unexpected lazy result for mapped_obj: %s",
+            ts_to_string(other),
+          ),
+        ),
       );
 
   switch (resolve__to_final_type(~maybe_add=no_pi(mo_ident), ~path, mo_type)) {
@@ -1372,6 +1363,14 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
                 |> CCOpt.get_exn,
               )
           );
+        }
+      ),
+    )
+  | Some(LazyParams(l)) =>
+    LazyParams(
+      lazy(
+        {
+          (params => resolve(~maybe_params=params, Lazy.force(l, params)));
         }
       ),
     )
@@ -1496,6 +1495,23 @@ and parse__keyof = (~path, type_) => {
   let resolved =
     switch (resolve__to_final_type(~maybe_add="t", ~path, type_)) {
     | Some(Interface(_) as t) => Ok(t)
+    | Some(Arg(ident)) =>
+      Error(
+        LazyParams(
+          lazy(
+            {
+              (
+                params =>
+                  resolve__to_final_type_ts(
+                    ~path,
+                    params |> CCList.assoc(~eq=Ident.eq, ident),
+                  )
+                  |> CCOpt.get_exn
+              );
+            }
+          ),
+        ),
+      )
     | Some(Lazy(_) as t) => Error(t)
     | Some(other) =>
       raise(
@@ -1540,7 +1556,15 @@ and parse__keyof = (~path, type_) => {
     Lazy(
       lazy(
         {
-          (() => finish((res |> Lazy.force)()));
+          (() => finish(Lazy.force(res, ())));
+        }
+      ),
+    )
+  | Error(LazyParams(l)) =>
+    LazyParams(
+      lazy(
+        {
+          (params => finish(Lazy.force(l, params)));
         }
       ),
     )

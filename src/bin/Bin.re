@@ -3,10 +3,16 @@ open Re_typescript_fs;
 
 let content = {|
 
-// type Partial<T> = {
-//     [P in keyof T]?: T[P];
-// }
-// type a_partial = Partial<A>;
+interface A {
+  x: string;
+  y: number;
+  z: boolean;
+}
+
+type Partial<T> = {
+    [P in keyof T]?: T[P];
+}
+type a_partial = Partial<A>;
 
 
 // interface Dictionary<T> {
@@ -16,6 +22,17 @@ let content = {|
 // let value: Dictionary<number>['foo']; // number
 
 // ---- WORKS
+
+// interface A {
+//   x: string;
+//   y: number;
+//   z: boolean;
+// }
+
+// type Partial<T> = {
+//     [P in keyof T]?: T[P];
+// }
+// type a_partial = Partial<A>;
 
 // type Pick<T, K extends keyof T> = {
 //     [P in K]: T[P];

@@ -1,0 +1,12 @@
+keyof operator › works together with parameterized mapped object types
+type a = {
+  x: string,
+  y: float,
+  z: bool,
+}
+and a_partial = {
+  x: option(string),
+  y: option(float),
+  z: option(bool),
+};
+

@@ -140,12 +140,33 @@ describe("keyof operator", ({test, _}) => {
       print(
         ~ctx,
         {|
-                interface A {
-                    x: string;
-                    y: number;
-                }
-                type B = A | undefined;
-                type keys = keyof B;
+            interface A {
+                x: string;
+                y: number;
+            }
+            type B = A | undefined;
+            type keys = keyof B;
+            |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+  test(
+    "works together with parameterized mapped object types", ({expect, _}) => {
+    expect.string(
+      print(
+        ~ctx,
+        {|
+            type Partial<T> = {
+                [P in keyof T]?: T[P];
+            }
+            interface A {
+              x: string;
+              y: number;
+              z: boolean;
+            }
+
+            type a_partial = Partial<A>;
             |},
       ),
     ).
