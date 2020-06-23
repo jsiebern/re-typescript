@@ -3,16 +3,24 @@ open Re_typescript_fs;
 
 let content = {|
 
-interface A {
-  x: string;
-  y: number;
-  z: boolean;
+interface Person {
+    name: string;
+    age: number;
 }
 
-type Exclude<T, U> = T extends U ? never : T;
-type Extract<T, U> = T extends U ? T : never;
+type NullablePerson = { [P in keyof Person]: Person[P] | null }
+type PartialPerson = { [P in keyof Person]?: Person[P] }
 
-type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+// interface A {
+//   x: string;
+//   y: number;
+//   z: boolean;
+// }
+
+// type Exclude<T, U> = T extends U ? never : T;
+// type Extract<T, U> = T extends U ? T : never;
+
+// type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
 
 
 
@@ -22,77 +30,7 @@ type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
 // let keys: keyof Dictionary<number>; // string | number
 // let value: Dictionary<number>['foo']; // number
 
-// ---- WORKS
-// type Required<T> = {
-//     [P in keyof T]-?: T[P];
-// };
-// type Partial<T> = {
-//     [P in keyof T]?: T[P];
-// };
-// type Nothing<T> = {
-//   [P in keyof T]: T[P];
-// };
-// interface A {
-//   x: string;
-//   y?: number;
-//   z: boolean;
-// }
-// type same = Nothing<A>;
-// type req = Required<A>;
-// type part = Partial<A>;
 
-// interface A {
-//   x: string;
-//   y: number;
-//   z: boolean;
-// }
-
-// type Partial<T> = {
-//     [P in keyof T]?: T[P];
-// }
-// type a_partial = Partial<A>;
-
-// type Pick<T, K extends keyof T> = {
-//     [P in K]: T[P];
-// };
-// interface A {
-//   x: string;
-//   y: number;
-//   z: boolean;
-// }
-
-// type keys = 'x' | 'y';
-// type stripped = Pick<A, keys>;
-
-// interface Keys<A> {
-//   key_1: string;
-//   key_2: number;
-//   key_3: A;
-// }
-// type with_keys = { [K in keyof Keys<{ key_4: number }>['key_3']]: boolean };
-
-
-// interface SchemaType {
-//   foo: string;
-//   bar: number;
-//   baz: boolean;
-// }
-
-// type TypeScriptType = {
-//   [P in keyof SchemaType]: SchemaType[P];
-// };
-
-// type key = 'just_one_key';
-// type Flags = { [K in key]: boolean };
-
-// interface A {
-//   key_1: string;
-//   key_2: number;
-//   flags: { [K in keyof A]: boolean };
-// }
-
-// type Keys = 'option1' | 'option2';
-// type Flags = { [K in Keys]: boolean };
 |};
 let global = {|
 |};
