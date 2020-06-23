@@ -36,12 +36,15 @@
 // type y = Keys[XX | "key_3"];
 // type xbla = { key: string; snd: number }["key"];
 
-interface SchemaType {
-  foo: string;
-  bar: number;
-  baz: boolean;
+// type Pick<T, K extends keyof T> = {
+//   [P in K]: T[P];
+// };
+
+interface A {
+  x: string;
+  y: number;
+  z: boolean;
 }
 
-type TypeScriptType = {
-  [P in keyof SchemaType]: SchemaType[P];
-};
+type keys = "x" | "y";
+type stripped = Pick<A, keys>;

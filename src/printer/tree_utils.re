@@ -359,5 +359,5 @@ let rec ts_to_string = (t: ts_type) =>
   | Import(_) => "Import"
   | Module(_) => "Module"
   | Lazy(_) => "Lazy"
-  | Arg(_) => "Arg"
+  | Arg(i) => Printf.sprintf("Arg: %s", Ident.value(i))
   };

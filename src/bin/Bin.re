@@ -2,18 +2,18 @@ open Re_typescript_base;
 open Re_typescript_fs;
 
 let content = {|
-// type Pick<T, K extends keyof T> = {
-//     [P in K]: T[P];
-// };
+type Pick<T, K extends keyof T> = {
+    [P in K]: T[P];
+};
+interface A {
+  x: string;
+  y: number;
+  z: boolean;
+}
 
-// type keys = 'x' | 'y';
-// type stripped = Pick<A, keys>;
+type keys = 'x' | 'y';
+type stripped = Pick<A, keys>;
 
-// interface A {
-//   x: string;
-//   y: number;
-//   z: boolean;
-// }
 
 
 // type Partial<T> = {
@@ -21,15 +21,6 @@ let content = {|
 // }
 // type a_partial = Partial<A>;
 
-interface i_1<A, B = boolean> { field1: A, field2: B };
-interface i_2<A, C> extends i_1<A> { field3: C }
-
-// interface Keys<A> {
-//   key_1: string;
-//   key_2: number;
-//   key_3: A;
-// }
-// type with_keys = { [K in keyof Keys<{ key_4: boolean }>['key_3']]: boolean };
 
 // interface Dictionary<T> {
 //     [key: string]: T;
@@ -38,6 +29,14 @@ interface i_2<A, C> extends i_1<A> { field3: C }
 // let value: Dictionary<number>['foo']; // number
 
 // ---- WORKS
+// interface Keys<A> {
+//   key_1: string;
+//   key_2: number;
+//   key_3: A;
+// }
+// type with_keys = { [K in keyof Keys<{ key_4: number }>['key_3']]: boolean };
+
+
 // interface SchemaType {
 //   foo: string;
 //   bar: number;

@@ -28,10 +28,14 @@ let rec parse__type_def =
   switch (type_def) {
   | d
       when
-        decl_path
-        |> CCOpt.map_or(~default=false, path =>
-             !(path |> Path.has_sub) && Declarations.is_complete(~path)
-           ) =>
+        (
+          switch (decl_path) {
+          | None => false
+          | Some(decl_path) => Declarations.is_complete(~path=decl_path)
+          }
+        )
+        || Type.get(~path)
+        |> CCOpt.is_some =>
     ()
   | ExportDefault(IdentifierReference(i)) =>
     parse__type_def(
@@ -619,10 +623,38 @@ and parse__type_extraction =
     access_path
     |> CCList.fold_left((p, part) => p |> Path.add_sub(part), lookup_base);
 
-  let get_field_type = (fields, one) =>
+  let get_field_type = (fields, one, history: list(Path.t)) =>
     switch (
       fields |> CCList.find_opt(({f_name, _}) => f_name.i_value == one)
     ) {
+    | Some({f_type: Arg(ident) as t, _}) =>
+      let applied_args =
+        switch (source) {
+        | Ts.TeTypeReference(tref) =>
+          parse__apply_ref_arguments(
+            ~path,
+            ~resolved_ref=lookup_path,
+            ~type_ref=tref,
+          )
+        | _ =>
+          raise(
+            Exceptions.Parser_unexpected(
+              "Expected a type reference for this type extraction, but got an inline object",
+            ),
+          )
+        };
+      let params_path =
+        switch (history |> CCList.last_opt) {
+        | None => lookup_path
+        | Some(p) => p
+        };
+      let params = Parameters.get_root_unpacked(~path=params_path);
+      let arg =
+        params
+        |> CCList.find_idx(param => Ident.eq(param.tp_name, ident))
+        |> CCOpt.map(fst)
+        |> CCOpt.flat_map(CCList.get_at_idx(_, applied_args));
+      arg |> CCOpt.value(~default=t);
     | Some({f_type, _}) => f_type
     | None =>
       Console.warn(
@@ -638,17 +670,17 @@ and parse__type_extraction =
     };
 
   switch (follow__to_final_by_path(~path=lookup_path)) {
-  | Ok((Interface(fields, _), _)) =>
+  | Ok((Interface(fields, _), history)) =>
     switch (access_fields) {
     | [one] =>
       Ref.add(~from=path, ~to_=lookup_path |> Path.add_sub(one));
-      get_field_type(fields, one);
+      get_field_type(fields, one, history);
     | lst =>
       Union(
         lst
         |> CCList.map(one => {
              Ref.add(~from=path, ~to_=lookup_path |> Path.add_sub(one));
-             let t = get_field_type(fields, one);
+             let t = get_field_type(fields, one, history);
              {
                um_ident: get_union_type_name(t),
                um_type: t,
@@ -799,7 +831,8 @@ and parse__inline_type_parameter =
   Reference specific argument
 */
 and parse__apply_ref_arguments =
-    (~path, ~resolved_ref, ~type_ref: Ts.type_reference) => {
+    (~path, ~resolved_ref: Path.t, ~type_ref: Ts.type_reference)
+    : list(ts_type) => {
   let ref_types = snd(type_ref);
 
   let ref_applied_types =
@@ -841,7 +874,8 @@ and parse__apply_ref_arguments =
 /**
   Argument resolver
 */
-and parse__apply_arguments = (~path: Path.t, ~applied_types: list(ts_type)) => {
+and parse__apply_arguments =
+    (~path: Path.t, ~applied_types: list(ts_type)): list(ts_type) => {
   // --- Duplicate Detection
   let l = CCList.length;
   let params = Parameters.get_unpacked(~path);
@@ -1332,20 +1366,12 @@ and resolve__to_clean_ts = (ts: ts_type) =>
   | Array(t) => resolve__to_clean_ts(t)
   | other => other
   }
-and resolve__to_final_type_ts = (~path, ts: ts_type) =>
+and resolve__to_final_type_ts = (~path, ts: ts_type) => {
   switch (ts) {
   | TypeDeclaration({td_type: Reference({tr_path_resolved: Some(p), _}), _})
   | Reference({tr_path_resolved: Some(p), _}) =>
     switch (Type.get(~path=p)) {
-    | Some(Optional(t))
-    | Some(TypeDeclaration({td_type: Optional(t), _}))
-    | Some(Nullable(t))
-    | Some(TypeDeclaration({td_type: Nullable(t), _}))
-    | Some(Reference(_) as t)
-    | Some(TypeDeclaration({td_type: Reference(_) as t, _})) =>
-      resolve__to_final_type_ts(~path, t)
-    | Some(TypeDeclaration({td_type: t, _}))
-    | Some(t) => resolve__to_final_type_ts(~path, t)
+    | Some(t) => resolve__to_final_type_ts(~path, resolve__to_clean_ts(t))
     | None =>
       if (Path.eq_unscoped(fst(path), fst(p)) && Declarations.has(~path=p)) {
         Some(
@@ -1361,15 +1387,13 @@ and resolve__to_final_type_ts = (~path, ts: ts_type) =>
         None;
       }
     }
-  | Optional(t)
-  | TypeDeclaration({td_type: Optional(t), _})
-  | Nullable(t)
-  | TypeDeclaration({td_type: Nullable(t), _})
-  | Reference(_) as t
-  | TypeDeclaration({td_type: Reference(_) as t, _}) =>
-    resolve__to_final_type_ts(~path, t)
-  | final => Some(final)
-  }
+  | Arg(ident) as t =>
+    Console.log(path);
+    Console.log(Parameters.get_root_unpacked(~path));
+    Some(t);
+  | final => Some(resolve__to_clean_ts(final))
+  };
+}
 and resolve__to_final_type = (~maybe_add=?, ~path, type_): option(ts_type) => {
   let path =
     maybe_add
@@ -1398,8 +1422,9 @@ and parse__keyof = (~path, type_) => {
       raise(
         Exceptions.Parser_unexpected(
           Printf.sprintf(
-            "Did not expect type '%s' in a keyof statement",
+            "Did not expect type '%s' in a keyof statement (path: %s)",
             ts_to_string(other),
+            Path.pp(path),
           ),
         ),
       )

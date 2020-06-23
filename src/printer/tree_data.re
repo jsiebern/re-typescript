@@ -18,11 +18,16 @@ module Declarations = {
        );
   let has = (~path) => get(~path) |> CCOpt.is_some;
   let is_complete = (~path) =>
-    get(~path) |> CCOpt.map_or(~default=false, snd);
-  let set_complete = (~path) =>
-    CCHashtbl.update(map, ~k=path, ~f=(_, item) =>
-      item |> CCOpt.map(((t, _)) => (t, true))
-    );
+    switch (get(~path)) {
+    | None => false
+    | Some((_, complete)) => complete
+    };
+  let set_complete = (~path) => {
+    get(~path)
+    |> CCOpt.map(((t, _)) => Hashtbl.replace(map, path, (t, true)))
+    |> CCOpt.value(~default=());
+  };
+
   let get_type_declaration = (~path) =>
     get(~path) |> CCOpt.map(fst) |> CCOpt.get_exn;
 

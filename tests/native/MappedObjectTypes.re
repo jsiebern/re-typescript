@@ -160,20 +160,20 @@ describe("mapped object types", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
-  // test("maps over type parameters", ({expect, _}) => {
-  //   expect.string(
-  //     print(
-  //       ~ctx,
-  //       {|
-  //         interface Keys<A> {
-  //           key_1: string;
-  //           key_2: number;
-  //           key_3: A;
-  //         }
-  //         type with_keys = { [K in keyof Keys<{ key_4: boolean }>['key_3']]: boolean };
-  //       |},
-  //     ),
-  //   ).
-  //     toMatchSnapshot()
-  // });
+  test("maps over type parameters", ({expect, _}) => {
+    expect.string(
+      print(
+        ~ctx,
+        {|
+          interface Keys<A> {
+            key_1: string;
+            key_2: number;
+            key_3: A;
+          }
+          type with_keys = { [K in keyof Keys<{ key_4: boolean }>['key_3']]: boolean };
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });
