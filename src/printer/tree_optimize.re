@@ -4,12 +4,26 @@ open Tree_utils;
 open Tree_data;
 
 let rec optimize = (~ctx: Re_typescript_config.Config.config) => {
+  optimize__remove_lazy_param_types();
   optimize__literal_unions();
   optimize__empty_obj_references();
   optimize__single_ref_inline_types();
   if (ctx.omit_extended_unreferenced_records) {
     optimize__omit_extended_unreferenced_records();
   };
+}
+and optimize__remove_lazy_param_types = () => {
+  Type.order^
+  |> CCList.iter(path => {
+       switch (Type.get(~path)) {
+       | Some(TypeDeclaration({td_type: LazyParams(_), _})) =>
+         // Remove the extra type def from order
+         Type.order := Type.order^ |> CCList.remove_one(~eq=Path.eq, path);
+         // And replace the reference inside of the field
+         Type.remove(~path);
+       | _ => ()
+       }
+     });
 }
 and optimize__omit_extended_unreferenced_records = () => {
   Type.order^

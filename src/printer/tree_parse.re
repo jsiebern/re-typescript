@@ -490,9 +490,9 @@ and parse__type_parameters =
              let param_path = Path.(path |> add_sub_ident(ident));
              {
                tp_name: ident,
-               tp_extends:
-                 tp_extends
-                 |> CCOpt.map(parse__type(~inline=true, ~path=param_path)),
+               tp_extends: None,
+               //  tp_extends
+               //  |> CCOpt.map(parse__type(~inline=true, ~path=param_path)),
                tp_default:
                  tp_default
                  |> CCOpt.map(parse__type(~inline=true, ~path=param_path)),
@@ -794,15 +794,25 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference): ts_type => {
       };
 
     let resolved = resolved_ref |> CCOpt.value(~default=ref_path_p);
-    // If this is a sub field, make a reference to it
-    if (Path.has_sub(path)) {
-      RefInline.add(~path, resolved);
+    // Typeof Lazy Params needs to be executed on the spot
+    switch (Type.get(~path=resolved) |> CCOpt.map(resolve__to_clean_ts)) {
+    | Some(LazyParams(l)) =>
+      let params =
+        Parameters.get_unpacked(~path=resolved)
+        |> CCList.map(({tp_name, _}) => tp_name);
+      let params_with_idents = CCList.combine(params, parameters);
+      Lazy.force(l, params_with_idents);
+    | _ =>
+      // If this is a sub field, make a reference to it
+      if (Path.has_sub(path)) {
+        RefInline.add(~path, resolved);
+      };
+      Reference({
+        tr_path: ref_path,
+        tr_path_resolved: Some(resolved),
+        tr_parameters: parameters,
+      });
     };
-    Reference({
-      tr_path: ref_path,
-      tr_path_resolved: Some(resolved),
-      tr_parameters: parameters,
-    });
   };
 }
 /**
@@ -1254,35 +1264,65 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
   let {Ts.mo_ident, mo_type, mo_optional, mo_type_annotation, _} = mapped_object;
 
   let mo_ident_str = no_pi(mo_ident);
-  let apply_type_annotation =
-    switch (mo_type_annotation) {
-    | Some(Ts.TypeExtract(source, [[Ts.FaIdentifier([{item, _}])]]))
-        when item == mo_ident_str => (
-        key =>
-          parse__type_extraction(
-            ~path,
-            source,
-            [[Ts.FaString(to_pi(key))]],
-          )
+  let rec apply_type_annotation = (~maybe_params=?, ~ta, key) =>
+    switch (ta, maybe_params) {
+    | (
+        Some(Ts.TypeExtract(Ts.TeTypeReference(([one], _) as tr), fields)),
+        Some(params),
+      ) =>
+      switch (
+        params
+        |> CCList.assoc_opt(~eq=Ident.eq, Ident.of_string(no_pi(one)))
+      ) {
+      | Some(Reference({tr_path_resolved: Some(ref_path), _})) =>
+        Console.log(ref_path);
+        apply_type_annotation(
+          ~maybe_params=?None,
+          ~ta=
+            Some(
+              Ts.TypeExtract(
+                Ts.TeTypeReference((
+                  fst(ref_path) |> CCList.map(to_pi),
+                  snd(tr),
+                )),
+                fields,
+              ),
+            ),
+          key,
+        );
+      | Some(_)
+      | None => apply_type_annotation(~maybe_params=?None, ~ta, key)
+      }
+    | (
+        Some(Ts.TypeExtract(source, [[Ts.FaIdentifier([{item, _}])]])),
+        _,
       )
-    | Some(other) =>
-      let t = parse__type(~inline=true, ~path=path |> Path.add("t"), other);
-      (_ => t);
-    | None =>
-      let t = Base(Any);
-      (_ => t);
+        when item == mo_ident_str =>
+      parse__type_extraction(~path, source, [[Ts.FaString(to_pi(key))]])
+    | (Some(other), _) =>
+      parse__type(~inline=true, ~path=path |> Path.add("t"), other)
+    | (None, _) => Base(Any)
     };
-  let apply_type_annotation =
+  let apply_type_annotation = (~maybe_params=?, ~ta, key) =>
     mo_optional
-      ? key => Optional(apply_type_annotation(key)) : apply_type_annotation;
+      ? Optional(apply_type_annotation(~maybe_params?, ~ta, key))
+      : apply_type_annotation(~maybe_params?, ~ta, key);
 
-  let resolve =
+  let resolve = (~maybe_params=?) =>
     fun
     | StringLiteral(keys) =>
       Interface(
         keys
         |> CCList.map(key =>
-             {f_name: key, f_type: apply_type_annotation(Ident.value(key))}
+             {
+               f_name: key,
+               f_type:
+                 apply_type_annotation(
+                   ~maybe_params?,
+                   ~ta=mo_type_annotation,
+                   Ident.value(key),
+                 ),
+             }
            ),
         false,
       )
@@ -1293,6 +1333,24 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
 
   switch (resolve__to_final_type(~maybe_add=no_pi(mo_ident), ~path, mo_type)) {
   | Some(StringLiteral(_) as t) => resolve(t)
+  | Some(Arg(ident)) =>
+    LazyParams(
+      lazy(
+        {
+          (
+            params =>
+              resolve(
+                ~maybe_params=params,
+                resolve__to_final_type_ts(
+                  ~path,
+                  params |> CCList.assoc(~eq=Ident.eq, ident),
+                )
+                |> CCOpt.get_exn,
+              )
+          );
+        }
+      ),
+    )
   | Some(Lazy(l)) =>
     Lazy(
       lazy(
@@ -1326,8 +1384,9 @@ and resolve__type_reference_path = (~path, tr: Ts.type_reference) => {
     raise(
       Exceptions.Parser_unexpected(
         Printf.sprintf(
-          "Unexpected type '%s' from a type reference parse (parse__type_extraction)",
+          "Unexpected type '%s' from a type reference parse (parse__type_extraction, path: %s)",
           ts_to_string(other),
+          Path.pp(path),
         ),
       ),
     )
@@ -1366,7 +1425,7 @@ and resolve__to_clean_ts = (ts: ts_type) =>
   | Array(t) => resolve__to_clean_ts(t)
   | other => other
   }
-and resolve__to_final_type_ts = (~path, ts: ts_type) => {
+and resolve__to_final_type_ts = (~path, ts: ts_type): option(ts_type) => {
   switch (ts) {
   | TypeDeclaration({td_type: Reference({tr_path_resolved: Some(p), _}), _})
   | Reference({tr_path_resolved: Some(p), _}) =>
@@ -1387,10 +1446,6 @@ and resolve__to_final_type_ts = (~path, ts: ts_type) => {
         None;
       }
     }
-  | Arg(ident) as t =>
-    Console.log(path);
-    Console.log(Parameters.get_root_unpacked(~path));
-    Some(t);
   | final => Some(resolve__to_clean_ts(final))
   };
 }
@@ -1432,8 +1487,9 @@ and parse__keyof = (~path, type_) => {
       raise(
         Exceptions.Parser_unexpected(
           Printf.sprintf(
-            "Did not expect raw type '%s' in a keyof statement",
+            "Did not expect raw type '%s' in a keyof statement (path: %s)",
             type_to_string(type_),
+            Path.pp(path),
           ),
         ),
       )

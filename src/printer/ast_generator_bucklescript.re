@@ -469,6 +469,13 @@ module Make = (Config: Config) : Ast_generator.T => {
           BS_Decode_Error("Lazy should be resolved by now");
         },
       )
+    | LazyParams(_) =>
+      raise(
+        {
+          Console.error(type_);
+          BS_Decode_Error("LazyParams should be resolved by now");
+        },
+      )
     };
 
   let generate =

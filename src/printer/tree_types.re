@@ -114,6 +114,7 @@ and ts_type =
   | Module(ts_module)
   | Arg(ts_identifier)
   | Lazy(Lazy.t(unit => ts_type))
+  | LazyParams(Lazy.t(list((ts_identifier, ts_type)) => ts_type))
 and ts_identifier = {
   i_value: string,
   i_ident: string,

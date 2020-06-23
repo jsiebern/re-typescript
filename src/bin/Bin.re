@@ -2,17 +2,7 @@ open Re_typescript_base;
 open Re_typescript_fs;
 
 let content = {|
-type Pick<T, K extends keyof T> = {
-    [P in K]: T[P];
-};
-interface A {
-  x: string;
-  y: number;
-  z: boolean;
-}
 
-type keys = 'x' | 'y';
-type stripped = Pick<A, keys>;
 
 
 
@@ -29,6 +19,19 @@ type stripped = Pick<A, keys>;
 // let value: Dictionary<number>['foo']; // number
 
 // ---- WORKS
+
+// type Pick<T, K extends keyof T> = {
+//     [P in K]: T[P];
+// };
+// interface A {
+//   x: string;
+//   y: number;
+//   z: boolean;
+// }
+
+// type keys = 'x' | 'y';
+// type stripped = Pick<A, keys>;
+
 // interface Keys<A> {
 //   key_1: string;
 //   key_2: number;

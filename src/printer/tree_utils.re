@@ -180,6 +180,8 @@ let rec get_union_type_name = (um_type: ts_type) => {
     raise(Exceptions.Parser_error("Module is not a valid union member"))
   | Lazy(_) =>
     raise(Exceptions.Parser_error("Lazy is not a valid union member"))
+  | LazyParams(_) =>
+    raise(Exceptions.Parser_error("LazyParams is not a valid union member"))
   };
 };
 
@@ -359,5 +361,6 @@ let rec ts_to_string = (t: ts_type) =>
   | Import(_) => "Import"
   | Module(_) => "Module"
   | Lazy(_) => "Lazy"
+  | LazyParams(_) => "LazyParams"
   | Arg(i) => Printf.sprintf("Arg: %s", Ident.value(i))
   };
