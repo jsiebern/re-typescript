@@ -1309,14 +1309,25 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
       )
         when item == mo_ident_str =>
       parse__type_extraction(~path, source, [[Ts.FaString(to_pi(key))]])
+    | (Some(Ts.TypeReference(([{item, _}], _))), Some(params)) =>
+      switch (
+        params |> CCList.assoc_opt(~eq=Ident.eq, Ident.of_string(item))
+      ) {
+      | Some(param) => param
+      | None => apply_type_annotation(~maybe_params=?None, ~ta, key)
+      }
     | (Some(other), _) =>
-      parse__type(~inline=true, ~path=path |> Path.add("t"), other)
+      parse__type(~inline=true, ~path=path |> Path.add_sub("t"), other)
     | (None, _) => Base(Any)
     };
-  let apply_type_annotation = (~maybe_params=?, ~ta, key) =>
-    mo_optional
-      ? Optional(apply_type_annotation(~maybe_params?, ~ta, key))
-      : apply_type_annotation(~maybe_params?, ~ta, key);
+  let apply_optional = ts =>
+    switch (mo_optional, ts) {
+    | (Some(false), Optional(ts)) => ts
+    | (Some(true), Optional(_) as ts)
+    | (Some(false), ts)
+    | (None, ts) => ts
+    | (Some(true), ts) => Optional(ts)
+    };
 
   let resolve = (~maybe_params=?) =>
     fun
@@ -1331,7 +1342,8 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
                    ~maybe_params?,
                    ~ta=mo_type_annotation,
                    Ident.value(key),
-                 ),
+                 )
+                 |> apply_optional,
              }
            ),
         false,

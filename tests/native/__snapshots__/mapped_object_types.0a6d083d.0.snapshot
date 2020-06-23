@@ -1,0 +1,10 @@
+mapped object types › can use type param (no extraction) as map target
+type record_0 =
+  | A
+  | B
+and record_1 = {field: bool}
+and record = {
+  a: record_1,
+  b: record_1,
+};
+

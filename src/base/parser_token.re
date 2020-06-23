@@ -60,6 +60,8 @@ let info = (t: t): Parse_info.t =>
   | RBRACKET(ii) => ii
   | LT(ii) => ii
   | GT(ii) => ii
+  | PLUS(ii) => ii
+  | MINUS(ii) => ii
   | SEMICOLON(ii) => ii
   | VIRTUAL_SEMICOLON(ii) => ii
   | COLON(ii) => ii

@@ -1,0 +1,22 @@
+mapped object types › treats the optional status correctly
+type a = {
+  x: string,
+  y: option(float),
+  z: bool,
+}
+and same = {
+  x: string,
+  y: option(float),
+  z: bool,
+}
+and req = {
+  x: string,
+  y: float,
+  z: bool,
+}
+and part = {
+  x: option(string),
+  y: option(float),
+  z: option(bool),
+};
+

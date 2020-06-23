@@ -122,6 +122,8 @@ rule read =
   | '?'                     { QMARK (tokinfo lexbuf); }
   | '&'                     { AMPERSAND (tokinfo lexbuf); }
   | '|'                     { PIPE (tokinfo lexbuf); }
+  | '-'                     { MINUS (tokinfo lexbuf); }
+  | '+'                     { PLUS (tokinfo lexbuf); }
 
   (* Syntax *)
   | '{'                     { LCURLY (tokinfo lexbuf); }

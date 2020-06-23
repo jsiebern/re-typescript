@@ -132,7 +132,7 @@ and mapped_object = {
   mo_readonly: bool,
   mo_ident: identifier_name,
   mo_type: type_,
-  mo_optional: bool,
+  mo_optional: option(bool),
   mo_type_annotation: option(type_),
 }
 and temp_union_member = [

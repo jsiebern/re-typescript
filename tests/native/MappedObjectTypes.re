@@ -221,4 +221,46 @@ describe("mapped object types", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("treats the optional status correctly", ({expect, _}) => {
+    expect.string(
+      print(
+        ~ctx,
+        {|
+          type Required<T> = {
+              [P in keyof T]-?: T[P];
+          };
+          type Partial<T> = {
+              [P in keyof T]?: T[P];
+          };
+          type Nothing<T> = {
+            [P in keyof T]: T[P];
+          };
+          interface A {
+            x: string;
+            y?: number;
+            z: boolean;
+          }
+          type same = Nothing<A>;
+          type req = Required<A>;
+          type part = Partial<A>;
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+  test("can use type param (no extraction) as map target", ({expect, _}) => {
+    expect.string(
+      print(
+        ~ctx,
+        {|
+          type Record<K extends keyof any, T> = {
+              [P in K]: T;
+          };
+
+          type record = Record<'a' | 'b', {field:boolean}>;
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

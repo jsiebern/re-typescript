@@ -9,10 +9,11 @@ interface A {
   z: boolean;
 }
 
-type Partial<T> = {
-    [P in keyof T]?: T[P];
-}
-type a_partial = Partial<A>;
+type Exclude<T, U> = T extends U ? never : T;
+type Extract<T, U> = T extends U ? T : never;
+
+type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+
 
 
 // interface Dictionary<T> {
@@ -22,6 +23,23 @@ type a_partial = Partial<A>;
 // let value: Dictionary<number>['foo']; // number
 
 // ---- WORKS
+// type Required<T> = {
+//     [P in keyof T]-?: T[P];
+// };
+// type Partial<T> = {
+//     [P in keyof T]?: T[P];
+// };
+// type Nothing<T> = {
+//   [P in keyof T]: T[P];
+// };
+// interface A {
+//   x: string;
+//   y?: number;
+//   z: boolean;
+// }
+// type same = Nothing<A>;
+// type req = Required<A>;
+// type part = Partial<A>;
 
 // interface A {
 //   x: string;
