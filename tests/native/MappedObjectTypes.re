@@ -263,4 +263,21 @@ describe("mapped object types", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("can use mapper ident in inlined types", ({expect, _}) => {
+    expect.string(
+      print(
+        ~ctx,
+        {|
+          interface Person {
+              name: string;
+              age: number;
+          }
+
+          type NullablePerson = { [P in keyof Person]: Person[P] | null }
+          type PartialPerson = { [P in keyof Person]?: Person[P] }
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

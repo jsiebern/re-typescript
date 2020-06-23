@@ -1277,7 +1277,39 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
   let {Ts.mo_ident, mo_type, mo_optional, mo_type_annotation, _} = mapped_object;
 
   let mo_ident_str = no_pi(mo_ident);
-  let rec apply_type_annotation = (~maybe_params=?, ~ta, key) =>
+  // TODO:
+  // Incredibly inefficient to calculate this on each key call
+  // Refactor later!!!
+  let rec has_ident_in_type_annoation =
+    Ts.(
+      (~params=[], ty) => {
+        switch (ty) {
+        | Union(l, r) =>
+          has_ident_in_type_annoation(l)
+            ? true
+            : r
+              |> CCOpt.map(has_ident_in_type_annoation)
+              |> CCOpt.value(~default=false)
+        | Tuple(lst) => lst |> CCList.exists(has_ident_in_type_annoation)
+        | Array(t) => has_ident_in_type_annoation(t)
+        | Intersection(l, r) =>
+          [l, r] |> CCList.exists(has_ident_in_type_annoation)
+        | Query({item, _}) =>
+          has_ident_in_type_annoation(TypeReference(item))
+        | KeyOf({item, _}) => has_ident_in_type_annoation(item)
+        | TypeReference(([{item, _}], _)) =>
+          item == mo_ident_str
+          || params
+          |> CCList.exists(CCString.equal(item))
+        | TypeExtract(_, [[Ts.FaIdentifier([{item, _}])]]) =>
+          item == mo_ident_str
+          || params
+          |> CCList.exists(CCString.equal(item))
+        | _ => false
+        };
+      }
+    );
+  let rec apply_type_annotation = (~maybe_params=?, ~ta, key) => {
     switch (ta, maybe_params) {
     | (
         Some(
@@ -1317,9 +1349,35 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
       | None => apply_type_annotation(~maybe_params=?None, ~ta, key)
       }
     | (Some(other), _) =>
-      parse__type(~inline=true, ~path=path |> Path.add_sub("t"), other)
+      let temp_path = ([mo_ident_str], []);
+      let temp = Type.get(~path=temp_path);
+      Type.replace(~path=temp_path, StringLiteral([Ident.of_string(key)]));
+      let parsed =
+        parse__type(
+          ~inline=true,
+          ~path=
+            path
+            |> Path.add_sub(
+                 has_ident_in_type_annoation(
+                   ~params=
+                     maybe_params
+                     |> CCOpt.value(~default=[])
+                     |> CCList.map(fst)
+                     |> CCList.map(Ident.value),
+                   other,
+                 )
+                   ? key : "t",
+               ),
+          other,
+        );
+      switch (temp) {
+      | None => Type.remove(~path=temp_path)
+      | Some(temp) => Type.replace(~path=temp_path, temp)
+      };
+      parsed;
     | (None, _) => Base(Any)
     };
+  };
   let apply_optional = ts =>
     switch (mo_optional, ts) {
     | (Some(false), Optional(ts)) => ts

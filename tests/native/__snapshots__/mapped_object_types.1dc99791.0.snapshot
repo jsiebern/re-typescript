@@ -1,0 +1,20 @@
+mapped object types › can use mapper ident in inlined types
+type person = {
+  name: string,
+  age: float,
+}
+and nullablePerson_P =
+  | Name
+  | Age
+and nullablePerson = {
+  name: Js.Nullable.t(string),
+  age: Js.Nullable.t(float),
+}
+and partialPerson_P =
+  | Name
+  | Age
+and partialPerson = {
+  name: option(string),
+  age: option(float),
+};
+
