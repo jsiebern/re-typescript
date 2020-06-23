@@ -3,46 +3,43 @@ open Re_typescript_fs;
 
 let content = {|
 
-type Pick<T, K extends keyof T> = {
-    [P in K]: T[P];
-};
-interface A<X> {
+// type TypeName<T> =
+//     T extends string ? "string" :
+//     T extends number ? "number" :
+//     T extends boolean ? "boolean" :
+//     T extends undefined ? "undefined" :
+//     T extends Function ? "function" :
+//     "object";
+
+// type T0 = TypeName<string>;  // "string"
+// type T1 = TypeName<"a">;  // "string"
+// type T2 = TypeName<true>;  // "boolean"
+// type T3 = TypeName<() => void>;  // "function"
+// type T4 = TypeName<string[]>;  // "object"
+
+// export type Or<A, B, C = false> = A extends true
+//   ? true
+//   : B extends true
+//   ? true
+//   : C extends true
+//   ? true
+//   : false;
+
+// type x = Or<true, false>;
+
+interface A {
   x: string;
-  y: X;
+  y: number;
   z: boolean;
 }
 
-type keys = 'x' | 'y';
-type stripped = Pick<A<{obj: number}>, keys>;
+type Exclude<T, U> = T extends U ? never : T;
+type stripped = Exclude<keyof A, "y">;
 
-// type Proxy<T> = {
-//     get(): T;
-//     set(value: T): void;
-// }
-// type Proxify<T> = {
-//     [P in keyof T]: Proxy<T[P]>;
-// }
-
-// interface A {
-//   x: string;
-//   y: number;
-//   z: boolean;
-// }
-// type proxied = Proxify<A>;
-
-
-// interface A {
-//   x: string;
-//   y: number;
-//   z: boolean;
-// }
-
-// type Exclude<T, U> = T extends U ? never : T;
 // type Extract<T, U> = T extends U ? T : never;
 
+
 // type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
-
-
 
 // interface Dictionary<T> {
 //     [key: string]: T;

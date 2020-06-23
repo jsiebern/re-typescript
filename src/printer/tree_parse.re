@@ -382,21 +382,27 @@ and parse__mixed_literal = (members: list(Ts.temp_union_member)) => {
   exception No_union_mixed;
   try(
     Some(
-      MixedLiteral(
-        members
-        |> CCList.fold_left(
-             p =>
-               fun
-               | `U_String(n) => {
-                   ...p,
-                   strings: p.strings @ [n |> Ident.of_string],
-                 }
-               | `U_Number(n) => {...p, numbers: p.numbers @ [n]}
-               | `U_Bool(n) => {...p, bools: p.bools @ [n]}
-               | _ => raise(No_union_mixed),
-             {strings: [], numbers: [], bools: []},
-           ),
-      ),
+      {
+        let members =
+          members
+          |> CCList.fold_left(
+               p =>
+                 fun
+                 | `U_String(n) => {
+                     ...p,
+                     strings: p.strings @ [n |> Ident.of_string],
+                   }
+                 | `U_Number(n) => {...p, numbers: p.numbers @ [n]}
+                 | `U_Bool(n) => {...p, bools: p.bools @ [n]}
+                 | _ => raise(No_union_mixed),
+               {strings: [], numbers: [], bools: []},
+             );
+        switch (members) {
+        | {strings: [], numbers: [], bools: l} when CCList.length(l) > 0 =>
+          Base(Boolean)
+        | members => MixedLiteral(members)
+        };
+      },
     )
   ) {
   | No_union_mixed => None
@@ -809,7 +815,7 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference): ts_type => {
 
     let resolved = resolved_ref |> CCOpt.value(~default=ref_path_p);
     // Typeof Lazy Params needs to be executed on the spot
-    switch (Type.get(~path=resolved) |> CCOpt.map(resolve__to_clean_ts)) {
+    switch (Type.get(~path=resolved) |> CCOpt.map(resolve__to_clean_ts(_))) {
     | Some(ResolveWithParams(fn)) =>
       let params =
         Parameters.get_unpacked(~path=resolved)
@@ -1154,6 +1160,7 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
   | Any(_) => Base(Any)
   | Null(_) => Base(Null)
   | Undefined(_) => Base(Undefined)
+  | Never(_) => Base(Never)
   | Union(left, right) as t =>
     inline ? parse__inline(~path, t) : parse__union(~path, ~left, ~right)
   | UnionTemp(members) as t =>
@@ -1193,6 +1200,8 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
     )
   | MappedObject({item, _}) as t =>
     inline ? parse__inline(~path, t) : parse__mapped_object(~path, item)
+  | Conditional({item, _}) as t =>
+    inline ? parse__inline(~path, t) : parse__conditonal(~path, item)
   | Symbol(pi) =>
     raise(Exceptions.Parser_unsupported("Symbol type not yet supported", pi))
   | This(pi) =>
@@ -1280,6 +1289,126 @@ and parse__inline = (~path, ~parameters=?, type_) => {
     tr_path_resolved: Some(path),
     tr_parameters: args |> CCList.map(a => Arg(a)),
   });
+}
+/**
+    Conditional
+*/
+and parse__conditonal = (~path, conditional: Ts.conditional) => {
+  let rewrapped = Ts.Conditional({pi: current_position^, item: conditional});
+  switch (Parameters.get_root_fixed(~path)) {
+  | [] =>
+    try(parse__conditional_with_params(~ty=rewrapped, ~path, ~params=[])) {
+    | Exceptions.Needs_lazy =>
+      Lazy(
+        lazy(
+          {
+            (
+              () =>
+                parse__conditional_with_params(
+                  ~ty=rewrapped,
+                  ~path,
+                  ~params=[],
+                )
+            );
+          }
+        ),
+      )
+    | other => raise(other)
+    }
+  | params
+      when
+        params
+        |> CCList.for_all(({tp_default, _}) => CCOpt.is_some(tp_default)) =>
+    parse__conditional_with_params(
+      ~ty=rewrapped,
+      ~path,
+      ~params=
+        params
+        |> CCList.filter_map(({tp_name, tp_default, _}) =>
+             tp_default |> CCOpt.map(t => (tp_name, t))
+           ),
+    )
+  | _ => ResolveWithParams(parse__conditional_with_params(~ty=rewrapped))
+  };
+}
+and parse__conditional_with_params =
+    (~ty: Ts.type_, ~path: Path.t, ~params: list((ts_identifier, ts_type))) => {
+  RefContext.clear();
+  // Add the passed params to the ref context first
+  RefContext.add_list(params);
+
+  let {Ts.c_type, c_condition, c_r1, c_r2} =
+    switch (ty) {
+    | Conditional({item, _}) => item
+    | other =>
+      raise(
+        Exceptions.Parser_unexpected(
+          Printf.sprintf(
+            "Unexpected type passed as mapped_object_type: %s",
+            type_to_string(ty),
+          ),
+        ),
+      )
+    };
+
+  let check_type =
+    parse__type(~inline=true, ~path=path |> Path.add_sub("t"), c_type)
+    |> resolve__to_final_type_ts(
+         ~refs_only=true,
+         ~path=path |> Path.add_sub("t"),
+       );
+  let extends_type =
+    parse__type(
+      ~inline=true,
+      ~path=path |> Path.add_sub("condition"),
+      c_condition,
+    )
+    |> resolve__to_final_type_ts(
+         ~refs_only=true,
+         ~path=path |> Path.add_sub("condition"),
+       );
+
+  switch (check_type, extends_type) {
+  | (Some(check_type), Some(extends_type)) =>
+    Console.log((type_to_string(c_r1), type_to_string(c_r2)));
+    parse__is_assignable_to(~path, check_type, extends_type)
+      ? parse__type(~path, c_r1)
+      : (
+        switch (c_r2) {
+        | Conditional(_) as t =>
+          parse__conditional_with_params(~path, ~params, ~ty=t)
+        | _ => parse__type(~path, c_r2)
+        }
+      );
+  | (None, _) =>
+    Console.warn(
+      Printf.sprintf(
+        "Warning: check_type of condition at path %s could not be resolved. Raw: %s",
+        Path.pp(path),
+        type_to_string(c_type),
+      ),
+    );
+    Base(Any);
+  | (_, None) =>
+    Console.warn(
+      Printf.sprintf(
+        "Warning: extends_type of condition at path %s could not be resolved. Raw: %s",
+        Path.pp(path),
+        type_to_string(c_condition),
+      ),
+    );
+    Base(Any);
+  };
+}
+and parse__is_assignable_to = (~path, t1: ts_type, t2: ts_type): bool => {
+  Console.log(
+    Printf.sprintf(
+      "Assigning '%s' to '%s'",
+      ts_to_string(t1),
+      ts_to_string(t2),
+    ),
+  );
+  ts_is_assignable_to(t1, t2);
 }
 /**
     Mapped object
@@ -1471,7 +1600,7 @@ and follow__to_final_by_path =
     | ([one], []) when RefContext.has(Ident.of_string(one)) =>
       Ok((RefContext.get(Ident.of_string(one)), history @ [path]))
     | path =>
-      switch (Type.get(~path) |> CCOpt.map(resolve__to_clean_ts)) {
+      switch (Type.get(~path) |> CCOpt.map(resolve__to_clean_ts(_))) {
       // RefContext if applicable
       | Some(Arg(ident)) when RefContext.has(ident) =>
         Ok((RefContext.get(ident), history @ [path]))
@@ -1492,31 +1621,41 @@ and follow__to_final_by_path =
     Resolve helpers
     (These will parse along the way)
 */
-and resolve__to_clean_ts = (ts: ts_type) =>
+and resolve__to_clean_ts = (~refs_only=false, ts: ts_type) =>
   switch (ts) {
   | TypeDeclaration({td_type, _}) => resolve__to_clean_ts(td_type)
   | Optional(t)
   | Nullable(t)
-  | Array(t) => resolve__to_clean_ts(t)
+  | Array(t) when !refs_only => resolve__to_clean_ts(t)
   | other => other
   }
-and resolve__to_final_type_ts = (~path, ts: ts_type): option(ts_type) => {
+and resolve__to_final_type_ts =
+    (~refs_only=false, ~path, ts: ts_type): option(ts_type) => {
   switch (resolve__to_clean_ts(ts)) {
   | Arg(ident) when RefContext.has(ident) =>
-    resolve__to_final_type_ts(~path, RefContext.get(ident))
+    resolve__to_final_type_ts(~refs_only, ~path, RefContext.get(ident))
   | Reference({tr_path: [one], _})
       when RefContext.has(Ident.of_string(one)) =>
-    resolve__to_final_type_ts(~path, RefContext.get(Ident.of_string(one)))
+    resolve__to_final_type_ts(
+      ~refs_only,
+      ~path,
+      RefContext.get(Ident.of_string(one)),
+    )
   | Reference({tr_path_resolved: Some(p), _}) =>
     switch (Type.get(~path=p)) {
-    | Some(t) => resolve__to_final_type_ts(~path, resolve__to_clean_ts(t))
+    | Some(t) =>
+      resolve__to_final_type_ts(~refs_only, ~path, resolve__to_clean_ts(t))
     | None =>
       if (Path.eq_unscoped(fst(path), fst(p)) && Declarations.has(~path=p)) {
         Some(
           Lazy(
             lazy(
               {
-                (() => resolve__to_final_type_ts(~path, ts) |> CCOpt.get_exn);
+                (
+                  () =>
+                    resolve__to_final_type_ts(~refs_only, ~path, ts)
+                    |> CCOpt.get_exn
+                );
               }
             ),
           ),
@@ -1525,7 +1664,7 @@ and resolve__to_final_type_ts = (~path, ts: ts_type): option(ts_type) => {
         None;
       }
     }
-  | final => Some(resolve__to_clean_ts(final))
+  | final => Some(resolve__to_clean_ts(~refs_only, final))
   };
 }
 and resolve__to_final_type =

@@ -16,6 +16,7 @@ and optimize__remove_param_dependant_types = () => {
   Type.order^
   |> CCList.iter(path => {
        switch (Type.get(~path)) {
+       | Some(TypeDeclaration({td_type: Base(Never), _}))
        | Some(TypeDeclaration({td_type: ResolveWithParams(_), _})) =>
          // Remove the extra type def from order
          Type.order := Type.order^ |> CCList.remove_one(~eq=Path.eq, path);

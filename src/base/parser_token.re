@@ -34,6 +34,7 @@ let info = (t: t): Parse_info.t =>
   | PRIVATE(ii) => ii
   | SYMBOL(ii) => ii
   | NEW(ii) => ii
+  | NEVER(ii) => ii
   | CLASS(ii) => ii
   | IMPLEMENTS(ii) => ii
   | CONSTRUCTOR(ii) => ii

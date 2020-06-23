@@ -176,6 +176,8 @@ let rec get_union_type_name = (um_type: ts_type) => {
   | Enum(_) => "enum"
   | Arg(i) => i |> Ident.ident
   | Interface(_) => "interface"
+  | Base(Never) =>
+    raise(Exceptions.Parser_error("Never is not a valid union member"))
   | Union(_) =>
     raise(Exceptions.Parser_error("Union is not a valid union member"))
   | TypeDeclaration(_) =>
@@ -239,6 +241,8 @@ let rec type_to_string = (t: Ts.type_) =>
   | StringLiteral(_) => "StringLiteral"
   | NumberLiteral(_) => "NumberLiteral"
   | BoolLiteral(_) => "BoolLiteral"
+  | Never(_) => "Never"
+  | Conditional(_) => "Conditional"
   | TypeReference((path, _)) =>
     Printf.sprintf(
       "TypeReference: %s",
@@ -342,6 +346,7 @@ let rec ts_to_string = (t: ts_type) =>
   | Base(Void) => "Base_Void"
   | Base(Any) => "Base_Any"
   | Base(Null) => "Base_Null"
+  | Base(Never) => "Base_Never"
   | Base(Undefined) => "Base_Undefined"
   | Interface(f, extended) =>
     Printf.sprintf(

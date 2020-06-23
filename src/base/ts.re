@@ -115,6 +115,7 @@ and type_ =
   | Number(Parse_info.t)
   | Boolean(Parse_info.t)
   | Null(Parse_info.t)
+  | Never(Parse_info.t)
   | Undefined(Parse_info.t)
   | Void(Parse_info.t)
   | Any(Parse_info.t)
@@ -122,6 +123,13 @@ and type_ =
   | This(Parse_info.t)
   | UnionTemp(list(temp_union_member))
   | MappedObject(with_pi(mapped_object))
+  | Conditional(with_pi(conditional))
+and conditional = {
+  c_type: type_,
+  c_condition: type_,
+  c_r1: type_,
+  c_r2: type_,
+}
 and type_extract_source =
   | TeTypeReference(type_reference)
   | TeObject(option(type_member_list))

@@ -79,6 +79,7 @@ and ts_base_type =
   | Any
   | Null
   | Undefined
+  | Never
 /**
     Union types
  */
@@ -123,4 +124,32 @@ and ts_identifier = {
   i_type: string,
   i_module: string,
   i_variant: string,
+};
+
+let ts_is_assignable_to = (t1: ts_type, t2: ts_type): bool => {
+  switch (t1, t2) {
+  // --- String
+  | (Base(String), Base(String))
+  | (Base(String), Base(Any))
+  | (Base(String), Base(Never)) => true
+  | (Base(String), _) => false
+  // --- Number
+  | (Base(Number), Base(Number))
+  | (Base(Number), Base(Any))
+  | (Base(Number), Base(Never)) => true
+  | (Base(Number), _) => false
+  // --- Boolean
+  | (Base(Boolean), Base(Boolean))
+  | (Base(Boolean), Base(Any))
+  | (Base(Boolean), Base(Never)) => true
+  | (Base(Boolean), _) => false
+  // --- String literal
+  | (StringLiteral(_), Base(string)) => true
+  // --- Functions
+  | (Function(_), Function(_)) => true
+  | (Function(_), _) => false
+  | _ =>
+    Console.warn("Assignment not implemented");
+    false;
+  };
 };

@@ -65,6 +65,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                 ~inner=[generate_base_type("unit")],
                 "option",
               )
+            | Never
             | Any =>
               gen_config.has_any = true;
               generate_base_type("any");

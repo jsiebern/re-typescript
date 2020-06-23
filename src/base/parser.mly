@@ -24,6 +24,7 @@
   PUBLIC PROTECTED PRIVATE
   SYMBOL
   NEW
+  NEVER
   CLASS
   IMPLEMENTS
   CONSTRUCTOR
@@ -274,6 +275,7 @@ let type_primary :=
   | t = type_query; { t }
   | t = key_of; { t }
   | t = type_this; { t }
+  | t = conditional; { t }
   | r = type_reference; fa = nonempty_list(field_access); { Ts.TypeExtract(Ts.TeTypeReference(r), fa) }
   | t = type_object; fa = nonempty_list(field_access); { Ts.TypeExtract(Ts.TeObject(t), fa) }
 
@@ -282,6 +284,12 @@ let field_access :=
 let field_access_item :=
   | i = identifier_path; { Ts.FaIdentifier(i) }
   | s = STRING; { let (s, pi, _) = s in Ts.FaString({ pi; item = s }) }
+
+(*
+    Conditional types
+*)
+let conditional :=
+  | t = type_; pi = EXTENDS; condition = type_; QMARK; r1 = type_; COLON; r2 = type_; { Ts.Conditional({ pi; item = { c_type = t; c_condition = condition; c_r1 = r1; c_r2 = r2 } }) }
 
 (*
     Mapped object types
@@ -366,6 +374,7 @@ let type_predefined :=
   | pi = PRIM_VOID;         { Ts.Void(pi) }
   | pi = PRIM_ANY;          { Ts.Any(pi) }
   | pi = SYMBOL;            { Ts.Symbol(pi) }
+  | pi = NEVER;             { Ts.Never(pi) }
   | s =  literal_string;    { s }
   | n =  literal_number;    { n }
   | b =  literal_bool;      { b }
