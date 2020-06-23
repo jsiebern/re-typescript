@@ -3,13 +3,33 @@ open Re_typescript_fs;
 
 let content = {|
 
-interface Person {
-    name: string;
-    age: number;
+type Pick<T, K extends keyof T> = {
+    [P in K]: T[P];
+};
+interface A<X> {
+  x: string;
+  y: X;
+  z: boolean;
 }
 
-type NullablePerson = { [P in keyof Person]: Person[P] | null }
-type PartialPerson = { [P in keyof Person]?: Person[P] }
+type keys = 'x' | 'y';
+type stripped = Pick<A<{obj: number}>, keys>;
+
+// type Proxy<T> = {
+//     get(): T;
+//     set(value: T): void;
+// }
+// type Proxify<T> = {
+//     [P in keyof T]: Proxy<T[P]>;
+// }
+
+// interface A {
+//   x: string;
+//   y: number;
+//   z: boolean;
+// }
+// type proxied = Proxify<A>;
+
 
 // interface A {
 //   x: string;

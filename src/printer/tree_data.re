@@ -366,3 +366,51 @@ module Ref = {
     };
   };
 };
+module RefContext = {
+  type t = (ts_identifier, ts_type);
+  type lst = ref(list(t));
+  let lst: lst = ref([]);
+
+  let add = (entry: t) => lst := [entry, ...lst^];
+  let add_list = (entries: list(t)) => lst := lst^ @ entries;
+  let find = (ident: ts_identifier): option(ts_type) =>
+    lst^ |> CCList.assoc_opt(~eq=Ident.eq, ident);
+  let get = ident => find(ident) |> CCOpt.get_exn;
+  let has = (ident: ts_identifier): bool =>
+    lst^ |> CCList.mem_assoc(~eq=Ident.eq, ident);
+
+  // For mapped object types
+  let current_key_count: ref(int) = ref(0);
+  let current_key: ref(option((string, Ident.t))) = ref(None);
+  let set_current_key = (entry: (string, Ident.t)) =>
+    current_key := Some(entry);
+  let get_current_key = () => current_key^ |> CCOpt.get_exn;
+  let is_current_key = (t: string) =>
+    current_key^
+    |> CCOpt.map(((f, _)) => f == t)
+    |> CCOpt.value(~default=false)
+      ? {
+        current_key_count := current_key_count^ + 1;
+        true;
+      }
+      : false;
+  let reset_current_key = () => current_key := None;
+
+  let clear = () => {
+    current_key_count := 0;
+    reset_current_key();
+    lst := [];
+  };
+
+  let pp = () => {
+    Console.log("RefContext lst:");
+    Console.log("############################");
+    lst^
+    |> CCList.iter(((i, t)) =>
+         Console.log(
+           Printf.sprintf("%s: %s", Ident.value(i), ts_to_string(t)),
+         )
+       );
+    Console.log("############################");
+  };
+};

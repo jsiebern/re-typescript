@@ -4,6 +4,10 @@ type a = {
   y: float,
   z: bool,
 }
+and a_partial_P =
+  | X
+  | Y
+  | Z
 and a_partial = {
   x: option(string),
   y: option(float),

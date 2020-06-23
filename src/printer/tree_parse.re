@@ -587,6 +587,10 @@ and parse__type_extraction =
          (p, field) =>
            switch (field) {
            | Ts.FaString(str) => p @ [no_pi(str)]
+           | Ts.FaIdentifier([{item, _}])
+               when RefContext.is_current_key(item) =>
+             let (_, key) = RefContext.get_current_key();
+             p @ [Ident.value(key)];
            | Ts.FaIdentifier(ident_path) =>
              switch (
                resolve__to_final_type(
@@ -678,12 +682,12 @@ and parse__type_extraction =
       );
       Base(Any);
     };
-
   switch (follow__to_final_by_path(~path=lookup_path)) {
   | Ok((Interface(fields, _), history)) =>
     switch (access_fields) {
     | [one] =>
       Ref.add(~from=path, ~to_=lookup_path |> Path.add_sub(one));
+
       get_field_type(fields, one, history);
     | lst =>
       Union(
@@ -806,12 +810,12 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference): ts_type => {
     let resolved = resolved_ref |> CCOpt.value(~default=ref_path_p);
     // Typeof Lazy Params needs to be executed on the spot
     switch (Type.get(~path=resolved) |> CCOpt.map(resolve__to_clean_ts)) {
-    | Some(LazyParams(l)) =>
+    | Some(ResolveWithParams(fn)) =>
       let params =
         Parameters.get_unpacked(~path=resolved)
         |> CCList.map(({tp_name, _}) => tp_name);
-      let params_with_idents = CCList.combine(params, parameters);
-      Lazy.force(l, params_with_idents);
+      let params = CCList.combine(params, parameters);
+      fn(~path, ~params);
     | _ =>
       // If this is a sub field, make a reference to it
       if (Path.has_sub(path)) {
@@ -831,6 +835,8 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference): ts_type => {
 and parse__inline_type_parameter =
     (~path: Path.t, ref_path: Path.t): option(ts_type) => {
   switch (ref_path) {
+  | ([r], []) when RefContext.has(Ident.of_string(r)) =>
+    Some(RefContext.get(Ident.of_string(r)))
   | ([r], []) =>
     let r_ident = r |> Ident.of_string;
     let has = Parameters.has(~fixed_only=false, ~path, r_ident);
@@ -853,27 +859,33 @@ and parse__inline_type_parameter =
 and parse__apply_ref_arguments =
     (~path, ~resolved_ref: Path.t, ~type_ref: Ts.type_reference)
     : list(ts_type) => {
-  let ref_types = snd(type_ref);
-
   let ref_applied_types =
-    ref_types
-    |> CCOpt.map_or(
-         ~default=[],
-         CCList.mapi((i, param) => {
-           switch (param) {
-           | Ts.TypeReference(([{item, _}], _)) =>
-             switch (parse__inline_type_parameter(~path, ([item], []))) {
-             | Some(arg) => arg
-             | None =>
+    switch (type_ref) {
+    | ([{item, _}], _) when RefContext.has(Ident.of_string(item)) =>
+      switch (RefContext.get(Ident.of_string(item))) {
+      | Reference({tr_parameters, _}) => tr_parameters
+      | other => [other]
+      }
+    | (_, ref_types) =>
+      ref_types
+      |> CCOpt.map_or(
+           ~default=[],
+           CCList.mapi((i, param) => {
+             switch (param) {
+             | Ts.TypeReference(([{item, _}], _)) =>
+               switch (parse__inline_type_parameter(~path, ([item], []))) {
+               | Some(arg) => arg
+               | None =>
+                 let path = path |> Path.add_sub(string_of_int(i));
+                 parse__type(~inline=true, ~path, param);
+               }
+             | _ =>
                let path = path |> Path.add_sub(string_of_int(i));
                parse__type(~inline=true, ~path, param);
              }
-           | _ =>
-             let path = path |> Path.add_sub(string_of_int(i));
-             parse__type(~inline=true, ~path, param);
-           }
-         }),
-       );
+           }),
+         )
+    };
 
   // Inherited params should just be passed on as they cannot be filled
   // TODO: Probably need to account for original default value for example
@@ -1269,206 +1281,164 @@ and parse__inline = (~path, ~parameters=?, type_) => {
     tr_parameters: args |> CCList.map(a => Arg(a)),
   });
 }
-
 /**
     Mapped object
 */
 and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
-  let {Ts.mo_ident, mo_type, mo_optional, mo_type_annotation, _} = mapped_object;
+  // First, determine wether this has non-default parameters
+  // A mapped type that has parameters is only useable at it's callsite
+  // In addition, it does not need to be rendered itself
 
-  let mo_ident_str = no_pi(mo_ident);
-  // TODO:
-  // Incredibly inefficient to calculate this on each key call
-  // Refactor later!!!
-  let rec has_ident_in_type_annoation =
-    Ts.(
-      (~params=[], ty) => {
-        switch (ty) {
-        | Union(l, r) =>
-          has_ident_in_type_annoation(l)
-            ? true
-            : r
-              |> CCOpt.map(has_ident_in_type_annoation)
-              |> CCOpt.value(~default=false)
-        | Tuple(lst) => lst |> CCList.exists(has_ident_in_type_annoation)
-        | Array(t) => has_ident_in_type_annoation(t)
-        | Intersection(l, r) =>
-          [l, r] |> CCList.exists(has_ident_in_type_annoation)
-        | Query({item, _}) =>
-          has_ident_in_type_annoation(TypeReference(item))
-        | KeyOf({item, _}) => has_ident_in_type_annoation(item)
-        | TypeReference(([{item, _}], _)) =>
-          item == mo_ident_str
-          || params
-          |> CCList.exists(CCString.equal(item))
-        | TypeExtract(_, [[Ts.FaIdentifier([{item, _}])]]) =>
-          item == mo_ident_str
-          || params
-          |> CCList.exists(CCString.equal(item))
-        | _ => false
-        };
-      }
-    );
-  let rec apply_type_annotation = (~maybe_params=?, ~ta, key) => {
-    switch (ta, maybe_params) {
-    | (
-        Some(
-          Ts.TypeExtract(
-            Ts.TeTypeReference(([one], _)),
-            [[Ts.FaIdentifier([{item, _}])]],
-          ),
+  let rewrapped =
+    Ts.MappedObject({pi: current_position^, item: mapped_object});
+  switch (Parameters.get_root_fixed(~path)) {
+  | [] =>
+    try(parse__mapped_object_with_params(~ty=rewrapped, ~path, ~params=[])) {
+    | Exceptions.Needs_lazy =>
+      Lazy(
+        lazy(
+          {
+            (
+              () =>
+                parse__mapped_object_with_params(
+                  ~ty=rewrapped,
+                  ~path,
+                  ~params=[],
+                )
+            );
+          }
         ),
-        Some(params),
       )
-        when item == mo_ident_str =>
-      switch (
+    | other => raise(other)
+    }
+  | params
+      when
         params
-        |> CCList.assoc_opt(~eq=Ident.eq, Ident.of_string(no_pi(one)))
-      ) {
-      | Some(Reference({tr_path_resolved: Some(ref_path), _} as tr)) =>
-        parse__type_extraction(
-          ~parsed_source=tr,
-          ~path,
-          Ts.TeTypeReference((fst(ref_path) |> CCList.map(to_pi), None)),
-          [[Ts.FaString(to_pi(key))]],
-        )
-      | Some(_)
-      | None => apply_type_annotation(~maybe_params=?None, ~ta, key)
-      }
-    | (
-        Some(Ts.TypeExtract(source, [[Ts.FaIdentifier([{item, _}])]])),
-        _,
-      )
-        when item == mo_ident_str =>
-      parse__type_extraction(~path, source, [[Ts.FaString(to_pi(key))]])
-    | (Some(Ts.TypeReference(([{item, _}], _))), Some(params)) =>
-      switch (
-        params |> CCList.assoc_opt(~eq=Ident.eq, Ident.of_string(item))
-      ) {
-      | Some(param) => param
-      | None => apply_type_annotation(~maybe_params=?None, ~ta, key)
-      }
-    | (Some(other), _) =>
-      let temp_path = ([mo_ident_str], []);
-      let temp = Type.get(~path=temp_path);
-      Type.replace(~path=temp_path, StringLiteral([Ident.of_string(key)]));
-      let parsed =
-        parse__type(
-          ~inline=true,
-          ~path=
-            path
-            |> Path.add_sub(
-                 has_ident_in_type_annoation(
-                   ~params=
-                     maybe_params
-                     |> CCOpt.value(~default=[])
-                     |> CCList.map(fst)
-                     |> CCList.map(Ident.value),
-                   other,
-                 )
-                   ? key : "t",
-               ),
-          other,
-        );
-      switch (temp) {
-      | None => Type.remove(~path=temp_path)
-      | Some(temp) => Type.replace(~path=temp_path, temp)
-      };
-      parsed;
-    | (None, _) => Base(Any)
-    };
-  };
-  let apply_optional = ts =>
-    switch (mo_optional, ts) {
-    | (Some(false), Optional(ts)) => ts
-    | (Some(true), Optional(_) as ts)
-    | (Some(false), ts)
-    | (None, ts) => ts
-    | (Some(true), ts) => Optional(ts)
-    };
-
-  let resolve = (~maybe_params=?) =>
-    fun
-    | StringLiteral(keys) =>
-      Interface(
-        keys
-        |> CCList.map(key =>
-             {
-               f_name: key,
-               f_type:
-                 apply_type_annotation(
-                   ~maybe_params?,
-                   ~ta=mo_type_annotation,
-                   Ident.value(key),
-                 )
-                 |> apply_optional,
-             }
+        |> CCList.for_all(({tp_default, _}) => CCOpt.is_some(tp_default)) =>
+    parse__mapped_object_with_params(
+      ~ty=rewrapped,
+      ~path,
+      ~params=
+        params
+        |> CCList.filter_map(({tp_name, tp_default, _}) =>
+             tp_default |> CCOpt.map(t => (tp_name, t))
            ),
-        false,
-      )
+    )
+  | _ => ResolveWithParams(parse__mapped_object_with_params(~ty=rewrapped))
+  };
+}
+and parse__mapped_object_type_annotation =
+    (~path: Path.t, ~mo_ident: string, ta: option(Ts.type_))
+    : (ts_identifier => ts_type) => {
+  switch (ta) {
+  | None => (_ => Base(Any))
+  | Some(ta) => (
+      key => {
+        RefContext.set_current_key((mo_ident, key));
+        let type_for_key =
+          parse__type(
+            ~inline=true,
+            ~path=path |> Path.add_sub_ident(key),
+            ta,
+          );
+        RefContext.reset_current_key();
+        type_for_key;
+      }
+    )
+  };
+}
+and parse__mapped_object_optional =
+    (~mo_optional: option(bool), ts: ts_type): ts_type => {
+  switch (mo_optional, ts) {
+  | (Some(false), Optional(ts)) => ts
+  | (Some(true), Optional(_) as ts)
+  | (Some(false), ts)
+  | (None, ts) => ts
+  | (Some(true), ts) => Optional(ts)
+  };
+}
+and parse__mapped_object_with_params =
+    (~ty: Ts.type_, ~path: Path.t, ~params: list((ts_identifier, ts_type))) => {
+  RefContext.clear();
+  // Add the passed params to the ref context first
+  RefContext.add_list(params);
+
+  let {Ts.mo_ident, mo_type, mo_optional, mo_type_annotation, _} =
+    switch (ty) {
+    | MappedObject({item, _}) => item
     | other =>
       raise(
         Exceptions.Parser_unexpected(
           Printf.sprintf(
-            "Unexpected lazy result for mapped_obj: %s",
-            ts_to_string(other),
+            "Unexpected type passed as mapped_object_type: %s",
+            type_to_string(ty),
           ),
         ),
-      );
+      )
+    };
+  let mo_ident = no_pi(mo_ident);
 
-  switch (resolve__to_final_type(~maybe_add=no_pi(mo_ident), ~path, mo_type)) {
-  | Some(StringLiteral(_) as t) => resolve(t)
-  | Some(Arg(ident)) =>
-    LazyParams(
-      lazy(
-        {
-          (
-            params =>
-              resolve(
-                ~maybe_params=params,
-                resolve__to_final_type_ts(
-                  ~path,
-                  params |> CCList.assoc(~eq=Ident.eq, ident),
-                )
-                |> CCOpt.get_exn,
-              )
-          );
-        }
-      ),
-    )
-  | Some(LazyParams(l)) =>
-    LazyParams(
-      lazy(
-        {
-          (params => resolve(~maybe_params=params, Lazy.force(l, params)));
-        }
-      ),
-    )
-  | Some(Lazy(l)) =>
-    Lazy(
-      lazy(
-        {
-          (() => resolve(Lazy.force(l, ())));
-        }
-      ),
-    )
-  | Some(other) =>
-    Console.warn(
-      Printf.sprintf(
-        "Warning: Type '%s' cannot be used in a mapped object type. String or string literal required.",
-        ts_to_string(other),
-      ),
-    );
-    Base(Any);
-  | None =>
-    Console.warn(
-      Printf.sprintf(
-        "Warning: Raw type '%s' cannot be used in a mapped object type. String or string literal required.",
-        type_to_string(mo_type),
-      ),
-    );
-    Base(Any);
-  };
+  // Next the mo_type needs to be parsed and also added to the ref context
+  let keys_type =
+    switch (resolve__to_final_type(~maybe_add=mo_ident, ~path, mo_type)) {
+    | Some(StringLiteral(_) as t) => t
+    | Some(Lazy(_)) => raise(Exceptions.Needs_lazy)
+    | Some(other) =>
+      Console.warn(
+        Printf.sprintf(
+          "Warning: Type '%s' cannot be used in a mapped object type. String or string literal required.",
+          ts_to_string(other),
+        ),
+      );
+      Base(Any);
+    | None =>
+      Console.warn(
+        Printf.sprintf(
+          "Warning: Raw type '%s' cannot be used in a mapped object type. String or string literal required.",
+          type_to_string(mo_type),
+        ),
+      );
+      Base(Any);
+    };
+  let return =
+    switch (keys_type) {
+    | StringLiteral(keys) as t =>
+      RefContext.add((Ident.of_string(mo_ident), t));
+
+      let ta_mapper =
+        parse__mapped_object_type_annotation(
+          ~path,
+          ~mo_ident,
+          mo_type_annotation,
+        );
+      let opt_mapper = parse__mapped_object_optional(~mo_optional);
+      // TODO:
+      // Parsing all types with individual keys (in case they're needed)
+      // If the main key type was never referenced, parse it again as type "t"
+      // This is a bit wasteful, think of a better way to do this.
+      let keys_with_type =
+        keys |> CCList.map(key => (key, ta_mapper(key) |> opt_mapper));
+      let keys_with_type =
+        if (RefContext.current_key_count^ == 0) {
+          keys_with_type
+          |> CCList.iter(((key, t)) =>
+               Type.remove(~path=path |> Path.add_sub_ident(key))
+             );
+          let ta = ta_mapper(Ident.of_string("t")) |> opt_mapper;
+          keys |> CCList.map(key => (key, ta));
+        } else {
+          keys_with_type;
+        };
+
+      Interface(
+        keys_with_type |> CCList.map(((f_name, f_type)) => {f_name, f_type}),
+        false,
+      );
+    | other => other
+    };
+
+  RefContext.clear();
+  return;
 }
 and resolve__type_reference_path = (~path, tr: Ts.type_reference) => {
   switch (parse__type_reference(~path, tr)) {
@@ -1497,11 +1467,23 @@ and follow__to_final_by_path =
       | None => path
       | Some(resolved) => resolved
       };
-    switch (Type.get(~path) |> CCOpt.map(resolve__to_clean_ts)) {
-    | Some(Reference({tr_path_resolved: Some(next_path), _})) =>
-      follow(~history=history @ [path], next_path)
-    | Some(other) => Ok((other, history))
-    | None => Error(history)
+    switch (path) {
+    | ([one], []) when RefContext.has(Ident.of_string(one)) =>
+      Ok((RefContext.get(Ident.of_string(one)), history @ [path]))
+    | path =>
+      switch (Type.get(~path) |> CCOpt.map(resolve__to_clean_ts)) {
+      // RefContext if applicable
+      | Some(Arg(ident)) when RefContext.has(ident) =>
+        Ok((RefContext.get(ident), history @ [path]))
+      | Some(Reference({tr_path: [one], _}))
+          when RefContext.has(Ident.of_string(one)) =>
+        Ok((RefContext.get(Ident.of_string(one)), history @ [path]))
+      // Default
+      | Some(Reference({tr_path_resolved: Some(next_path), _})) =>
+        follow(~history=history @ [path], next_path)
+      | Some(other) => Ok((other, history @ [path]))
+      | None => Error(history @ [path])
+      }
     };
   };
   follow(path);
@@ -1519,8 +1501,12 @@ and resolve__to_clean_ts = (ts: ts_type) =>
   | other => other
   }
 and resolve__to_final_type_ts = (~path, ts: ts_type): option(ts_type) => {
-  switch (ts) {
-  | TypeDeclaration({td_type: Reference({tr_path_resolved: Some(p), _}), _})
+  switch (resolve__to_clean_ts(ts)) {
+  | Arg(ident) when RefContext.has(ident) =>
+    resolve__to_final_type_ts(~path, RefContext.get(ident))
+  | Reference({tr_path: [one], _})
+      when RefContext.has(Ident.of_string(one)) =>
+    resolve__to_final_type_ts(~path, RefContext.get(Ident.of_string(one)))
   | Reference({tr_path_resolved: Some(p), _}) =>
     switch (Type.get(~path=p)) {
     | Some(t) => resolve__to_final_type_ts(~path, resolve__to_clean_ts(t))
@@ -1542,7 +1528,8 @@ and resolve__to_final_type_ts = (~path, ts: ts_type): option(ts_type) => {
   | final => Some(resolve__to_clean_ts(final))
   };
 }
-and resolve__to_final_type = (~maybe_add=?, ~path, type_): option(ts_type) => {
+and resolve__to_final_type =
+    (~maybe_add: option(string)=?, ~path, type_): option(ts_type) => {
   let path =
     maybe_add
     |> CCOpt.map(add => path |> Path.add_sub(add))
@@ -1565,23 +1552,6 @@ and parse__keyof = (~path, type_) => {
   let resolved =
     switch (resolve__to_final_type(~maybe_add="t", ~path, type_)) {
     | Some(Interface(_) as t) => Ok(t)
-    | Some(Arg(ident)) =>
-      Error(
-        LazyParams(
-          lazy(
-            {
-              (
-                params =>
-                  resolve__to_final_type_ts(
-                    ~path,
-                    params |> CCList.assoc(~eq=Ident.eq, ident),
-                  )
-                  |> CCOpt.get_exn
-              );
-            }
-          ),
-        ),
-      )
     | Some(Lazy(_) as t) => Error(t)
     | Some(other) =>
       raise(
@@ -1627,14 +1597,6 @@ and parse__keyof = (~path, type_) => {
       lazy(
         {
           (() => finish(Lazy.force(res, ())));
-        }
-      ),
-    )
-  | Error(LazyParams(l)) =>
-    LazyParams(
-      lazy(
-        {
-          (params => finish(Lazy.force(l, params)));
         }
       ),
     )

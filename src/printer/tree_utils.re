@@ -112,6 +112,7 @@ module Exceptions = {
   exception Parser_unsupported(string, Parse_info.t);
   exception Optimizer_error(string);
   exception File_error(string);
+  exception Needs_lazy;
 };
 
 let replace_ref_in_union_members =
@@ -138,6 +139,13 @@ let replace_ref_in_union_members =
   members
   |> CCList.map(({um_type, _} as um) => {...um, um_type: run(um_type)});
 };
+
+// let has_ref_or_arg_from_ident = (~ident: Ident.t, ty: Ts.type_) => {
+//   let rec run = (t: Ts.type_) => switch(t) {
+//     | Array(t) => Array(run(t))
+
+//   };
+// };
 
 let rec get_union_type_name = (um_type: ts_type) => {
   switch (um_type) {
@@ -180,8 +188,12 @@ let rec get_union_type_name = (um_type: ts_type) => {
     raise(Exceptions.Parser_error("Module is not a valid union member"))
   | Lazy(_) =>
     raise(Exceptions.Parser_error("Lazy is not a valid union member"))
-  | LazyParams(_) =>
-    raise(Exceptions.Parser_error("LazyParams is not a valid union member"))
+  | ResolveWithParams(_) =>
+    raise(
+      Exceptions.Parser_error(
+        "ResolveWithParams is not a valid union member",
+      ),
+    )
   };
 };
 
@@ -360,7 +372,7 @@ let rec ts_to_string = (t: ts_type) =>
   | Import(_) => "Import"
   | Module(_) => "Module"
   | Lazy(_) => "Lazy"
-  | LazyParams(_) => "LazyParams"
+  | ResolveWithParams(_) => "ResolveWithParams"
   | Arg(i) => Printf.sprintf("Arg: %s", Ident.value(i))
   }
 and ts_lst_to_string = lst => CCList.to_string(~sep=", ", ts_to_string, lst);

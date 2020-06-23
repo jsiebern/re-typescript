@@ -4,16 +4,28 @@ type a = {
   y: option(float),
   z: bool,
 }
+and same_P =
+  | X
+  | Y
+  | Z
 and same = {
   x: string,
   y: option(float),
   z: bool,
 }
+and req_P =
+  | X
+  | Y
+  | Z
 and req = {
   x: string,
   y: float,
   z: bool,
 }
+and part_P =
+  | X
+  | Y
+  | Z
 and part = {
   x: option(string),
   y: option(float),

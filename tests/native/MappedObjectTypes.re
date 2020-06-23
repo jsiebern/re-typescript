@@ -280,4 +280,28 @@ describe("mapped object types", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("can use mapper ident type parameters", ({expect, _}) => {
+    expect.string(
+      print(
+        ~ctx,
+        {|
+          type Proxy<T> = {
+              get(): T;
+              set(value: T): void;
+          }
+          type Proxify<T> = {
+              [P in keyof T]: Proxy<T[P]>;
+          }
+
+          interface A {
+            x: string;
+            y: number;
+            z: boolean;
+          }
+          type proxied = Proxify<A>;
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });
