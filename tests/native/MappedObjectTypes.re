@@ -176,4 +176,49 @@ describe("mapped object types", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test(
+    "omits parsing the mapped obj type if its args require it to be parsed on call",
+    ({expect, _}) => {
+    expect.string(
+      print(
+        ~ctx,
+        {|
+          type Pick<T, K extends keyof T> = {
+              [P in K]: T[P];
+          };
+          interface A {
+            x: string;
+            y: number;
+            z: boolean;
+          }
+
+          type keys = 'x' | 'y';
+          type stripped = Pick<A, keys>;
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+  test(
+    "resolves nested type args when using mapped obj types", ({expect, _}) => {
+    expect.string(
+      print(
+        ~ctx,
+        {|
+          type Pick<T, K extends keyof T> = {
+              [P in K]: T[P];
+          };
+          interface A<X> {
+            x: string;
+            y: X;
+            z: boolean;
+          }
+
+          type keys = 'x' | 'y';
+          type stripped = Pick<A<{obj: number}>, keys>;
+        |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

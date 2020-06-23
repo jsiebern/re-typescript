@@ -351,10 +351,9 @@ let rec ts_to_string = (t: ts_type) =>
   | Nullable(_) => "Nullable"
   | Reference({tr_path, tr_path_resolved, tr_parameters}) =>
     Printf.sprintf(
-      "Reference ('%s', '%s', '%i')",
-      Path.unscoped_to_string(tr_path),
-      Path.to_string(tr_path_resolved |> CCOpt.get_exn),
-      tr_parameters |> CCList.length,
+      "Reference (resolved: %s, parameters: %s)",
+      Path.pp(tr_path_resolved |> CCOpt.get_exn),
+      ts_lst_to_string(tr_parameters),
     )
   | TypeDeclaration({td_type, _}) =>
     Printf.sprintf("TypeDeclaration_%s", ts_to_string(td_type))
@@ -363,4 +362,5 @@ let rec ts_to_string = (t: ts_type) =>
   | Lazy(_) => "Lazy"
   | LazyParams(_) => "LazyParams"
   | Arg(i) => Printf.sprintf("Arg: %s", Ident.value(i))
-  };
+  }
+and ts_lst_to_string = lst => CCList.to_string(~sep=", ", ts_to_string, lst);

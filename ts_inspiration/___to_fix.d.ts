@@ -40,11 +40,11 @@
 //   [P in K]: T[P];
 // };
 
-interface A {
+interface A<X> {
   x: string;
-  y: number;
+  y: X;
   z: boolean;
 }
 
 type keys = "x" | "y";
-type stripped = Pick<A, keys>;
+type stripped = Pick<A<number>, keys>;

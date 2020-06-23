@@ -491,6 +491,7 @@ and parse__type_parameters =
              {
                tp_name: ident,
                tp_extends: None,
+               // TODO: Re-Implement this & check passed args against it
                //  tp_extends
                //  |> CCOpt.map(parse__type(~inline=true, ~path=param_path)),
                tp_default:
@@ -508,6 +509,7 @@ and parse__type_parameters =
 */
 and parse__type_extraction =
     (
+      ~parsed_source=?,
       ~path,
       source: Ts.type_extract_source,
       access_fields: list(list(Ts.field_access_item)),
@@ -521,7 +523,11 @@ and parse__type_extraction =
       parse__type(~inline=true, ~path=local_path, Ts.Object(fields))
       |> ignore;
       local_path;
-    | Ts.TeTypeReference(tr) => resolve__type_reference_path(~path, tr)
+    | Ts.TeTypeReference(tr) =>
+      switch (parsed_source) {
+      | Some(parsed_source) => parsed_source.tr_path_resolved |> CCOpt.get_exn
+      | None => resolve__type_reference_path(~path, tr)
+      }
     };
   // Next, validate the format of the access_fields
   // Only the last element should contain multiple keys, if any
@@ -629,19 +635,23 @@ and parse__type_extraction =
     ) {
     | Some({f_type: Arg(ident) as t, _}) =>
       let applied_args =
-        switch (source) {
-        | Ts.TeTypeReference(tref) =>
-          parse__apply_ref_arguments(
-            ~path,
-            ~resolved_ref=lookup_path,
-            ~type_ref=tref,
-          )
-        | _ =>
-          raise(
-            Exceptions.Parser_unexpected(
-              "Expected a type reference for this type extraction, but got an inline object",
-            ),
-          )
+        switch (parsed_source) {
+        | None =>
+          switch (source) {
+          | Ts.TeTypeReference(tref) =>
+            parse__apply_ref_arguments(
+              ~path,
+              ~resolved_ref=lookup_path,
+              ~type_ref=tref,
+            )
+          | _ =>
+            raise(
+              Exceptions.Parser_unexpected(
+                "Expected a type reference for this type extraction, but got an inline object",
+              ),
+            )
+          }
+        | Some({tr_parameters, _}) => tr_parameters
         };
       let params_path =
         switch (history |> CCList.last_opt) {
@@ -901,7 +911,7 @@ and parse__apply_arguments =
         Printf.sprintf(
           "Invalid type reference: Duplicate type parameter names detected. The following ident(s) are duplicates: %s. Path: %s.",
           duplicates,
-          path |> Path.pp,
+          Path.pp(path),
         ),
       ),
     );
@@ -917,7 +927,10 @@ and parse__apply_arguments =
            | (lst, {tp_default: None, _}) =>
              raise(
                Exceptions.Parser_parameter_error(
-                 "Invalid type reference: Cannot have a required type arg after the first optional",
+                 Printf.sprintf(
+                   "Invalid type reference: Cannot have a required type arg after the first optional (path: %s)",
+                   Path.pp(path),
+                 ),
                ),
              )
            | (lst, {tp_name, tp_default: Some(t), _}) => (i, lst @ [t])
@@ -1267,29 +1280,40 @@ and parse__mapped_object = (~path, mapped_object: Ts.mapped_object) => {
   let rec apply_type_annotation = (~maybe_params=?, ~ta, key) =>
     switch (ta, maybe_params) {
     | (
-        Some(Ts.TypeExtract(Ts.TeTypeReference(([one], _) as tr), fields)),
+        Some(
+          Ts.TypeExtract(
+            Ts.TeTypeReference(([one], _)),
+            [[Ts.FaIdentifier([{item, _}])]],
+          ),
+        ),
         Some(params),
-      ) =>
+      )
+        when item == mo_ident_str =>
       switch (
         params
         |> CCList.assoc_opt(~eq=Ident.eq, Ident.of_string(no_pi(one)))
       ) {
-      | Some(Reference({tr_path_resolved: Some(ref_path), _})) =>
-        Console.log(ref_path);
-        apply_type_annotation(
-          ~maybe_params=?None,
-          ~ta=
-            Some(
-              Ts.TypeExtract(
-                Ts.TeTypeReference((
-                  fst(ref_path) |> CCList.map(to_pi),
-                  snd(tr),
-                )),
-                fields,
-              ),
-            ),
-          key,
-        );
+      | Some(Reference({tr_path_resolved: Some(ref_path), _} as tr)) =>
+        parse__type_extraction(
+          ~parsed_source=tr,
+          ~path,
+          Ts.TeTypeReference((fst(ref_path) |> CCList.map(to_pi), None)),
+          [[Ts.FaString(to_pi(key))]],
+        )
+      // apply_type_annotation(
+      //   ~maybe_params=?None,
+      //   ~ta=
+      //     Some(
+      //       Ts.TypeExtract(
+      //         Ts.TeTypeReference((
+      //           fst(ref_path) |> CCList.map(to_pi),
+      //           Some([Number(Parse_info.zero)]),
+      //         )),
+      //         fields,
+      //       ),
+      //     ),
+      //   key,
+      // )
       | Some(_)
       | None => apply_type_annotation(~maybe_params=?None, ~ta, key)
       }

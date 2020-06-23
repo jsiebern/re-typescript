@@ -1,0 +1,15 @@
+mapped object types › resolves nested type args when using mapped obj types
+type a('X) = {
+  x: string,
+  y: 'X,
+  z: bool,
+}
+and keys =
+  | X
+  | Y
+and stripped_0_0 = {obj: float}
+and stripped = {
+  x: string,
+  y: stripped_0_0,
+};
+

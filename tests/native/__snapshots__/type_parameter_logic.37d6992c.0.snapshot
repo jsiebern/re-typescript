@@ -1,0 +1,8 @@
+type parameter logic › resolves nested params
+type a('X) = {field_x: 'X}
+and b('Y, 'Z) = {
+  field_y: 'Y,
+  field_z: 'Z,
+}
+and apply = b(a(bool), float);
+

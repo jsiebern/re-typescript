@@ -254,4 +254,21 @@ describe("type parameter logic", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("resolves nested params", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface A<X> {
+        field_x: X;
+      }
+      interface B<Y, Z> {
+        field_y: Y;
+        field_z: Z;
+      }
+      type apply = B<A<boolean>, number>;
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

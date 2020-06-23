@@ -3,9 +3,6 @@ open Re_typescript_fs;
 
 let content = {|
 
-
-
-
 // type Partial<T> = {
 //     [P in keyof T]?: T[P];
 // }
