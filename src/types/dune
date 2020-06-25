@@ -1,0 +1,4 @@
+(library
+ (name re_typescript_types)
+ (public_name re_typescript.types)
+ (libraries re_typescript.config containers iter))

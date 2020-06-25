@@ -20,6 +20,7 @@
     "@opam/atdgen": "2.2.1",
     "@opam/containers": "2.8.1",
     "@opam/dune": "*",
+    "@opam/iter": "1.2.1",
     "@opam/js_of_ocaml": "3.6.0",
     "@opam/js_of_ocaml-ppx": "3.6.0",
     "@opam/menhir": "*",

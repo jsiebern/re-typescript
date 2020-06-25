@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "outDir": "./build",
+    "pretty": true,
+    "lib": ["es2015.iterable", "es2015.generator", "es5", "dom"],
+    "target": "es5",
+    "rootDir": ".",
+
+    "noEmitOnError": true,
+    "downlevelIteration": true,
+
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictPropertyInitialization": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    "skipLibCheck": true,
+
+    "alwaysStrict": true,
+    "preserveConstEnums": true,
+    "newLine": "lf",
+
+    "declarationMap": false,
+    "sourceMap": false,
+    "composite": false,
+    "incremental": true,
+    "declaration": true,
+    "stripInternal": true
+  }
+}

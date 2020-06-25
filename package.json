@@ -11,14 +11,21 @@
     "fpack-worker": "./node_modules/.bin/fpack build -c fastpack-worker.json --dev --mock constants:constants-browserify --mock fs --mock child_process --mock tty --preprocess='\\.css$:style-loader!css-loader'",
     "docs": "./docs.sh",
     "types": "./types.sh",
-    "start": "cd docs; python -m SimpleHTTPServer"
+    "start": "cd docs; python -m SimpleHTTPServer",
+    "watch-ts": "redemon --paths=src_ts --extensions=ts | yarn ts-node src_ts/morph.ts -P src_ts/tsconfig.json"
   },
   "devDependencies": {
+    "@types/node": "^14.0.14",
     "bs-platform": "^7.3.2",
+    "byots": "^4.0.0-dev.20200624.14.21",
     "constants-browserify": "^1.0.0",
     "css-loader": "^3.5.3",
     "fastpack": "^0.9.1",
+    "redemon": "^0.2.6",
     "style-loader": "^1.2.1",
+    "ts-morph": "^7.1.2",
+    "ts-node": "^8.10.2",
+    "typescript": "^4.0.0-dev.20200625",
     "url-loader": "^4.1.0"
   },
   "dependencies": {
