@@ -537,3 +537,34 @@ module Modifier: {
     || const
     || deprecated;
 };
+
+let to_int: 'a => int = a => Obj.magic(a);
+let from_int: 'int => 'a = a => Obj.magic(a);
+
+type node_flags = Node.t;
+let read_node_flags: (Yojson.Safe.lexer_state, Lexing.lexbuf) => node_flags =
+  (lexestate, lexbuf) =>
+    Yojson.Basic.read_int(lexestate, lexbuf) |> from_int;
+let write_node_flags = (buf, flags: node_flags) =>
+  Yojson.Basic.write_int(buf, to_int(flags));
+
+type symbol_flags = Symbol.t;
+let read_symbol_flags: (Yojson.Safe.lexer_state, Lexing.lexbuf) => symbol_flags =
+  (lexestate, lexbuf) =>
+    Yojson.Basic.read_int(lexestate, lexbuf) |> from_int;
+let write_symbol_flags = (buf, flags: symbol_flags) =>
+  Yojson.Basic.write_int(buf, to_int(flags));
+
+type type_flags = Type.t;
+let read_type_flags: (Yojson.Safe.lexer_state, Lexing.lexbuf) => type_flags =
+  (lexestate, lexbuf) =>
+    Yojson.Basic.read_int(lexestate, lexbuf) |> from_int;
+let write_type_flags = (buf, flags: type_flags) =>
+  Yojson.Basic.write_int(buf, to_int(flags));
+
+type object_flags = Type.t;
+let read_object_flags: (Yojson.Safe.lexer_state, Lexing.lexbuf) => object_flags =
+  (lexestate, lexbuf) =>
+    Yojson.Basic.read_int(lexestate, lexbuf) |> from_int;
+let write_object_flags = (buf, flags: object_flags) =>
+  Yojson.Basic.write_int(buf, to_int(flags));

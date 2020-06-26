@@ -1,4 +1,33 @@
 (library
  (name re_typescript_types)
  (public_name re_typescript.types)
- (libraries re_typescript.config containers iter))
+ (libraries re_typescript.config containers iter yojson console.lib))
+
+(env
+ (dev
+  (flags
+   (:standard -w -30))))
+
+(rule
+ (targets ts_ast_t.ml ts_ast_t.mli)
+ (deps ts_ast.atd)
+ (action
+  (run atdgen -t %{deps})))
+
+(rule
+ (targets ts_ast_j.ml ts_ast_j.mli)
+ (deps ts_ast.atd)
+ (action
+  (run atdgen -j -j-std %{deps})))
+
+(rule
+ (targets ts_syntax_kind_t.ml ts_syntax_kind_t.mli)
+ (deps ts_syntax_kind.atd)
+ (action
+  (run atdgen -t %{deps})))
+
+(rule
+ (targets ts_syntax_kind_j.ml ts_syntax_kind_j.mli)
+ (deps ts_syntax_kind.atd)
+ (action
+  (run atdgen -j -j-std %{deps})))

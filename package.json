@@ -12,7 +12,7 @@
     "docs": "./docs.sh",
     "types": "./types.sh",
     "start": "cd docs; python -m SimpleHTTPServer",
-    "watch-ts": "redemon --paths=src_ts --extensions=ts | yarn ts-node src_ts/morph.ts -P src_ts/tsconfig.json"
+    "ts": "yarn ts-node -P src_ts/tsconfig.json src_ts/morph.ts"
   },
   "devDependencies": {
     "@types/node": "^14.0.14",
