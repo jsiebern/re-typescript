@@ -77,6 +77,8 @@ module Symbol = {
   [@bs.get]
   external compilerSymbol: t => Typescript_raw.symbol = "compilerSymbol";
   [@bs.send] external getName: t => string = "getName";
+  [@bs.send]
+  external getFullyQualifiedName: t => string = "getFullyQualifiedName";
 };
 
 module Node = {

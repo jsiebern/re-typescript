@@ -478,6 +478,8 @@ type symbol  = {
     flags: int ;
     ?id: int option ;
     ?resolvedType: type_ option ;
+    fullyQualifiedName: string ;
+    name: string ;
 }
 
 type type_Generic = {

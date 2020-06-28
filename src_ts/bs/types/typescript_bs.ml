@@ -176,7 +176,9 @@ and node_VariableDeclarationList =
 and symbol = Typescript_t.symbol = {
   flags: int;
   id: int option;
-  resolvedType: type_ option
+  resolvedType: type_ option;
+  fullyQualifiedName: string;
+  name: string
 }
 
 and type_ = Typescript_t.type_
@@ -2831,6 +2833,20 @@ and write_symbol js = (
             )
           ~name:"resolvedType"
           t.resolvedType
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"fullyQualifiedName"
+          t.fullyQualifiedName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"name"
+          t.name
       ]
     )
   )
@@ -7469,6 +7485,18 @@ and read_symbol js = (
             (
               read_type_
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
+          fullyQualifiedName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "fullyQualifiedName"
+            ) json;
+          name =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "name"
             ) json;
       } : symbol)
     )

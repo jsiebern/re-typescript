@@ -1,3 +1,4 @@
+let content = {|
 {
   "identifierCount": 2,
   "nodeCount": 8,
@@ -86,3 +87,9 @@
   "pos": 0,
   "kindName": "SourceFile"
 }
+|};
+
+let run = () => {
+  let content = Typescript_j.node_of_string(content);
+  Console.log(content);
+};

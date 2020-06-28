@@ -14,17 +14,6 @@ module RemoveUndefined: Atdgen_codec_runtime.Json_adapter.S = {
   let restore = j => j;
 };
 
-// module KindName = {
-//   include Atdgen_codec_runtime.Json_adapter.Type_field.Make({
-//     let type_field_name = "kindName";
-//   });
-
-//   let normalize = json => {
-//     Fs.writeFileSync("src_ts/bs/last.json", DebugHelper.debugClean(json));
-//     normalize(RemoveUndefined.normalize(json));
-//   };
-// };
-
 module KindName = {
   module Json = Js.Json;
   let type_field_name = "kindName";

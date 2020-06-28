@@ -6,12 +6,14 @@ let sourceFile =
   project->Project.createSourceFile(
     "test.d.ts",
     {|
-type bla = {
-  a: string;
-  b: string;
-};
-type c = keyof bla;
-export type d = ['s1', 's2', string];
+// type bla = {
+//   a: string;
+//   b: string;
+// };
+// type c = keyof bla;
+// export type d = ['s1', 's2', string];
+type str = string;
+type num = number;
 |},
   );
 sourceFile->SourceFile.saveSync;

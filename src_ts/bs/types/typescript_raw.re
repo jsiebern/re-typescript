@@ -13,6 +13,10 @@ module Node = {
 
 module Symbol = {
   [@bs.set] external setResolvedType: (symbol, type_) => unit = "resolvedType";
+  [@bs.set]
+  external setFullyQualifiedName: (symbol, string) => unit =
+    "fullyQualifiedName";
+  [@bs.set] external setName: (symbol, string) => unit = "name";
 
   [@bs.get]
   external valueDeclaration: symbol => option(Js.Nullable.t(node)) =

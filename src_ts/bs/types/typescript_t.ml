@@ -510,7 +510,13 @@ and node_VariableDeclarationList = {
   declarations: node list
 }
 
-and symbol = { flags: int; id: int option; resolvedType: type_ option }
+and symbol = {
+  flags: int;
+  id: int option;
+  resolvedType: type_ option;
+  fullyQualifiedName: string;
+  name: string
+}
 
 and type_ = [
     `Any of type_unknown

@@ -110,6 +110,11 @@ let rec visitNode =
         symbol
         ->Symbol.compilerSymbol
         ->Typescript_raw.Symbol.setResolvedType(t->Type.compilerType);
+        symbol
+        ->Symbol.compilerSymbol
+        ->Typescript_raw.Symbol.setFullyQualifiedName(
+            symbol->Symbol.getFullyQualifiedName,
+          );
       };
       node
       ->Node.compilerNode

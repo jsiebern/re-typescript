@@ -45,7 +45,7 @@
       "source": { "type": "link-dev", "path": ".", "manifest": "esy.json" },
       "overrides": [],
       "dependencies": [
-        "byots@4.0.0-dev.20200625.14.22@d41d8cd9",
+        "byots@4.0.0-dev.20200627.14.22@d41d8cd9",
         "@reason-native/pastel@0.3.0@d41d8cd9",
         "@reason-native/fp@0.0.1@d41d8cd9",
         "@reason-native/file-context-printer@0.0.3@d41d8cd9",
@@ -64,7 +64,7 @@
         "@reason-native/rely@3.2.1@d41d8cd9",
         "@opam/redemon@github:ulrikstrid/redemon:redemon.opam#50a9739389b4c5af28577d99a55174f8b0995f0b@d41d8cd9",
         "@opam/reason@opam:3.6.0@2da53ff9",
-        "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#578749cc138a35d83543380e1e84b1e6c98a84b9@d41d8cd9",
+        "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#b3cc35de93704c503ebadc4343fe07a39e94666e@d41d8cd9",
         "@opam/js_of_ocaml-compiler@opam:3.6.0@bda9e5de"
       ]
     },
@@ -82,14 +82,14 @@
       "dependencies": [],
       "devDependencies": []
     },
-    "byots@4.0.0-dev.20200625.14.22@d41d8cd9": {
-      "id": "byots@4.0.0-dev.20200625.14.22@d41d8cd9",
+    "byots@4.0.0-dev.20200627.14.22@d41d8cd9": {
+      "id": "byots@4.0.0-dev.20200627.14.22@d41d8cd9",
       "name": "byots",
-      "version": "4.0.0-dev.20200625.14.22",
+      "version": "4.0.0-dev.20200627.14.22",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://registry.npmjs.org/byots/-/byots-4.0.0-dev.20200625.14.22.tgz#sha1:c0b1636df79a8115ee4b87d582e65113f9bbbd5a"
+          "archive:https://registry.npmjs.org/byots/-/byots-4.0.0-dev.20200627.14.22.tgz#sha1:4f4a3a61eaaba3b75c2c88c70dbfdb5e09514f62"
         ]
       },
       "overrides": [],
@@ -683,16 +683,16 @@
         "@opam/dune@opam:2.5.0@aef1678b"
       ]
     },
-    "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#578749cc138a35d83543380e1e84b1e6c98a84b9@d41d8cd9": {
+    "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#b3cc35de93704c503ebadc4343fe07a39e94666e@d41d8cd9": {
       "id":
-        "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#578749cc138a35d83543380e1e84b1e6c98a84b9@d41d8cd9",
+        "@opam/ocaml-lsp-server@github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#b3cc35de93704c503ebadc4343fe07a39e94666e@d41d8cd9",
       "name": "@opam/ocaml-lsp-server",
       "version":
-        "github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#578749cc138a35d83543380e1e84b1e6c98a84b9",
+        "github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#b3cc35de93704c503ebadc4343fe07a39e94666e",
       "source": {
         "type": "install",
         "source": [
-          "github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#578749cc138a35d83543380e1e84b1e6c98a84b9"
+          "github:ocaml/ocaml-lsp:ocaml-lsp-server.opam#b3cc35de93704c503ebadc4343fe07a39e94666e"
         ]
       },
       "overrides": [],

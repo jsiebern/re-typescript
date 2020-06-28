@@ -176,7 +176,9 @@ and node_VariableDeclarationList =
 and symbol = Typescript_t.symbol = {
   flags: int;
   id: int option;
-  resolvedType: type_ option
+  resolvedType: type_ option;
+  fullyQualifiedName: string;
+  name: string
 }
 
 and type_ = Typescript_t.type_
