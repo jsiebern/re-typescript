@@ -1,0 +1,271 @@
+type node_flags <ocaml module="Flags"> = abstract
+type symbol_flags <ocaml module="Flags"> = abstract
+type type_flags <ocaml module="Flags"> = abstract
+type syntax_kind_name <ocaml from="Ts_syntax_kind" t="t"> = abstract
+
+type object_flags = (string * string) <json repr="object">
+type syntax_kind = int
+
+
+type node = [
+  | ModuleBlock of moduleBlock
+  | NamespaceDeclaration of namespaceDeclaration
+  | Identifier of identifier
+  | StringLiteral of stringLiteral
+  | NumericLiteral of numericLiteral
+  | TemplateLiteralLikeNode of templateLiteralLikeNode
+  | NoSubstitutionTemplateLiteral of noSubstitutionTemplateLiteral
+  | SourceFile of sourceFile
+  | Generic <json untyped> of (string * node_generic)
+] <json adapter.ocaml="Ts_ast_json_adapters.KindName">
+type node_modifier = [
+  | AbstractKeyword of node_generic
+  | AsyncKeyword of node_generic
+  | ConstKeyword of node_generic
+  | DeclareKeyword of node_generic
+  | DefaultKeyword of node_generic
+  | ExportKeyword of node_generic
+  | PrivateKeyword of node_generic
+  | ProtectedKeyword of node_generic
+  | PublicKeyword of node_generic
+  | ReadonlyKeyword of node_generic
+  | StaticKeyword of node_generic
+] <json adapter.ocaml="Ts_ast_json_adapters.KindName">
+type node_generic = {
+  kind: int;
+  kindName: string;
+  flags: node_flags;
+  ?parent: node option ;
+}
+
+type declarations = [
+  | TypeAliasDeclaration of typeAliasDeclaration
+  | NamespaceDeclaration of namespaceDeclaration
+  | InterfaceDeclaration
+] <json adapter.ocaml="Ts_ast_json_adapters.KindName">
+
+type symbol = [
+    | Symbol of iSymbol
+    | SymbolRef of iSymbolRef
+] <json adapter.ocaml="Ts_ast_json_adapters.Symbol">
+
+type iSymbol = {
+    flags: symbol_flags ;
+    name: string ;
+    escapedName: string ;
+    fullyQualifiedName: string ;
+    ?aliasedSymbol: symbol option ;
+    ?exportSymbol: symbol option ;
+    ?valueDeclaration: declarations option ;
+    declarations: declarations list ;
+    members: symbol list ;
+    declaredType: type_;
+    id: int;
+}
+type iSymbolRef = {
+    id: int;
+}
+
+type intrinsic_type = [
+  | AnyKeyword of intrinsicType <json name="any">
+  | BigIntKeyword of intrinsicType <json name="BigInt">
+  | BooleanKeyword of intrinsicType <json name="boolean">
+  | NeverKeyword of intrinsicType <json name="never">
+  | NumberKeyword of intrinsicType <json name="number">
+  | ObjectKeyword of intrinsicType <json name="Object">
+  | StringKeyword of intrinsicType <json name="string">
+  | SymbolKeyword of intrinsicType <json name="symbol">
+  | UndefinedKeyword of intrinsicType <json name="undefined">
+  | UnknownKeyword of intrinsicType <json name="unknown">
+  | VoidKeyword of intrinsicType <json name="void">
+] <json adapter.ocaml="Ts_ast_json_adapters.IntrinsicName">
+type type_ = {
+    flags: type_flags ;
+    ?symbol: symbol option ;
+    ?aliasSymbol: symbol option ;
+    ?aliasTypeArguments: type_ list option ;
+}
+type intrinsicType = {
+  flags: type_flags ;
+  ?symbol: symbol option ;
+  ?aliasSymbol: symbol option ;
+  ?aliasTypeArguments: type_ list option ;
+  intrinsicName: string ;
+  objectFlags: object_flags ;
+}
+
+
+type declaration = {
+  kindName: string ;
+  kind: syntax_kind ;
+  flags: node_flags ;
+  ?parent: node option ;
+}
+type identifier = {
+  kindName: string ;
+  flags: node_flags ;
+  kind: syntax_kind ;
+  ?originalKeywordKind: syntax_kind option ;
+  escapedText: string ;
+}
+type stringLiteral = {
+  text: string ;
+  ?isUnterminated: bool option ;
+  ?hasExtendedUnicodeEscape: bool option ;
+  kindName: string ;
+  flags: node_flags ;
+  kind: syntax_kind ;
+}
+type numericLiteral = {
+  text: string ;
+  ?isUnterminated: bool option ;
+  ?hasExtendedUnicodeEscape: bool option ;
+  kindName: string ;
+  flags: node_flags ;
+  ?parent: node option ;
+  kind: syntax_kind
+}
+type templateLiteralLikeNode = {
+  kindName: string ;
+  flags: node_flags ;
+  ?parent: node option ;
+  kind: syntax_kind ;
+  text: string ;
+  ?isUnterminated: bool option ;
+  ?hasExtendedUnicodeEscape: bool option ;
+  rawText: string option }
+type noSubstitutionTemplateLiteral = {
+  text: string ;
+  ?isUnterminated: bool option ;
+  ?hasExtendedUnicodeEscape: bool option ;
+  rawText: string option ;
+  kindName: string ;
+  flags: node_flags ;
+  ?parent: node option ;
+  kind: syntax_kind
+}
+type stringLiteralLike = [
+    | StringLiteral of stringLiteral
+    | NoSubstitutionTemplateLiteral of noSubstitutionTemplateLiteral
+] <json adapter.ocaml="Ts_ast_json_adapters.KindName">
+
+type declarationName = [
+    | StringLiteral of stringLiteral
+    | NoSubstitutionTemplateLiteral of noSubstitutionTemplateLiteral
+    | Identifier of identifier
+    | NumericLiteral of numericLiteral
+    | PrivateIdentifier
+    | ComputedPropertyName
+    | ElementAccessExpression
+    | BindingPattern
+    | EntityNameExpression
+] <json adapter.ocaml="Ts_ast_json_adapters.KindName">
+type namedDeclaration = {
+  flags: node_flags ;
+  ?parent: node option ;
+  ?symbol: symbol option ;
+  kind: syntax_kind ;
+  kindName: string ;
+  ?name: declarationName option ;
+}
+type declarationStatement_name = [
+    | Identifier of identifier
+    | StringLiteral of stringLiteral
+    | NumericLiteral of numericLiteral
+] <json adapter.ocaml="Ts_ast_json_adapters.KindName">
+type declarationStatement = {
+  flags: node_flags ;
+  ?parent: node option ;
+  ?symbol: symbol option ;
+  kind: syntax_kind ;
+  kindName: string ;
+  ?name: declarationStatement_name option ;
+}
+type statement = {
+  kind: int ;
+  kindName: string ;
+  flags: node_flags ;
+}
+type namespaceBody = [
+  | ModuleBlock of moduleBlock
+  | NamespaceDeclaration of namespaceDeclaration
+] <json adapter.ocaml="Ts_ast_json_adapters.KindName">
+type sourceFile = {
+  kind: int ;
+  kindName: string ;
+  flags: node_flags ;
+  ?parent: node option ;
+  filePath: string ;
+  baseName: string ;
+  baseNameWithoutExtension: string ;
+  extension: string ;
+  scriptKind: int ;
+  isDeclarationFile: bool ;
+  isFromExternalLibrary: bool ;
+  isInNodeModules: bool ;
+  fullSource: string ;
+  symbols: symbol list ;
+}
+type moduleDeclaration_parent = [
+  | ModuleBlock of moduleBlock
+  | NamespaceDeclaration of namespaceDeclaration
+  | SourceFile of sourceFile
+] <json adapter.ocaml="Ts_ast_json_adapters.KindName">
+type moduleDeclaration_name = [
+  | Identifier of identifier
+  | StringLiteral of stringLiteral
+] <json adapter.ocaml="Ts_ast_json_adapters.KindName">
+type moduleDeclaration = {
+  flags: node_flags ;
+  ?symbol: symbol option ;
+  kindName: string ;
+  kind: syntax_kind ;
+  ?parent: moduleDeclaration_parent option ;
+  name: moduleDeclaration_name ;
+  ?body: namespaceBody option ;
+}
+type moduleBlock = {
+  flags: node_flags ;
+  kind: syntax_kind ;
+  kindName: string ;
+  ?parent: moduleDeclaration option ;
+  statements: statement list
+}
+type namespaceDeclaration = {
+  flags: node_flags ;
+  ?symbol: symbol option ;
+  kindName: string ;
+  kind: syntax_kind ;
+  ?parent: moduleDeclaration_parent option ;
+  name: identifier ;
+  body: namespaceBody ;
+  symbols: symbol list ;
+}
+type declarationWithTypeParameterChildren = node
+type typeParameterDeclaration = {
+  flags: node_flags ;
+  ?symbol: symbol option ;
+  kind: syntax_kind ;
+  kindName: string ;
+  ?name: declarationName option ;
+  ?parent: declarationWithTypeParameterChildren option ;
+  ?constraint_ <json name="constraint">: node option ;
+  ?default: node option;
+}
+type typeAliasDeclaration = {
+  flags: node_flags ;
+  ?parent: node option ;
+  ?symbol: symbol option ;
+  kind: syntax_kind ;
+  kindName: string ;
+  ?name: declarationName option ;
+  ?parameters: typeParameterDeclaration list option;
+  ?type_ <json name="type">: type_ option ;
+  ?modifiers: node_modifier list option ;
+}
+type result = {
+  ?errors: string option;
+  symbols: (int * symbol) list;
+  declarations: (string * typeAliasDeclaration) list;
+  sourceFiles: (string * sourceFile) list;
+}

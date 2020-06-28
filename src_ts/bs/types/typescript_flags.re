@@ -1,17 +1,17 @@
-module IntShift = {
-  let (&) = Int.logand;
-  let (||) = Int.logor;
-  let (<<) = Int.shift_left;
-  let (>>) = Int.shift_right;
-  let (>>>) = Int.shift_right_logical;
-  let (~~) = Int.lognot;
-  let (&&) = (v1, v2) => (v1 & v2) > 0;
+module Int = Int32;
 
-  type t = Int.t;
+module IntShift = {
+  let (&): (int, int) => int = Int.logand->Obj.magic;
+  let (||): (int, int) => int = Int.logor->Obj.magic;
+  let (<<): (int, int) => int = Int.shift_left->Obj.magic;
+  let (>>): (int, int) => int = Int.shift_right->Obj.magic;
+  let (>>>): (int, int) => int = Int.shift_right_logical->Obj.magic;
+  let (~~): int => int = Int.lognot->Obj.magic;
+  let (&&) = (v1, v2) => (v1 & v2) > 0;
 };
 
 module Type: {
-  type t = pri Int.t;
+  type t = pri int;
 
   let (&): (t, t) => t;
   let (||): (t, t) => t;
@@ -87,7 +87,7 @@ module Type: {
   let includesEmptyObject: t;
 } = {
   include IntShift;
-  type t = Int.t;
+  type t = int;
 
   let any = 1 << 0;
   let unknown = 1 << 1;
@@ -99,23 +99,23 @@ module Type: {
   let stringLiteral = 1 << 7;
   let numberLiteral = 1 << 8;
   let booleanLiteral = 1 << 9;
-  let enumLiteral = 1 << 10; // Always combined with StringLiteral, NumberLiteral, or Union
+  let enumLiteral = 1 << 10;
   let bigIntLiteral = 1 << 11;
-  let eSSymbol = 1 << 12; // Type of symbol primitive introduced in ES6
-  let uniqueESSymbol = 1 << 13; // unique symbol
+  let eSSymbol = 1 << 12;
+  let uniqueESSymbol = 1 << 13;
   let void = 1 << 14;
   let undefined = 1 << 15;
   let null = 1 << 16;
-  let never = 1 << 17; // Never type
-  let typeParameter = 1 << 18; // Type parameter
-  let object_ = 1 << 19; // Object type
-  let union = 1 << 20; // Union (T || U)
-  let intersection = 1 << 21; // Intersection (T & U)
-  let index = 1 << 22; // keyof T
-  let indexedAccess = 1 << 23; // T[K]
-  let conditional = 1 << 24; // T extends U ? X : Y
-  let substitution = 1 << 25; // Type parameter substitution
-  let nonPrimitive = 1 << 26; // intrinsic object type
+  let never = 1 << 17;
+  let typeParameter = 1 << 18;
+  let object_ = 1 << 19;
+  let union = 1 << 20;
+  let intersection = 1 << 21;
+  let index = 1 << 22;
+  let indexedAccess = 1 << 23;
+  let conditional = 1 << 24;
+  let substitution = 1 << 25;
+  let nonPrimitive = 1 << 26;
 
   let anyOrUnknown = any || unknown;
   let nullable = undefined || null;
@@ -303,39 +303,38 @@ module Symbol: {
   let lateBindingContainer: t;
 } = {
   include IntShift;
-
-  type t = Int.t;
+  type t = int;
 
   let none = 0;
-  let functionScopedVariable = 1 << 0; // Variable (var) or parameter
-  let blockScopedVariable = 1 << 1; // A block-scoped variable (let or const)
-  let property = 1 << 2; // Property or enum member
-  let enumMember = 1 << 3; // Enum member
-  let function_ = 1 << 4; // Function
-  let class_ = 1 << 5; // Class
-  let interface = 1 << 6; // Interface
-  let constEnum = 1 << 7; // Const enum
-  let regularEnum = 1 << 8; // Enum
-  let valueModule = 1 << 9; // Instantiated module
-  let namespaceModule = 1 << 10; // Uninstantiated module
-  let typeLiteral = 1 << 11; // Type Literal or mapped type
-  let objectLiteral = 1 << 12; // Object Literal
-  let method = 1 << 13; // Method
-  let constructor = 1 << 14; // Constructor
-  let getAccessor = 1 << 15; // Get accessor
-  let setAccessor = 1 << 16; // Set accessor
-  let signature = 1 << 17; // Call, construct, or index signature
-  let typeParameter = 1 << 18; // Type parameter
-  let typeAlias = 1 << 19; // Type alias
-  let exportValue = 1 << 20; // Exported value marker (see comment in declareModuleMember in binder)
-  let alias = 1 << 21; // An alias for another symbol (see comment in isAliasSymbolDeclaration in checker)
-  let prototype = 1 << 22; // Prototype property (no source representation)
-  let exportStar = 1 << 23; // Export * declaration
-  let optional = 1 << 24; // Optional property
-  let transient = 1 << 25; // Transient symbol (created during type check)
-  let assignment = 1 << 26; // Assignment treated as declaration (eg `this.prop = 1`)
-  let moduleExports = 1 << 27; // Symbol for CommonJS `module` of `module.exports`
-  let deprecated = 1 << 28; // Symbol has Deprecated declaration tag (eg `@deprecated`)
+  let functionScopedVariable = 1 << 0;
+  let blockScopedVariable = 1 << 1;
+  let property = 1 << 2;
+  let enumMember = 1 << 3;
+  let function_ = 1 << 4;
+  let class_ = 1 << 5;
+  let interface = 1 << 6;
+  let constEnum = 1 << 7;
+  let regularEnum = 1 << 8;
+  let valueModule = 1 << 9;
+  let namespaceModule = 1 << 10;
+  let typeLiteral = 1 << 11;
+  let objectLiteral = 1 << 12;
+  let method = 1 << 13;
+  let constructor = 1 << 14;
+  let getAccessor = 1 << 15;
+  let setAccessor = 1 << 16;
+  let signature = 1 << 17;
+  let typeParameter = 1 << 18;
+  let typeAlias = 1 << 19;
+  let exportValue = 1 << 20;
+  let alias = 1 << 21;
+  let prototype = 1 << 22;
+  let exportStar = 1 << 23;
+  let optional = 1 << 24;
+  let transient = 1 << 25;
+  let assignment = 1 << 26;
+  let moduleExports = 1 << 27;
+  let deprecated = 1 << 28;
 
   let all =
     functionScopedVariable
@@ -438,7 +437,7 @@ module Symbol: {
 };
 
 module Node: {
-  type t = pri Int.t;
+  type t = pri int;
 
   let (&): (t, t) => t;
   let (||): (t, t) => t;
@@ -455,6 +454,7 @@ module Node: {
   let blockScoped: t;
 } = {
   include IntShift;
+  type t = int;
 
   let none = 0;
   let let_ = 1 << 0;
@@ -464,7 +464,7 @@ module Node: {
 };
 
 module Modifier: {
-  type t = pri Int.t;
+  type t = pri int;
 
   let (&): (t, t) => t;
   let (||): (t, t) => t;
@@ -499,22 +499,23 @@ module Modifier: {
   let all: t;
 } = {
   include IntShift;
+  type t = int;
 
   let none = 0;
-  let export = 1 << 0; // Declarations
-  let ambient = 1 << 1; // Declarations
-  let public = 1 << 2; // Property/Method
-  let private = 1 << 3; // Property/Method
-  let protected = 1 << 4; // Property/Method
-  let static = 1 << 5; // Property/Method
-  let readonly = 1 << 6; // Property/Method
-  let abstract = 1 << 7; // Class/Method/ConstructSignature
-  let async = 1 << 8; // Property/Method/Function
-  let default = 1 << 9; // Function/Class (export default declaration)
-  let const = 1 << 11; // Const enum
-  let hasComputedJSDocModifiers = 1 << 12; // Indicates the computed modifier flags include modifiers from JSDoc.
-  let deprecated = 1 << 13; // Deprecated tag.
-  let hasComputedFlags = 1 << 29; // Modifier flags have been computed
+  let export = 1 << 0;
+  let ambient = 1 << 1;
+  let public = 1 << 2;
+  let private = 1 << 3;
+  let protected = 1 << 4;
+  let static = 1 << 5;
+  let readonly = 1 << 6;
+  let abstract = 1 << 7;
+  let async = 1 << 8;
+  let default = 1 << 9;
+  let const = 1 << 11;
+  let hasComputedJSDocModifiers = 1 << 12;
+  let deprecated = 1 << 13;
+  let hasComputedFlags = 1 << 29;
 
   let accessibilityModifier = public || private || protected;
   let parameterPropertyModifier = accessibilityModifier || readonly;
@@ -539,7 +540,7 @@ module Modifier: {
 };
 
 module Object: {
-  type t = pri Int.t;
+  type t = pri int;
 
   let (&): (t, t) => t;
   let (||): (t, t) => t;
@@ -580,8 +581,12 @@ module Object: {
   let containsIntersections: t;
   let isNeverIntersectionComputed: t;
   let isNeverIntersection: t;
+  let classOrInterface: t;
+  let requiresWidening: t;
+  let propagatingFlags: t;
 } = {
   include IntShift;
+  type t = int;
 
   let class_ = 1 << 0;
   let interface = 1 << 1;
@@ -620,33 +625,29 @@ module Object: {
     containsWideningType || containsObjectOrArrayLiteral || nonInferrableType;
 };
 
-let to_int: 'a => int = a => Obj.magic(a);
-let from_int: 'int => 'a = a => Obj.magic(a);
+module Element: {
+  type t = pri int;
 
-type node_flags = Node.t;
-let read_node_flags: (Yojson.Safe.lexer_state, Lexing.lexbuf) => node_flags =
-  (lexestate, lexbuf) =>
-    Yojson.Basic.read_int(lexestate, lexbuf) |> from_int;
-let write_node_flags = (buf, flags: node_flags) =>
-  Yojson.Basic.write_int(buf, to_int(flags));
+  let (&): (t, t) => t;
+  let (||): (t, t) => t;
+  let (<<): (t, t) => t;
+  let (>>): (t, t) => t;
+  let (>>>): (t, t) => t;
+  let (~~): t => t;
+  let (&&): (t, t) => bool;
 
-type symbol_flags = Symbol.t;
-let read_symbol_flags: (Yojson.Safe.lexer_state, Lexing.lexbuf) => symbol_flags =
-  (lexestate, lexbuf) =>
-    Yojson.Basic.read_int(lexestate, lexbuf) |> from_int;
-let write_symbol_flags = (buf, flags: symbol_flags) =>
-  Yojson.Basic.write_int(buf, to_int(flags));
+  let required: t;
+  let optional: t;
+  let rest: t;
+  let variadic: t;
+  let variable: t;
+} = {
+  include IntShift;
+  type t = int;
 
-type type_flags = Type.t;
-let read_type_flags: (Yojson.Safe.lexer_state, Lexing.lexbuf) => type_flags =
-  (lexestate, lexbuf) =>
-    Yojson.Basic.read_int(lexestate, lexbuf) |> from_int;
-let write_type_flags = (buf, flags: type_flags) =>
-  Yojson.Basic.write_int(buf, to_int(flags));
-
-type object_flags = Object.t;
-let read_object_flags: (Yojson.Safe.lexer_state, Lexing.lexbuf) => object_flags =
-  (lexestate, lexbuf) =>
-    Yojson.Basic.read_int(lexestate, lexbuf) |> from_int;
-let write_object_flags = (buf, flags: object_flags) =>
-  Yojson.Basic.write_int(buf, to_int(flags));
+  let required = 1 << 0;
+  let optional = 1 << 1;
+  let rest = 1 << 2;
+  let variadic = 1 << 3;
+  let variable = rest || variadic;
+};

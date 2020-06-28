@@ -4,7 +4,9 @@ export type SymbolId = number & { __symbolIdentifier: void };
 export type NodeId<N extends Node = Node> = number & {
   __nodeIdentifier: void;
 } & N;
-export type TypeId = number & { __typeIdentifier: void };
+export type TypeId<T extends Type = Type> = number & {
+  __typeIdentifier: void;
+} & T;
 
 export interface ReadonlyTextRange {
   readonly pos: number;
@@ -35,19 +37,6 @@ export interface Symbol {
   members: SymbolId[];
   declaredType: TypeId;
   id: SymbolId;
-}
-
-export interface Type {
-  flags: ts.TypeFlags;
-  symbol?: SymbolId;
-  aliasSymbol?: SymbolId;
-  aliasTypeArguments?: TypeId[] | undefined;
-  id: TypeId;
-}
-export interface IntrinsicType extends Type {
-  intrinsicName: string;
-
-  objectFlags: ts.ObjectFlags;
 }
 
 export interface Declaration extends Node {}
@@ -146,10 +135,10 @@ export interface InterfaceDeclaration extends DeclarationStatement {
 
 export interface ClassLikeDeclarationBase extends NamedDeclaration {
   readonly kind: ts.SyntaxKind.ClassDeclaration | ts.SyntaxKind.ClassExpression;
-  readonly name?: NodeId;
-  readonly typeParameters?: NodeArray<TypeParameterDeclaration>;
-  readonly heritageClauses?: NodeArray<HeritageClause>;
-  readonly members: NodeArray<ClassElement>;
+  readonly name?: NodeId<Identifier>;
+  readonly typeParameters?: NodeArray<NodeId<TypeParameterDeclaration>>;
+  readonly heritageClauses?: NodeArray<NodeId<HeritageClause>>;
+  readonly members: NodeArray<NodeId<ClassElement>>;
 }
 
 export interface ClassElement extends NamedDeclaration {
@@ -162,7 +151,7 @@ export interface ClassDeclaration
     DeclarationStatement {
   readonly kind: ts.SyntaxKind.ClassDeclaration;
   /** May be undefined in `export default class { ... }`. */
-  readonly name?: NodeId;
+  readonly name?: NodeId<Identifier>;
 }
 
 export type ClassLikeDeclaration = ClassDeclaration | ClassExpression;
@@ -231,7 +220,7 @@ export interface Expression extends Node {
 
 export interface ComputedPropertyName extends Node {
   readonly kind: ts.SyntaxKind.ComputedPropertyName;
-  readonly parent: NodeId;
+  readonly parent: NodeId<Declaration>;
   readonly expression: NodeId<Expression>;
 }
 
@@ -259,7 +248,6 @@ export interface TypeQueryNode extends TypeNode {
 }
 
 export interface TypeElement extends NamedDeclaration {
-  _typeElementBrand: any;
   readonly name?: NodeId<PropertyName>;
   readonly questionToken?: NodeId<QuestionToken>;
 }
@@ -318,4 +306,252 @@ export interface SourceFile extends Node {
   fullSource: string;
   symbols: SymbolId[];
   statements: NodeId[];
+}
+
+// export interface MappedTypeNode extends TypeNode, Declaration {
+//   readonly kind: SyntaxKind.MappedType;
+//   readonly readonlyToken?: ReadonlyToken | PlusToken | MinusToken;
+//   readonly typeParameter: TypeParameterDeclaration;
+//   readonly questionToken?: QuestionToken | PlusToken | MinusToken;
+//   readonly type?: TypeNode;
+// }
+
+////////////////////////////////////////////////////////////////////////////////
+// --- Types
+////////////////////////////////////////////////////////////////////////////////
+export interface Type {
+  flags: ts.TypeFlags;
+  symbol?: SymbolId;
+  aliasSymbol?: SymbolId;
+  aliasTypeArguments?: TypeId[] | undefined;
+  id: TypeId;
+}
+export interface IntrinsicType extends Type {
+  intrinsicName: string;
+
+  objectFlags: ts.ObjectFlags;
+}
+export interface NullableType extends IntrinsicType {
+  objectFlags: ts.ObjectFlags;
+}
+export interface PseudoBigInt {
+  negative: boolean;
+  base10Value: string;
+}
+// String literal types (TypeFlags.StringLiteral)
+// Numeric literal types (TypeFlags.NumberLiteral)
+// BigInt literal types (TypeFlags.BigIntLiteral)
+export interface LiteralType extends Type {
+  value: string | number | PseudoBigInt; // Value of literal
+}
+
+// Unique symbol types (TypeFlags.UniqueESSymbol)
+export interface UniqueESSymbolType extends Type {
+  symbol: SymbolId;
+  escapedName: string;
+}
+
+export interface StringLiteralType extends LiteralType {
+  value: string;
+}
+
+export interface NumberLiteralType extends LiteralType {
+  value: number;
+}
+
+export interface BigIntLiteralType extends LiteralType {
+  value: PseudoBigInt;
+}
+
+// Enum types (TypeFlags.Enum)
+export interface EnumType extends Type {}
+
+export type ObjectFlagsType =
+  | NullableType
+  | ObjectType
+  | UnionType
+  | IntersectionType;
+
+// Object types (TypeFlags.ObjectType)
+export interface ObjectType extends Type {
+  objectFlags: ts.ObjectFlags;
+}
+
+export interface UnionType extends UnionOrIntersectionType {
+  resolvedReducedType: Type;
+  regularType: UnionType;
+}
+export interface UnionOrIntersectionType extends Type {
+  types: Type[];
+}
+export interface IntersectionType extends UnionOrIntersectionType {
+  resolvedApparentType: Type;
+}
+
+// keyof T types (TypeFlags.Index)
+export interface IndexType extends InstantiableType {
+  type: InstantiableType | UnionOrIntersectionType;
+  stringsOnly: boolean;
+}
+
+export interface InstantiableType extends Type {
+  /* @internal */
+  resolvedBaseConstraint?: Type;
+  /* @internal */
+  resolvedIndexType?: IndexType;
+  /* @internal */
+  resolvedStringIndexType?: IndexType;
+}
+
+// Type parameters (TypeFlags.TypeParameter)
+export interface TypeParameter extends InstantiableType {
+  /** Retrieve using getConstraintFromTypeParameter */
+  /* @internal */
+  constraint?: Type; // Constraint
+  /* @internal */
+  default?: Type;
+}
+
+/** Class and interface types (ObjectFlags.Class and ObjectFlags.Interface). */
+export interface InterfaceType extends ObjectType {
+  typeParameters: TypeParameter[] | undefined; // Type parameters (undefined if non-generic)
+  outerTypeParameters: TypeParameter[] | undefined; // Outer type parameters (undefined if none)
+  localTypeParameters: TypeParameter[] | undefined; // Local type parameters (undefined if none)
+  thisType: TypeParameter | undefined; // The "this" type (undefined if none)
+  resolvedBaseConstructorType?: Type; // Resolved base constructor type of class
+  resolvedBaseTypes: BaseType[]; // Resolved base types
+}
+
+// Indexed access types (TypeFlags.IndexedAccess)
+// Possible forms are T[xxx], xxx[T], or xxx[keyof T], where T is a type variable
+export interface IndexedAccessType extends InstantiableType {
+  objectType: Type;
+  indexType: Type;
+  constraint?: Type;
+  simplifiedForReading?: Type;
+  simplifiedForWriting?: Type;
+}
+
+type BindingPattern = never;
+export type TypeVariable = TypeParameter | IndexedAccessType;
+export type BindingName = Identifier | BindingPattern;
+
+export interface ParameterDeclaration extends NamedDeclaration {
+  readonly kind: ts.SyntaxKind.Parameter;
+  readonly parent: NodeId<SignatureDeclaration>;
+  readonly dotDotDotToken?: PunctuationToken<ts.SyntaxKind.DotDotDotToken>; // Present on rest parameter
+  readonly name: NodeId<BindingName>; // Declared parameter name.
+  readonly questionToken?: QuestionToken; // Present on optional parameter
+  readonly type?: TypeNode; // Optional type annotation
+  readonly initializer?: Expression; // Optional initializer
+}
+
+export interface SignatureDeclarationBase extends NamedDeclaration {
+  readonly kind: SignatureDeclaration['kind'];
+  readonly name?: NodeId<PropertyName>;
+  readonly typeParameters?: NodeArray<NodeId<TypeParameterDeclaration>>;
+  readonly parameters: NodeArray<NodeId<ParameterDeclaration>>;
+  readonly type?: NodeId<TypeNode>;
+}
+
+type ObjectTypeDeclaration = never;
+export interface IndexSignatureDeclaration
+  extends SignatureDeclarationBase,
+    ClassElement,
+    TypeElement {
+  readonly kind: ts.SyntaxKind.IndexSignature;
+  readonly parent: NodeId<ObjectTypeDeclaration>;
+  readonly type: NodeId<TypeNode>;
+}
+
+export interface IndexInfo {
+  type: Type;
+  isReadonly: boolean;
+  declaration?: IndexSignatureDeclaration;
+}
+export interface InterfaceTypeWithDeclaredMembers extends InterfaceType {
+  declaredProperties: Symbol[]; // Declared members
+  declaredCallSignatures: Signature[]; // Declared call signatures
+  declaredConstructSignatures: Signature[]; // Declared construct signatures
+  declaredStringIndexInfo?: IndexInfo; // Declared string indexing info
+  declaredNumberIndexInfo?: IndexInfo; // Declared numeric indexing info
+}
+
+export type BaseType = ObjectType | IntersectionType | TypeVariable; // Also `any` and `object`
+
+type MappedTypeNode = never;
+export interface MappedType extends ObjectType {
+  declaration: MappedTypeNode;
+  typeParameter?: TypeParameter;
+  constraintType?: Type;
+  templateType?: Type;
+  modifiersType?: Type;
+  resolvedApparentType?: Type;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// --- Signatures
+////////////////////////////////////////////////////////////////////////////////
+
+type JSDocSignature = never;
+export interface Signature {
+  declaration?: SignatureDeclaration | JSDocSignature; // Originating declaration
+  typeParameters?: readonly TypeParameter[]; // Type parameters (undefined if non-generic)
+  parameters: readonly Symbol[]; // Parameters
+  /* @internal */
+  thisParameter?: Symbol; // symbol of this-type parameter
+  /* @internal */
+  // See comment in `instantiateSignature` for why these are set lazily.
+  resolvedReturnType?: Type; // Lazily set by `getReturnTypeOfSignature`.
+  /* @internal */
+  // Lazily set by `getTypePredicateOfSignature`.
+  // `undefined` indicates a type predicate that has not yet been computed.
+  // Uses a special `noTypePredicate` sentinel value to indicate that there is no type predicate. This looks like a TypePredicate at runtime to avoid polymorphism.
+  resolvedTypePredicate?: TypePredicate;
+}
+
+export type TypePredicate =
+  | ThisTypePredicate
+  | IdentifierTypePredicate
+  | AssertsThisTypePredicate
+  | AssertsIdentifierTypePredicate;
+
+export const enum TypePredicateKind {
+  This,
+  Identifier,
+  AssertsThis,
+  AssertsIdentifier,
+}
+
+export interface TypePredicateBase {
+  kind: TypePredicateKind;
+  type: TypeId | undefined;
+}
+
+export interface ThisTypePredicate extends TypePredicateBase {
+  kind: TypePredicateKind.This;
+  parameterName: undefined;
+  parameterIndex: undefined;
+  type: TypeId;
+}
+
+export interface IdentifierTypePredicate extends TypePredicateBase {
+  kind: TypePredicateKind.Identifier;
+  parameterName: string;
+  parameterIndex: number;
+  type: TypeId;
+}
+
+export interface AssertsThisTypePredicate extends TypePredicateBase {
+  kind: TypePredicateKind.AssertsThis;
+  parameterName: undefined;
+  parameterIndex: undefined;
+  type: TypeId | undefined;
+}
+
+export interface AssertsIdentifierTypePredicate extends TypePredicateBase {
+  kind: TypePredicateKind.AssertsIdentifier;
+  parameterName: string;
+  parameterIndex: number;
+  type: TypeId | undefined;
 }

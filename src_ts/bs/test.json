@@ -1,0 +1,279 @@
+{
+  "identifierCount": 6,
+  "nodeCount": 26,
+  "isDeclarationFile": true,
+  "languageVariant": 0,
+  "fileName": "/test.d.ts",
+  "languageVersion": 99,
+  "text": "\ntype bla = {\n  a: string;\n  b: string;\n};\ntype c = keyof bla;\nexport type d = ['s1', 's2', string];\n",
+  "statements": [
+    {
+      "type": {
+        "members": [
+          {
+            "type": {
+              "flags": 8388608,
+              "kind": 143,
+              "end": 25,
+              "pos": 18,
+              "kindName": "StringKeyword"
+            },
+            "name": {
+              "escapedText": "a",
+              "resolvedSymbol": {
+                "resolvedType": { "flags": 1, "kindName": "Any" },
+                "id": 21328,
+                "flags": 4
+              },
+              "flags": 8388608,
+              "kind": 75,
+              "end": 17,
+              "pos": 13,
+              "kindName": "Identifier"
+            },
+            "resolvedSymbol": {
+              "resolvedType": { "flags": 1, "kindName": "Any" },
+              "id": 21328,
+              "flags": 4
+            },
+            "flags": 8388608,
+            "kind": 158,
+            "end": 26,
+            "pos": 13,
+            "kindName": "PropertySignature"
+          },
+          {
+            "type": {
+              "flags": 8388608,
+              "kind": 143,
+              "end": 38,
+              "pos": 31,
+              "kindName": "StringKeyword"
+            },
+            "name": {
+              "escapedText": "b",
+              "resolvedSymbol": {
+                "resolvedType": { "flags": 1, "kindName": "Any" },
+                "id": 21329,
+                "flags": 4
+              },
+              "flags": 8388608,
+              "kind": 75,
+              "end": 30,
+              "pos": 26,
+              "kindName": "Identifier"
+            },
+            "resolvedSymbol": {
+              "resolvedType": { "flags": 1, "kindName": "Any" },
+              "id": 21329,
+              "flags": 4
+            },
+            "flags": 8388608,
+            "kind": 158,
+            "end": 39,
+            "pos": 26,
+            "kindName": "PropertySignature"
+          }
+        ],
+        "resolvedSymbol": {
+          "resolvedType": { "flags": 1, "kindName": "Any" },
+          "id": 21330,
+          "flags": 2048
+        },
+        "flags": 8388608,
+        "kind": 173,
+        "end": 41,
+        "pos": 11,
+        "kindName": "TypeLiteral"
+      },
+      "name": {
+        "escapedText": "bla",
+        "resolvedSymbol": {
+          "resolvedType": {
+            "objectFlags": 16,
+            "id": 77,
+            "flags": 524288,
+            "kindName": "Object"
+          },
+          "id": 21331,
+          "flags": 524288
+        },
+        "flags": 8388608,
+        "kind": 75,
+        "end": 9,
+        "pos": 5,
+        "kindName": "Identifier"
+      },
+      "resolvedSymbol": {
+        "resolvedType": {
+          "objectFlags": 16,
+          "id": 77,
+          "flags": 524288,
+          "kindName": "Object"
+        },
+        "id": 21331,
+        "flags": 524288
+      },
+      "flags": 8388608,
+      "kind": 247,
+      "end": 42,
+      "pos": 0,
+      "kindName": "TypeAliasDeclaration"
+    },
+    {
+      "type": {
+        "type": {
+          "typeName": {
+            "escapedText": "bla",
+            "resolvedSymbol": {
+              "resolvedType": {
+                "objectFlags": 16,
+                "id": 77,
+                "flags": 524288,
+                "kindName": "Object"
+              },
+              "id": 21331,
+              "flags": 524288
+            },
+            "flags": 8388608,
+            "kind": 75,
+            "end": 61,
+            "pos": 57,
+            "kindName": "Identifier"
+          },
+          "flags": 8388608,
+          "kind": 169,
+          "end": 61,
+          "pos": 57,
+          "kindName": "TypeReference"
+        },
+        "operator": 134,
+        "flags": 8388608,
+        "kind": 184,
+        "end": 61,
+        "pos": 51,
+        "kindName": "TypeOperator"
+      },
+      "name": {
+        "escapedText": "c",
+        "resolvedSymbol": {
+          "resolvedType": {
+            "types": [
+              {
+                "value": "a",
+                "id": 78,
+                "flags": 128,
+                "kindName": "StringLiteral"
+              },
+              {
+                "value": "b",
+                "id": 79,
+                "flags": 128,
+                "kindName": "StringLiteral"
+              }
+            ],
+            "id": 80,
+            "flags": 1048576,
+            "kindName": "Union"
+          },
+          "id": 21333,
+          "flags": 524288
+        },
+        "flags": 8388608,
+        "kind": 75,
+        "end": 49,
+        "pos": 47,
+        "kindName": "Identifier"
+      },
+      "resolvedSymbol": {
+        "resolvedType": {
+          "types": [
+            {
+              "value": "a",
+              "id": 78,
+              "flags": 128,
+              "kindName": "StringLiteral"
+            },
+            {
+              "value": "b",
+              "id": 79,
+              "flags": 128,
+              "kindName": "StringLiteral"
+            }
+          ],
+          "id": 80,
+          "flags": 1048576,
+          "kindName": "Union"
+        },
+        "id": 21333,
+        "flags": 524288
+      },
+      "flags": 8388608,
+      "kind": 247,
+      "end": 62,
+      "pos": 42,
+      "kindName": "TypeAliasDeclaration"
+    },
+    {
+      "type": {
+        "flags": 8388608,
+        "kind": 175,
+        "end": 99,
+        "pos": 78,
+        "kindName": "TupleType"
+      },
+      "name": {
+        "escapedText": "d",
+        "resolvedSymbol": {
+          "resolvedType": {
+            "objectFlags": 4,
+            "id": 87,
+            "flags": 524288,
+            "kindName": "Object"
+          },
+          "id": 21334,
+          "flags": 524288
+        },
+        "flags": 8388608,
+        "kind": 75,
+        "end": 76,
+        "pos": 74,
+        "kindName": "Identifier"
+      },
+      "resolvedSymbol": {
+        "resolvedType": {
+          "objectFlags": 4,
+          "id": 87,
+          "flags": 524288,
+          "kindName": "Object"
+        },
+        "id": 21334,
+        "flags": 524288
+      },
+      "modifiers": [
+        {
+          "flags": 8388608,
+          "kind": 89,
+          "end": 69,
+          "pos": 62,
+          "kindName": "ExportKeyword"
+        }
+      ],
+      "flags": 8388608,
+      "kind": 247,
+      "end": 100,
+      "pos": 62,
+      "kindName": "TypeAliasDeclaration"
+    }
+  ],
+  "resolvedSymbol": {
+    "resolvedType": { "flags": 1, "kindName": "Any" },
+    "id": 21332,
+    "flags": 512
+  },
+  "flags": 8388672,
+  "kind": 290,
+  "end": 101,
+  "pos": 0,
+  "kindName": "SourceFile"
+}

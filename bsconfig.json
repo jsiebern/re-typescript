@@ -5,6 +5,10 @@
     {
       "dir": "src_js",
       "subdirs": true
+    },
+    {
+      "dir": "src_ts",
+      "subdirs": true
     }
   ],
   "reason": { "react-jsx": 3 },
@@ -17,6 +21,7 @@
   "bs-dependencies": [
     "reason-react",
     "bs-webworkers",
+    "@glennsl/bs-json",
     "@ahrefs/bs-atdgen-codec-runtime",
     "@ahrefs/bs-emotion",
     "reason-recoil"

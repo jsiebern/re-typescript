@@ -128,7 +128,7 @@
   resolved "https://registry.yarnpkg.com/@emotion/utils/-/utils-0.8.2.tgz#576ff7fb1230185b619a75d258cbc98f0867a8dc"
   integrity sha512-rLu3wcBWH4P5q1CGoSSH/i9hrXs7SlbRLkoq9IGuoPYNGQvDJ3pt/wmOM+XgYjIDRMVIdkUWt0RsfzF50JfnCw==
 
-"@glennsl/bs-json@^5.0.0":
+"@glennsl/bs-json@^5.0.0", "@glennsl/bs-json@^5.0.2":
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@glennsl/bs-json/-/bs-json-5.0.2.tgz#cfb85d94d370ec6dc17849e0ddb1a51eee08cfcc"
   integrity sha512-vVlHJNrhmwvhyea14YiV4L5pDLjqw1edE3GzvMxlbPPQZVhzgO3sTWrUxCpQd2gV+CkMfk4FHBYunx9nWtBoDg==
@@ -338,10 +338,10 @@ braces@^3.0.1:
   dependencies:
     fill-range "^7.0.1"
 
-bs-platform@^7.3.2:
-  version "7.3.2"
-  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-7.3.2.tgz#301f5c9b4e8cf5713cb60ca22e145e56e793affe"
-  integrity sha512-seJL5g4anK9la4erv+B2o2sMHQCxDF6OCRl9en3hbaUos/S3JsusQ0sPp4ORsbx5eXfHLYBwPljwKXlgpXtsgQ==
+bs-platform@^8.0.2:
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-8.0.2.tgz#8caf775c6c6fcde57ebb12f9efacd346951aeb45"
+  integrity sha512-2vHnyxCd4m5QYG/hxUGsevOqEkpqL+chmjV7I3yz9NT2lEtF6RafpUj30myQqdpDcIIhLja3PCkNq+ZVNSsXQA==
 
 bs-webworkers@^0.2.4:
   version "0.2.4"
@@ -1256,11 +1256,6 @@ recoil@^0.0.8:
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/recoil/-/recoil-0.0.8.tgz#b24eb00fb8bfcbefb68836dc5ebc93cf884ed0f4"
   integrity sha512-lfIH6y9A0wQ6piucwWFZfpp9KNQ+mFdTPFPFL0m0sRCrfsuwz3lyVaaofHY6/O4BXekDoXyjYodPBgCSdw9HCw==
-
-redemon@^0.2.6:
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/redemon/-/redemon-0.2.6.tgz#59e4d738eddc3c9369e8f6ab35aa01dc2760c265"
-  integrity sha512-kSZBy+b4q4P6/q5elqQe7NDZXDrZpbaklk+fYW6CJjb4JpeHW9rmczxkIVtWZc5MvxMmX0aDn8rlFafcnvUQJQ==
 
 refractor@^2.4.1:
   version "2.10.1"

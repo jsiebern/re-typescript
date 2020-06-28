@@ -1,1 +1,253 @@
-{"symbols":[[21335,{"flags":512,"name":"\"/foo\"","escapedName":"\"/foo\"","fullyQualifiedName":"\"/foo\"","exportSymbol":21335,"valueDeclaration":21576,"declarations":[21576],"members":[],"declaredType":4,"id":21335}],[21328,{"flags":262144,"name":"Param","escapedName":"Param","fullyQualifiedName":"\"/foo\".A.Param","exportSymbol":21328,"declarations":[21578],"members":[],"declaredType":77,"id":21328}],[21330,{"flags":4,"name":"x","escapedName":"x","fullyQualifiedName":"\"/foo\".A.x","exportSymbol":21330,"valueDeclaration":21580,"declarations":[21580],"members":[],"declaredType":4,"id":21330}],[21331,{"flags":4,"name":"y","escapedName":"y","fullyQualifiedName":"\"/foo\".A.y","exportSymbol":21331,"valueDeclaration":21581,"declarations":[21581],"members":[],"declaredType":4,"id":21331}],[21332,{"flags":4,"name":"z","escapedName":"z","fullyQualifiedName":"\"/foo\".A.z","exportSymbol":21332,"valueDeclaration":21582,"declarations":[21582],"members":[],"declaredType":4,"id":21332}],[21329,{"flags":64,"name":"A","escapedName":"A","fullyQualifiedName":"\"/foo\".A","exportSymbol":21329,"declarations":[21577],"members":[21328,21330,21331,21332],"declaredType":78,"id":21329}],[21336,{"flags":0,"name":"A","escapedName":"A","fullyQualifiedName":"A","exportSymbol":21329,"declarations":[21577],"members":[],"declaredType":4,"id":21336}],[21338,{"flags":524288,"name":"keys","escapedName":"keys","fullyQualifiedName":"\"/foo\".XY.keys","exportSymbol":21338,"declarations":[12],"members":[],"declaredType":13,"id":21338}],[21334,{"flags":524288,"name":"bla","escapedName":"bla","fullyQualifiedName":"\"/foo\".XY.bla","exportSymbol":21334,"declarations":[13],"members":[],"declaredType":12,"id":21334}],[21339,{"flags":0,"name":"keys","escapedName":"keys","fullyQualifiedName":"keys","exportSymbol":21338,"declarations":[12],"members":[],"declaredType":4,"id":21339}],[21340,{"flags":0,"name":"bla","escapedName":"bla","fullyQualifiedName":"bla","exportSymbol":21334,"declarations":[13],"members":[],"declaredType":4,"id":21340}],[21333,{"flags":1024,"name":"XY","escapedName":"XY","fullyQualifiedName":"\"/foo\".XY","exportSymbol":21333,"declarations":[21583],"members":[],"declaredType":4,"id":21333}],[21337,{"flags":0,"name":"XY","escapedName":"XY","fullyQualifiedName":"XY","exportSymbol":21333,"declarations":[21583],"members":[],"declaredType":4,"id":21337}],[21342,{"flags":524288,"name":"xx","escapedName":"xx","fullyQualifiedName":"\"/foo\".xx","exportSymbol":21342,"declarations":[21587],"members":[],"declaredType":12,"id":21342}],[21341,{"flags":0,"name":"xx","escapedName":"xx","fullyQualifiedName":"xx","exportSymbol":21342,"declarations":[21587],"members":[],"declaredType":4,"id":21341}]],"nodes":[[21579,{"pos":13,"end":18,"flags":8388608,"kind":75,"kindName":"Identifier","symbol":21328,"id":21579,"escapedText":"Param"}],[21578,{"pos":13,"end":18,"flags":8388608,"kind":155,"kindName":"TypeParameter","symbol":21328,"id":21578,"name":21579,"parent":21577}],[21584,{"pos":74,"end":77,"flags":8388608,"kind":75,"kindName":"Identifier","symbol":21333,"id":21584,"escapedText":"XY"}],[21585,{"pos":86,"end":91,"flags":8388608,"kind":75,"kindName":"Identifier","symbol":21338,"id":21585,"escapedText":"keys"}],[12,{"pos":79,"end":142,"flags":8388608,"kind":247,"kindName":"TypeAliasDeclaration","symbol":21338,"id":12,"name":21585,"parameters":[],"type":13,"modifiers":[]}],[21586,{"pos":149,"end":153,"flags":8388608,"kind":75,"kindName":"Identifier","symbol":21334,"id":21586,"escapedText":"bla"}],[13,{"pos":142,"end":163,"flags":8388608,"kind":247,"kindName":"TypeAliasDeclaration","symbol":21334,"id":13,"name":21586,"parameters":[],"type":12,"modifiers":[]}],[11,{"pos":77,"end":165,"flags":8388608,"kind":250,"kindName":"ModuleBlock","id":11,"parent":21583,"statements":[12,13]}],[21583,{"pos":55,"end":165,"flags":8388688,"kind":249,"kindName":"ModuleDeclaration","symbol":21333,"id":21583,"parent":21576,"name":21584,"body":11,"symbols":[21339,21340]}],[21588,{"pos":177,"end":180,"flags":8388608,"kind":75,"kindName":"Identifier","symbol":21342,"id":21588,"escapedText":"xx"}],[21587,{"pos":165,"end":190,"flags":8388608,"kind":247,"kindName":"TypeAliasDeclaration","symbol":21342,"id":21587,"name":21588,"parameters":[],"type":12,"modifiers":[21589]}],[21576,{"pos":0,"end":191,"flags":8388672,"kind":290,"kindName":"SourceFile","symbol":21335,"id":21576,"filePath":"/foo.d.ts","baseName":"foo.d.ts","baseNameWithoutExtension":"foo","extension":".d.ts","scriptKind":3,"isDeclarationFile":true,"isFromExternalLibrary":false,"isInNodeModules":false,"fullSource":"\ninterface A<Param> {\nx: string;\ny: number;\nz: Param;\n} \ndeclare namespace XY {\n  type keys = keyof A<boolean> extends \"aa\" ? string : number;\n  type bla = string;\n}\nexport type xx = XY.bla;\n","symbols":[21336,21337,21341],"statements":[21577,21583,21587]}]],"sourceFiles":[["/foo.d.ts",21576]],"types":[[4,{"id":4,"flags":1,"aliasTypeArguments":[],"objectFlags":0,"intrinsicName":"any"}],[77,{"id":77,"flags":262144,"symbol":21328,"aliasTypeArguments":[]}],[78,{"id":78,"flags":524288,"symbol":21329,"aliasTypeArguments":[]}],[13,{"id":13,"flags":8,"aliasTypeArguments":[],"objectFlags":0,"intrinsicName":"number"}],[12,{"id":12,"flags":4,"aliasTypeArguments":[],"objectFlags":0,"intrinsicName":"string"}]]}
+{
+  "symbols": [
+    [
+      21328,
+      {
+        "flags": 4,
+        "name": "a",
+        "escapedName": "a",
+        "fullyQualifiedName": "__type.a",
+        "exportSymbol": 21328,
+        "valueDeclaration": 21575,
+        "declarations": [21575],
+        "members": [],
+        "declaredType": 4,
+        "id": 21328
+      }
+    ],
+    [
+      21329,
+      {
+        "flags": 4,
+        "name": "b",
+        "escapedName": "b",
+        "fullyQualifiedName": "__type.b",
+        "exportSymbol": 21329,
+        "valueDeclaration": 21577,
+        "declarations": [21577],
+        "members": [],
+        "declaredType": 4,
+        "id": 21329
+      }
+    ],
+    [
+      21330,
+      {
+        "flags": 2048,
+        "name": "__type",
+        "escapedName": "__type",
+        "fullyQualifiedName": "__type",
+        "exportSymbol": 21330,
+        "declarations": [21574],
+        "members": [21328, 21329],
+        "declaredType": 4,
+        "id": 21330
+      }
+    ],
+    [
+      21331,
+      {
+        "flags": 524288,
+        "name": "bla",
+        "escapedName": "bla",
+        "fullyQualifiedName": "bla",
+        "exportSymbol": 21331,
+        "declarations": [1],
+        "members": [],
+        "declaredType": 77,
+        "id": 21331
+      }
+    ],
+    [
+      21332,
+      {
+        "flags": 524288,
+        "name": "c",
+        "escapedName": "c",
+        "fullyQualifiedName": "c",
+        "exportSymbol": 21332,
+        "declarations": [21582],
+        "members": [],
+        "declaredType": 80,
+        "id": 21332
+      }
+    ]
+  ],
+  "nodes": [
+    [
+      21576,
+      {
+        "pos": 13,
+        "end": 17,
+        "flags": 8388608,
+        "kind": 75,
+        "kindName": "Identifier",
+        "symbol": 21328,
+        "id": 21576,
+        "escapedText": "a"
+      }
+    ],
+    [
+      21575,
+      {
+        "pos": 13,
+        "end": 26,
+        "flags": 8388608,
+        "kind": 158,
+        "kindName": "PropertySignature",
+        "symbol": 21328,
+        "id": 21575,
+        "name": 21576,
+        "questionToken": 21575
+      }
+    ],
+    [
+      21578,
+      {
+        "pos": 26,
+        "end": 30,
+        "flags": 8388608,
+        "kind": 75,
+        "kindName": "Identifier",
+        "symbol": 21329,
+        "id": 21578,
+        "escapedText": "b"
+      }
+    ],
+    [
+      21577,
+      {
+        "pos": 26,
+        "end": 39,
+        "flags": 8388608,
+        "kind": 158,
+        "kindName": "PropertySignature",
+        "symbol": 21329,
+        "id": 21577,
+        "name": 21578,
+        "questionToken": 21577
+      }
+    ],
+    [
+      21574,
+      {
+        "pos": 11,
+        "end": 41,
+        "flags": 8388608,
+        "kind": 173,
+        "kindName": "TypeLiteral",
+        "symbol": 21330,
+        "id": 21574,
+        "members": [21575, 21577]
+      }
+    ],
+    [
+      21579,
+      {
+        "pos": 5,
+        "end": 9,
+        "flags": 8388608,
+        "kind": 75,
+        "kindName": "Identifier",
+        "symbol": 21331,
+        "id": 21579,
+        "escapedText": "bla"
+      }
+    ],
+    [
+      1,
+      {
+        "pos": 0,
+        "end": 42,
+        "flags": 8388608,
+        "kind": 247,
+        "kindName": "TypeAliasDeclaration",
+        "symbol": 21331,
+        "id": 1,
+        "name": 21579,
+        "parameters": [],
+        "type": 77,
+        "modifiers": []
+      }
+    ],
+    [
+      21580,
+      {
+        "pos": 18,
+        "end": 25,
+        "flags": 8388608,
+        "kind": 143,
+        "kindName": "StringKeyword",
+        "id": 21580
+      }
+    ],
+    [
+      21581,
+      {
+        "pos": 31,
+        "end": 38,
+        "flags": 8388608,
+        "kind": 143,
+        "kindName": "StringKeyword",
+        "id": 21581
+      }
+    ],
+    [
+      21583,
+      {
+        "pos": 47,
+        "end": 49,
+        "flags": 8388608,
+        "kind": 75,
+        "kindName": "Identifier",
+        "symbol": 21332,
+        "id": 21583,
+        "escapedText": "c"
+      }
+    ],
+    [
+      21582,
+      {
+        "pos": 42,
+        "end": 62,
+        "flags": 8388608,
+        "kind": 247,
+        "kindName": "TypeAliasDeclaration",
+        "symbol": 21332,
+        "id": 21582,
+        "name": 21583,
+        "parameters": [],
+        "type": 80,
+        "modifiers": []
+      }
+    ],
+    [
+      21584,
+      {
+        "pos": 57,
+        "end": 61,
+        "flags": 8388608,
+        "kind": 75,
+        "kindName": "Identifier",
+        "symbol": 21331,
+        "id": 21584,
+        "escapedText": "bla"
+      }
+    ]
+  ],
+  "sourceFiles": [],
+  "types": [
+    [4, { "id": 4, "flags": 1, "aliasTypeArguments": [] }],
+    [
+      77,
+      {
+        "id": 77,
+        "flags": 524288,
+        "symbol": 21330,
+        "aliasSymbol": 21331,
+        "aliasTypeArguments": []
+      }
+    ],
+    [80, { "id": 80, "flags": 1048576, "aliasTypeArguments": [] }]
+  ]
+}

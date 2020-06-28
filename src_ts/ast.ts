@@ -31,7 +31,7 @@ import {
   ClassExpression as mClassExpression,
   ClassDeclaration as mClassDeclaration,
   ClassElement as mClassElement,
-  ClassLikeDeclarationBase as mClassLikeDeclarationBase,
+  StringLiteral as mStringLiteral,
 } from 'ts-morph';
 import {
   SourceFile,
@@ -55,30 +55,27 @@ import {
   ClassDeclaration,
   ClassElement,
   ClassLikeDeclarationBase,
-  // DeclarationName,
-  // DeclarationStatement,
   TypeAliasDeclaration,
   Identifier,
   IntrinsicType,
   TypeParameterDeclaration,
-  // LiteralLikeNode,
-  // NamedDeclaration,
   Symbol,
   Node,
   Type,
-  // ModifierableNode,
   ModuleBlock,
   ModuleDeclaration,
   NamespaceBody,
   NamespaceDeclaration,
-  // NumericLiteral,
-  // PropertyNameLiteral,
+  LiteralType,
   StringLiteral,
   NumericLiteral,
   NodeId,
   SymbolId,
   TypeId,
+  PseudoBigInt,
 } from './ast_types';
+import { type } from 'os';
+import { POINT_CONVERSION_COMPRESSED } from 'constants';
 
 Debug.setLogLevel(Debug.LogLevel.Warning);
 
@@ -112,41 +109,36 @@ export function createSymbol(symbol: mSymbol): Symbol {
   };
 }
 
-function maybeAddIntrinsicProps(type: mType) {
-  let intrinsic = type.isAny()
-    ? 'any'
-    : type.isBoolean()
-    ? 'boolean'
-    : type.isNull()
-    ? 'null'
-    : type.isNumber()
-    ? 'number'
-    : type.isString()
-    ? 'string'
-    : type.isUnknown()
-    ? 'unknown'
-    : type.getText() == 'never'
-    ? 'never'
-    : undefined;
-  return intrinsic
-    ? {
-        objectFlags: type.getObjectFlags(),
-        intrinsicName: intrinsic,
-      }
-    : {};
-}
-export function createType(type: mType): Type | IntrinsicType {
-  const base = {
+// function maybeAddIntrinsicProps(type: mType) {
+//   let intrinsic = type.isAny()
+//     ? 'any'
+//     : type.isBoolean()
+//     ? 'boolean'
+//     : type.isNull()
+//     ? 'null'
+//     : type.isNumber()
+//     ? 'number'
+//     : type.isString()
+//     ? 'string'
+//     : type.isUnknown()
+//     ? 'unknown'
+//     : type.getText() == 'never'
+//     ? 'never'
+//     : undefined;
+//   return intrinsic
+//     ? {
+//         objectFlags: type.getObjectFlags(),
+//         intrinsicName: intrinsic,
+//       }
+//     : {};
+// }
+export function createType(type: mType): Type {
+  return {
     id: getTypeId(type),
     flags: type.getFlags(),
     symbol: maybe(visitSymbol, type.getSymbol()),
     aliasSymbol: maybe(visitSymbol, type.getAliasSymbol()),
     aliasTypeArguments: type.getAliasTypeArguments().map((t) => visitType(t)),
-  };
-
-  return {
-    ...base,
-    ...maybeAddIntrinsicProps(type),
   };
 }
 
@@ -180,7 +172,7 @@ export function createTypeAliasDeclaration(
     flags: typeAlias.compilerNode.flags,
     symbol: maybe(visitSymbol, typeAlias.getSymbol()),
     name: visitNode(typeAlias.getNameNode()),
-    parameters: typeAlias.getTypeParameters().map((tp) => visitNode(typeAlias)),
+    parameters: typeAlias.getTypeParameters().map((tp) => visitNode(tp)),
     type: maybe(visitType, typeAlias.getSymbol()?.getDeclaredType()),
     modifiers: typeAlias.getModifiers().map((m) => visitNode(m)),
   };
@@ -311,18 +303,40 @@ export function createTypePredicateNode(
     type: maybe(visitNode, node.getTypeNode()),
   };
 }
-// export function createTupleTypeNode(node: mTupleTypeNode): TupleTypeNode {
-//   return {};
-// }
-// export function createArrayTypeNode(node: mArrayTypeNode): ArrayTypeNode {
-//   return {};
-// }
-// export function createTypeLiteralNode(node: mTypeLiteralNode): TypeLiteralNode {
-//   return {};
-// }
-// export function createTypeElement(node: mTypeElement): TypeElement {
-//   return {};
-// }
+export function createTupleTypeNode(node: mTupleTypeNode): TupleTypeNode {
+  return {
+    ...createNode(node),
+    kind: ts.SyntaxKind.TupleType,
+    elements: node.getElementTypeNodes().map(visitNode),
+  };
+}
+export function createArrayTypeNode(node: mArrayTypeNode): ArrayTypeNode {
+  return {
+    ...createNode(node),
+    kind: ts.SyntaxKind.ArrayType,
+    elementType: visitNode(node.getElementTypeNode()),
+  };
+}
+export function createTypeLiteralNode(node: mTypeLiteralNode): TypeLiteralNode {
+  return {
+    ...createNode(node),
+    kind: ts.SyntaxKind.TypeLiteral,
+    members: node.getMembers().map(visitNode),
+  };
+}
+export function createTypeElement(node: mTypeElement): TypeElement {
+  return {
+    ...createNode(node),
+    name: maybe(
+      visitNode,
+      mNode.hasName(node) ? node.getNameNode() : undefined
+    ),
+    questionToken: maybe(
+      visitNode,
+      mNode.isQuestionTokenableNode(node) ? node : undefined
+    ),
+  };
+}
 export function createTypeReferenceNode(
   node: mTypeReferenceNode
 ): TypeReferenceNode {
@@ -332,22 +346,37 @@ export function createTypeReferenceNode(
     typeName: visitNode(node.getTypeName()),
   };
 }
-// export function createThisTypeNode(node: mThisTypeNode): ThisTypeNode {
-//   return {};
-// }
-// export function createComputedPropertyName(
-//   node: mComputedPropertyName
-// ): ComputedPropertyName {
-//   return {};
-// }
-// export function createExpression(node: mExpression): Expression {
-//   return {};
-// }
-// export function createPrivateIdentifier(
-//   node: mPrivateIdentifier
-// ): PrivateIdentifier {
-//   return {};
-// }
+export function createThisTypeNode(node: mThisTypeNode): ThisTypeNode {
+  return {
+    ...createNode(node),
+    kind: ts.SyntaxKind.ThisType,
+  };
+}
+export function createComputedPropertyName(
+  node: mComputedPropertyName
+): ComputedPropertyName {
+  return {
+    ...createNode(node),
+    kind: ts.SyntaxKind.ComputedPropertyName,
+    parent: visitNode(node.getParent()),
+    expression: visitNode(node.getExpression()),
+  };
+}
+export function createExpression(node: mExpression): Expression {
+  return {
+    ...createNode(node),
+    _expressionBrand: undefined,
+  };
+}
+export function createPrivateIdentifier(
+  node: mPrivateIdentifier
+): PrivateIdentifier {
+  return {
+    ...createNode(node),
+    kind: ts.SyntaxKind.PrivateIdentifier,
+    escapedText: node.getText(),
+  };
+}
 export function createQualifiedName(node: mQualifiedName): QualifiedName {
   return {
     ...createNode(node),
@@ -366,22 +395,46 @@ export function createExpressionWithTypeArguments(
     expression: visitNode(node.getExpression()),
   };
 }
-// export function createClassExpression(node: mClassExpression): ClassExpression {
-//   return {};
-// }
-// export function createClassDeclaration(
-//   node: mClassDeclaration
-// ): ClassDeclaration {
-//   return {};
-// }
-// export function createClassElement(node: mClassElement): ClassElement {
-//   return {};
-// }
-// export function createClassLikeDeclarationBase(
-//   node: mClassLikeDeclarationBase
-// ): ClassLikeDeclarationBase {
-//   return {};
-// }
+export function createClassExpression(node: mClassExpression): ClassExpression {
+  return {
+    ...createNode(node),
+    kind: ts.SyntaxKind.ClassExpression,
+    name: maybe(visitNode, node.getNameNode()),
+    typeParameters: node.getTypeParameters().map(visitNode),
+    heritageClauses: node.getHeritageClauses().map((d) => visitNode(d)),
+    members: node.getMembers().map((d) => visitNode(d)),
+  };
+}
+export function createClassDeclaration(
+  node: mClassDeclaration
+): ClassDeclaration {
+  return {
+    ...createNode(node),
+    kind: ts.SyntaxKind.ClassDeclaration,
+    name: maybe(visitNode, node.getNameNode()),
+    typeParameters: node.getTypeParameters().map(visitNode),
+    heritageClauses: node.getHeritageClauses().map((d) => visitNode(d)),
+    members: node.getMembers().map((d) => visitNode(d)),
+  };
+}
+export function createClassElement(node: mClassElement): ClassElement {
+  return {
+    ...createNode(node),
+    name: maybe(
+      visitNode,
+      mNode.hasName(node) ? node.getNameNode() : undefined
+    ),
+    _classElementBrand: undefined,
+  };
+}
+
+export function createLiteralType(type_: mType): LiteralType {
+  const baseType = type_.getBaseTypeOfLiteralType().compilerType;
+  return {
+    ...createType(type_),
+    value: baseType.isLiteral() ? baseType.value : type_.getText(),
+  };
+}
 
 export function createSourceFile(sourceFile: mSourceFile): SourceFile {
   return {
@@ -415,6 +468,7 @@ export interface Result {
 const nodesVisited: Set<NodeId> = new Set();
 function resolveNode<A extends Node = Node>(node: mNode): NodeId<A> {
   const nodeId = getNodeId(node);
+  console.log(nodeId, node.getKindName());
   if (nodesVisited.has(nodeId)) {
     Debug.log('hasBeenVisited', node, Debug.LogLevel.Debug);
     return nodeId as NodeId<A>;
@@ -451,19 +505,28 @@ function resolveNode<A extends Node = Node>(node: mNode): NodeId<A> {
     resolved = createQualifiedName(node);
   } else if (mNode.isExpressionWithTypeArguments(node)) {
     resolved = createExpressionWithTypeArguments(node);
-
-    // TupleTypeNode as mTupleTypeNode,
-    // ArrayTypeNode as mArrayTypeNode,
-    // TypeLiteralNode as mTypeLiteralNode,
-    // TypeElement as mTypeElement,
-    // ThisTypeNode as mThisTypeNode,
-    // ComputedPropertyName as mComputedPropertyName,
-    // Expression as mExpression,
-    // PrivateIdentifier as mPrivateIdentifier,
-    // ClassExpression as mClassExpression,
-    // ClassDeclaration as mClassDeclaration,
-    // ClassElement as mClassElement,
-    // ClassLikeDeclarationBase as mClassLikeDeclarationBase,
+  } else if (mNode.isTypeLiteralNode(node)) {
+    resolved = createTypeLiteralNode(node);
+  } else if (mNode.isTupleTypeNode(node)) {
+    resolved = createTupleTypeNode(node);
+  } else if (mNode.isArrayTypeNode(node)) {
+    resolved = createArrayTypeNode(node);
+  } else if (mNode.isTypeElement(node)) {
+    resolved = createTypeElement(node);
+  } else if (mNode.isThisTypeNode(node)) {
+    resolved = createThisTypeNode(node);
+  } else if (mNode.isComputedPropertyName(node)) {
+    resolved = createComputedPropertyName(node);
+  } else if (mNode.isExpression(node)) {
+    resolved = createExpression(node);
+  } else if (mNode.isPrivateIdentifier(node)) {
+    resolved = createPrivateIdentifier(node);
+  } else if (mNode.isClassExpression(node)) {
+    resolved = createClassExpression(node);
+  } else if (mNode.isClassDeclaration(node)) {
+    resolved = createClassDeclaration(node);
+  } else if ('_classElementBrand' in node) {
+    resolved = createClassElement(node);
   } else {
     Debug.log(
       `Warning: Type ${node.getKindName()} is not implemented yet`,
@@ -479,14 +542,25 @@ function resolveNode<A extends Node = Node>(node: mNode): NodeId<A> {
 const typesVisited = new Set();
 function resolveType(type_: mType) {
   const typeId = getTypeId(type_);
+  console.log(type_.getText(), type_.getSymbol()?.getFullyQualifiedName());
   if (typesVisited.has(typeId)) {
+    Debug.log('hasBeenVisited', type_, Debug.LogLevel.Debug);
     return typeId;
   }
   typesVisited.add(typeId);
   ///////////////////////////////////////////
-  const resolved = createType(type_);
+  let resolved: Type;
+  if (type_.isLiteral()) {
+    resolved = createLiteralType(type_);
+  } else {
+    // Debug.log(
+    //   `Warning: Type '${type_.getText()}' is not implemented yet`,
+    //   type_,
+    //   Debug.LogLevel.Warning
+    // );
+    resolved = createType(type_);
+  }
   ///////////////////////////////////////////
-  typesVisited.add(typeId);
   result.types.set(typeId, resolved);
   return typeId;
 }
@@ -501,7 +575,6 @@ function resolveSymbol(symbol: mSymbol) {
   const resolved = createSymbol(symbol);
   ///////////////////////////////////////////
   result.symbols.set(symbolId, resolved);
-  symbolsVisited.add(symbolId);
   return symbolId;
 }
 
@@ -588,11 +661,22 @@ function visitType(type_: mType) {
   return resolveType(type_);
 }
 
-export function walkNodes(nodes: mNode[]) {
+export function walkNodes(nodes: mSourceFile[]) {
+  Debug.setLogLevel(Debug.LogLevel.Debug);
   resetResult();
   symbolsVisited.clear();
   nodesVisited.clear();
   typesVisited.clear();
-  nodes.forEach((f) => visitNode(f));
+  // nodes.forEach((f) => visitNode(f));
+  nodes.forEach((node) => {
+    node.forEachDescendant((node) => {
+      console.log(node.getKindName());
+      // visitNode(node);
+      // console.log('A', node.getText());
+      // console.log('B', node.getKindName());
+      // console.log('C', node.getType().getText());
+      // console.log('-------');
+    });
+  });
   return result;
 }
