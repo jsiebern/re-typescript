@@ -1,8 +1,6 @@
 (* Auto-generated from "typescript.atd" *)
               [@@@ocaml.warning "-27-32-35-39"]
 
-type type_unknown = { flags: int }
-
 type node = [
     `SourceFile of node_SourceFile
   | `TypeAliasDeclaration of node_TypeAliasDeclaration
@@ -167,11 +165,11 @@ type node = [
   | `OfKeyword of node_Generic
   | `QualifiedName of node_Generic
   | `ComputedPropertyName of node_Generic
-  | `Parameter of node_Generic
+  | `Parameter of node_Parameter
   | `Decorator of node_Generic
   | `PropertySignature of node_PropertySignature
-  | `PropertyDeclaration of node_Generic
-  | `MethodSignature of node_Generic
+  | `PropertyDeclaration of node_PropertyDeclaration
+  | `MethodSignature of node_MethodSignature
   | `MethodDeclaration of node_Generic
   | `Constructor of node_Generic
   | `GetAccessor of node_Generic
@@ -203,7 +201,7 @@ type node = [
   | `ImportType of node_Generic
   | `ObjectBindingPattern of node_Generic
   | `ArrayBindingPattern of node_Generic
-  | `BindingElement of node_Generic
+  | `BindingElement of node_BindingElement
   | `ArrayLiteralExpression of node_Generic
   | `ObjectLiteralExpression of node_Generic
   | `PropertyAccessExpression of node_Generic
@@ -256,9 +254,9 @@ type node = [
   | `DebuggerStatement of node_Generic
   | `VariableDeclaration of node_VariableDeclaration
   | `VariableDeclarationList of node_VariableDeclarationList
-  | `FunctionDeclaration of node_Generic
+  | `FunctionDeclaration of node_FunctionDeclaration
   | `ClassDeclaration of node_Generic
-  | `EnumDeclaration of node_Generic
+  | `EnumDeclaration of node_EnumDeclaration
   | `ModuleDeclaration of node_Generic
   | `ModuleBlock of node_Generic
   | `CaseBlock of node_Generic
@@ -293,7 +291,7 @@ type node = [
   | `PropertyAssignment of node_Generic
   | `ShorthandPropertyAssignment of node_Generic
   | `SpreadAssignment of node_Generic
-  | `EnumMember of node_Generic
+  | `EnumMember of node_EnumMember
   | `UnparsedPrologue of node_Generic
   | `UnparsedPrepend of node_Generic
   | `UnparsedText of node_Generic
@@ -343,24 +341,93 @@ type node = [
   | `Count of node_Generic
 ]
 
+and node_BindingElement = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  propertyName: node option;
+  dotDotDotToken: node option;
+  name: node;
+  initializer_: node option
+}
+
+and node_EnumDeclaration = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node;
+  members: node list
+}
+
+and node_EnumMember = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node;
+  initializer_: node option
+}
+
+and node_FunctionDeclaration = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option;
+  asteriskToken: node option;
+  questionToken: node option;
+  exclamationToken: node option;
+  name: node option;
+  body: node option
+}
+
 and node_Generic = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
-  resolvedSymbol: symbol option
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option
 }
 
 and node_HeritageClause = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   token: int;
   types: node list option
 }
@@ -369,10 +436,12 @@ and node_Identifier = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   escapedText: string;
   originalKeywordKind: int option
 }
@@ -381,24 +450,79 @@ and node_InterfaceDeclaration = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node;
   typeParameters: node list option;
   heritageClauses: node list option;
   members: node list
 }
 
-and node_PropertySignature = {
+and node_MethodSignature = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option;
+  name: node option
+}
+
+and node_Parameter = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  dotDotDotToken: node option;
+  name: node;
+  questionToken: node option;
+  type_: node option;
+  initializer_: node option
+}
+
+and node_PropertyDeclaration = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node;
+  questionToken: node option;
+  exclamationToken: node option;
+  type_: node option;
+  initializer_: node option
+}
+
+and node_PropertySignature = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node;
   questionToken: node option;
   type_: node option;
@@ -409,10 +533,12 @@ and node_SourceFile = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   statements: node list;
   text: string;
   languageVersion: int;
@@ -427,10 +553,12 @@ and node_TypeAliasDeclaration = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node;
   typeParameters: node list option;
   type_: node
@@ -440,10 +568,12 @@ and node_TypeLiteral = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   members: node list
 }
 
@@ -451,10 +581,12 @@ and node_TypeOperator = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   operator: int;
   type_: node
 }
@@ -463,10 +595,12 @@ and node_TypeParameter = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node;
   constraint_: node option;
   default: node option;
@@ -477,10 +611,12 @@ and node_TypeReference = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   typeArguments: node list option;
   typeName: node
 }
@@ -489,10 +625,12 @@ and node_VariableDeclaration = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node;
   exclamationToken: node option;
   type_: node option;
@@ -503,10 +641,12 @@ and node_VariableDeclarationList = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   declarations: node list
 }
 
@@ -519,32 +659,32 @@ and symbol = {
 }
 
 and type_ = [
-    `Any of type_unknown
-  | `Array of type_unknown
-  | `Boolean of type_unknown
-  | `String of type_unknown
-  | `Number of type_unknown
-  | `Literal of type_unknown
-  | `BooleanLiteral of type_unknown
+    `Any of type_Generic
+  | `Array of type_Generic
+  | `Boolean of type_Generic
+  | `String of type_Generic
+  | `Number of type_Generic
+  | `Literal of type_Generic
+  | `BooleanLiteral of type_Generic
   | `Union of type_UnionType
   | `EnumLiteral of type_StringLiteralType
   | `NumberLiteral of type_NumberLiteralType
   | `StringLiteral of type_StringLiteralType
-  | `Class of type_unknown
-  | `ClassOrInterface of type_unknown
+  | `Class of type_Generic
+  | `ClassOrInterface of type_Generic
   | `Interface of type_InterfaceType
   | `Object of type_ObjectType
-  | `Enum of type_unknown
+  | `Enum of type_Generic
   | `TypeParameter of type_TypeParameter
   | `Tuple of type_TupleType
   | `Intersection of type_IntersectionType
   | `UnionOrIntersection of type_UnionOrIntersectionType
-  | `Unknown of type_unknown
-  | `Null of type_unknown
-  | `Undefined of type_unknown
+  | `Unknown of type_Generic
+  | `Null of type_Generic
+  | `Undefined of type_Generic
   | `TypeReference of type_TypeReference
   | `Anonymous of type_AnonymousType
-  | `Unidentified of type_unknown
+  | `Unidentified of type_Unidentified
 ]
 
 and type_AnonymousType = {
@@ -552,8 +692,17 @@ and type_AnonymousType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   objectFlags: int;
   target: type_ option
+}
+
+and type_Generic = {
+  flags: int;
+  id: int option;
+  pattern: node option;
+  aliasTypeArguments: type_ list option;
+  kindName: string
 }
 
 and type_InterfaceType = {
@@ -561,6 +710,7 @@ and type_InterfaceType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   objectFlags: int;
   typeParameters: type_ list option;
   outerTypeParameters: type_ list option;
@@ -573,6 +723,7 @@ and type_IntersectionType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   types: type_ list
 }
 
@@ -581,6 +732,7 @@ and type_NumberLiteralType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   value: float
 }
 
@@ -589,6 +741,7 @@ and type_ObjectType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   objectFlags: int
 }
 
@@ -597,6 +750,7 @@ and type_StringLiteralType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   value: string
 }
 
@@ -605,6 +759,7 @@ and type_TupleType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   minLength: int;
   fixedLength: int;
   hasRestElement: bool;
@@ -619,6 +774,7 @@ and type_TypeParameter = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   constraint_: type_ option
 }
 
@@ -627,8 +783,17 @@ and type_TypeReference = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
-  objectFlags: int;
-  target: type_
+  kindName: string;
+  target: type_ option
+}
+
+and type_Unidentified = {
+  flags: int;
+  id: int option;
+  pattern: node option;
+  aliasTypeArguments: type_ list option;
+  kindName: string;
+  nodeKind: string option
 }
 
 and type_UnionOrIntersectionType = {
@@ -636,6 +801,7 @@ and type_UnionOrIntersectionType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   types: type_ list
 }
 
@@ -644,6 +810,7 @@ and type_UnionType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   types: type_ list
 }
 
@@ -673,14 +840,8 @@ type type_LiteralType = {
   flags: int;
   id: int option;
   pattern: node option;
-  aliasTypeArguments: type_ list option
-}
-
-type type_Generic = {
-  flags: int;
-  id: int option;
-  pattern: node option;
-  aliasTypeArguments: type_ list option
+  aliasTypeArguments: type_ list option;
+  kindName: string
 }
 
 type readonlyTextRange = { pos: int; end_: int }
@@ -689,21 +850,42 @@ type node_TypeElement = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   questionToken: node option
+}
+
+type node_SignatureDeclarationBase = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option
 }
 
 type node_QualifiedName = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   left: node;
   right: node
 }
@@ -712,10 +894,12 @@ type node_NodeWithTypeArguments = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   typeArguments: node list option
 }
 
@@ -723,9 +907,32 @@ type node_NamedDeclaration = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node option
+}
+
+type node_FunctionLikeDeclarationBase = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option;
+  asteriskToken: node option;
+  questionToken: node option;
+  exclamationToken: node option;
+  body: node option
 }

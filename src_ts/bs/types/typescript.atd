@@ -7,10 +7,12 @@ type node_Generic = {
     inherit readonlyTextRange;
 
     kind: int ;
+    kindName: string ;
     flags: int ;
     ?modifiers: node list option ;
     ?decorators: node list option ;
     ?resolvedSymbol: symbol option ;
+    ?resolvedType: type_ option ;
 }
 
 type node_SourceFile = {
@@ -132,6 +134,82 @@ type node_QualifiedName = {
 
     left: node ;
     right: node ;
+}
+
+type node_EnumDeclaration = {
+    inherit node_NamedDeclaration;
+
+    name: node;
+    members: node list;
+}
+
+type node_EnumMember = {
+    inherit node_NamedDeclaration;
+
+    name: node;
+    ?initializer_ <json name="initializer">: node option ;
+}
+
+type node_SignatureDeclarationBase = {
+    inherit node_NamedDeclaration;
+
+    ?name: node option ;
+    ?typeParameters: node list option ;
+    parameters: node list ;
+    ?type_ <json name="type">: node option ;
+    ?typeArguments: node list option ;
+}
+
+type node_FunctionLikeDeclarationBase = {
+    inherit node_SignatureDeclarationBase;
+
+    ?asteriskToken: node option ;
+    ?questionToken: node option ;
+    ?exclamationToken: node option ;
+    ?body: node option ;
+
+}
+
+type node_FunctionDeclaration = {
+    inherit node_FunctionLikeDeclarationBase;
+
+    ?name: node option ;
+    ?body: node option ;
+}
+
+type node_MethodSignature = {
+    inherit node_SignatureDeclarationBase;
+
+    name: node option ;
+}
+
+type node_Parameter = {
+    inherit node_NamedDeclaration;
+
+    ?dotDotDotToken: node option ;
+    name: node ;
+    ?questionToken: node option ;
+    ?type_ <json name="type">: node option ;
+    ?initializer_ <json name="initializer">: node option ;
+}
+
+type node_BindingElement = {
+    inherit node_NamedDeclaration;
+
+    ?propertyName: node option ;
+    ?dotDotDotToken: node option ;
+    name: node ;
+    ?initializer_ <json name="initializer">: node option ;
+}
+
+type node_PropertyDeclaration = {
+    inherit node_NamedDeclaration;
+
+    name: node ;
+    ?questionToken: node option ;
+    ?exclamationToken: node option ;
+    ?type_ <json name="type">: node option ;
+    ?initializer_ <json name="initializer">: node option ;
 }
 
 type node = [
@@ -298,11 +376,11 @@ type node = [
     | OfKeyword of node_Generic
     | QualifiedName of node_Generic
     | ComputedPropertyName of node_Generic
-    | Parameter of node_Generic
+    | Parameter of node_Parameter
     | Decorator of node_Generic
     | PropertySignature of node_PropertySignature
-    | PropertyDeclaration of node_Generic
-    | MethodSignature of node_Generic
+    | PropertyDeclaration of node_PropertyDeclaration
+    | MethodSignature of node_MethodSignature
     | MethodDeclaration of node_Generic
     | Constructor of node_Generic
     | GetAccessor of node_Generic
@@ -334,7 +412,7 @@ type node = [
     | ImportType of node_Generic
     | ObjectBindingPattern of node_Generic
     | ArrayBindingPattern of node_Generic
-    | BindingElement of node_Generic
+    | BindingElement of node_BindingElement
     | ArrayLiteralExpression of node_Generic
     | ObjectLiteralExpression of node_Generic
     | PropertyAccessExpression of node_Generic
@@ -387,9 +465,9 @@ type node = [
     | DebuggerStatement of node_Generic
     | VariableDeclaration of node_VariableDeclaration
     | VariableDeclarationList of node_VariableDeclarationList
-    | FunctionDeclaration of node_Generic
+    | FunctionDeclaration of node_FunctionDeclaration
     | ClassDeclaration of node_Generic
-    | EnumDeclaration of node_Generic
+    | EnumDeclaration of node_EnumDeclaration
     | ModuleDeclaration of node_Generic
     | ModuleBlock of node_Generic
     | CaseBlock of node_Generic
@@ -424,7 +502,7 @@ type node = [
     | PropertyAssignment of node_Generic
     | ShorthandPropertyAssignment of node_Generic
     | SpreadAssignment of node_Generic
-    | EnumMember of node_Generic
+    | EnumMember of node_EnumMember
     | UnparsedPrologue of node_Generic
     | UnparsedPrepend of node_Generic
     | UnparsedText of node_Generic
@@ -487,6 +565,7 @@ type type_Generic = {
     ?id: int option ;
     ?pattern: node option ;
     ?aliasTypeArguments: type_ list option;
+    kindName: string ;    
 }
 
 type type_ObjectType = {
@@ -496,9 +575,9 @@ type type_ObjectType = {
 }
 
 type type_TypeReference = {
-    inherit type_ObjectType;
+    inherit type_Generic;
 
-    target: type_ ;
+    ?target: type_ option ;
 }
 
 type type_UnionOrIntersectionType = {
@@ -585,35 +664,37 @@ type type_conditionalType = {
     resolvedFalseType: type_ ;
 }
 
-type type_unknown = {
-    flags: int ;
+type type_Unidentified = {
+    inherit type_Generic;
+
+    ?nodeKind: string option ;
 }
 
 type type_ = [
-    | Any of type_unknown
-    | Array of type_unknown
-    | Boolean of type_unknown
-    | String of type_unknown
-    | Number of type_unknown
-    | Literal of type_unknown
-    | BooleanLiteral of type_unknown
+    | Any of type_Generic
+    | Array of type_Generic
+    | Boolean of type_Generic
+    | String of type_Generic
+    | Number of type_Generic
+    | Literal of type_Generic
+    | BooleanLiteral of type_Generic
     | Union of type_UnionType
     | EnumLiteral of type_StringLiteralType
     | NumberLiteral of type_NumberLiteralType
     | StringLiteral of type_StringLiteralType
-    | Class of type_unknown
-    | ClassOrInterface of type_unknown
+    | Class of type_Generic
+    | ClassOrInterface of type_Generic
     | Interface of type_InterfaceType
     | Object of type_ObjectType
-    | Enum of type_unknown
+    | Enum of type_Generic
     | TypeParameter of type_TypeParameter
     | Tuple of type_TupleType
     | Intersection of type_IntersectionType
     | UnionOrIntersection of type_UnionOrIntersectionType
-    | Unknown of type_unknown
-    | Null of type_unknown
-    | Undefined of type_unknown
+    | Unknown of type_Generic
+    | Null of type_Generic
+    | Undefined of type_Generic
     | TypeReference of type_TypeReference
     | Anonymous of type_AnonymousType
-    | Unidentified of type_unknown
+    | Unidentified of type_Unidentified
 ] <json adapter.ocaml="Typescript_json_adapters.KindName">

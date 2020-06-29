@@ -2,7 +2,7 @@
  (name re_typescript_ts_parser)
  (public_name re_typescript.ts_parser)
  (libraries re_typescript.config re_typescript.base re_typescript.printer
-   containers iter yojson console.lib))
+   re_typescript.ts_parser_bin containers iter yojson console.lib))
 
 (env
  (dev
@@ -11,12 +11,12 @@
 
 (rule
  (targets typescript_t.ml typescript_t.mli typescript_j.ml typescript_j.mli
-   typescript_flags.re)
+   typescript_flags.re typescript.atd)
  (deps
   (:script
    (file copy_atd_file.js)))
  (action
   (progn
-   (run node %{script})
+   (run node %{script} %{project_root})
    (run atdgen -t typescript.atd)
    (run atdgen -j -j-std typescript.atd))))

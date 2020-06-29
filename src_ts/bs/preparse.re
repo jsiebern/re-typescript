@@ -1,13 +1,17 @@
 open Ts_morph;
 
-let isTypeReference = (t: Type.t) => {
-  switch (
-    Runtime.typeChecker->Ts_Typechecker.typeToTypeNode(t->Type.compilerType)
-  ) {
-  | None => false
-  | Some(node) => node->Obj.magic##getKindName === "TypeReference"
+let getKindNameOfType =
+  (. t: Type.t) =>
+    Runtime.typeChecker
+    ->Ts_Typechecker.typeToTypeNode(t->Type.compilerType)
+    ->Belt.Option.map(Typescript_raw.Node.kind)
+    ->Belt.Option.flatMap(id =>
+        Typescript_syntaxkind.kindCache->Belt.Map.Int.get(id)
+      );
+let isTypeReference =
+  (. t: Type.t) => {
+    getKindNameOfType(. t) === Some("TypeReference");
   };
-};
 let identifyType =
   (. t: Type.t) =>
     Type.(
@@ -59,7 +63,7 @@ let identifyType =
         "Null";
       } else if (isUndefined(t)) {
         "Undefined";
-      } else if (isTypeReference(t)) {
+      } else if (isTypeReference(. t)) {
         "TypeReference";
       } else {
         "Unidentified";
@@ -68,14 +72,22 @@ let identifyType =
 
 let rec visitType =
   (. t: Type.t) => {
-    t->Type.compilerType->Typescript_raw.Type.setKindName(identifyType(. t));
+    let stringifiedType = identifyType(. t);
+    t->Type.compilerType->Typescript_raw.Type.setKindName(stringifiedType);
+    if (stringifiedType === "Unidentified") {
+      switch (getKindNameOfType(. t)) {
+      | None => ()
+      | Some(nodeKind) =>
+        t->Type.compilerType->Typescript_raw.Type.setNodeKind(nodeKind)
+      };
+    };
     if (t->Type.isUnion) {
       visitTypeOptArray(. t->Type.getUnionTypes);
     };
     if (t->Type.isIntersection) {
       visitTypeOptArray(. t->Type.getIntersectionTypes);
     };
-    if (t->isTypeReference) {
+    if (isTypeReference(. t)) {
       visitTypeOpt(. t->Type.getTargetType);
     };
     if (t->Type.isTuple) {
@@ -120,6 +132,14 @@ let rec visitNode =
       ->Node.compilerNode
       ->Typescript_raw.Node.setResolvedSymbol(symbol->Symbol.compilerSymbol);
     };
+    switch (node->Node.getType) {
+    | None => ()
+    | Some(t) =>
+      visitType(. t);
+      node
+      ->Node.compilerNode
+      ->Typescript_raw.Node.setResolvedType(t->Type.compilerType);
+    };
     node
     ->Node.compilerNode
     ->Typescript_raw.Node.setKindName(node->Node.getKindName);
@@ -136,7 +156,9 @@ let preParse = () => {
       ->Typescript_raw.Node.setKindName(
           sourceFile->SourceFile.toNode->Node.getKindName,
         );
-
-      visitNode(. sourceFile->SourceFile.toNode);
+      sourceFile
+      ->SourceFile.toNode
+      ->Node.getChildren
+      ->Belt.Array.forEachU(visitNode);
     });
 };

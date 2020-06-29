@@ -5,10 +5,11 @@ type type_;
 module Node = {
   [@bs.set]
   external setResolvedSymbol: (node, symbol) => unit = "resolvedSymbol";
+  [@bs.set] external setResolvedType: (node, type_) => unit = "resolvedType";
   [@bs.set] external setKindName: (node, string) => unit = "kindName";
 
   [@bs.send] external isEnumDeclaration: node => bool = "isEnumDeclaration";
-  [@bs.send] external kind: node => int = "kind";
+  [@bs.get] external kind: node => int = "kind";
 };
 
 module Symbol = {
@@ -26,6 +27,7 @@ module Symbol = {
 
 module Type = {
   [@bs.set] external setKindName: (type_, string) => unit = "kindName";
+  [@bs.set] external setNodeKind: (type_, string) => unit = "nodeKind";
 
   [@bs.get]
   external target: type_ => option(Js.Nullable.t(type_)) = "target";

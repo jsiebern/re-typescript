@@ -83,11 +83,13 @@ module Symbol = {
 
 module Node = {
   type t;
+  [@bs.val] external isSourceFile: t => bool = "isSourceFile";
 
   [@bs.set]
   external setResolvedSymbol: (t, Symbol.t) => unit = "resolvedSymbol";
   [@bs.set] external setKindName: (t, string) => unit = "kindName";
 
+  [@bs.send] external getType: t => option(Type.t) = "getType";
   [@bs.send] external getSymbol: t => option(Symbol.t) = "getSymbol";
   [@bs.send] external getKindName: t => string = "getKindName";
   [@bs.send] external getKind: t => int = "getKind";

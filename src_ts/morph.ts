@@ -29,7 +29,7 @@ ts.createSourceFile;
 const created2 = project.createSourceFile(
   'simple.d.ts',
   `
-  type d = ['s1', 's2', string];
+declare function some_other_function(): { inline: string };
 `
 );
 created2.saveSync();
@@ -51,10 +51,13 @@ const errors = diagnostics.length
 const c = project.getTypeChecker().compilerObject;
 
 const recurseType = (type: Type | undefined, level = 0) => {
-  if (!type || level > 5) {
+  if (!type /*|| level > 5*/) {
     return;
   }
-  console.log('  '.repeat(level), 't: ' + type.getText());
+  console.log(
+    '  '.repeat(level),
+    't: ' + type.getText() + ' ' + type.getFlags()
+  );
   // type.getAliasTypeArguments().forEach((t) => recurseType(t, level + 1));
   [
     // type.getApparentType(),
@@ -75,6 +78,14 @@ const recurseType = (type: Type | undefined, level = 0) => {
 };
 
 const recurse = (node: Node, level = 0) => {
+  if (node.getKindName() === 'TypeLiteral') {
+    console.log('\n\n\n');
+    console.log(node.getKindName());
+    console.log(node.getSymbol()?.getDeclaredType().getText());
+    console.log('\n\n\n');
+    return;
+  }
+
   const type = node.getSymbol()?.getDeclaredType();
   console.log('  '.repeat(level), node.getKindName() + ':');
   recurseType(type, level);

@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { argv } = require("process");
 
 function copyFile(source, destination) {
   return new Promise((resolve, reject) => {
@@ -17,8 +18,7 @@ function copyFile(source, destination) {
 
 async function app() {
   const base_path = path.resolve(
-    __dirname,
-    "../../../../",
+    __dirname.split("re-typescript/")[0] + "re-typescript/",
     "src_ts",
     "bs",
     "types"

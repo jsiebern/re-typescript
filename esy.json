@@ -4,17 +4,13 @@
   "scripts": {
     "format": "dune build @fmt --auto-promote --root .",
     "run": "esy x Re_typescript",
-    "watch":
-      "esy x redemon --paths=src --extensions=re,atd,mll,mly esy x Re_typescript",
-    "watch-test":
-      "esy x redemon --paths=tests,src --extensions=re,atd,mll,mly esy x RunTests.exe",
+    "watch": "esy x redemon --paths=src --extensions=re,atd,mll,mly esy x Re_typescript",
+    "watch-test": "esy x redemon --paths=tests,src --extensions=re,atd,mll,mly esy x RunTests.exe",
     "test": "esy x RunTests.exe",
     "test-u": "esy x RunTests.exe -u",
     "js": "esy dune build ./src/js/re_typescript_js.bc.js",
-    "js-release":
-      "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
-    "release-static":
-      "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
+    "js-release": "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
+    "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },
   "dependencies": {
     "@opam/atdgen": "2.2.1",
@@ -26,11 +22,14 @@
     "@opam/menhir": "*",
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/ppx_tools_versioned": "*",
+    "@opam/ocamlnet": "*",
     "@reason-native/console": "^0.1.0",
     "@reason-native/file-context-printer": "^0.0.3",
     "@reason-native/fp": "^0.0.1",
     "@reason-native/pastel": "^0.3.0",
-    "byots": "^4.0.0-dev.20200624.14.21"
+    "byots": "^4.0.0-dev.20200624.14.21",
+    "isexe": "^2.0.0",
+    "pkg": "^4.4.9"
   },
   "devDependencies": {
     "@opam/reason": ">=3.6.0",
@@ -43,10 +42,20 @@
   },
   "esy": {
     "build": [
-      [
-        "refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"
-      ]
+      ["refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"]
     ],
-    "buildsInSource": "_build"
+    "buildsInSource": "_build",
+    "exportedEnv": {
+      "CAML_LD_LIBRARY_PATH": {
+        "val": "#{self.lib / 'netstring' : self.lib / 'netsys' : self.lib / 'rpc-auth-local' : $CAML_LD_LIBRARY_PATH}",
+        "scope": "global"
+      }
+    }
+  },
+  "exportedEnv": {
+    "CAML_LD_LIBRARY_PATH": {
+      "val": "#{self.lib / 'netstring' : self.lib / 'netsys' : self.lib / 'rpc-auth-local' : $CAML_LD_LIBRARY_PATH}",
+      "scope": "global"
+    }
   }
 }

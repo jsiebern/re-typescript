@@ -1,28 +1,95 @@
 (* Auto-generated from "typescript.atd" *)
               [@@@ocaml.warning "-27-32-35-39"]
 
-type type_unknown = Typescript_t.type_unknown = { flags: int }
-
 type node = Typescript_t.node
+
+and node_BindingElement = Typescript_t.node_BindingElement = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  propertyName: node option;
+  dotDotDotToken: node option;
+  name: node;
+  initializer_: node option
+}
+
+and node_EnumDeclaration = Typescript_t.node_EnumDeclaration = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node;
+  members: node list
+}
+
+and node_EnumMember = Typescript_t.node_EnumMember = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node;
+  initializer_: node option
+}
+
+and node_FunctionDeclaration = Typescript_t.node_FunctionDeclaration = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option;
+  asteriskToken: node option;
+  questionToken: node option;
+  exclamationToken: node option;
+  name: node option;
+  body: node option
+}
 
 and node_Generic = Typescript_t.node_Generic = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
-  resolvedSymbol: symbol option
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option
 }
 
 and node_HeritageClause = Typescript_t.node_HeritageClause = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   token: int;
   types: node list option
 }
@@ -31,10 +98,12 @@ and node_Identifier = Typescript_t.node_Identifier = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   escapedText: string;
   originalKeywordKind: int option
 }
@@ -43,24 +112,79 @@ and node_InterfaceDeclaration = Typescript_t.node_InterfaceDeclaration = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node;
   typeParameters: node list option;
   heritageClauses: node list option;
   members: node list
 }
 
-and node_PropertySignature = Typescript_t.node_PropertySignature = {
+and node_MethodSignature = Typescript_t.node_MethodSignature = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option;
+  name: node option
+}
+
+and node_Parameter = Typescript_t.node_Parameter = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  dotDotDotToken: node option;
+  name: node;
+  questionToken: node option;
+  type_: node option;
+  initializer_: node option
+}
+
+and node_PropertyDeclaration = Typescript_t.node_PropertyDeclaration = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node;
+  questionToken: node option;
+  exclamationToken: node option;
+  type_: node option;
+  initializer_: node option
+}
+
+and node_PropertySignature = Typescript_t.node_PropertySignature = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node;
   questionToken: node option;
   type_: node option;
@@ -71,10 +195,12 @@ and node_SourceFile = Typescript_t.node_SourceFile = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   statements: node list;
   text: string;
   languageVersion: int;
@@ -89,10 +215,12 @@ and node_TypeAliasDeclaration = Typescript_t.node_TypeAliasDeclaration = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node;
   typeParameters: node list option;
   type_: node
@@ -102,10 +230,12 @@ and node_TypeLiteral = Typescript_t.node_TypeLiteral = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   members: node list
 }
 
@@ -113,10 +243,12 @@ and node_TypeOperator = Typescript_t.node_TypeOperator = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   operator: int;
   type_: node
 }
@@ -125,10 +257,12 @@ and node_TypeParameter = Typescript_t.node_TypeParameter = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node;
   constraint_: node option;
   default: node option;
@@ -139,10 +273,12 @@ and node_TypeReference = Typescript_t.node_TypeReference = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   typeArguments: node list option;
   typeName: node
 }
@@ -151,10 +287,12 @@ and node_VariableDeclaration = Typescript_t.node_VariableDeclaration = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node;
   exclamationToken: node option;
   type_: node option;
@@ -166,10 +304,12 @@ and node_VariableDeclarationList =
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   declarations: node list
 }
 
@@ -188,8 +328,17 @@ and type_AnonymousType = Typescript_t.type_AnonymousType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   objectFlags: int;
   target: type_ option
+}
+
+and type_Generic = Typescript_t.type_Generic = {
+  flags: int;
+  id: int option;
+  pattern: node option;
+  aliasTypeArguments: type_ list option;
+  kindName: string
 }
 
 and type_InterfaceType = Typescript_t.type_InterfaceType = {
@@ -197,6 +346,7 @@ and type_InterfaceType = Typescript_t.type_InterfaceType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   objectFlags: int;
   typeParameters: type_ list option;
   outerTypeParameters: type_ list option;
@@ -209,6 +359,7 @@ and type_IntersectionType = Typescript_t.type_IntersectionType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   types: type_ list
 }
 
@@ -217,6 +368,7 @@ and type_NumberLiteralType = Typescript_t.type_NumberLiteralType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   value: float
 }
 
@@ -225,6 +377,7 @@ and type_ObjectType = Typescript_t.type_ObjectType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   objectFlags: int
 }
 
@@ -233,6 +386,7 @@ and type_StringLiteralType = Typescript_t.type_StringLiteralType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   value: string
 }
 
@@ -241,6 +395,7 @@ and type_TupleType = Typescript_t.type_TupleType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   minLength: int;
   fixedLength: int;
   hasRestElement: bool;
@@ -255,6 +410,7 @@ and type_TypeParameter = Typescript_t.type_TypeParameter = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   constraint_: type_ option
 }
 
@@ -263,8 +419,17 @@ and type_TypeReference = Typescript_t.type_TypeReference = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
-  objectFlags: int;
-  target: type_
+  kindName: string;
+  target: type_ option
+}
+
+and type_Unidentified = Typescript_t.type_Unidentified = {
+  flags: int;
+  id: int option;
+  pattern: node option;
+  aliasTypeArguments: type_ list option;
+  kindName: string;
+  nodeKind: string option
 }
 
 and type_UnionOrIntersectionType =
@@ -273,6 +438,7 @@ and type_UnionOrIntersectionType =
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   types: type_ list
 }
 
@@ -281,6 +447,7 @@ and type_UnionType = Typescript_t.type_UnionType = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
+  kindName: string;
   types: type_ list
 }
 
@@ -310,14 +477,8 @@ type type_LiteralType = Typescript_t.type_LiteralType = {
   flags: int;
   id: int option;
   pattern: node option;
-  aliasTypeArguments: type_ list option
-}
-
-type type_Generic = Typescript_t.type_Generic = {
-  flags: int;
-  id: int option;
-  pattern: node option;
-  aliasTypeArguments: type_ list option
+  aliasTypeArguments: type_ list option;
+  kindName: string
 }
 
 type readonlyTextRange = Typescript_t.readonlyTextRange = {
@@ -329,21 +490,43 @@ type node_TypeElement = Typescript_t.node_TypeElement = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   questionToken: node option
+}
+
+type node_SignatureDeclarationBase =
+  Typescript_t.node_SignatureDeclarationBase = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option
 }
 
 type node_QualifiedName = Typescript_t.node_QualifiedName = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   left: node;
   right: node
 }
@@ -352,10 +535,12 @@ type node_NodeWithTypeArguments = Typescript_t.node_NodeWithTypeArguments = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   typeArguments: node list option
 }
 
@@ -363,19 +548,53 @@ type node_NamedDeclaration = Typescript_t.node_NamedDeclaration = {
   pos: int;
   end_: int;
   kind: int;
+  kindName: string;
   flags: int;
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
+  resolvedType: type_ option;
   name: node option
 }
 
-let write__5 = (
+type node_FunctionLikeDeclarationBase =
+  Typescript_t.node_FunctionLikeDeclarationBase = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option;
+  asteriskToken: node option;
+  questionToken: node option;
+  exclamationToken: node option;
+  body: node option
+}
+
+let write__11 = (
+  Atdgen_codec_runtime.Encode.option_as_constr (
+    Atdgen_codec_runtime.Encode.string
+  )
+)
+let read__11 = (
+  Atdgen_codec_runtime.Decode.option_as_constr (
+    Atdgen_codec_runtime.Decode.string
+  )
+)
+let write__6 = (
   Atdgen_codec_runtime.Encode.option_as_constr (
     Atdgen_codec_runtime.Encode.int
   )
 )
-let read__5 = (
+let read__6 = (
   Atdgen_codec_runtime.Decode.option_as_constr (
     Atdgen_codec_runtime.Decode.int
   )
@@ -388,35 +607,6 @@ let write__9 = (
 let read__9 = (
   Atdgen_codec_runtime.Decode.list (
     Atdgen_codec_runtime.Decode.int
-  )
-)
-let write_type_unknown = (
-  Atdgen_codec_runtime.Encode.make (fun (t : type_unknown) ->
-    (
-    Atdgen_codec_runtime.Encode.obj
-      [
-          Atdgen_codec_runtime.Encode.field
-            (
-            Atdgen_codec_runtime.Encode.int
-            )
-          ~name:"flags"
-          t.flags
-      ]
-    )
-  )
-)
-let read_type_unknown = (
-  Atdgen_codec_runtime.Decode.make (fun json ->
-    (
-      ({
-          flags =
-            Atdgen_codec_runtime.Decode.decode
-            (
-              Atdgen_codec_runtime.Decode.int
-              |> Atdgen_codec_runtime.Decode.field "flags"
-            ) json;
-      } : type_unknown)
-    )
   )
 )
 let rec write__1 js = (
@@ -436,12 +626,12 @@ and write__3 js = (
 ) js
 and write__4 js = (
   Atdgen_codec_runtime.Encode.option_as_constr (
-    write_node
+    write_type_
   )
 ) js
-and write__6 js = (
+and write__5 js = (
   Atdgen_codec_runtime.Encode.option_as_constr (
-    write_type_
+    write_node
   )
 ) js
 and write__7 js = (
@@ -1111,7 +1301,7 @@ and write_node js = (
       ) x
       | `Parameter x ->
       Atdgen_codec_runtime.Encode.constr1 "Parameter" (
-        write_node_Generic
+        write_node_Parameter
       ) x
       | `Decorator x ->
       Atdgen_codec_runtime.Encode.constr1 "Decorator" (
@@ -1123,11 +1313,11 @@ and write_node js = (
       ) x
       | `PropertyDeclaration x ->
       Atdgen_codec_runtime.Encode.constr1 "PropertyDeclaration" (
-        write_node_Generic
+        write_node_PropertyDeclaration
       ) x
       | `MethodSignature x ->
       Atdgen_codec_runtime.Encode.constr1 "MethodSignature" (
-        write_node_Generic
+        write_node_MethodSignature
       ) x
       | `MethodDeclaration x ->
       Atdgen_codec_runtime.Encode.constr1 "MethodDeclaration" (
@@ -1255,7 +1445,7 @@ and write_node js = (
       ) x
       | `BindingElement x ->
       Atdgen_codec_runtime.Encode.constr1 "BindingElement" (
-        write_node_Generic
+        write_node_BindingElement
       ) x
       | `ArrayLiteralExpression x ->
       Atdgen_codec_runtime.Encode.constr1 "ArrayLiteralExpression" (
@@ -1467,7 +1657,7 @@ and write_node js = (
       ) x
       | `FunctionDeclaration x ->
       Atdgen_codec_runtime.Encode.constr1 "FunctionDeclaration" (
-        write_node_Generic
+        write_node_FunctionDeclaration
       ) x
       | `ClassDeclaration x ->
       Atdgen_codec_runtime.Encode.constr1 "ClassDeclaration" (
@@ -1475,7 +1665,7 @@ and write_node js = (
       ) x
       | `EnumDeclaration x ->
       Atdgen_codec_runtime.Encode.constr1 "EnumDeclaration" (
-        write_node_Generic
+        write_node_EnumDeclaration
       ) x
       | `ModuleDeclaration x ->
       Atdgen_codec_runtime.Encode.constr1 "ModuleDeclaration" (
@@ -1615,7 +1805,7 @@ and write_node js = (
       ) x
       | `EnumMember x ->
       Atdgen_codec_runtime.Encode.constr1 "EnumMember" (
-        write_node_Generic
+        write_node_EnumMember
       ) x
       | `UnparsedPrologue x ->
       Atdgen_codec_runtime.Encode.constr1 "UnparsedPrologue" (
@@ -1808,8 +1998,8 @@ and write_node js = (
     )
   )
 ) js
-and write_node_Generic js = (
-  Atdgen_codec_runtime.Encode.make (fun (t : node_Generic) ->
+and write_node_BindingElement js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_BindingElement) ->
     (
     Atdgen_codec_runtime.Encode.obj
       [
@@ -1833,6 +2023,13 @@ and write_node_Generic js = (
             )
           ~name:"kind"
           t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -1861,6 +2058,416 @@ and write_node_Generic js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"propertyName"
+          t.propertyName
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"dotDotDotToken"
+          t.dotDotDotToken
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write_node
+            )
+          ~name:"name"
+          t.name
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"initializer"
+          t.initializer_
+      ]
+    )
+  )
+) js
+and write_node_EnumDeclaration js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_EnumDeclaration) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"pos"
+          t.pos
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"end"
+          t.end_
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"kind"
+          t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"modifiers"
+          t.modifiers
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"decorators"
+          t.decorators
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_symbol
+            )
+          ~name:"resolvedSymbol"
+          t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write_node
+            )
+          ~name:"name"
+          t.name
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write__1
+            )
+          ~name:"members"
+          t.members
+      ]
+    )
+  )
+) js
+and write_node_EnumMember js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_EnumMember) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"pos"
+          t.pos
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"end"
+          t.end_
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"kind"
+          t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"modifiers"
+          t.modifiers
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"decorators"
+          t.decorators
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_symbol
+            )
+          ~name:"resolvedSymbol"
+          t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write_node
+            )
+          ~name:"name"
+          t.name
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"initializer"
+          t.initializer_
+      ]
+    )
+  )
+) js
+and write_node_FunctionDeclaration js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_FunctionDeclaration) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"pos"
+          t.pos
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"end"
+          t.end_
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"kind"
+          t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"modifiers"
+          t.modifiers
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"decorators"
+          t.decorators
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_symbol
+            )
+          ~name:"resolvedSymbol"
+          t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"typeParameters"
+          t.typeParameters
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write__1
+            )
+          ~name:"parameters"
+          t.parameters
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"type"
+          t.type_
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"typeArguments"
+          t.typeArguments
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"asteriskToken"
+          t.asteriskToken
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"questionToken"
+          t.questionToken
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"exclamationToken"
+          t.exclamationToken
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"name"
+          t.name
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"body"
+          t.body
+      ]
+    )
+  )
+) js
+and write_node_Generic js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_Generic) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"pos"
+          t.pos
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"end"
+          t.end_
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"kind"
+          t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"modifiers"
+          t.modifiers
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"decorators"
+          t.decorators
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_symbol
+            )
+          ~name:"resolvedSymbol"
+          t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
       ]
     )
   )
@@ -1893,6 +2500,13 @@ and write_node_HeritageClause js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -1918,6 +2532,13 @@ and write_node_HeritageClause js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -1964,6 +2585,13 @@ and write_node_Identifier js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -1989,6 +2617,13 @@ and write_node_Identifier js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2035,6 +2670,13 @@ and write_node_InterfaceDeclaration js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -2060,6 +2702,13 @@ and write_node_InterfaceDeclaration js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2092,8 +2741,8 @@ and write_node_InterfaceDeclaration js = (
     )
   )
 ) js
-and write_node_PropertySignature js = (
-  Atdgen_codec_runtime.Encode.make (fun (t : node_PropertySignature) ->
+and write_node_MethodSignature js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_MethodSignature) ->
     (
     Atdgen_codec_runtime.Encode.obj
       [
@@ -2117,6 +2766,13 @@ and write_node_PropertySignature js = (
             )
           ~name:"kind"
           t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2145,6 +2801,331 @@ and write_node_PropertySignature js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"typeParameters"
+          t.typeParameters
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write__1
+            )
+          ~name:"parameters"
+          t.parameters
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"type"
+          t.type_
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"typeArguments"
+          t.typeArguments
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write__5
+            )
+          ~name:"name"
+          t.name
+      ]
+    )
+  )
+) js
+and write_node_Parameter js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_Parameter) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"pos"
+          t.pos
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"end"
+          t.end_
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"kind"
+          t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"modifiers"
+          t.modifiers
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"decorators"
+          t.decorators
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_symbol
+            )
+          ~name:"resolvedSymbol"
+          t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"dotDotDotToken"
+          t.dotDotDotToken
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write_node
+            )
+          ~name:"name"
+          t.name
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"questionToken"
+          t.questionToken
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"type"
+          t.type_
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"initializer"
+          t.initializer_
+      ]
+    )
+  )
+) js
+and write_node_PropertyDeclaration js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_PropertyDeclaration) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"pos"
+          t.pos
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"end"
+          t.end_
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"kind"
+          t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"modifiers"
+          t.modifiers
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"decorators"
+          t.decorators
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_symbol
+            )
+          ~name:"resolvedSymbol"
+          t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write_node
+            )
+          ~name:"name"
+          t.name
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"questionToken"
+          t.questionToken
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"exclamationToken"
+          t.exclamationToken
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"type"
+          t.type_
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"initializer"
+          t.initializer_
+      ]
+    )
+  )
+) js
+and write_node_PropertySignature js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_PropertySignature) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"pos"
+          t.pos
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"end"
+          t.end_
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"kind"
+          t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"modifiers"
+          t.modifiers
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"decorators"
+          t.decorators
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_symbol
+            )
+          ~name:"resolvedSymbol"
+          t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2205,6 +3186,13 @@ and write_node_SourceFile js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -2230,6 +3218,13 @@ and write_node_SourceFile js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2318,6 +3313,13 @@ and write_node_TypeAliasDeclaration js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -2343,6 +3345,13 @@ and write_node_TypeAliasDeclaration js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2396,6 +3405,13 @@ and write_node_TypeLiteral js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -2421,6 +3437,13 @@ and write_node_TypeLiteral js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2460,6 +3483,13 @@ and write_node_TypeOperator js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -2485,6 +3515,13 @@ and write_node_TypeOperator js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2531,6 +3568,13 @@ and write_node_TypeParameter js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -2556,6 +3600,13 @@ and write_node_TypeParameter js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2616,6 +3667,13 @@ and write_node_TypeReference js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -2641,6 +3699,13 @@ and write_node_TypeReference js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field_o
             (
@@ -2687,6 +3752,13 @@ and write_node_VariableDeclaration js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -2712,6 +3784,13 @@ and write_node_VariableDeclaration js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2772,6 +3851,13 @@ and write_node_VariableDeclarationList js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -2797,6 +3883,13 @@ and write_node_VariableDeclarationList js = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -2856,31 +3949,31 @@ and write_type_ js = (
     Atdgen_codec_runtime.Encode.make (fun (x : _) -> match x with
       | `Any x ->
       Atdgen_codec_runtime.Encode.constr1 "Any" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `Array x ->
       Atdgen_codec_runtime.Encode.constr1 "Array" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `Boolean x ->
       Atdgen_codec_runtime.Encode.constr1 "Boolean" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `String x ->
       Atdgen_codec_runtime.Encode.constr1 "String" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `Number x ->
       Atdgen_codec_runtime.Encode.constr1 "Number" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `Literal x ->
       Atdgen_codec_runtime.Encode.constr1 "Literal" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `BooleanLiteral x ->
       Atdgen_codec_runtime.Encode.constr1 "BooleanLiteral" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `Union x ->
       Atdgen_codec_runtime.Encode.constr1 "Union" (
@@ -2900,11 +3993,11 @@ and write_type_ js = (
       ) x
       | `Class x ->
       Atdgen_codec_runtime.Encode.constr1 "Class" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `ClassOrInterface x ->
       Atdgen_codec_runtime.Encode.constr1 "ClassOrInterface" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `Interface x ->
       Atdgen_codec_runtime.Encode.constr1 "Interface" (
@@ -2916,7 +4009,7 @@ and write_type_ js = (
       ) x
       | `Enum x ->
       Atdgen_codec_runtime.Encode.constr1 "Enum" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `TypeParameter x ->
       Atdgen_codec_runtime.Encode.constr1 "TypeParameter" (
@@ -2936,15 +4029,15 @@ and write_type_ js = (
       ) x
       | `Unknown x ->
       Atdgen_codec_runtime.Encode.constr1 "Unknown" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `Null x ->
       Atdgen_codec_runtime.Encode.constr1 "Null" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `Undefined x ->
       Atdgen_codec_runtime.Encode.constr1 "Undefined" (
-        write_type_unknown
+        write_type_Generic
       ) x
       | `TypeReference x ->
       Atdgen_codec_runtime.Encode.constr1 "TypeReference" (
@@ -2956,7 +4049,7 @@ and write_type_ js = (
       ) x
       | `Unidentified x ->
       Atdgen_codec_runtime.Encode.constr1 "Unidentified" (
-        write_type_unknown
+        write_type_Unidentified
       ) x
     )
   )
@@ -2996,6 +4089,13 @@ and write_type_AnonymousType js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"objectFlags"
@@ -3007,6 +4107,49 @@ and write_type_AnonymousType js = (
             )
           ~name:"target"
           t.target
+      ]
+    )
+  )
+) js
+and write_type_Generic js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : type_Generic) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"id"
+          t.id
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"pattern"
+          t.pattern
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__7
+            )
+          ~name:"aliasTypeArguments"
+          t.aliasTypeArguments
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
       ]
     )
   )
@@ -3043,6 +4186,13 @@ and write_type_InterfaceType js = (
             )
           ~name:"aliasTypeArguments"
           t.aliasTypeArguments
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -3117,6 +4267,13 @@ and write_type_IntersectionType js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             write__7
             )
           ~name:"types"
@@ -3160,6 +4317,13 @@ and write_type_NumberLiteralType js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.float
             )
           ~name:"value"
@@ -3200,6 +4364,13 @@ and write_type_ObjectType js = (
             )
           ~name:"aliasTypeArguments"
           t.aliasTypeArguments
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -3248,6 +4419,13 @@ and write_type_StringLiteralType js = (
             (
             Atdgen_codec_runtime.Encode.string
             )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
           ~name:"value"
           t.value
       ]
@@ -3286,6 +4464,13 @@ and write_type_TupleType js = (
             )
           ~name:"aliasTypeArguments"
           t.aliasTypeArguments
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -3372,6 +4557,13 @@ and write_type_TypeParameter js = (
           ~name:"aliasTypeArguments"
           t.aliasTypeArguments
         ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
           Atdgen_codec_runtime.Encode.field_o
             (
             write_type_
@@ -3417,17 +4609,67 @@ and write_type_TypeReference js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
-            Atdgen_codec_runtime.Encode.int
+            Atdgen_codec_runtime.Encode.string
             )
-          ~name:"objectFlags"
-          t.objectFlags
+          ~name:"kindName"
+          t.kindName
         ;
-          Atdgen_codec_runtime.Encode.field
+          Atdgen_codec_runtime.Encode.field_o
             (
             write_type_
             )
           ~name:"target"
           t.target
+      ]
+    )
+  )
+) js
+and write_type_Unidentified js = (
+  Atdgen_codec_runtime.Encode.make (fun (t : type_Unidentified) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"id"
+          t.id
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"pattern"
+          t.pattern
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__7
+            )
+          ~name:"aliasTypeArguments"
+          t.aliasTypeArguments
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"nodeKind"
+          t.nodeKind
       ]
     )
   )
@@ -3464,6 +4706,13 @@ and write_type_UnionOrIntersectionType js = (
             )
           ~name:"aliasTypeArguments"
           t.aliasTypeArguments
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -3510,6 +4759,13 @@ and write_type_UnionType js = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             write__7
             )
           ~name:"types"
@@ -3535,12 +4791,12 @@ and read__3 js = (
 ) js
 and read__4 js = (
   Atdgen_codec_runtime.Decode.option_as_constr (
-    read_node
+    read_type_
   )
 ) js
-and read__6 js = (
+and read__5 js = (
   Atdgen_codec_runtime.Decode.option_as_constr (
-    read_type_
+    read_node
   )
 ) js
 and read__7 js = (
@@ -5028,7 +6284,7 @@ and read_node js = (
         "Parameter"
         ,
           `Decode (
-          read_node_Generic
+          read_node_Parameter
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Parameter x) : _))
           )
         )
@@ -5055,7 +6311,7 @@ and read_node js = (
         "PropertyDeclaration"
         ,
           `Decode (
-          read_node_Generic
+          read_node_PropertyDeclaration
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`PropertyDeclaration x) : _))
           )
         )
@@ -5064,7 +6320,7 @@ and read_node js = (
         "MethodSignature"
         ,
           `Decode (
-          read_node_Generic
+          read_node_MethodSignature
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`MethodSignature x) : _))
           )
         )
@@ -5352,7 +6608,7 @@ and read_node js = (
         "BindingElement"
         ,
           `Decode (
-          read_node_Generic
+          read_node_BindingElement
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`BindingElement x) : _))
           )
         )
@@ -5829,7 +7085,7 @@ and read_node js = (
         "FunctionDeclaration"
         ,
           `Decode (
-          read_node_Generic
+          read_node_FunctionDeclaration
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`FunctionDeclaration x) : _))
           )
         )
@@ -5847,7 +7103,7 @@ and read_node js = (
         "EnumDeclaration"
         ,
           `Decode (
-          read_node_Generic
+          read_node_EnumDeclaration
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`EnumDeclaration x) : _))
           )
         )
@@ -6162,7 +7418,7 @@ and read_node js = (
         "EnumMember"
         ,
           `Decode (
-          read_node_Generic
+          read_node_EnumMember
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`EnumMember x) : _))
           )
         )
@@ -6592,7 +7848,7 @@ and read_node js = (
     ]
   )
 ) js
-and read_node_Generic js = (
+and read_node_BindingElement js = (
   Atdgen_codec_runtime.Decode.make (fun json ->
     (
       ({
@@ -6613,6 +7869,12 @@ and read_node_Generic js = (
             (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
             ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
@@ -6637,6 +7899,362 @@ and read_node_Generic js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
+          propertyName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "propertyName"
+            ) json;
+          dotDotDotToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "dotDotDotToken"
+            ) json;
+          name =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.field "name"
+            ) json;
+          initializer_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "initializer"
+            ) json;
+      } : node_BindingElement)
+    )
+  )
+) js
+and read_node_EnumDeclaration js = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          pos =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "pos"
+            ) json;
+          end_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "end"
+            ) json;
+          kind =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          modifiers =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "modifiers"
+            ) json;
+          decorators =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "decorators"
+            ) json;
+          resolvedSymbol =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_symbol
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
+          name =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.field "name"
+            ) json;
+          members =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.field "members"
+            ) json;
+      } : node_EnumDeclaration)
+    )
+  )
+) js
+and read_node_EnumMember js = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          pos =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "pos"
+            ) json;
+          end_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "end"
+            ) json;
+          kind =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          modifiers =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "modifiers"
+            ) json;
+          decorators =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "decorators"
+            ) json;
+          resolvedSymbol =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_symbol
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
+          name =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.field "name"
+            ) json;
+          initializer_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "initializer"
+            ) json;
+      } : node_EnumMember)
+    )
+  )
+) js
+and read_node_FunctionDeclaration js = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          pos =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "pos"
+            ) json;
+          end_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "end"
+            ) json;
+          kind =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          modifiers =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "modifiers"
+            ) json;
+          decorators =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "decorators"
+            ) json;
+          resolvedSymbol =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_symbol
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
+          typeParameters =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "typeParameters"
+            ) json;
+          parameters =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.field "parameters"
+            ) json;
+          type_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "type"
+            ) json;
+          typeArguments =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "typeArguments"
+            ) json;
+          asteriskToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "asteriskToken"
+            ) json;
+          questionToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "questionToken"
+            ) json;
+          exclamationToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "exclamationToken"
+            ) json;
+          name =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "name"
+            ) json;
+          body =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "body"
+            ) json;
+      } : node_FunctionDeclaration)
+    )
+  )
+) js
+and read_node_Generic js = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          pos =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "pos"
+            ) json;
+          end_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "end"
+            ) json;
+          kind =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          modifiers =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "modifiers"
+            ) json;
+          decorators =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "decorators"
+            ) json;
+          resolvedSymbol =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_symbol
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
       } : node_Generic)
     )
@@ -6664,6 +8282,12 @@ and read_node_HeritageClause js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -6687,6 +8311,12 @@ and read_node_HeritageClause js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           token =
             Atdgen_codec_runtime.Decode.decode
@@ -6726,6 +8356,12 @@ and read_node_Identifier js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -6749,6 +8385,12 @@ and read_node_Identifier js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           escapedText =
             Atdgen_codec_runtime.Decode.decode
@@ -6788,6 +8430,12 @@ and read_node_InterfaceDeclaration js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -6811,6 +8459,12 @@ and read_node_InterfaceDeclaration js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           name =
             Atdgen_codec_runtime.Decode.decode
@@ -6840,7 +8494,7 @@ and read_node_InterfaceDeclaration js = (
     )
   )
 ) js
-and read_node_PropertySignature js = (
+and read_node_MethodSignature js = (
   Atdgen_codec_runtime.Decode.make (fun json ->
     (
       ({
@@ -6861,6 +8515,12 @@ and read_node_PropertySignature js = (
             (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
             ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
@@ -6885,6 +8545,288 @@ and read_node_PropertySignature js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
+          typeParameters =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "typeParameters"
+            ) json;
+          parameters =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.field "parameters"
+            ) json;
+          type_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "type"
+            ) json;
+          typeArguments =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "typeArguments"
+            ) json;
+          name =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__5
+              |> Atdgen_codec_runtime.Decode.field "name"
+            ) json;
+      } : node_MethodSignature)
+    )
+  )
+) js
+and read_node_Parameter js = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          pos =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "pos"
+            ) json;
+          end_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "end"
+            ) json;
+          kind =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          modifiers =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "modifiers"
+            ) json;
+          decorators =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "decorators"
+            ) json;
+          resolvedSymbol =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_symbol
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
+          dotDotDotToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "dotDotDotToken"
+            ) json;
+          name =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.field "name"
+            ) json;
+          questionToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "questionToken"
+            ) json;
+          type_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "type"
+            ) json;
+          initializer_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "initializer"
+            ) json;
+      } : node_Parameter)
+    )
+  )
+) js
+and read_node_PropertyDeclaration js = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          pos =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "pos"
+            ) json;
+          end_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "end"
+            ) json;
+          kind =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          modifiers =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "modifiers"
+            ) json;
+          decorators =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "decorators"
+            ) json;
+          resolvedSymbol =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_symbol
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
+          name =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.field "name"
+            ) json;
+          questionToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "questionToken"
+            ) json;
+          exclamationToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "exclamationToken"
+            ) json;
+          type_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "type"
+            ) json;
+          initializer_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "initializer"
+            ) json;
+      } : node_PropertyDeclaration)
+    )
+  )
+) js
+and read_node_PropertySignature js = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          pos =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "pos"
+            ) json;
+          end_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "end"
+            ) json;
+          kind =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          modifiers =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "modifiers"
+            ) json;
+          decorators =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "decorators"
+            ) json;
+          resolvedSymbol =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_symbol
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           name =
             Atdgen_codec_runtime.Decode.decode
@@ -6936,6 +8878,12 @@ and read_node_SourceFile js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -6959,6 +8907,12 @@ and read_node_SourceFile js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           statements =
             Atdgen_codec_runtime.Decode.decode
@@ -7034,6 +8988,12 @@ and read_node_TypeAliasDeclaration js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -7057,6 +9017,12 @@ and read_node_TypeAliasDeclaration js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           name =
             Atdgen_codec_runtime.Decode.decode
@@ -7102,6 +9068,12 @@ and read_node_TypeLiteral js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -7125,6 +9097,12 @@ and read_node_TypeLiteral js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           members =
             Atdgen_codec_runtime.Decode.decode
@@ -7158,6 +9136,12 @@ and read_node_TypeOperator js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -7181,6 +9165,12 @@ and read_node_TypeOperator js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           operator =
             Atdgen_codec_runtime.Decode.decode
@@ -7220,6 +9210,12 @@ and read_node_TypeParameter js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -7243,6 +9239,12 @@ and read_node_TypeParameter js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           name =
             Atdgen_codec_runtime.Decode.decode
@@ -7294,6 +9296,12 @@ and read_node_TypeReference js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -7317,6 +9325,12 @@ and read_node_TypeReference js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           typeArguments =
             Atdgen_codec_runtime.Decode.decode
@@ -7356,6 +9370,12 @@ and read_node_VariableDeclaration js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -7379,6 +9399,12 @@ and read_node_VariableDeclaration js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           name =
             Atdgen_codec_runtime.Decode.decode
@@ -7430,6 +9456,12 @@ and read_node_VariableDeclarationList js = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -7453,6 +9485,12 @@ and read_node_VariableDeclarationList js = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           declarations =
             Atdgen_codec_runtime.Decode.decode
@@ -7510,7 +9548,7 @@ and read_type_ js = (
         "Any"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Any x) : _))
           )
         )
@@ -7519,7 +9557,7 @@ and read_type_ js = (
         "Array"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Array x) : _))
           )
         )
@@ -7528,7 +9566,7 @@ and read_type_ js = (
         "Boolean"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Boolean x) : _))
           )
         )
@@ -7537,7 +9575,7 @@ and read_type_ js = (
         "String"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`String x) : _))
           )
         )
@@ -7546,7 +9584,7 @@ and read_type_ js = (
         "Number"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Number x) : _))
           )
         )
@@ -7555,7 +9593,7 @@ and read_type_ js = (
         "Literal"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Literal x) : _))
           )
         )
@@ -7564,7 +9602,7 @@ and read_type_ js = (
         "BooleanLiteral"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`BooleanLiteral x) : _))
           )
         )
@@ -7609,7 +9647,7 @@ and read_type_ js = (
         "Class"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Class x) : _))
           )
         )
@@ -7618,7 +9656,7 @@ and read_type_ js = (
         "ClassOrInterface"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`ClassOrInterface x) : _))
           )
         )
@@ -7645,7 +9683,7 @@ and read_type_ js = (
         "Enum"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Enum x) : _))
           )
         )
@@ -7690,7 +9728,7 @@ and read_type_ js = (
         "Unknown"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Unknown x) : _))
           )
         )
@@ -7699,7 +9737,7 @@ and read_type_ js = (
         "Null"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Null x) : _))
           )
         )
@@ -7708,7 +9746,7 @@ and read_type_ js = (
         "Undefined"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Generic
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Undefined x) : _))
           )
         )
@@ -7735,7 +9773,7 @@ and read_type_ js = (
         "Unidentified"
         ,
           `Decode (
-          read_type_unknown
+          read_type_Unidentified
           |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Unidentified x) : _))
           )
         )
@@ -7770,6 +9808,12 @@ and read_type_AnonymousType js = (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           objectFlags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -7783,6 +9827,44 @@ and read_type_AnonymousType js = (
               |> Atdgen_codec_runtime.Decode.fieldOptional "target"
             ) json;
       } : type_AnonymousType)
+    )
+  )
+) js
+and read_type_Generic js = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          id =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.fieldOptional "id"
+            ) json;
+          pattern =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "pattern"
+            ) json;
+          aliasTypeArguments =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__7
+              |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+      } : type_Generic)
     )
   )
 ) js
@@ -7813,6 +9895,12 @@ and read_type_InterfaceType js = (
             (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
             ) json;
           objectFlags =
             Atdgen_codec_runtime.Decode.decode
@@ -7876,6 +9964,12 @@ and read_type_IntersectionType js = (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           types =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -7913,6 +10007,12 @@ and read_type_NumberLiteralType js = (
             (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
             ) json;
           value =
             Atdgen_codec_runtime.Decode.decode
@@ -7952,6 +10052,12 @@ and read_type_ObjectType js = (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           objectFlags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -7990,6 +10096,12 @@ and read_type_StringLiteralType js = (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           value =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -8027,6 +10139,12 @@ and read_type_TupleType js = (
             (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
             ) json;
           minLength =
             Atdgen_codec_runtime.Decode.decode
@@ -8102,6 +10220,12 @@ and read_type_TypeParameter js = (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           constraint_ =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -8140,19 +10264,63 @@ and read_type_TypeReference js = (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
             ) json;
-          objectFlags =
+          kindName =
             Atdgen_codec_runtime.Decode.decode
             (
-              Atdgen_codec_runtime.Decode.int
-              |> Atdgen_codec_runtime.Decode.field "objectFlags"
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
             ) json;
           target =
             Atdgen_codec_runtime.Decode.decode
             (
               read_type_
-              |> Atdgen_codec_runtime.Decode.field "target"
+              |> Atdgen_codec_runtime.Decode.fieldOptional "target"
             ) json;
       } : type_TypeReference)
+    )
+  )
+) js
+and read_type_Unidentified js = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          id =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.fieldOptional "id"
+            ) json;
+          pattern =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "pattern"
+            ) json;
+          aliasTypeArguments =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__7
+              |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+          nodeKind =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.fieldOptional "nodeKind"
+            ) json;
+      } : type_Unidentified)
     )
   )
 ) js
@@ -8183,6 +10351,12 @@ and read_type_UnionOrIntersectionType js = (
             (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
             ) json;
           types =
             Atdgen_codec_runtime.Decode.decode
@@ -8221,6 +10395,12 @@ and read_type_UnionType js = (
             (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
             ) json;
           types =
             Atdgen_codec_runtime.Decode.decode
@@ -8538,6 +10718,13 @@ let write_type_LiteralType = (
             )
           ~name:"aliasTypeArguments"
           t.aliasTypeArguments
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
       ]
     )
   )
@@ -8570,75 +10757,13 @@ let read_type_LiteralType = (
               read__7
               |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
       } : type_LiteralType)
-    )
-  )
-)
-let write_type_Generic = (
-  Atdgen_codec_runtime.Encode.make (fun (t : type_Generic) ->
-    (
-    Atdgen_codec_runtime.Encode.obj
-      [
-          Atdgen_codec_runtime.Encode.field
-            (
-            Atdgen_codec_runtime.Encode.int
-            )
-          ~name:"flags"
-          t.flags
-        ;
-          Atdgen_codec_runtime.Encode.field_o
-            (
-            Atdgen_codec_runtime.Encode.int
-            )
-          ~name:"id"
-          t.id
-        ;
-          Atdgen_codec_runtime.Encode.field_o
-            (
-            write_node
-            )
-          ~name:"pattern"
-          t.pattern
-        ;
-          Atdgen_codec_runtime.Encode.field_o
-            (
-            write__7
-            )
-          ~name:"aliasTypeArguments"
-          t.aliasTypeArguments
-      ]
-    )
-  )
-)
-let read_type_Generic = (
-  Atdgen_codec_runtime.Decode.make (fun json ->
-    (
-      ({
-          flags =
-            Atdgen_codec_runtime.Decode.decode
-            (
-              Atdgen_codec_runtime.Decode.int
-              |> Atdgen_codec_runtime.Decode.field "flags"
-            ) json;
-          id =
-            Atdgen_codec_runtime.Decode.decode
-            (
-              Atdgen_codec_runtime.Decode.int
-              |> Atdgen_codec_runtime.Decode.fieldOptional "id"
-            ) json;
-          pattern =
-            Atdgen_codec_runtime.Decode.decode
-            (
-              read_node
-              |> Atdgen_codec_runtime.Decode.fieldOptional "pattern"
-            ) json;
-          aliasTypeArguments =
-            Atdgen_codec_runtime.Decode.decode
-            (
-              read__7
-              |> Atdgen_codec_runtime.Decode.fieldOptional "aliasTypeArguments"
-            ) json;
-      } : type_Generic)
     )
   )
 )
@@ -8712,6 +10837,13 @@ let write_node_TypeElement = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -8737,6 +10869,13 @@ let write_node_TypeElement = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field_o
             (
@@ -8770,6 +10909,12 @@ let read_node_TypeElement = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -8794,6 +10939,12 @@ let read_node_TypeElement = (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
             ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
           questionToken =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -8801,6 +10952,204 @@ let read_node_TypeElement = (
               |> Atdgen_codec_runtime.Decode.fieldOptional "questionToken"
             ) json;
       } : node_TypeElement)
+    )
+  )
+)
+let write_node_SignatureDeclarationBase = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_SignatureDeclarationBase) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"pos"
+          t.pos
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"end"
+          t.end_
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"kind"
+          t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"modifiers"
+          t.modifiers
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"decorators"
+          t.decorators
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_symbol
+            )
+          ~name:"resolvedSymbol"
+          t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"name"
+          t.name
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"typeParameters"
+          t.typeParameters
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write__1
+            )
+          ~name:"parameters"
+          t.parameters
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"type"
+          t.type_
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"typeArguments"
+          t.typeArguments
+      ]
+    )
+  )
+)
+let read_node_SignatureDeclarationBase = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          pos =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "pos"
+            ) json;
+          end_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "end"
+            ) json;
+          kind =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          modifiers =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "modifiers"
+            ) json;
+          decorators =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "decorators"
+            ) json;
+          resolvedSymbol =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_symbol
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
+          name =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "name"
+            ) json;
+          typeParameters =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "typeParameters"
+            ) json;
+          parameters =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.field "parameters"
+            ) json;
+          type_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "type"
+            ) json;
+          typeArguments =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "typeArguments"
+            ) json;
+      } : node_SignatureDeclarationBase)
     )
   )
 )
@@ -8832,6 +11181,13 @@ let write_node_QualifiedName = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -8857,6 +11213,13 @@ let write_node_QualifiedName = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field
             (
@@ -8897,6 +11260,12 @@ let read_node_QualifiedName = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -8920,6 +11289,12 @@ let read_node_QualifiedName = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           left =
             Atdgen_codec_runtime.Decode.decode
@@ -8965,6 +11340,13 @@ let write_node_NodeWithTypeArguments = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -8990,6 +11372,13 @@ let write_node_NodeWithTypeArguments = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field_o
             (
@@ -9023,6 +11412,12 @@ let read_node_NodeWithTypeArguments = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -9046,6 +11441,12 @@ let read_node_NodeWithTypeArguments = (
             (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
             ) json;
           typeArguments =
             Atdgen_codec_runtime.Decode.decode
@@ -9085,6 +11486,13 @@ let write_node_NamedDeclaration = (
         ;
           Atdgen_codec_runtime.Encode.field
             (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
             Atdgen_codec_runtime.Encode.int
             )
           ~name:"flags"
@@ -9110,6 +11518,13 @@ let write_node_NamedDeclaration = (
             )
           ~name:"resolvedSymbol"
           t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
         ;
           Atdgen_codec_runtime.Encode.field_o
             (
@@ -9143,6 +11558,12 @@ let read_node_NamedDeclaration = (
               Atdgen_codec_runtime.Decode.int
               |> Atdgen_codec_runtime.Decode.field "kind"
             ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
           flags =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -9167,6 +11588,12 @@ let read_node_NamedDeclaration = (
               read_symbol
               |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
             ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
           name =
             Atdgen_codec_runtime.Decode.decode
             (
@@ -9174,6 +11601,256 @@ let read_node_NamedDeclaration = (
               |> Atdgen_codec_runtime.Decode.fieldOptional "name"
             ) json;
       } : node_NamedDeclaration)
+    )
+  )
+)
+let write_node_FunctionLikeDeclarationBase = (
+  Atdgen_codec_runtime.Encode.make (fun (t : node_FunctionLikeDeclarationBase) ->
+    (
+    Atdgen_codec_runtime.Encode.obj
+      [
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"pos"
+          t.pos
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"end"
+          t.end_
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"kind"
+          t.kind
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.string
+            )
+          ~name:"kindName"
+          t.kindName
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            Atdgen_codec_runtime.Encode.int
+            )
+          ~name:"flags"
+          t.flags
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"modifiers"
+          t.modifiers
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"decorators"
+          t.decorators
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_symbol
+            )
+          ~name:"resolvedSymbol"
+          t.resolvedSymbol
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_type_
+            )
+          ~name:"resolvedType"
+          t.resolvedType
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"name"
+          t.name
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"typeParameters"
+          t.typeParameters
+        ;
+          Atdgen_codec_runtime.Encode.field
+            (
+            write__1
+            )
+          ~name:"parameters"
+          t.parameters
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"type"
+          t.type_
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write__1
+            )
+          ~name:"typeArguments"
+          t.typeArguments
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"asteriskToken"
+          t.asteriskToken
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"questionToken"
+          t.questionToken
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"exclamationToken"
+          t.exclamationToken
+        ;
+          Atdgen_codec_runtime.Encode.field_o
+            (
+            write_node
+            )
+          ~name:"body"
+          t.body
+      ]
+    )
+  )
+)
+let read_node_FunctionLikeDeclarationBase = (
+  Atdgen_codec_runtime.Decode.make (fun json ->
+    (
+      ({
+          pos =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "pos"
+            ) json;
+          end_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "end"
+            ) json;
+          kind =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "kind"
+            ) json;
+          kindName =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.string
+              |> Atdgen_codec_runtime.Decode.field "kindName"
+            ) json;
+          flags =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              Atdgen_codec_runtime.Decode.int
+              |> Atdgen_codec_runtime.Decode.field "flags"
+            ) json;
+          modifiers =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "modifiers"
+            ) json;
+          decorators =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "decorators"
+            ) json;
+          resolvedSymbol =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_symbol
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedSymbol"
+            ) json;
+          resolvedType =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_type_
+              |> Atdgen_codec_runtime.Decode.fieldOptional "resolvedType"
+            ) json;
+          name =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "name"
+            ) json;
+          typeParameters =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "typeParameters"
+            ) json;
+          parameters =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.field "parameters"
+            ) json;
+          type_ =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "type"
+            ) json;
+          typeArguments =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read__1
+              |> Atdgen_codec_runtime.Decode.fieldOptional "typeArguments"
+            ) json;
+          asteriskToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "asteriskToken"
+            ) json;
+          questionToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "questionToken"
+            ) json;
+          exclamationToken =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "exclamationToken"
+            ) json;
+          body =
+            Atdgen_codec_runtime.Decode.decode
+            (
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "body"
+            ) json;
+      } : node_FunctionLikeDeclarationBase)
     )
   )
 )
