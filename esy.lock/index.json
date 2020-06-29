@@ -1,5 +1,5 @@
 {
-  "checksum": "cee690062585a8e4f95cd00917febb54",
+  "checksum": "cb29212b02ad367c61ad240b1ff4f4ab",
   "root": "re_typescript@link-dev:./esy.json",
   "node": {
     "yarn-pkg-config@github:esy-ocaml/yarn-pkg-config#db3a0b63883606dd57c54a7158d560d6cba8cd79@d41d8cd9": {
@@ -494,7 +494,6 @@
       "overrides": [],
       "dependencies": [
         "pkg@4.4.9@d41d8cd9", "isexe@2.0.0@d41d8cd9",
-        "byots@4.0.0-dev.20200628.14.23@d41d8cd9",
         "@reason-native/pastel@0.3.0@d41d8cd9",
         "@reason-native/fp@0.0.1@d41d8cd9",
         "@reason-native/file-context-printer@0.0.3@d41d8cd9",
@@ -1645,20 +1644,6 @@
         "type": "install",
         "source": [
           "archive:https://registry.npmjs.org/caseless/-/caseless-0.12.0.tgz#sha1:1b681c21ff84033c826543090689420d187151dc"
-        ]
-      },
-      "overrides": [],
-      "dependencies": [],
-      "devDependencies": []
-    },
-    "byots@4.0.0-dev.20200628.14.23@d41d8cd9": {
-      "id": "byots@4.0.0-dev.20200628.14.23@d41d8cd9",
-      "name": "byots",
-      "version": "4.0.0-dev.20200628.14.23",
-      "source": {
-        "type": "install",
-        "source": [
-          "archive:https://registry.npmjs.org/byots/-/byots-4.0.0-dev.20200628.14.23.tgz#sha1:7644d59aa85a7b5edce71e70f5749210c5a90c93"
         ]
       },
       "overrides": [],

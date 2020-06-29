@@ -9,6 +9,8 @@ let pp_type = type_ =>
   Typescript_j.string_of_type_(type_)
   |> Yojson.Basic.from_string
   |> Yojson.Basic.pretty_to_string;
+let pp_node_kind = node => (node |> Typescript_unwrap.unwrap_Node).kindName;
+let pp_type_kind = type_ => (type_ |> Typescript_unwrap.unwrap_Type).kindName;
 
 open Types;
 open Re_typescript_printer.Tree_utils;
@@ -70,14 +72,13 @@ and parse__FunctionDeclaration = (declaration: Ts.node_FunctionDeclaration) => {
            }
          ),
     fu_return:
-      switch (
-        declaration.type_
-        |> CCOpt.flat_map(
-             parse__typeOfNode(~parent=`FunctionDeclaration(declaration)),
-           )
-      ) {
-      | Some(t) => t
-      | None => raise(Not_found)
+      switch (declaration.type_) {
+      | None => Base(Any) // No return: void
+      | Some(dec_type) =>
+        parse__typeOfNode_exn(
+          ~parent=`FunctionDeclaration(declaration),
+          dec_type,
+        )
       },
   };
 
@@ -85,7 +86,11 @@ and parse__FunctionDeclaration = (declaration: Ts.node_FunctionDeclaration) => {
     Types.TypeDeclaration({
       td_name: name |> Ident.of_string,
       td_type: Function(fn),
-      td_parameters: [],
+      td_parameters:
+        parse__DeclarationTypeParameters(
+          ~parent=`FunctionDeclaration(declaration),
+          declaration.typeParameters,
+        ),
     });
   let path = ([name], []);
   Hashtbl.add(types, path, td);
@@ -157,6 +162,28 @@ and parse__EnumDeclaration = (declaration: Ts.node_EnumDeclaration) => {
   Hashtbl.add(types, path, td);
   order.lst = order.lst @ [path];
 }
+and parse__DeclarationTypeParameters =
+    (~parent: Ts.node, typeParameters: option(list(Ts.node))) => {
+  typeParameters
+  |> CCOpt.map_or(~default=[], params =>
+       params
+       |> CCList.map(param =>
+            switch (param) {
+            | `TypeParameter(
+                (
+                  {name: `Identifier({escapedText, _}), _}: Ts.node_TypeParameter
+                ),
+              ) => {
+                tp_name: Ident.of_string(escapedText),
+                tp_extends: None,
+                tp_default: None,
+              }
+
+            | _ => raise(Not_found)
+            }
+          )
+     );
+}
 and parse__TypeAliasDeclaration = (declaration: Ts.node_TypeAliasDeclaration) => {
   let parent = `TypeAliasDeclaration(declaration);
   switch (declaration) {
@@ -176,25 +203,10 @@ and parse__TypeAliasDeclaration = (declaration: Ts.node_TypeAliasDeclaration) =>
         td_name: escapedText |> Ident.of_string,
         td_type: type_ |> CCOpt.get_or(~default=Base(Any)),
         td_parameters:
-          declaration.typeParameters
-          |> CCOpt.map_or(~default=[], params =>
-               params
-               |> CCList.map(param =>
-                    switch (param) {
-                    | `TypeParameter(
-                        (
-                          {name: `Identifier({escapedText, _}), _}: Ts.node_TypeParameter
-                        ),
-                      ) => {
-                        tp_name: Ident.of_string(escapedText),
-                        tp_extends: None,
-                        tp_default: None,
-                      }
-
-                    | _ => raise(Not_found)
-                    }
-                  )
-             ),
+          parse__DeclarationTypeParameters(
+            ~parent,
+            declaration.typeParameters,
+          ),
       });
     Hashtbl.add(types, path, td);
     order.lst = order.lst @ [path];
@@ -263,6 +275,7 @@ and parse__typeOfNode =
   }
 and parse__typeOfNode_exn =
     (~isDeclarationChild=false, ~parent: Ts.node, node: Ts.node): ts_type => {
+  Console.log(pp_node_kind(parent) ++ " > " ++ pp_node_kind(node));
   switch (node) {
   | `VoidKeyword(_) => Base(Void)
   | `StringKeyword(_) => Base(String)
@@ -272,6 +285,20 @@ and parse__typeOfNode_exn =
   | `NullKeyword(_) => Base(Null)
   | `UndefinedKeyword(_) => Base(Undefined)
   | `NeverKeyword(_) => Base(Never)
+  | `Parameter({name, _}) as p =>
+    parse__typeOfNode_exn(~isDeclarationChild, ~parent=p, name)
+  | `Identifier({resolvedType: Some(resolvedType), _}) =>
+    parse__typeOfType(~isDeclarationChild, ~parent, resolvedType)
+  | `TypeParameter({name, _}) as tp =>
+    parse__typeOfNode_exn(~isDeclarationChild, ~parent=tp, name)
+  | `TypeReference({
+      resolvedType: Some(`TypeParameter(_)),
+      typeName:
+        `Identifier({resolvedSymbol: Some({fullyQualifiedName, _}), _}),
+      _,
+    }) =>
+    Console.log(fullyQualifiedName);
+    Arg(fullyQualifiedName |> Ident.of_string);
   | `TypeLiteral(tl) as node =>
     isDeclarationChild
       ? parse__TypeLiteral(~parent, tl)
@@ -296,12 +323,30 @@ and parse__typeOfNode_exn =
 and parse__typeOfType =
     (~isDeclarationChild=false, ~parent: Ts.node, type_def: Ts.type_)
     : Types.ts_type => {
+  Console.log(pp_node_kind(parent) ++ " > " ++ pp_type_kind(type_def));
   switch (type_def) {
   | `String(_) => Base(String)
   | `Number(_) => Base(Number)
   | `Any(_) => Base(Any)
   | `Boolean(_) => Base(Boolean)
   | `StringLiteral({value, _}) => StringLiteral([value |> Ident.of_string])
+  | `TypeParameter(_) =>
+    switch (parent) {
+    | `Parameter({type_: Some(type_), _}) =>
+      parse__typeOfNode_exn(~isDeclarationChild, ~parent, type_)
+    | otherParent =>
+      switch (otherParent |> Typescript_unwrap.unwrap_Node) {
+      | {
+          resolvedType: Some(`TypeParameter(_)),
+          resolvedSymbol: Some({fullyQualifiedName, _}),
+          _,
+        } =>
+        Arg(fullyQualifiedName |> Ident.of_string)
+      | generic =>
+        Console.log((generic.kindName, pp_node(parent)));
+        raise(Not_found);
+      }
+    }
   | t =>
     Console.log(
       Typescript_j.string_of_node(parent)

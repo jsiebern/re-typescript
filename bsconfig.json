@@ -30,6 +30,6 @@
   "suffix": ".bs.js",
   "generate-merlin": true,
   "warnings": {
-    "number": ""
+    "number": "-30"
   }
 }

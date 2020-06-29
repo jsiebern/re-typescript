@@ -31,8 +31,4 @@ project
     let parsed = Typescript_bs.read_node(node);
 
     Js.log(parsed->Typescript_bs.write_node->Js.Json.stringify);
-    // Fs.writeFileSync(
-    //   "src_ts/bs/test.json",
-    //   parsed->Typescript_bs.write_node->Js.Json.stringify,
-    // );
   });

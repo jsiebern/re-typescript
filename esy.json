@@ -21,13 +21,12 @@
     "@opam/js_of_ocaml-ppx": "3.6.0",
     "@opam/menhir": "*",
     "@opam/ocaml-migrate-parsetree": "*",
-    "@opam/ppx_tools_versioned": "*",
     "@opam/ocamlnet": "*",
+    "@opam/ppx_tools_versioned": "*",
     "@reason-native/console": "^0.1.0",
     "@reason-native/file-context-printer": "^0.0.3",
     "@reason-native/fp": "^0.0.1",
     "@reason-native/pastel": "^0.3.0",
-    "byots": "^4.0.0-dev.20200624.14.21",
     "isexe": "^2.0.0",
     "pkg": "^4.4.9"
   },
@@ -44,18 +43,6 @@
     "build": [
       ["refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"]
     ],
-    "buildsInSource": "_build",
-    "exportedEnv": {
-      "CAML_LD_LIBRARY_PATH": {
-        "val": "#{self.lib / 'netstring' : self.lib / 'netsys' : self.lib / 'rpc-auth-local' : $CAML_LD_LIBRARY_PATH}",
-        "scope": "global"
-      }
-    }
-  },
-  "exportedEnv": {
-    "CAML_LD_LIBRARY_PATH": {
-      "val": "#{self.lib / 'netstring' : self.lib / 'netsys' : self.lib / 'rpc-auth-local' : $CAML_LD_LIBRARY_PATH}",
-      "scope": "global"
-    }
+    "buildsInSource": "_build"
   }
 }
