@@ -17,7 +17,7 @@
     "in-source": false
   },
   "ppx-flags": ["@davesnx/styled-ppx/styled-ppx"],
-  "bsc-flags": ["-bs-super-errors"],
+  "bsc-flags": ["-bs-super-errors -bs-g"],
   "bs-dependencies": [
     "reason-react",
     "bs-webworkers",

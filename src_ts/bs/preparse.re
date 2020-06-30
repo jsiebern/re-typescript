@@ -12,6 +12,15 @@ let isTypeReference =
   (. t: Type.t) => {
     getKindNameOfType(. t) === Some("TypeReference");
   };
+let isVoid =
+  (. t: Type.t) => {
+    getKindNameOfType(. t) === Some("VoidKeyword");
+  };
+let isObjectKeyword =
+  (. t: Type.t) => {
+    getKindNameOfType(. t) === Some("ObjectKeyword");
+  };
+
 let identifyType =
   (. t: Type.t) =>
     Type.(
@@ -65,14 +74,39 @@ let identifyType =
         "Undefined";
       } else if (isTypeReference(. t)) {
         "TypeReference";
+      } else if (isObjectKeyword(. t)) {
+        "ObjectKeyword";
+      } else if (isVoid(. t)) {
+        "Void";
       } else {
         "Unidentified";
       }
     );
 
+module Set = Belt.HashSet.Int;
+let idCache = Belt.HashSet.Int.make(~hintSize=50);
+
+exception UnidentifiedType(Type.t);
+
 let rec visitType =
   (. t: Type.t) => {
+    switch (t->Type.compilerType->Typescript_raw.Type.id) {
+    | None => ()
+    | Some(id) =>
+      if (idCache->Set.has(id)) {
+        ();
+      } else {
+        idCache->Set.add(id);
+        visitTypeAfterCache(. t);
+      }
+    };
+  }
+and visitTypeAfterCache =
+  (. t: Type.t) => {
     let stringifiedType = identifyType(. t);
+    if (stringifiedType === "Unidentified") {
+      raise(UnidentifiedType(t));
+    };
     t->Type.compilerType->Typescript_raw.Type.setKindName(stringifiedType);
     if (stringifiedType === "Unidentified") {
       switch (getKindNameOfType(. t)) {
@@ -118,7 +152,17 @@ let rec visitNode =
       switch (symbol->Symbol.getDeclaredType) {
       | None => ()
       | Some(t) =>
-        visitType(. t);
+        try(visitType(. t)) {
+        | UnidentifiedType(t) =>
+          Js.logMany([|
+            node->Node.getStartLineNumber,
+            node->Node.getEndLineNumber,
+            node->Node.getPos,
+            node->Node.getEnd,
+            t->Type.getText->Obj.magic,
+            node->Node.getText->Obj.magic,
+          |])
+        };
         symbol
         ->Symbol.compilerSymbol
         ->Typescript_raw.Symbol.setResolvedType(t->Type.compilerType);
@@ -135,7 +179,17 @@ let rec visitNode =
     switch (node->Node.getType) {
     | None => ()
     | Some(t) =>
-      visitType(. t);
+      try(visitType(. t)) {
+      | UnidentifiedType(t) =>
+        Js.logMany([|
+          node->Node.getStartLineNumber,
+          node->Node.getEndLineNumber,
+          node->Node.getPos,
+          node->Node.getEnd,
+          t->Type.getText->Obj.magic,
+          node->Node.getText->Obj.magic,
+        |])
+      };
       node
       ->Node.compilerNode
       ->Typescript_raw.Node.setResolvedType(t->Type.compilerType);
@@ -147,6 +201,8 @@ let rec visitNode =
   };
 
 let preParse = () => {
+  Set.clear(idCache);
+
   Runtime.project
   ->Project.getSourceFiles
   ->Belt.Array.forEachU((. sourceFile) => {

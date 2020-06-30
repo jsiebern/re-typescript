@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import { Type, Project, Node, ts } from 'ts-morph';
 import common from '@ts-morph/common';
 import { walkNodes } from './ast';
+import { strict } from 'assert';
+import { SCHED_RR } from 'cluster';
 
 const project = new Project({
   useInMemoryFileSystem: true,
@@ -78,6 +80,9 @@ const recurseType = (type: Type | undefined, level = 0) => {
 };
 
 const recurse = (node: Node, level = 0) => {
+  node.getPos;
+  node.getEnd;
+  node.getStartLineNumber;
   if (node.getKindName() === 'TypeLiteral') {
     console.log('\n\n\n');
     console.log(node.getKindName());

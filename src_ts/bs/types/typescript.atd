@@ -180,7 +180,7 @@ type node_FunctionDeclaration = {
 type node_MethodSignature = {
     inherit node_SignatureDeclarationBase;
 
-    name: node option ;
+    ?name: node option ;
 }
 
 type node_Parameter = {
@@ -671,6 +671,8 @@ type type_Unidentified = {
 }
 
 type type_ = [
+    | ObjectKeyword of type_Generic
+    | Void of type_Generic
     | Any of type_Generic
     | Array of type_Generic
     | Boolean of type_Generic

@@ -12,7 +12,12 @@ let content = {|
 //   b?: { inline: number }
 // ): string;
 // declare function some_function_as_any();
-declare function some_function_params<A, B, C>(a: A, b: B): C;
+// declare function some_function_params<A, B, C>(a: A, b: B): C;
+
+export interface IProxifier<T extends object> {
+  proxify(state: T, path: string): T
+  trackPath(path: string): void
+}
 |};
 let global = {|
 |};

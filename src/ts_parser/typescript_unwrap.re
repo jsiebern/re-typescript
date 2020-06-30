@@ -348,6 +348,8 @@ external toGeneric: 'a => Ts.type_Generic = "%identity";
 let unwrap_Type = (type_: Typescript_t.type_): Typescript_t.type_Generic =>
   switch (type_) {
   | `Any(inner) => inner |> toGeneric
+  | `Void(inner) => inner |> toGeneric
+  | `ObjectKeyword(inner) => inner |> toGeneric
   | `Array(inner) => inner |> toGeneric
   | `Boolean(inner) => inner |> toGeneric
   | `String(inner) => inner |> toGeneric
@@ -374,3 +376,31 @@ let unwrap_Type = (type_: Typescript_t.type_): Typescript_t.type_Generic =>
   | `Anonymous(inner) => inner |> toGeneric
   | `Unidentified(inner) => inner |> toGeneric
   };
+
+let unwrap_Name = (node: Ts.node) => {
+  let name =
+    switch (node) {
+    | `MethodSignature({name, _})
+    | `FunctionDeclaration({name, _}) => name
+
+    | `TypeParameter({name, _})
+    | `VariableDeclaration({name, _})
+    | `TypeAliasDeclaration({name, _})
+    | `PropertySignature({name, _})
+    | `EnumDeclaration({name, _})
+    | `PropertyDeclaration({name, _})
+    | `Parameter({name, _})
+    | `EnumMember({name, _})
+    | `BindingElement({name, _})
+    | `InterfaceDeclaration({name, _}) => Some(name)
+    | _ => None
+    };
+  name
+  |> CCOpt.flat_map(node =>
+       switch (node) {
+       | `Identifier(({escapedText, _}: Ts.node_Identifier)) =>
+         Some(escapedText)
+       | _ => None
+       }
+     );
+};

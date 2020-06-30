@@ -2837,9 +2837,9 @@ and write_node_MethodSignature js = (
           ~name:"typeArguments"
           t.typeArguments
         ;
-          Atdgen_codec_runtime.Encode.field
+          Atdgen_codec_runtime.Encode.field_o
             (
-            write__5
+            write_node
             )
           ~name:"name"
           t.name
@@ -3947,6 +3947,14 @@ and write_symbol js = (
 and write_type_ js = (
   Atdgen_codec_runtime.Encode.adapter Typescript_json_adapters.KindName.restore (
     Atdgen_codec_runtime.Encode.make (fun (x : _) -> match x with
+      | `ObjectKeyword x ->
+      Atdgen_codec_runtime.Encode.constr1 "ObjectKeyword" (
+        write_type_Generic
+      ) x
+      | `Void x ->
+      Atdgen_codec_runtime.Encode.constr1 "Void" (
+        write_type_Generic
+      ) x
       | `Any x ->
       Atdgen_codec_runtime.Encode.constr1 "Any" (
         write_type_Generic
@@ -8579,8 +8587,8 @@ and read_node_MethodSignature js = (
           name =
             Atdgen_codec_runtime.Decode.decode
             (
-              read__5
-              |> Atdgen_codec_runtime.Decode.field "name"
+              read_node
+              |> Atdgen_codec_runtime.Decode.fieldOptional "name"
             ) json;
       } : node_MethodSignature)
     )
@@ -9544,6 +9552,24 @@ and read_type_ js = (
   Atdgen_codec_runtime.Decode.adapter Typescript_json_adapters.KindName.normalize (
     Atdgen_codec_runtime.Decode.enum
     [
+        (
+        "ObjectKeyword"
+        ,
+          `Decode (
+          read_type_Generic
+          |> Atdgen_codec_runtime.Decode.map (fun x -> ((`ObjectKeyword x) : _))
+          )
+        )
+      ;
+        (
+        "Void"
+        ,
+          `Decode (
+          read_type_Generic
+          |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Void x) : _))
+          )
+        )
+      ;
         (
         "Any"
         ,

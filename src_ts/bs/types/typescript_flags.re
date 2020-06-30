@@ -640,4 +640,36 @@ module Element: {
   let rest = 1 << 2;
   let variadic = 1 << 3;
   let variable = rest || variadic;
+} /* }*/;
+
+module Signature: {
+  type t = pri int;
+
+  let (&): (t, t) => t;
+  let (||): (t, t) => t;
+  let (<<): (t, t) => t;
+  let (>>): (t, t) => t;
+  let (>>>): (t, t) => t;
+  let (~~): t => t;
+  let (&&): (t, t) => bool;
+
+  let none: t;
+  let hasRestParameter: t;
+  let hasLiteralTypes: t;
+  let isInnerCallChain: t;
+  let isOuterCallChain: t;
+  let isUntypedSignatureInJSFile: t;
+  let propagatingFlags: t;
+  let callChainFlags: t;
+} = {
+  include IntShift;
+  type t = int;
+  let none = 0;
+  let hasRestParameter = 1 << 0;
+  let hasLiteralTypes = 1 << 1;
+  let isInnerCallChain = 1 << 2;
+  let isOuterCallChain = 1 << 3;
+  let isUntypedSignatureInJSFile = 1 << 4;
+  let propagatingFlags = hasRestParameter || hasLiteralTypes;
+  let callChainFlags = isInnerCallChain || isOuterCallChain;
 };

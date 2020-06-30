@@ -31,6 +31,7 @@ module Type = {
 
   [@bs.get]
   external target: type_ => option(Js.Nullable.t(type_)) = "target";
+  [@bs.get] external id: type_ => option(int) = "id";
   [@bs.get]
   external symbol: type_ => option(Js.Nullable.t(symbol)) = "symbol";
   [@bs.get] external flags: type_ => Typescript_flags.Type.t = "flags";

@@ -659,7 +659,9 @@ and symbol = {
 }
 
 and type_ = [
-    `Any of type_Generic
+    `ObjectKeyword of type_Generic
+  | `Void of type_Generic
+  | `Any of type_Generic
   | `Array of type_Generic
   | `Boolean of type_Generic
   | `String of type_Generic

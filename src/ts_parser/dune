@@ -2,7 +2,7 @@
  (name re_typescript_ts_parser)
  (public_name re_typescript.ts_parser)
  (libraries re_typescript.config re_typescript.base re_typescript.printer
-   re_typescript.ts_parser_bin containers iter yojson console.lib))
+   re_typescript.ts_parser_bin containers iter yojson console.lib pastel.lib))
 
 (env
  (dev

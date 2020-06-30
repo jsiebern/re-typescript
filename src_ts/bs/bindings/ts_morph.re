@@ -93,6 +93,11 @@ module Node = {
   [@bs.send] external getSymbol: t => option(Symbol.t) = "getSymbol";
   [@bs.send] external getKindName: t => string = "getKindName";
   [@bs.send] external getKind: t => int = "getKind";
+  [@bs.send] external getPos: t => int = "getPos";
+  [@bs.send] external getEnd: t => int = "getEnd";
+  [@bs.send] external getStartLineNumber: t => int = "getStartLineNumber";
+  [@bs.send] external getEndLineNumber: t => int = "getEndLineNumber";
+  [@bs.send] external getText: t => string = "getText";
   [@bs.send]
   external forEachDescendant: (t, (. t) => unit) => unit = "forEachDescendant";
   [@bs.send] external getChildren: t => array(t) = "getChildren";
@@ -117,10 +122,17 @@ module Project = {
   type t;
 
   module Config = {
+    type compilerOptions = {
+      lib: array(string),
+      importHelpers: bool,
+      noLib: bool,
+    };
     [@bs.deriving abstract]
     type t = {
       [@bs.optional]
       useInMemoryFileSystem: bool,
+      [@bs.optional]
+      compilerOptions,
     };
     let make = t;
   };
