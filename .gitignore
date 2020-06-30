@@ -2,6 +2,7 @@
 node_modules/
 _build
 _esy
+_json
 _release
 *.byte
 *.native

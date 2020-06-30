@@ -16,13 +16,6 @@
     "@minima.app/re-css" "1.0.1"
     emotion "9.2.12"
 
-"@ahrefs/bs-emotion@https://gitpkg.now.sh/ahrefs/bs-emotion/bs-emotion?master":
-  version "1.0.1"
-  resolved "https://gitpkg.now.sh/ahrefs/bs-emotion/bs-emotion?master#f9f12e3c3fe012ae6edd4c3020c31a280e2c1ccf"
-  dependencies:
-    "@minima.app/re-css" "1.0.1"
-    emotion "9.2.12"
-
 "@babel/code-frame@^7.0.0":
   version "7.10.3"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.3.tgz#324bcfd8d35cd3d47dae18cde63d752086435e9a"

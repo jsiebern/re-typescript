@@ -43,6 +43,12 @@
     "build": [
       ["refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"]
     ],
-    "buildsInSource": "_build"
+    "buildsInSource": "_build",
+    "exportedEnv": {
+      "PROJECT_ROOT": {
+        "val": "#{self.root : $PROJECT_ROOT}",
+        "scope": "global"
+      }
+    }
   }
 }
