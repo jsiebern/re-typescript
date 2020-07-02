@@ -1,24 +1,23 @@
 module ReactSyntaxHighlighter = {
   type style;
-  [@bs.val] [@bs.module "react-syntax-highlighter/dist/esm/styles/prism"]
+  @bs.val @bs.module("react-syntax-highlighter/dist/esm/styles/prism")
   external docco: style = "atomDark";
-  [@react.component] [@bs.module "react-syntax-highlighter"]
+  @react.component @bs.module("react-syntax-highlighter")
   external make:
     (
-      ~language: [@bs.string] [
-                   | [@bs.as "reason"] `Reason
-                   | [@bs.as "ocaml"] `Ocaml
+      ~language: @bs.string [
+                   | @bs.as("reason") #Reason
+                   | @bs.as("ocaml") #Ocaml
                  ],
       ~style: style,
       ~children: string,
-      ~showLineNumbers: option(bool)=?
+      ~showLineNumbers: option<bool>=?
     ) =>
     React.element =
     "Prism";
 };
 
-module Error = [%styled.div
-  (~h) => {|
+module Error = %styled.div((~h) => `
   position: fixed;
   width: 50vw;
   height: $h;
@@ -31,12 +30,11 @@ module Error = [%styled.div
   display: flex;
   justify-content: center;
   align-items: center;
-|}
-];
+`
+);
 
 let mt = "-2rem!important";
-module Container = [%styled.div
-  (~h) => {|
+module Container = %styled.div((~h) => `
   height: $h;
   width: 50vw;
   top: $mt;
@@ -44,8 +42,8 @@ module Container = [%styled.div
   background-color: rgb(29, 31, 33);
 
   overflow-y: auto;
-|}
-];
+`
+);
 
 let useParsedResult = () => {
   let result = Recoil.useRecoilValueLoadable(State.parse_result);
@@ -63,13 +61,13 @@ let useParsedResult = () => {
       };
       None;
     },
-    [|result|],
+    [result],
   );
 
   res;
 };
 
-[@react.component]
+@react.component
 let make = () => {
   let lang = Recoil.useRecoilValue(State.language);
   let result = useParsedResult();
@@ -82,7 +80,7 @@ let make = () => {
       };
       None;
     },
-    [|result|],
+    [result],
   );
 
   <Container h="calc(100vh - 65px)">
@@ -102,8 +100,8 @@ let make = () => {
       style=ReactSyntaxHighlighter.docco
       language={
         switch (lang) {
-        | Reason => `Reason
-        | Ocaml => `Ocaml
+        | Reason => #Reason
+        | Ocaml => #Ocaml
         }
       }>
       lastOk

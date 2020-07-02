@@ -34,7 +34,7 @@ module KindName = {
 
   let restore = json =>
     switch (json |> Js.Json.classify) {
-    | JSONArray([|v, o|]) when Js.typeof(v) == "string" =>
+    | JSONArray([v, o]) when Js.typeof(v) == "string" =>
       switch (o |> Js.Json.classify) {
       | JSONObject(obj) =>
         Js.Dict.set(obj, type_field_name, v);

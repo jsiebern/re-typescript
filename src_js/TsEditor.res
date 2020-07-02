@@ -1,10 +1,10 @@
 module MonacoEditor = {
-  [@react.component] [@bs.module "@monaco-editor/react"]
+  @react.component @bs.module("@monaco-editor/react")
   external make:
     (
       ~height: string=?,
       ~width: string=?,
-      ~language: [@bs.string] [ | `javascript | `typescript],
+      ~language: @bs.string [ | #javascript | #typescript],
       ~value: string,
       ~editorDidMount: ('a, 'b) => unit=?,
       ~onChange: ('a, string) => unit
@@ -14,8 +14,8 @@ module MonacoEditor = {
 };
 
 module EditorWindow = {
-  let tmr: ref(option(Js.Global.timeoutId)) = ref(None);
-  [@react.component]
+  let tmr: ref<option<Js.Global.timeoutId>> = ref(None);
+  @react.component
   let make = () => {
     let (src, setSrc) = Recoil.useRecoilState(State.ts_source);
     let (value, setValue) = React.useReducer((_, v) => v, "");
@@ -30,7 +30,7 @@ module EditorWindow = {
         };
         None;
       },
-      [|parsedResult|],
+      [parsedResult],
     );
 
     let tmr = React.useRef((-1)->Obj.magic);
@@ -50,7 +50,7 @@ module EditorWindow = {
 
         Some(() => Js.Global.clearTimeout(tmr.current));
       },
-      [|value|],
+      [value],
     );
 
     <MonacoEditor
@@ -58,36 +58,34 @@ module EditorWindow = {
       width="100%"
       value={value == "" ? " " : value}
       onChange={(_, v) => setValue(v)}
-      language=`typescript
+      language=#typescript
     />;
   };
 };
 
-module Container = [%styled.div
-  {|
+module Container = %styled.div(`
   height: 100%;
   width: 50vw;
   position: relative;
   background-color: #FFFFFF;
   display: flex;
   flex-direction: column;
-|}
-];
-module ContainerEditor = [%styled.div
-  {|
+`
+);
+module ContainerEditor = %styled.div(`
   flex-grow: 1;
   width: 100%;
   position: relative;
-|}
-];
-let containerTabs = [%css {|
+`
+);
+let containerTabs = %css(`
   width: 100%;
   height: 65px;
-|}];
+`);
 
 module ExampleLabel = {
   module Inner = {
-    [@react.component]
+    @react.component
     let make = () => {
       let example = Recoil.useRecoilValue(State.selected_example_t);
       switch (example) {
@@ -97,26 +95,28 @@ module ExampleLabel = {
     };
   };
 
-  [@react.component]
+  @react.component
   let make = () => {
-    SemanticUi.(
-      <Label attached="top right" className=[%css {|z-index: 1;|}]>
+    open SemanticUi;
+
+      <Label attached="top right" className=%css(`z-index: 1;`)>
         <Icon name="file code outline" />
         <Inner />
       </Label>
-    );
+    ;
   };
 };
 
 module FileTabs = {
   module TabMenu = {
-    [@react.component]
+    @react.component
     let make = () => {
       let selectedExample = Recoil.useRecoilValue(State.selected_example_t);
       let (selectedFile, setSelectedFile) =
         Recoil.useRecoilState(State.selected_file);
 
-      SemanticUi.(
+      open SemanticUi;
+
         <Menu tabular=true>
           {switch (selectedExample) {
            | None => React.null
@@ -135,7 +135,7 @@ module FileTabs = {
                      onClick={(_, _) =>
                        setSelectedFile(_ => Some(file_path))
                      }>
-                     name->React.string
+                     {name->React.string}
                    </MenuItem>;
                  | Folder(_) => React.null
                  }
@@ -144,21 +144,22 @@ module FileTabs = {
              ->React.array;
            }}
         </Menu>
-      );
+      ;
     };
   };
 
-  [@react.component]
+  @react.component
   let make = () => {
-    SemanticUi.(
+    open SemanticUi;
+
       <React.Suspense fallback={<Menu tabular=true> React.null </Menu>}>
         <TabMenu />
       </React.Suspense>
-    );
+    ;
   };
 };
 
-[@react.component]
+@react.component
 let make = () => {
   <Container>
     <div className=containerTabs> <FileTabs /> </div>

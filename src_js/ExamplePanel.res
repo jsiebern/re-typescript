@@ -1,5 +1,5 @@
 module Async = {
-  [@react.component]
+  @react.component
   let make = () => {
     let (visible, setVisible) = Recoil.useRecoilState(State.examples_open);
     let examples = Recoil.useRecoilValue(State.example_list);
@@ -22,15 +22,16 @@ module Async = {
         };
         None;
       },
-      [|examples->Belt.Array.length|],
+      [examples->Belt.Array.length],
     );
 
-    SemanticUi.(
+    open SemanticUi;
+
       <Sidebar
         visible
-        animation=`push
-        direction=`left
-        width=`wide
+        animation=#push
+        direction=#left
+        width=#wide
         onHide={(_, _) => setVisible(_ => false)}>
         <Menu fluid=true vertical=true tabular=true>
           {examples
@@ -50,17 +51,17 @@ module Async = {
                    );
                  }}>
                  <Icon name="file code outline" />
-                 {example.meta.name}->React.string
+                 {example.meta.name->React.string}
                </MenuItem>
              )
            ->React.array}
         </Menu>
       </Sidebar>
-    );
+    ;
   };
 };
 
-[@react.component]
+@react.component
 let make = () => {
   <React.Suspense fallback={"Loading..."->React.string}>
     <Async />

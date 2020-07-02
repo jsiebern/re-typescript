@@ -1,8 +1,8 @@
-[@bs.val]
-[@bs.module "./../../../_build/default/src/js/re_typescript_js.bc.js"]
+@bs.val
+@bs.module("./../../../_build/default/src/js/re_typescript_js.bc.js")
 external run: string => string = "run";
-[@bs.val]
-[@bs.module "./../../../_build/default/src/js/re_typescript_js.bc.js"]
+@bs.val
+@bs.module("./../../../_build/default/src/js/re_typescript_js.bc.js")
 external example_list: unit => string = "example_list";
 
 WebWorkers.setWorkerOnMessage(

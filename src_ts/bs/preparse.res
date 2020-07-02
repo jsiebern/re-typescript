@@ -22,8 +22,9 @@ let isObjectKeyword =
   };
 
 let identifyType =
-  (. t: Type.t) =>
-    Type.(
+  (. t: Type.t) => {
+      open Type;
+      
       if (isAny(t)) {
         "Any";
       } else if (isAnonymous(t)) {
@@ -81,7 +82,7 @@ let identifyType =
       } else {
         "Unidentified";
       }
-    );
+    };
 
 module Set = Belt.HashSet.Int;
 let idCache = Belt.HashSet.Int.make(~hintSize=50);
@@ -152,16 +153,16 @@ let rec visitNode =
       switch (symbol->Symbol.getDeclaredType) {
       | None => ()
       | Some(t) =>
-        try(visitType(. t)) {
+        try visitType(. t) catch {
         | UnidentifiedType(t) =>
-          Js.logMany([|
+          Js.logMany([
             node->Node.getStartLineNumber,
             node->Node.getEndLineNumber,
             node->Node.getPos,
             node->Node.getEnd,
             t->Type.getText->Obj.magic,
             node->Node.getText->Obj.magic,
-          |])
+          ])
         };
         symbol
         ->Symbol.compilerSymbol
@@ -179,16 +180,16 @@ let rec visitNode =
     switch (node->Node.getType) {
     | None => ()
     | Some(t) =>
-      try(visitType(. t)) {
+      try (visitType(. t)) catch {
       | UnidentifiedType(t) =>
-        Js.logMany([|
+        Js.logMany([
           node->Node.getStartLineNumber,
           node->Node.getEndLineNumber,
           node->Node.getPos,
           node->Node.getEnd,
           t->Type.getText->Obj.magic,
           node->Node.getText->Obj.magic,
-        |])
+        ])
       };
       node
       ->Node.compilerNode

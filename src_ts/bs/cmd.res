@@ -1,6 +1,6 @@
 open Ts_morph;
 
-[@bs.val] [@bs.scope "process"] external argv: array(string) = "argv";
+@bs.val @bs.scope("process") external argv: array<string> = "argv";
 let files = Belt.Array.sliceToEnd(argv, 2);
 
 let project = Runtime.project;

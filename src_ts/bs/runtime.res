@@ -6,7 +6,7 @@ let project =
       Project.Config.make(
         ~useInMemoryFileSystem=true,
         ~compilerOptions={
-          lib: [|"lib", "lib.es2015.collection.d.ts"|],
+          lib: ["lib", "lib.es2015.collection.d.ts"],
           noLib: false,
           importHelpers: true,
         },

@@ -11,8 +11,8 @@ let examples_open = Recoil.atom({key: "examples_open", default: false});
 // --- Examples / Files
 let source_salt = Recoil.atom({key: "source_salt", default: 0.});
 type selected = {
-  file: option(string),
-  example: option(string),
+  file: option<string>,
+  example: option<string>,
 };
 let selected =
   Recoil.atom({
@@ -44,17 +44,17 @@ let selected_example =
 
 // --- Worker specific
 let worker = WebWorkers.create_webworker("worker/worker.js");
-let parsing_complete: ref((. Bridge_bs.worker_response) => unit) =
+let parsing_complete: ref<(. Bridge_bs.worker_response) => unit> =
   ref((. _) => ());
 let working = ref(false);
 WebWorkers.onMessage(
   worker,
   (e: WebWorkers.MessageEvent.t) => {
     working := false;
-    parsing_complete^(. WebWorkers.MessageEvent.data(e));
+    parsing_complete.contents(. WebWorkers.MessageEvent.data(e));
   },
 );
-let parse_result: Recoil.readOnly(Bridge_bs.parse_result) =
+let parse_result: Recoil.readOnly<Bridge_bs.parse_result> =
   Recoil.asyncSelector({
     key: "parse_result",
     get: ({get}) => {
@@ -64,7 +64,7 @@ let parse_result: Recoil.readOnly(Bridge_bs.parse_result) =
       let config = get(config);
       let selected_file = get(selected_file);
       Js.Promise.make((~resolve, ~reject) =>
-        switch (selected_file, working^) {
+        switch (selected_file, working.contents) {
         | (_, true)
         | (None, _) => reject(. Not_found)
         | (Some(path), false) =>
@@ -79,16 +79,17 @@ let parse_result: Recoil.readOnly(Bridge_bs.parse_result) =
           working := true;
           WebWorkers.postMessage(
             worker,
-            Bridge_bs.Parse(
-              Bridge_bs.{content, language, config, file_path: path},
-            ),
+            Bridge_bs.Parse({
+              open Bridge_bs;
+              {content, language, config, file_path: path}
+            }),
           );
         }
       );
     },
   });
 
-let example_list: Recoil.readOnly(array(Bridge_bs.example)) =
+let example_list: Recoil.readOnly<array<Bridge_bs.example>> =
   Recoil.asyncSelector({
     key: "example_list",
     get: _ => {
@@ -355,9 +356,9 @@ let bs_number_value =
     key: "bs_number_value",
     get: ({get}) =>
       switch (get(config).bucklescript_config.number_variant_mode) {
-      | `Variant(a)
-      | `PolyVariant(a)
-      | `BsInline(a) => a
+      | #Variant(a)
+      | #PolyVariant(a)
+      | #BsInline(a) => a
       },
     set: ({get, set}, value) => {
       let c = get(config);
@@ -370,9 +371,9 @@ let bs_number_value =
               ...c.bucklescript_config,
               number_variant_mode:
                 switch (c.bucklescript_config.number_variant_mode) {
-                | `Variant(_) => `Variant(value)
-                | `PolyVariant(_) => `PolyVariant(value)
-                | `BsInline(_) => `BsInline(value)
+                | #Variant(_) => #Variant(value)
+                | #PolyVariant(_) => #PolyVariant(value)
+                | #BsInline(_) => #BsInline(value)
                 },
             },
           };

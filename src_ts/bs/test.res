@@ -1,11 +1,19 @@
 open Ts_morph;
 
+type r = {
+  \"type": string,
+}
+let ex = {
+  \"type": "test",
+}
+Js.log(ex);
+
 let project = Runtime.project;
 
 let sourceFile =
   project->Project.createSourceFile(
     "test.d.ts",
-    {|
+    `
 export interface IProxifier<T extends object> {
   proxify(state: T, path: string): T
   trackPath(path: string): void
@@ -139,8 +147,7 @@ export interface IProxyStateTree<T extends object> {
   mutationCallbacks: IMutationCallback[]
   flushCallbacks: IFlushCallback[]
   currentFlushId: number
-}
-|},
+}`,
   );
 sourceFile->SourceFile.saveSync;
 

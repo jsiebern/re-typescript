@@ -1,6 +1,6 @@
-[@bs.val] [@bs.module "ts-morph"] [@bs.scope "ts"]
-external syntaxKind: Js.Dict.t('string) = "SyntaxKind";
-let kindCacheLst: (array(int), array(string)) =
+@bs.val @bs.module("ts-morph") @bs.scope("ts")
+external syntaxKind: Js.Dict.t<'string> = "SyntaxKind";
+let kindCacheLst: (array<int>, array<string>) =
   syntaxKind
   ->Js.Dict.keys
   ->Belt.Array.keepU((. key) => Belt.Int.fromString(key)->Belt.Option.isSome)

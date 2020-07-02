@@ -18,7 +18,7 @@
   "devDependencies": {
     "@minima.app/re-css": "^1.0.1",
     "@types/node": "^14.0.14",
-    "bs-platform": "^8.0.2",
+    "bs-platform": "8.1",
     "byots": "^4.0.0-dev.20200624.14.21",
     "constants-browserify": "^1.0.0",
     "css-loader": "^3.5.3",

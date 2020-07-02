@@ -4,8 +4,8 @@ module Grid = {
     let number: int => t;
     let equal: t;
   } = {
-    [@unboxed]
-    type t =
+    @unboxed
+    type rec t =
       | Any('a): t;
     let number = (v: int) => Any(v);
     let equal = Any("equal");
@@ -16,14 +16,14 @@ module Grid = {
     let vertically: t;
     let boolean: bool => t;
   } = {
-    [@unboxed]
-    type t =
+    @unboxed
+    type rec t =
       | Any('a): t;
     let horizontally = Any("horizontally");
     let vertically = Any("vertically");
     let boolean = (v: bool) => Any(v);
   };
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -38,7 +38,7 @@ module Grid = {
 };
 
 module GridColumn = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (~className: string=?, ~width: int=?, ~children: React.element) =>
     React.element =
@@ -46,7 +46,7 @@ module GridColumn = {
 };
 
 module GridRow = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (~className: string=?, ~stretched: bool=?, ~children: React.element) =>
     React.element =
@@ -54,7 +54,7 @@ module GridRow = {
 };
 
 module Segment = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -80,29 +80,29 @@ module Image = {
     let true_: t;
     let false_: t;
   } = {
-    [@unboxed]
-    type t =
+    @unboxed
+    type rec t =
       | Any('a): t;
     let left = Any("left");
     let right = Any("right");
     let true_ = Any(true);
     let false_ = Any(false);
   };
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
       ~href: string=?,
       ~spaced: Spaced.t=?,
-      ~size: [@bs.string] [
-               | `mini
-               | `tiny
-               | `small
-               | `medium
-               | `large
-               | `big
-               | `huge
-               | `massive
+      ~size: @bs.string [
+               | #mini
+               | #tiny
+               | #small
+               | #medium
+               | #large
+               | #big
+               | #huge
+               | #massive
              ]
                =?,
       ~inline: bool=?,
@@ -113,7 +113,7 @@ module Image = {
 };
 
 module Menu = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -121,7 +121,7 @@ module Menu = {
       ~stackable: bool=?,
       ~vertical: bool=?,
       ~tabular: bool=?,
-      ~icons: [@bs.string] [ | `labeled]=?,
+      ~icons: @bs.string [ | #labeled]=?,
       ~children: React.element
     ) =>
     React.element =
@@ -129,11 +129,11 @@ module Menu = {
 };
 
 module MenuMenu = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
-      ~position: [@bs.string] [ | `left | `right]=?,
+      ~position: @bs.string [ | #left | #right]=?,
       ~children: React.element
     ) =>
     React.element =
@@ -142,7 +142,7 @@ module MenuMenu = {
 
 module MenuItem = {
   type clickReturn = {name: string};
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -163,14 +163,14 @@ module Header = {
     let src: string => t;
     let component: React.element => t;
   } = {
-    [@unboxed]
-    type t =
+    @unboxed
+    type rec t =
       | Any('a): t;
     let src = (v: string) => Any(v);
     let component = (v: React.element) => Any(v);
   };
 
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -186,7 +186,7 @@ module Header = {
 
 module Label = {
   type clickReturn = {name: string};
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -200,20 +200,20 @@ module Label = {
       ~circular: bool=?,
       ~onClick: (ReactEvent.Mouse.t, 'a) => unit=?,
       ~onRemove: (ReactEvent.Mouse.t, 'a) => unit=?,
-      ~color: [@bs.string] [
-                | `red
-                | `orange
-                | `yellow
-                | `olive
-                | `green
-                | `teal
-                | `blue
-                | `violet
-                | `purple
-                | `pink
-                | `brown
-                | `grey
-                | `black
+      ~color: @bs.string [
+                | #red
+                | #orange
+                | #yellow
+                | #olive
+                | #green
+                | #teal
+                | #blue
+                | #violet
+                | #purple
+                | #pink
+                | #brown
+                | #grey
+                | #black
               ]
                 =?,
       ~children: React.element=?
@@ -224,24 +224,24 @@ module Label = {
 
 module Icon = {
   type clickReturn = {name: string};
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
-      ~color: [@bs.string] [
-                | `red
-                | `orange
-                | `yellow
-                | `olive
-                | `green
-                | `teal
-                | `blue
-                | `violet
-                | `purple
-                | `pink
-                | `brown
-                | `grey
-                | `black
+      ~color: @bs.string [
+                | #red
+                | #orange
+                | #yellow
+                | #olive
+                | #green
+                | #teal
+                | #blue
+                | #violet
+                | #purple
+                | #pink
+                | #brown
+                | #grey
+                | #black
               ]
                 =?,
       ~name: string=?
@@ -252,7 +252,7 @@ module Icon = {
 
 module Popup = {
   type clickReturn = {name: string};
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -267,31 +267,31 @@ module Popup = {
 };
 
 module Sidebar = {
-  [@bs.val] [@bs.module "@stardust-ui/react-component-event-listener"]
-  external documentRef: React.ref(Dom.element) = "documentRef";
+  @bs.val @bs.module("@stardust-ui/react-component-event-listener")
+  external documentRef: React.ref<Dom.element> = "documentRef";
 
   type clickReturn = {name: string};
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~onHide: ('a, 'b) => unit,
       ~className: string=?,
-      ~animation: [@bs.string] [
-                    | `overlay
-                    | `push
-                    | [@bs.as "scale down"] `scale_down
-                    | `uncover
-                    | [@bs.as "slide out"] `slide_out
-                    | [@bs.as "slide along"] `slide_along
+      ~animation: @bs.string [
+                    | #overlay
+                    | #push
+                    | @bs.as("scale down") #scale_down
+                    | #uncover
+                    | @bs.as("slide out") #slide_out
+                    | @bs.as("slide along") #slide_along
                   ]
                     =?,
-      ~direction: [@bs.string] [ | `top | `right | `bottom | `left]=?,
+      ~direction: @bs.string [ | #top | #right | #bottom | #left]=?,
       ~visible: bool=?,
-      ~width: [@bs.string] [
-                | [@bs.as "very thin"] `very_thin
-                | `thin
-                | `wide
-                | [@bs.as "very wide"] `very_wide
+      ~width: @bs.string [
+                | @bs.as("very thin") #very_thin
+                | #thin
+                | #wide
+                | @bs.as("very wide") #very_wide
               ]
                 =?,
       ~vertical: bool=?,
@@ -306,7 +306,7 @@ module Sidebar = {
 
 module SidebarPusher = {
   type clickReturn = {name: string};
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (~className: string=?, ~dimmed: bool=?, ~children: React.element) =>
     React.element =
@@ -314,14 +314,14 @@ module SidebarPusher = {
 };
 
 module SidebarPushable = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (~className: string=?, ~children: React.element) => React.element =
     "SidebarPushable";
 };
 
 module Form = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (~className: string=?, ~children: React.element) => React.element =
     "Form";
@@ -333,14 +333,14 @@ module FormGroup = {
     let number: int => t;
     let equal: t;
   } = {
-    [@unboxed]
-    type t =
+    @unboxed
+    type rec t =
       | Any('a): t;
     let number = (v: int) => Any(v);
     let equal = Any("equal");
   };
 
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -353,7 +353,7 @@ module FormGroup = {
 };
 
 module FormField = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -367,7 +367,7 @@ module FormField = {
 
 module Checkbox = {
   type on_change = {checked: bool};
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -392,7 +392,7 @@ module Checkbox = {
 };
 
 module Button = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -400,31 +400,31 @@ module Button = {
       ~icon: string=?,
       ~circular: bool=?,
       ~compact: bool=?,
-      ~color: [@bs.string] [
-                | `red
-                | `orange
-                | `yellow
-                | `olive
-                | `green
-                | `teal
-                | `blue
-                | `violet
-                | `purple
-                | `pink
-                | `brown
-                | `grey
-                | `black
+      ~color: @bs.string [
+                | #red
+                | #orange
+                | #yellow
+                | #olive
+                | #green
+                | #teal
+                | #blue
+                | #violet
+                | #purple
+                | #pink
+                | #brown
+                | #grey
+                | #black
               ]
                 =?,
-      ~size: [@bs.string] [
-               | `mini
-               | `tiny
-               | `small
-               | `medium
-               | `large
-               | `big
-               | `huge
-               | `massive
+      ~size: @bs.string [
+               | #mini
+               | #tiny
+               | #small
+               | #medium
+               | #large
+               | #big
+               | #huge
+               | #massive
              ]
                =?,
       ~children: React.element=?
@@ -440,8 +440,8 @@ module FormSelect = {
     let number: int => t;
     let string: string => t;
   } = {
-    [@unboxed]
-    type t =
+    @unboxed
+    type rec t =
       | Any('a): t;
     let boolean = (v: bool) => Any(v);
     let number = (v: int) => Any(v);
@@ -453,7 +453,7 @@ module FormSelect = {
     text: string,
   };
 
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -467,7 +467,7 @@ module FormSelect = {
       ~value: Value.t=?,
       ~disabled: bool=?,
       ~fluid: bool=?,
-      ~options: array(select_option)=?,
+      ~options: array<select_option>=?,
       ~onChange: (ReactEvent.Form.t, select_option) => unit
     ) =>
     React.element =
@@ -475,7 +475,7 @@ module FormSelect = {
 };
 
 module Accordion = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -488,7 +488,7 @@ module Accordion = {
 };
 
 module AccordionTitle = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (
       ~className: string=?,
@@ -503,14 +503,14 @@ module AccordionTitle = {
 };
 
 module AccordionContent = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make:
     (~className: string=?, ~active: bool=?, ~children: React.element) =>
     React.element =
     "AccordionContent";
 };
 module Divider = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make: unit => React.element = "Divider";
 };
 
@@ -525,12 +525,12 @@ module Tab = {
     tabular: bool,
   };
 
-  [@react.component] [@bs.module "semantic-ui-react"]
-  external make: (~menu: menu=?, ~panes: array(pane)) => React.element =
+  @react.component @bs.module("semantic-ui-react")
+  external make: (~menu: menu=?, ~panes: array<pane>) => React.element =
     "Tab";
 };
 
 module TabPane = {
-  [@react.component] [@bs.module "semantic-ui-react"]
+  @react.component @bs.module("semantic-ui-react")
   external make: (~children: React.element) => React.element = "TabPane";
 };
