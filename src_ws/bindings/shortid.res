@@ -1,1 +1,1 @@
-@bs.val @bs.module("shortid") external generate: unit => string = "generate";
+@bs.val @bs.module("shortid") external generate: unit => string = "generate"
