@@ -4,15 +4,20 @@
   "scripts": {
     "format": "dune build @fmt --auto-promote --root .",
     "run": "esy x Re_typescript",
-    "watch": "esy x redemon --paths=src --extensions=re,atd,mll,mly esy x Re_typescript",
-    "watch-test": "esy x redemon --paths=tests,src --extensions=re,atd,mll,mly esy x RunTests.exe",
+    "watch":
+      "esy x redemon --paths=src --extensions=re,atd,mll,mly esy x Re_typescript",
+    "watch-test":
+      "esy x redemon --paths=tests,src --extensions=re,atd,mll,mly esy x RunTests.exe",
     "test": "esy x RunTests.exe",
     "test-u": "esy x RunTests.exe -u",
     "js": "esy dune build ./src/js/re_typescript_js.bc.js",
-    "js-release": "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
-    "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
+    "js-release":
+      "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
+    "release-static":
+      "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },
   "dependencies": {
+    "@opam/async": "v0.14.0",
     "@opam/atdgen": "2.2.1",
     "@opam/containers": "2.8.1",
     "@opam/dune": "*",
@@ -23,6 +28,8 @@
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/ocamlnet": "*",
     "@opam/ppx_tools_versioned": "*",
+    "@opam/websocket": "2.14",
+    "@opam/websocket-async": "2.14",
     "@reason-native/console": "^0.1.0",
     "@reason-native/file-context-printer": "^0.0.3",
     "@reason-native/fp": "^0.0.1",
@@ -41,7 +48,9 @@
   },
   "esy": {
     "build": [
-      ["refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"]
+      [
+        "refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"
+      ]
     ],
     "buildsInSource": "_build",
     "exportedEnv": {

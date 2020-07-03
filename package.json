@@ -38,6 +38,7 @@
     "@monaco-editor/react": "^3.3.0",
     "babel-runtime": "^6.26.0",
     "bs-webworkers": "^0.2.4",
+    "bufferutil": "^4.0.1",
     "emotion": "^10.0.27",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -45,6 +46,8 @@
     "reason-react": "^0.8.0",
     "reason-recoil": "^0.8.0",
     "recoil": "^0.0.8",
-    "semantic-ui-react": "^0.88.2"
+    "semantic-ui-react": "^0.88.2",
+    "utf-8-validate": "^5.0.2",
+    "ws": "^7.3.0"
   }
 }
