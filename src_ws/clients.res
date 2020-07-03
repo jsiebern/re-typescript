@@ -1,7 +1,7 @@
 type t = {
   id: Ws_messages_t.client_id,
   project: Ts_morph.Project.t,
-  files: array<(Ws_messages_t.file_id, string)>,
+  files: array<(Ws_messages_t.file_path)>,
 }
 
 let map = Hashtbl.create(0)
@@ -35,44 +35,46 @@ let create = () => {
 }
 
 let createFile = (~client_id, filePath) => {
-  let fileId = Shortid.generate()
   let client = Hashtbl.find(map, client_id)
   Hashtbl.replace(
     map,
     client_id,
     {
       ...client,
-      files: client.files->Belt.Array.concat([(fileId, filePath)]),
+      files: client.files->Belt.Array.concat([(filePath)]),
     },
   )
-  fileId
+  (filePath)
 }
 
-let setFileContents = (~client_id, ~file_id, contents) => {
+let setFileContents = (~client_id, ~file_path, contents) => {
   open Ts_morph
 
   let client = Hashtbl.find(map, client_id)
   let filePath =
     client.files
-    ->Belt.Array.keep(((f_id, _)) => f_id === file_id)
-    ->Belt.Array.map(snd)
+    ->Belt.Array.keep(((f_path)) => f_path === file_path)
     ->Belt.Array.getExn(0)
 
   let sourceFile = client.project->Project.createSourceFile(filePath, contents)
   sourceFile->SourceFile.saveSync
-  file_id
+  (file_path)
 }
 
-let parse = (~client_id, ~file_id as _) => {
+let parse = (~client_id) => {
   open Ts_morph
   let client = Hashtbl.find(map, client_id)
 
   Preparse.preParse(~project=client.project)
 
-  client.project->Project.getSourceFiles->Belt.Array.forEach(sourceFile => {
-    let node = sourceFile->SourceFile.compilerNodeJson
-    let parsed = Typescript_bs.read_node(node)
+  client.files->Belt.Array.map(((path)) => {
+    let sourceFile = client.project->Project.getSourceFile(path);
+    let node = sourceFile->SourceFile.compilerNodeJson;
+    let parsed = Typescript_bs.read_node(node);
+    (path, parsed->Typescript_bs.write_node->Js.Json.stringify);
+  })->Belt.List.fromArray;
+}
 
-    Js.log(parsed->Typescript_bs.write_node->Js.Json.stringify)
-  })
+let destroy = (~client_id) => {
+  Hashtbl.remove(map, client_id);
 }

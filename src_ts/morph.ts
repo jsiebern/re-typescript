@@ -89,7 +89,6 @@ const recurseType = (type: Type | undefined, level = 0) => {
   // type.getTypeArguments().forEach((t) => recurseType(t, level + 1));
   // type.getUnionTypes().forEach((t) => recurseType(t, level + 1));
 };
-
 const recurse = (node: Node, level = 0) => {
   if (node.getKindName() === 'ArrayType') {
     console.log('\n\n\n');

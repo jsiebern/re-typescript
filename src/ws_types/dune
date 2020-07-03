@@ -1,7 +1,7 @@
 (library
  (name re_typescript_ws_types)
  (public_name re_typescript.ws_types)
- (libraries biniou atdgen yojson)
+ (libraries biniou atdgen yojson lwt)
  (ocamlopt_flags (-linkall)))
 
 (env

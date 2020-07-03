@@ -14,8 +14,10 @@ wss->Server.onConnection(ws => {
     | #Initialize => reply(#Initialized(Clients.create()))
     | #CreateFile((client_id, filePath)) =>
       reply(#FileCreated(Clients.createFile(~client_id, filePath)))
-    | #SetFileContents((client_id, file_id, contents)) =>
-      reply(#FileContentsOk(Clients.setFileContents(~client_id, ~file_id, contents)))
+    | #SetFileContents((client_id, file_path, contents)) =>
+      reply(#FileContentsOk(Clients.setFileContents(~client_id, ~file_path, contents)))
+    | #Parse(client_id) => reply(#ParseOk(Clients.parse(~client_id)))
+    | #Destroy(client_id) => Clients.destroy(~client_id)
     }
   })
 })

@@ -2,5 +2,5 @@
  (name bin)
  (public_name re_typescript)
  (libraries reason re_typescript.base re_typescript.printer
-   re_typescript.ts_parser file-context-printer.lib console.lib pastel.lib)
+   re_typescript.ts_parser re_typescript.ws_client file-context-printer.lib console.lib pastel.lib lwt)
  (ocamlopt_flags (-linkall)))

@@ -1,5 +1,5 @@
-(executable
+(library
  (name re_typescript_ws_client)
- (public_name Client)
+ (public_name re_typescript.ws_client)
  (libraries re_typescript.ws_types yojson console.lib lwt websocket-lwt-unix)
  (ocamlopt_flags (-linkall)))

@@ -1,39 +1,92 @@
+open Lwt.Infix;
 open Re_typescript_base;
 open Re_typescript_fs;
 
-let content = {|
+let files = [
+  (
+    "/root/src/bin.d.ts",
+    {|
 interface A {
-                x: string;
-                y: number;
-            }
-            type B = A | undefined;
-            type keys = keyof B;
-|};
-let global = {|
-|};
+    x: string;
+    y: number;
+    b: boolean;
+}
+// type keys = keyof A;
+  |},
+  ),
+];
 
-let default_path = Fp.absoluteExn("/root/src/bin.d.ts");
-let default_loader: module Loader.T =
-  (module
-   Loader_virtual.Make({
-     let tbl = Hashtbl.create(0);
-     Hashtbl.replace(tbl, default_path, content);
-     Hashtbl.replace(
-       tbl,
-       Fp.absoluteExn("/root/src/import_source.d.ts"),
-       global,
-     );
-   }));
-let default_resolver: module Resolver.T =
-  (module
-   Resolver.Make({
-     let config = {Resolver.loader: default_loader, tsconfig: None};
-   }));
+module Impl =
+  Re_typescript_ws_client.WsClient(
+    {
+      let uri = Uri.of_string("http://127.0.0.1:81");
+    },
+    {
+      let onStateChange = _ => ();
+    },
+  );
 
-let () = {
-  let r_content = ref(None);
-  let r_lexbuf = ref(None);
+module SS = CCSet.Make(String);
+type res = {
+  client_id: string,
+  files: list((string, string)),
+  files_done: SS.t,
+};
+exception Done(res);
+let parse_files = () => {
+  let (send, recv) = Lwt_main.run(Impl.connect());
+  send(`Initialize) |> Lwt.ignore_result;
+  let rec recv_forever = (res: res) =>
+    recv()
+    >>= (
+      maybeValue =>
+        {
+          switch (maybeValue) {
+          | Some(`Initialized(client_id)) =>
+            send(
+              `CreateFile((
+                client_id,
+                res.files |> CCList.get_at_idx_exn(0) |> fst,
+              )),
+            )
+            |> Lwt.map(_ => {...res, client_id})
+          | Some(`FileCreated(path)) =>
+            send(
+              `SetFileContents((
+                res.client_id,
+                path,
+                res.files |> CCList.find(((p, _)) => p == path) |> snd,
+              )),
+            )
+            |> Lwt.map(_ => res)
+          | Some(`FileContentsOk(path)) =>
+            let res = {...res, files_done: res.files_done |> SS.add(path)};
+            switch (
+              res.files
+              |> CCList.find_opt(((p, _)) => !SS.mem(p, res.files_done))
+            ) {
+            | None => send(`Parse(res.client_id)) |> Lwt.map(_ => res)
+            | Some((file, _)) =>
+              send(`CreateFile((res.client_id, file))) |> Lwt.map(_ => res)
+            };
+          | Some(`ParseOk(files)) => Lwt.fail(Done({...res, files}))
+          | _ => Lwt.return(res)
+          };
+        }
+        >>= recv_forever
+    );
+  try(
+    Lwt_main.run(recv_forever({client_id: "", files, files_done: SS.empty}))
+  ) {
+  | Done(res) =>
+    send(`Destroy(res.client_id)) |> Lwt.ignore_result;
+    res;
+  };
+};
 
+let res = parse_files();
+
+let () =
   try(
     {
       print_newline();
@@ -57,15 +110,7 @@ let () = {
             },
             output_type: Bucklescript,
           },
-          ~parser=
-            content => {
-              let lexbuf = Lexing.from_string(content |> CCString.trim);
-              r_content := Some(content);
-              r_lexbuf := Some(lexbuf);
-              Ok(Parser_incr.parse(lexbuf));
-            },
-          ~resolver=default_resolver,
-          default_path,
+          res.files,
         );
       Reason_toolchain.RE.print_implementation_with_comments(
         Format.str_formatter,
@@ -80,12 +125,12 @@ let () = {
   | Syntaxerr.Error(msg) => Console.error(msg)
   | Lexer.SyntaxError(msg) => Console.error(msg)
   | Re_typescript_printer.Tree_utils.Exceptions.Parser_unsupported(msg, pos) =>
-    Console.error(Error.parser_error_with_info(~msg, ~content, pos))
+    Console.error(Error.parser_error_with_info(~msg, ~content="", pos))
   | Parser_incr.Parsing_error(pos) =>
-    Console.error(Error.parser_error_with_info(~content, pos))
+    Console.error(Error.parser_error_with_info(~content="", pos))
   | Parser.Error =>
-    let content = r_content^ |> CCOpt.get_exn;
-    let lexbuf = r_lexbuf^ |> CCOpt.get_exn;
+    let content = "";
+    let lexbuf = Lexing.from_string("");
     Console.error(
       Error.parser_error(
         ~content,
@@ -97,4 +142,3 @@ let () = {
     Console.error(e);
     raise(e);
   };
-};
