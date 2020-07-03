@@ -1,10 +1,5 @@
 (executable
  (name re_typescript_ws_client)
- (public_name re_typescript.ws_client)
- (libraries yojson console.lib pastel.lib async websocket-async)
+ (public_name Client)
+ (libraries re_typescript.ws_types yojson console.lib lwt websocket-lwt-unix)
  (ocamlopt_flags (-linkall)))
-
-; (env
-;  (dev
-;   (flags
-;    (:standard -w -30))))

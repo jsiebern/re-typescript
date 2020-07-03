@@ -17,8 +17,8 @@
       "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },
   "dependencies": {
-    "@opam/async": "v0.14.0",
     "@opam/atdgen": "2.2.1",
+    "@opam/base-unix": "base",
     "@opam/containers": "2.8.1",
     "@opam/dune": "*",
     "@opam/iter": "1.2.1",
@@ -26,15 +26,14 @@
     "@opam/js_of_ocaml-ppx": "3.6.0",
     "@opam/menhir": "*",
     "@opam/ocaml-migrate-parsetree": "*",
-    "@opam/ocamlnet": "*",
     "@opam/ppx_tools_versioned": "*",
-    "@opam/websocket": "2.14",
-    "@opam/websocket-async": "2.14",
+    "@opam/websocket-lwt-unix": "2.14",
     "@reason-native/console": "^0.1.0",
     "@reason-native/file-context-printer": "^0.0.3",
     "@reason-native/fp": "^0.0.1",
     "@reason-native/pastel": "^0.3.0",
     "isexe": "^2.0.0",
+    "lwt": "^1.0.3",
     "pkg": "^4.4.9"
   },
   "devDependencies": {
@@ -42,7 +41,8 @@
     "ocaml": "~4.8.0",
     "@opam/js_of_ocaml-compiler": "3.6.0",
     "refmterr": "~3.3.0",
-    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam",
+    "@opam/ocaml-lsp-server":
+      "ocaml/ocaml-lsp:ocaml-lsp-server.opam#b20c3426c8f4a66cae0e2a8ed2acdf845bb81d1c",
     "@opam/redemon": "ulrikstrid/redemon:redemon.opam",
     "@reason-native/rely": "^3.2.1"
   },

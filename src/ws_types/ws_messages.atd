@@ -1,0 +1,14 @@
+type client_id = string
+type file_id = string
+
+type client_msg = [
+    | Initialize
+    | CreateFile of (client_id * string)
+    | SetFileContents of (client_id * file_id * string)
+]
+
+type server_msg = [
+    | Initialized of client_id
+    | FileCreated of file_id
+    | FileContentsOk of file_id
+]

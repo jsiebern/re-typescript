@@ -1,0 +1,26 @@
+(library
+ (name re_typescript_ws_types)
+ (public_name re_typescript.ws_types)
+ (libraries biniou atdgen yojson)
+ (ocamlopt_flags (-linkall)))
+
+(env
+ (dev
+   (flags
+    (:standard -w -30))))
+
+(rule
+ (targets typescript_t.ml typescript_t.mli typescript_j.ml typescript_j.mli)
+ (deps typescript.atd)
+ (action
+  (progn
+   (run atdgen -t %{deps})
+   (run atdgen -j -j-std %{deps}))))
+
+(rule
+ (targets ws_messages_t.ml ws_messages_t.mli ws_messages_j.ml ws_messages_j.mli)
+ (deps ws_messages.atd)
+ (action
+  (progn
+   (run atdgen -t %{deps})
+   (run atdgen -j -j-std %{deps}))))
