@@ -80,6 +80,8 @@ and ts_base_type =
   | Null
   | Undefined
   | Never
+  | GenericFunction
+  | GenericObject
 /**
     Union types
  */
@@ -107,6 +109,7 @@ and ts_type =
   | Interface(list(ts_field), bool)
   | Tuple(list(ts_type))
   | Array(ts_type)
+  | Set(ts_type)
   | Optional(ts_type)
   | Nullable(ts_type)
   | Reference(ts_type_reference)

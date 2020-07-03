@@ -3,6 +3,19 @@
 
 type node = Typescript_t.node
 
+and node_ArrayType = Typescript_t.node_ArrayType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  elementType: node
+}
+
 and node_BindingElement = Typescript_t.node_BindingElement = {
   pos: int;
   end_: int;
@@ -17,6 +30,23 @@ and node_BindingElement = Typescript_t.node_BindingElement = {
   dotDotDotToken: node option;
   name: node;
   initializer_: node option
+}
+
+and node_CallSignature = Typescript_t.node_CallSignature = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option
 }
 
 and node_EnumDeclaration = Typescript_t.node_EnumDeclaration = {
@@ -68,6 +98,23 @@ and node_FunctionDeclaration = Typescript_t.node_FunctionDeclaration = {
   body: node option
 }
 
+and node_FunctionType = Typescript_t.node_FunctionType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option
+}
+
 and node_Generic = Typescript_t.node_Generic = {
   pos: int;
   end_: int;
@@ -106,6 +153,23 @@ and node_Identifier = Typescript_t.node_Identifier = {
   resolvedType: type_ option;
   escapedText: string;
   originalKeywordKind: int option
+}
+
+and node_IndexSignature = Typescript_t.node_IndexSignature = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option;
+  name: node option
 }
 
 and node_InterfaceDeclaration = Typescript_t.node_InterfaceDeclaration = {
@@ -189,6 +253,20 @@ and node_PropertySignature = Typescript_t.node_PropertySignature = {
   questionToken: node option;
   type_: node option;
   initializer_: node option
+}
+
+and node_QualifiedName = Typescript_t.node_QualifiedName = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  left: node;
+  right: node
 }
 
 and node_SourceFile = Typescript_t.node_SourceFile = {
@@ -281,6 +359,19 @@ and node_TypeReference = Typescript_t.node_TypeReference = {
   resolvedType: type_ option;
   typeArguments: node list option;
   typeName: node
+}
+
+and node_UnionType = Typescript_t.node_UnionType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  types: node list
 }
 
 and node_VariableDeclaration = Typescript_t.node_VariableDeclaration = {
@@ -517,20 +608,6 @@ type node_SignatureDeclarationBase =
   typeArguments: node list option
 }
 
-type node_QualifiedName = Typescript_t.node_QualifiedName = {
-  pos: int;
-  end_: int;
-  kind: int;
-  kindName: string;
-  flags: int;
-  modifiers: node list option;
-  decorators: node list option;
-  resolvedSymbol: symbol option;
-  resolvedType: type_ option;
-  left: node;
-  right: node
-}
-
 type node_NodeWithTypeArguments = Typescript_t.node_NodeWithTypeArguments = {
   pos: int;
   end_: int;
@@ -583,9 +660,17 @@ val read_node :  node Atdgen_codec_runtime.Decode.t
 
 val write_node :  node Atdgen_codec_runtime.Encode.t
 
+val read_node_ArrayType :  node_ArrayType Atdgen_codec_runtime.Decode.t
+
+val write_node_ArrayType :  node_ArrayType Atdgen_codec_runtime.Encode.t
+
 val read_node_BindingElement :  node_BindingElement Atdgen_codec_runtime.Decode.t
 
 val write_node_BindingElement :  node_BindingElement Atdgen_codec_runtime.Encode.t
+
+val read_node_CallSignature :  node_CallSignature Atdgen_codec_runtime.Decode.t
+
+val write_node_CallSignature :  node_CallSignature Atdgen_codec_runtime.Encode.t
 
 val read_node_EnumDeclaration :  node_EnumDeclaration Atdgen_codec_runtime.Decode.t
 
@@ -599,6 +684,10 @@ val read_node_FunctionDeclaration :  node_FunctionDeclaration Atdgen_codec_runti
 
 val write_node_FunctionDeclaration :  node_FunctionDeclaration Atdgen_codec_runtime.Encode.t
 
+val read_node_FunctionType :  node_FunctionType Atdgen_codec_runtime.Decode.t
+
+val write_node_FunctionType :  node_FunctionType Atdgen_codec_runtime.Encode.t
+
 val read_node_Generic :  node_Generic Atdgen_codec_runtime.Decode.t
 
 val write_node_Generic :  node_Generic Atdgen_codec_runtime.Encode.t
@@ -610,6 +699,10 @@ val write_node_HeritageClause :  node_HeritageClause Atdgen_codec_runtime.Encode
 val read_node_Identifier :  node_Identifier Atdgen_codec_runtime.Decode.t
 
 val write_node_Identifier :  node_Identifier Atdgen_codec_runtime.Encode.t
+
+val read_node_IndexSignature :  node_IndexSignature Atdgen_codec_runtime.Decode.t
+
+val write_node_IndexSignature :  node_IndexSignature Atdgen_codec_runtime.Encode.t
 
 val read_node_InterfaceDeclaration :  node_InterfaceDeclaration Atdgen_codec_runtime.Decode.t
 
@@ -630,6 +723,10 @@ val write_node_PropertyDeclaration :  node_PropertyDeclaration Atdgen_codec_runt
 val read_node_PropertySignature :  node_PropertySignature Atdgen_codec_runtime.Decode.t
 
 val write_node_PropertySignature :  node_PropertySignature Atdgen_codec_runtime.Encode.t
+
+val read_node_QualifiedName :  node_QualifiedName Atdgen_codec_runtime.Decode.t
+
+val write_node_QualifiedName :  node_QualifiedName Atdgen_codec_runtime.Encode.t
 
 val read_node_SourceFile :  node_SourceFile Atdgen_codec_runtime.Decode.t
 
@@ -654,6 +751,10 @@ val write_node_TypeParameter :  node_TypeParameter Atdgen_codec_runtime.Encode.t
 val read_node_TypeReference :  node_TypeReference Atdgen_codec_runtime.Decode.t
 
 val write_node_TypeReference :  node_TypeReference Atdgen_codec_runtime.Encode.t
+
+val read_node_UnionType :  node_UnionType Atdgen_codec_runtime.Decode.t
+
+val write_node_UnionType :  node_UnionType Atdgen_codec_runtime.Encode.t
 
 val read_node_VariableDeclaration :  node_VariableDeclaration Atdgen_codec_runtime.Decode.t
 
@@ -746,10 +847,6 @@ val write_node_TypeElement :  node_TypeElement Atdgen_codec_runtime.Encode.t
 val read_node_SignatureDeclarationBase :  node_SignatureDeclarationBase Atdgen_codec_runtime.Decode.t
 
 val write_node_SignatureDeclarationBase :  node_SignatureDeclarationBase Atdgen_codec_runtime.Encode.t
-
-val read_node_QualifiedName :  node_QualifiedName Atdgen_codec_runtime.Decode.t
-
-val write_node_QualifiedName :  node_QualifiedName Atdgen_codec_runtime.Encode.t
 
 val read_node_NodeWithTypeArguments :  node_NodeWithTypeArguments Atdgen_codec_runtime.Decode.t
 

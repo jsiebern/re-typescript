@@ -66,6 +66,8 @@ module Make = (Config: Config) : Ast_generator.T => {
                 "option",
               )
             | Never
+            | GenericFunction
+            | GenericObject
             | Any =>
               gen_config.has_any = true;
               generate_base_type("any");
@@ -74,6 +76,21 @@ module Make = (Config: Config) : Ast_generator.T => {
         td_prepend: None,
         td_append: None,
       }
+    | Set(inner) =>
+      // Todo: Vendor a Set definition
+      let inner_def = generate_type_def(~ctx, ~path, ~parameters, inner);
+      {
+        td_kind: Ptype_abstract,
+        td_type:
+          Some(
+            generate_base_type(
+              ~inner=[inner_def.td_type |> CCOpt.get_exn],
+              "array",
+            ),
+          ),
+        td_prepend: None,
+        td_append: None,
+      };
     | Reference({tr_path_resolved, tr_parameters, tr_path}) =>
       switch (tr_path_resolved) {
       | None =>

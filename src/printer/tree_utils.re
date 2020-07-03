@@ -156,6 +156,9 @@ let rec get_union_type_name = (um_type: ts_type) => {
   | Base(Null) => "null"
   | Base(Undefined) => "undefined"
   | Base(Any) => "any"
+  | Base(GenericFunction) => "func"
+  | Base(GenericObject) => "obj"
+  | Set(t) => Printf.sprintf("set_%s", get_union_type_name(t))
   | Function(_) => "func"
   | Reference({tr_path_resolved, _}) =>
     tr_path_resolved
@@ -348,6 +351,9 @@ let rec ts_to_string = (t: ts_type) =>
   | Base(Null) => "Base_Null"
   | Base(Never) => "Base_Never"
   | Base(Undefined) => "Base_Undefined"
+  | Base(GenericFunction) => "Base_GenericFunction"
+  | Base(GenericObject) => "Base_GenericObject"
+  | Set(t) => Printf.sprintf("Set<%s>", ts_to_string(t))
   | Interface(f, extended) =>
     Printf.sprintf(
       "Interface (%i, extended: %s, fields: %s)",

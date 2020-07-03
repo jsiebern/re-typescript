@@ -163,7 +163,7 @@ type node = [
   | `GlobalKeyword of node_Generic
   | `BigIntKeyword of node_Generic
   | `OfKeyword of node_Generic
-  | `QualifiedName of node_Generic
+  | `QualifiedName of node_QualifiedName
   | `ComputedPropertyName of node_Generic
   | `Parameter of node_Parameter
   | `Decorator of node_Generic
@@ -174,20 +174,20 @@ type node = [
   | `Constructor of node_Generic
   | `GetAccessor of node_Generic
   | `SetAccessor of node_Generic
-  | `CallSignature of node_Generic
+  | `CallSignature of node_CallSignature
   | `ConstructSignature of node_Generic
-  | `IndexSignature of node_Generic
+  | `IndexSignature of node_IndexSignature
   | `TypePredicate of node_Generic
   | `TypeReference of node_TypeReference
-  | `FunctionType of node_Generic
+  | `FunctionType of node_FunctionType
   | `ConstructorType of node_Generic
   | `TypeQuery of node_Generic
   | `TypeLiteral of node_TypeLiteral
-  | `ArrayType of node_Generic
+  | `ArrayType of node_ArrayType
   | `TupleType of node_Generic
   | `OptionalType of node_Generic
   | `RestType of node_Generic
-  | `UnionType of node_Generic
+  | `UnionType of node_UnionType
   | `IntersectionType of node_Generic
   | `ConditionalType of node_Generic
   | `InferType of node_Generic
@@ -341,6 +341,19 @@ type node = [
   | `Count of node_Generic
 ]
 
+and node_ArrayType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  elementType: node
+}
+
 and node_BindingElement = {
   pos: int;
   end_: int;
@@ -355,6 +368,23 @@ and node_BindingElement = {
   dotDotDotToken: node option;
   name: node;
   initializer_: node option
+}
+
+and node_CallSignature = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option
 }
 
 and node_EnumDeclaration = {
@@ -406,6 +436,23 @@ and node_FunctionDeclaration = {
   body: node option
 }
 
+and node_FunctionType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  name: node option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option
+}
+
 and node_Generic = {
   pos: int;
   end_: int;
@@ -444,6 +491,23 @@ and node_Identifier = {
   resolvedType: type_ option;
   escapedText: string;
   originalKeywordKind: int option
+}
+
+and node_IndexSignature = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeParameters: node list option;
+  parameters: node list;
+  type_: node option;
+  typeArguments: node list option;
+  name: node option
 }
 
 and node_InterfaceDeclaration = {
@@ -527,6 +591,20 @@ and node_PropertySignature = {
   questionToken: node option;
   type_: node option;
   initializer_: node option
+}
+
+and node_QualifiedName = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  left: node;
+  right: node
 }
 
 and node_SourceFile = {
@@ -619,6 +697,19 @@ and node_TypeReference = {
   resolvedType: type_ option;
   typeArguments: node list option;
   typeName: node
+}
+
+and node_UnionType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  types: node list
 }
 
 and node_VariableDeclaration = {
@@ -876,20 +967,6 @@ type node_SignatureDeclarationBase = {
   parameters: node list;
   type_: node option;
   typeArguments: node list option
-}
-
-type node_QualifiedName = {
-  pos: int;
-  end_: int;
-  kind: int;
-  kindName: string;
-  flags: int;
-  modifiers: node list option;
-  decorators: node list option;
-  resolvedSymbol: symbol option;
-  resolvedType: type_ option;
-  left: node;
-  right: node
 }
 
 type node_NodeWithTypeArguments = {

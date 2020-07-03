@@ -28,6 +28,7 @@ module Symbol = {
 module Type = {
   @bs.set external setKindName: (type_, string) => unit = "kindName";
   @bs.set external setNodeKind: (type_, string) => unit = "nodeKind";
+  @bs.set external setArrayElementType: (type_, option<type_>) => unit = "arrayElementType";
 
   @bs.get
   external target: type_ => option<Js.Nullable.t<type_>> = "target";
