@@ -9,4 +9,6 @@ $atdg src_js/types/bridge.atd -t
 $atdg src_js/types/bridge.atd -bs
 $atdg src_js/types/parse_info.atd -t
 $atdg src_js/types/parse_info.atd -bs
-yarn bs:build
+
+cd src_ws
+./types.sh

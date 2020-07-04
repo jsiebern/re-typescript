@@ -8,3 +8,5 @@ $atdg types/typescript.atd -bs
 
 cp types/ws_messages.atd ../src/ws_types
 cp types/typescript.atd ../src/ws_types
+
+yarn bs:build

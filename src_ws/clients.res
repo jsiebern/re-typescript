@@ -1,20 +1,20 @@
+open Ts_morph
+module StringSet = Belt.Set.String
+
 type t = {
   id: Ws_messages_t.client_id,
-  project: Ts_morph.Project.t,
-  files: array<(Ws_messages_t.file_path)>,
+  project: Project.t,
+  files: StringSet.t,
 }
 
 let map = Hashtbl.create(0)
 
-let create = () => {
-  open Ts_morph
-
-  let newId = Shortid.generate()
+let create = (~client_id) => {
   Hashtbl.add(
     map,
-    newId,
+    client_id,
     {
-      id: newId,
+      id: client_id,
       project: Project.make(
         Some(
           Project.Config.make(
@@ -28,53 +28,61 @@ let create = () => {
           ),
         ),
       ),
-      files: [],
+      files: StringSet.empty,
     },
   )
-  newId
+  client_id
 }
 
-let createFile = (~client_id, filePath) => {
+let createFile = (~client_id, file_path) => {
   let client = Hashtbl.find(map, client_id)
-  Hashtbl.replace(
-    map,
-    client_id,
-    {
-      ...client,
-      files: client.files->Belt.Array.concat([(filePath)]),
-    },
-  )
-  (filePath)
+  Hashtbl.replace(map, client_id, {...client, files: client.files->StringSet.add(file_path)})
+  file_path
+}
+
+let deleteFile = (~client_id, file_path) => {
+  let client = Hashtbl.find(map, client_id)
+  Hashtbl.replace(map, client_id, {...client, files: client.files->StringSet.remove(file_path)})
+  switch client.project->Project.getSourceFile(file_path) {
+  | None => ()
+  | Some(sourceFile) => client.project->Project.removeSourceFile(sourceFile)
+  }
+  file_path
 }
 
 let setFileContents = (~client_id, ~file_path, contents) => {
-  open Ts_morph
-
   let client = Hashtbl.find(map, client_id)
-  let filePath =
-    client.files
-    ->Belt.Array.keep(((f_path)) => f_path === file_path)
-    ->Belt.Array.getExn(0)
 
-  let sourceFile = client.project->Project.createSourceFile(filePath, contents)
+  let sourceFile = switch client.project->Project.getSourceFile(file_path) {
+  | None => client.project->Project.createSourceFile(file_path, contents)
+  | Some(sourceFile) =>
+    client.project->Project.removeSourceFile(sourceFile)
+    client.project->Project.createSourceFile(file_path, contents)
+  }
   sourceFile->SourceFile.saveSync
-  (file_path)
+  file_path
 }
 
 let parse = (~client_id) => {
-  open Ts_morph
   let client = Hashtbl.find(map, client_id)
 
   Preparse.preParse(~project=client.project)
 
-  client.files->Belt.Array.map(((path)) => {
-    let sourceFile = client.project->Project.getSourceFile(path);
-    let node = sourceFile->SourceFile.compilerNodeJson;
-    let parsed = Typescript_bs.read_node(node);
-    (path, parsed->Typescript_bs.write_node->Js.Json.stringify);
-  })->Belt.List.fromArray;
+  client.files
+  ->Belt.Set.String.toArray
+  ->Belt.Array.keepMap(file_path =>
+    client.project
+    ->Project.getSourceFile(file_path)
+    ->Belt.Option.map(sourceFile => (file_path, sourceFile))
+  )
+  ->Belt.Array.map(((file_path, sourceFile)) => {
+    let node = sourceFile->SourceFile.compilerNodeJson
+    let parsed = Typescript_bs.read_node(node)
+    (file_path, parsed->Typescript_bs.write_node->Js.Json.stringify)
+  })
+  ->Belt.List.fromArray
 }
 
 let destroy = (~client_id) => {
-  Hashtbl.remove(map, client_id);
+  Hashtbl.remove(map, client_id)
 }

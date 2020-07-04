@@ -15,8 +15,7 @@ module type T =
         (
           Ws_messages_t.client_msg => Lwt.t(unit),
           unit => Lwt.t(option(Ws_messages_t.server_msg)),
+          unit => Lwt.t(unit),
         ),
       );
-    // let onStateChange: (state => unit) => unit;
-    // let isReady: unit => Lwt.t(unit);
   };

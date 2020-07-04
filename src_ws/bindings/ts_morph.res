@@ -149,7 +149,9 @@ module Project = {
   @bs.send
   external getSourceFiles: t => array<SourceFile.t> = "getSourceFiles"
   @bs.send
-  external getSourceFile: (t, string) => SourceFile.t = "getSourceFile"
+  external getSourceFile: (t, string) => option<SourceFile.t> = "getSourceFile"
+  @bs.send
+  external removeSourceFile: (t, SourceFile.t) => unit = "removeSourceFile"
   @bs.send external getTypeChecker: t => TypeChecker.t = "getTypeChecker"
 
   @bs.new @bs.module("ts-morph")

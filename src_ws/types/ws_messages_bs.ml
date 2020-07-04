@@ -51,13 +51,18 @@ let write_server_msg = (
     ) x
     | `FileCreated x ->
     Atdgen_codec_runtime.Encode.constr1 "FileCreated" (
-      Atdgen_codec_runtime.Encode.tuple1
-        (
-          write_file_path
-        )
+      write_file_path
     ) x
     | `FileContentsOk x ->
     Atdgen_codec_runtime.Encode.constr1 "FileContentsOk" (
+      write_file_path
+    ) x
+    | `FileUpdated x ->
+    Atdgen_codec_runtime.Encode.constr1 "FileUpdated" (
+      write_file_path
+    ) x
+    | `FileDeleted x ->
+    Atdgen_codec_runtime.Encode.constr1 "FileDeleted" (
       write_file_path
     ) x
     | `ParseOk x ->
@@ -85,10 +90,7 @@ let read_server_msg = (
       "FileCreated"
       ,
         `Decode (
-        Atdgen_codec_runtime.Decode.tuple1
-          (
-            read_file_path
-          )
+        read_file_path
         |> Atdgen_codec_runtime.Decode.map (fun x -> ((`FileCreated x) : _))
         )
       )
@@ -99,6 +101,24 @@ let read_server_msg = (
         `Decode (
         read_file_path
         |> Atdgen_codec_runtime.Decode.map (fun x -> ((`FileContentsOk x) : _))
+        )
+      )
+    ;
+      (
+      "FileUpdated"
+      ,
+        `Decode (
+        read_file_path
+        |> Atdgen_codec_runtime.Decode.map (fun x -> ((`FileUpdated x) : _))
+        )
+      )
+    ;
+      (
+      "FileDeleted"
+      ,
+        `Decode (
+        read_file_path
+        |> Atdgen_codec_runtime.Decode.map (fun x -> ((`FileDeleted x) : _))
         )
       )
     ;
@@ -142,6 +162,42 @@ let write_client_msg = (
           Atdgen_codec_runtime.Encode.string
         )
     ) x
+    | `CreateFileWithConent x ->
+    Atdgen_codec_runtime.Encode.constr1 "CreateFileWithConent" (
+      Atdgen_codec_runtime.Encode.tuple3
+        (
+          write_client_id
+        )
+        (
+          write_file_path
+        )
+        (
+          Atdgen_codec_runtime.Encode.string
+        )
+    ) x
+    | `UpdateFile x ->
+    Atdgen_codec_runtime.Encode.constr1 "UpdateFile" (
+      Atdgen_codec_runtime.Encode.tuple3
+        (
+          write_client_id
+        )
+        (
+          write_file_path
+        )
+        (
+          Atdgen_codec_runtime.Encode.string
+        )
+    ) x
+    | `DeleteFile x ->
+    Atdgen_codec_runtime.Encode.constr1 "DeleteFile" (
+      Atdgen_codec_runtime.Encode.tuple2
+        (
+          write_client_id
+        )
+        (
+          write_file_path
+        )
+    ) x
     | `Parse x ->
     Atdgen_codec_runtime.Encode.constr1 "Parse" (
       write_client_id
@@ -149,6 +205,16 @@ let write_client_msg = (
     | `Destroy x ->
     Atdgen_codec_runtime.Encode.constr1 "Destroy" (
       write_client_id
+    ) x
+    | `QuickParse x ->
+    Atdgen_codec_runtime.Encode.constr1 "QuickParse" (
+      Atdgen_codec_runtime.Encode.tuple2
+        (
+          write_file_path
+        )
+        (
+          Atdgen_codec_runtime.Encode.string
+        )
     ) x
   )
 )
@@ -195,6 +261,57 @@ let read_client_msg = (
       )
     ;
       (
+      "CreateFileWithConent"
+      ,
+        `Decode (
+        Atdgen_codec_runtime.Decode.tuple3
+          (
+            read_client_id
+          )
+          (
+            read_file_path
+          )
+          (
+            Atdgen_codec_runtime.Decode.string
+          )
+        |> Atdgen_codec_runtime.Decode.map (fun x -> ((`CreateFileWithConent x) : _))
+        )
+      )
+    ;
+      (
+      "UpdateFile"
+      ,
+        `Decode (
+        Atdgen_codec_runtime.Decode.tuple3
+          (
+            read_client_id
+          )
+          (
+            read_file_path
+          )
+          (
+            Atdgen_codec_runtime.Decode.string
+          )
+        |> Atdgen_codec_runtime.Decode.map (fun x -> ((`UpdateFile x) : _))
+        )
+      )
+    ;
+      (
+      "DeleteFile"
+      ,
+        `Decode (
+        Atdgen_codec_runtime.Decode.tuple2
+          (
+            read_client_id
+          )
+          (
+            read_file_path
+          )
+        |> Atdgen_codec_runtime.Decode.map (fun x -> ((`DeleteFile x) : _))
+        )
+      )
+    ;
+      (
       "Parse"
       ,
         `Decode (
@@ -209,6 +326,21 @@ let read_client_msg = (
         `Decode (
         read_client_id
         |> Atdgen_codec_runtime.Decode.map (fun x -> ((`Destroy x) : _))
+        )
+      )
+    ;
+      (
+      "QuickParse"
+      ,
+        `Decode (
+        Atdgen_codec_runtime.Decode.tuple2
+          (
+            read_file_path
+          )
+          (
+            Atdgen_codec_runtime.Decode.string
+          )
+        |> Atdgen_codec_runtime.Decode.map (fun x -> ((`QuickParse x) : _))
         )
       )
   ]

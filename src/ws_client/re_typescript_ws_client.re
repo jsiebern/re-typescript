@@ -84,7 +84,7 @@ module WsClient = (Uri: {let uri: Uri.t;}) : Types.Client_interface.T =>
           };
 
           let receive = () => recv() >>= reactToMessage(send);
-          Lwt.return((sendMessage, receive));
+          Lwt.return((sendMessage, receive, () => send(Frame.close(1000))));
         }
       );
     };

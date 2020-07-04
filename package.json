@@ -14,7 +14,8 @@
     "start": "cd docs; python -m SimpleHTTPServer",
     "ts": "yarn ts-node -P src_ts/tsconfig.json src_ts/morph.ts",
     "ast": "node lib/js/src_ts/bs/test.bs.js",
-    "format": "./_napkin/format_all.sh src_ws"
+    "format": "./_napkin/format_all.sh src_ws",
+    "server": "yarn bs:build; node src_ws/service.bs.js"
   },
   "devDependencies": {
     "@minima.app/re-css": "^1.0.1",
