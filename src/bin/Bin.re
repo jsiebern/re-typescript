@@ -5,12 +5,26 @@ open Re_typescript_fs;
 let file = (
   "/root/src/bin.d.ts",
   {|
-interface A {
-    x: string;
-    y: number;
-    b: boolean;
-}
-// type keys = keyof A;
+// interface IPromise<X> {
+//   field: X;
+// }
+
+// type ResouceResult<T> = T & {
+//   promise: IPromise<T>;
+//   resolved: boolean;
+// };
+
+
+// interface i_1<C, A = string> { field1: A, fieldx: C };
+//         interface i_2<B, A, B> extends i_1<A> { field2: B }
+//         type x = i_2<boolean, string>;
+//         type y = i_1<string>;
+
+
+
+
+
+
   |},
 );
 
@@ -36,6 +50,9 @@ let files =
           () =>
             switch (message) {
             | Some(`ParseOk(parsed)) => Lwt.return(parsed)
+            | Some(`ParseError(e)) =>
+              Console.log("\n\n" ++ e ++ "\n\n");
+              Lwt.fail_with("ParseError");
             | Some(_) => Lwt.fail_invalid_arg("Unexpected message type")
             | None => Lwt.fail(Not_found)
             }

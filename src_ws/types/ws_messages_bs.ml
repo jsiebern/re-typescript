@@ -72,6 +72,10 @@ let write_server_msg = (
           write__1
         )
     ) x
+    | `ParseError x ->
+    Atdgen_codec_runtime.Encode.constr1 "ParseError" (
+      Atdgen_codec_runtime.Encode.string
+    ) x
   )
 )
 let read_server_msg = (
@@ -131,6 +135,15 @@ let read_server_msg = (
             read__1
           )
         |> Atdgen_codec_runtime.Decode.map (fun x -> ((`ParseOk x) : _))
+        )
+      )
+    ;
+      (
+      "ParseError"
+      ,
+        `Decode (
+        Atdgen_codec_runtime.Decode.string
+        |> Atdgen_codec_runtime.Decode.map (fun x -> ((`ParseError x) : _))
         )
       )
   ]

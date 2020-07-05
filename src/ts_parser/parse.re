@@ -604,6 +604,9 @@ and parse__sourceFile = (sourceFile: Ts.node_SourceFile) => {
      });
 }
 and parse = (source: string) => {
+  Hashtbl.clear(types);
+  order.lst = [];
+
   switch (Typescript_j.node_of_string(source)) {
   | `SourceFile(sf) => parse__sourceFile(sf)
   | _ => raise(Not_found)

@@ -2,14 +2,22 @@
  (name re_typescript_test_lib)
  (public_name re_typescript.test_lib)
  (ocamlopt_flags -linkall -g)
- (libraries reason rely.lib re_typescript.base re_typescript.printer
+ (libraries reason rely.lib
+  re_typescript.base
+  re_typescript.printer websocket-lwt-unix
+  lwt re_typescript.ws_client
+  re_typescript.ts_parser
    console.lib containers)
  (modules
-  (:standard \ RunTests)))
-
+  (:standard \ RunTests))
+  (preprocess
+  (pps lwt_ppx)))
+  
 (executable
  (package re_typescript)
  (name RunTests)
  (public_name RunTests.exe)
- (libraries re_typescript.test_lib)
- (modules RunTests))
+ (libraries re_typescript.test_lib lwt lwt.unix logs logs.fmt logs.lwt websocket-lwt-unix)
+ (modules RunTests) 
+ (preprocess
+  (pps lwt_ppx)))

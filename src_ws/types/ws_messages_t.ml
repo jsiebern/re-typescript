@@ -12,6 +12,7 @@ type server_msg = [
   | `FileUpdated of file_path
   | `FileDeleted of file_path
   | `ParseOk of ((file_path * string) list)
+  | `ParseError of string
 ]
 
 type client_msg = [

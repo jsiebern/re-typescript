@@ -24,8 +24,12 @@
     "@opam/iter": "1.2.1",
     "@opam/js_of_ocaml": "3.6.0",
     "@opam/js_of_ocaml-ppx": "3.6.0",
+    "@opam/logs": "0.7.0",
+    "@opam/lwt": "5.3.0",
+    "@opam/lwt_ppx": "2.0.1",
     "@opam/menhir": "*",
     "@opam/ocaml-migrate-parsetree": "*",
+    "@opam/ppx_tools": "6.2",
     "@opam/ppx_tools_versioned": "*",
     "@opam/websocket-lwt-unix": "2.14",
     "@reason-native/console": "^0.1.0",
@@ -33,7 +37,6 @@
     "@reason-native/fp": "^0.0.1",
     "@reason-native/pastel": "^0.3.0",
     "isexe": "^2.0.0",
-    "lwt": "^1.0.3",
     "pkg": "^4.4.9"
   },
   "devDependencies": {

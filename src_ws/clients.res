@@ -68,19 +68,27 @@ let parse = (~client_id) => {
 
   Preparse.preParse(~project=client.project)
 
-  client.files
-  ->Belt.Set.String.toArray
-  ->Belt.Array.keepMap(file_path =>
+  let diagnostics =
     client.project
-    ->Project.getSourceFile(file_path)
-    ->Belt.Option.map(sourceFile => (file_path, sourceFile))
-  )
-  ->Belt.Array.map(((file_path, sourceFile)) => {
-    let node = sourceFile->SourceFile.compilerNodeJson
-    let parsed = Typescript_bs.read_node(node)
-    (file_path, parsed->Typescript_bs.write_node->Js.Json.stringify)
-  })
-  ->Belt.List.fromArray
+    ->Project.getPreEmitDiagnostics
+    ->Project.formatDiagnosticsWithColorAndContext(client.project, _)
+    ->Js.String.trim
+
+  let file_list =
+    client.files
+    ->Belt.Set.String.toArray
+    ->Belt.Array.keepMap(file_path =>
+      client.project
+      ->Project.getSourceFile(file_path)
+      ->Belt.Option.map(sourceFile => (file_path, sourceFile))
+    )
+    ->Belt.Array.map(((file_path, sourceFile)) => {
+      let node = sourceFile->SourceFile.compilerNodeJson
+      let parsed = Typescript_bs.read_node(node)
+      (file_path, parsed->Typescript_bs.write_node->Js.Json.stringify)
+    })
+    ->Belt.List.fromArray
+  diagnostics == "" ? Ok(file_list) : Error(diagnostics)
 }
 
 let destroy = (~client_id) => {

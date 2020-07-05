@@ -19,8 +19,7 @@ function copyFile(source, destination) {
 async function app() {
   const base_path = path.resolve(
     __dirname.split("re-typescript/")[0] + "re-typescript/",
-    "src_ts",
-    "bs",
+    "src_ws",
     "types"
   );
   const copyPaths = [
