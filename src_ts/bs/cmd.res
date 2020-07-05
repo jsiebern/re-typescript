@@ -22,7 +22,7 @@ let diagnostics =
   ->Project.formatDiagnosticsWithColorAndContext(project, _);
 Js.log(diagnostics);
 
-Preparse.preParse(~project=Runtime.project);
+Preparse.preParse(Runtime.project);
 
 project
 ->Project.getSourceFiles

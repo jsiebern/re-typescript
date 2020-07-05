@@ -1,8 +1,3 @@
-let x = ""
-if x == "x" {
-  Js.log("fu")
-}
-
 module TypeChecker = {
   type t
 
@@ -112,12 +107,21 @@ module SourceFile = {
   external toJson: t => Js.Json.t = "%identity"
   external toNode: t => Node.t = "%identity"
   @bs.send external saveSync: t => unit = "saveSync"
+  @bs.send external refreshFromFileSystemSync: t => unit = "refreshFromFileSystemSync"
   @bs.get external compilerNode: t => Typescript_raw.node = "compilerNode"
   @bs.get external compilerNodeJson: t => Js.Json.t = "compilerNode"
+  @bs.send external getFilePath: t => string = "getFilePath";
 }
 
 module Diagnostics = {
   type t
+}
+
+module FileSystem = {
+  type t
+
+  @bs.send external readFileSync: (t, string) => string = "readFileSync"
+  @bs.send external writeFileSync: (t, string, string) => unit = "writeFileSync"
 }
 
 module Project = {
@@ -153,6 +157,8 @@ module Project = {
   @bs.send
   external removeSourceFile: (t, SourceFile.t) => unit = "removeSourceFile"
   @bs.send external getTypeChecker: t => TypeChecker.t = "getTypeChecker"
+  @bs.send external getFileSystem: t => FileSystem.t = "getFileSystem"
+  @bs.send external saveSync: t => unit = "saveSync";
 
   @bs.new @bs.module("ts-morph")
   external make: option<Config.t> => t = "Project"

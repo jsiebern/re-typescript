@@ -178,10 +178,10 @@ let rec visitNode = (. node: Node.t) => {
   node->Node.getChildren->Belt.Array.forEachU(visitNode)
 }
 
-let preParse = (~project) => {
+let preParse = (~sourceFiles=[], project) => {
   Set.clear(idCache)
-
-  project->Project.getSourceFiles->Belt.Array.forEachU((. sourceFile) => {
+  
+  (sourceFiles->Belt.Array.length === 0 ? project->Project.getSourceFiles : sourceFiles)->Belt.Array.forEachU((. sourceFile) => {
     sourceFile
     ->SourceFile.toNode
     ->Node.compilerNode

@@ -80,10 +80,11 @@ wss->Server.onConnection(ws => {
       reply(#FileCreated(Clients.createFile(~client_id, file_path)))
     | #SetFileContents((client_id, file_path, contents)) =>
       reply(#FileContentsOk(Clients.setFileContents(~client_id, ~file_path, contents)))
-    | #Parse(client_id) => switch (Clients.parse(~client_id)) {
+    | #Parse(client_id) =>
+      switch Clients.parse(~client_id) {
       | Ok(file_list) => reply(#ParseOk(file_list))
       | Error(e) => reply(#ParseError(e))
-    }
+      }
     | #Destroy(client_id) => Clients.destroy(~client_id)
     | #CreateFileWithConent((client_id, file_path, contents)) =>
       let file_path = Clients.createFile(~client_id, file_path)
@@ -93,10 +94,10 @@ wss->Server.onConnection(ws => {
     | #DeleteFile((client_id, file_path)) =>
       reply(#FileUpdated(Clients.deleteFile(~client_id, file_path)))
     | #QuickParse((file_path, contents)) =>
-      switch (Clients.quickParse(~file_path, contents)) {
+      switch Clients.quickParse(~file_path, contents) {
       | Ok(file_list) => reply(#ParseOk(file_list))
       | Error(e) => reply(#ParseError(e))
-    }
+      }
     }
   })
 })

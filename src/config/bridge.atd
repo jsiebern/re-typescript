@@ -38,7 +38,7 @@ type example_meta = {
 
 type example_tree = [
   | Folder of (string * example_tree list)
-  | File of string
+  | File of (string * string)
 ] <ocaml repr="classic">
 
 type example = {
@@ -48,12 +48,16 @@ type example = {
 }
 type example_list = example list
 
-type worker_request = [
+type worker_request_payload = [
   | Parse of parse_request
   | ExampleList
 ] <ocaml repr="classic">
 
-type worker_response = [
+type worker_request = (string * worker_request_payload)
+
+type worker_response_payload = [
   | Res_Parse of parse_result
   | Res_ExampleList of example_list
 ] <ocaml repr="classic">
+
+type worker_response = (string * worker_response_payload)

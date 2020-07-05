@@ -1,4 +1,1 @@
-ReactDOMRe.renderToElementWithId(
-  <Recoil.RecoilRoot> <Layout /> </Recoil.RecoilRoot>,
-  "app",
-);
+ReactDOMRe.renderToElementWithId(<Recoil.RecoilRoot> <Layout /> </Recoil.RecoilRoot>, "app")

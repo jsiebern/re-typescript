@@ -11,6 +11,7 @@ const project = new Project({
     noEmitOnError: false,
   },
 });
+project.saveSync;
 // const created = project.createSourceFile(
 //   'foo.d.ts',
 //   `
@@ -44,6 +45,7 @@ const created2 = project.createSourceFile(
   }
 `
 );
+created2.getFilePath();
 created2.saveSync();
 
 // type

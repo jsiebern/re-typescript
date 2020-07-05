@@ -36,7 +36,12 @@ let rec example_tree = (~exclude=[], path) => {
          Some(
            File.is_directory(sub_path_str)
              ? Bridge.Folder((base_name, example_tree(sub_path)))
-             : Bridge.File(base_name),
+             : Bridge.File((
+                 base_name,
+                 Js_of_ocaml.Sys_js.read_file(
+                   Fp.append(path, base_name) |> Fp.toString,
+                 ),
+               )),
          );
        };
      });
