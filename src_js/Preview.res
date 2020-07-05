@@ -47,7 +47,7 @@ module Container = %styled.div((~h) => `
 
 let useParsedResult = () => {
   let result = Recoil.useRecoilValueLoadable(State.parse_result);
-  let (res, setRes) = React.useReducer((_, v) => v, Ok(("", None)));
+  let (res, setRes) = React.useReducer((_, v) => v, Ok(("", "")));
 
   React.useEffect1(
     () => {

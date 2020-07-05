@@ -2,7 +2,7 @@ exception Unexpected_worker_result;
 
 // --- Global
 let language = Recoil.atom({key: "language", default: Bridge_bs.Reason});
-let ts_source = Recoil.atom({key: "ts_source", default: None});
+let ts_source = Recoil.atom({key: "ts_source", default: ""});
 
 let config = Recoil.atom({key: "config", default: Sync.config});
 let config_open = Recoil.atom({key: "config_open", default: false});
@@ -29,7 +29,7 @@ let selected_file =
     set: ({get, set}, value) =>
       if (get(selected).file != value) {
         set(source_salt, Js.Math.random());
-        set(ts_source, None);
+        set(ts_source, "");
         set(selected, {...get(selected), file: value});
       },
   });

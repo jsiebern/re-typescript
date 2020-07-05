@@ -94,3 +94,13 @@ let parse = (~client_id) => {
 let destroy = (~client_id) => {
   Hashtbl.remove(map, client_id)
 }
+
+let quickParse = (~file_path, contents) => {
+  let client_id = Shortid.generate()
+      let client_id = create(~client_id)
+      let file_path = createFile(~client_id, file_path)
+      setFileContents(~client_id, ~file_path, contents)->ignore
+      let parsed = parse(~client_id)
+      destroy(~client_id)
+      parsed
+}

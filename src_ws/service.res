@@ -93,13 +93,7 @@ wss->Server.onConnection(ws => {
     | #DeleteFile((client_id, file_path)) =>
       reply(#FileUpdated(Clients.deleteFile(~client_id, file_path)))
     | #QuickParse((file_path, contents)) =>
-      let client_id = Shortid.generate()
-      let client_id = Clients.create(~client_id)
-      let file_path = Clients.createFile(~client_id, file_path)
-      Clients.setFileContents(~client_id, ~file_path, contents)->ignore
-      let parsed = Clients.parse(~client_id)
-      Clients.destroy(~client_id)
-      switch (parsed) {
+      switch (Clients.quickParse(~file_path, contents)) {
       | Ok(file_list) => reply(#ParseOk(file_list))
       | Error(e) => reply(#ParseError(e))
     }

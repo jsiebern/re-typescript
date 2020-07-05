@@ -23,8 +23,8 @@ module EditorWindow = {
     React.useEffect1(
       () => {
         switch (parsedResult) {
-        | Ok((_, Some(nSrc))) =>
-          setSrc(_ => Some(nSrc));
+        | Ok((_, nSrc)) when nSrc != "" =>
+          setSrc(_ => nSrc);
           setValue(nSrc);
         | _ => ()
         };
@@ -41,8 +41,8 @@ module EditorWindow = {
           Js.Global.setTimeout(
             () => {
               switch (value, src) {
-              | ("", None) => ()
-              | _ => setSrc(_ => Some(value))
+              | ("", "") => ()
+              | _ => setSrc(_ => value)
               }
             },
             600,

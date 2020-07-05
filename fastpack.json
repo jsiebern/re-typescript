@@ -1,5 +1,5 @@
 {
-  "entryPoints": ["lib/js/src_js/Entry.bs.js"],
+  "entryPoints": ["src_js/Entry.bs.js"],
   "outputDir": "docs/index",
   "outputFilename": "index.js"
 }

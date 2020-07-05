@@ -4,17 +4,13 @@
   "scripts": {
     "format": "dune build @fmt --auto-promote --root .",
     "run": "esy x Re_typescript",
-    "watch":
-      "esy x redemon --paths=src --extensions=re,atd,mll,mly esy x Re_typescript",
-    "watch-test":
-      "esy x redemon --paths=tests,src --extensions=re,atd,mll,mly esy x RunTests.exe",
+    "watch": "esy x redemon --paths=src --extensions=re,atd,mll,mly esy x Re_typescript",
+    "watch-test": "esy x redemon --paths=tests,src --extensions=re,atd,mll,mly esy x RunTests.exe",
     "test": "esy x RunTests.exe",
     "test-u": "esy x RunTests.exe -u",
     "js": "esy dune build ./src/js/re_typescript_js.bc.js",
-    "js-release":
-      "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
-    "release-static":
-      "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
+    "js-release": "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
+    "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },
   "dependencies": {
     "@opam/atdgen": "2.2.1",
@@ -44,16 +40,13 @@
     "ocaml": "~4.8.0",
     "@opam/js_of_ocaml-compiler": "3.6.0",
     "refmterr": "~3.3.0",
-    "@opam/ocaml-lsp-server":
-      "ocaml/ocaml-lsp:ocaml-lsp-server.opam#b20c3426c8f4a66cae0e2a8ed2acdf845bb81d1c",
+    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#ce1840355541ff60b999e39388835027f89d8798",
     "@opam/redemon": "ulrikstrid/redemon:redemon.opam",
     "@reason-native/rely": "^3.2.1"
   },
   "esy": {
     "build": [
-      [
-        "refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"
-      ]
+      ["refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"]
     ],
     "buildsInSource": "_build",
     "exportedEnv": {

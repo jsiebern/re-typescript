@@ -14,7 +14,7 @@
     "start": "cd docs; python -m SimpleHTTPServer",
     "ts": "yarn ts-node -P src_ts/tsconfig.json src_ts/morph.ts",
     "ast": "node lib/js/src_ts/bs/test.bs.js",
-    "format": "./_napkin/format_all.sh src_ws",
+    "format": "./_napkin/format_all.sh src_ws && ./_napkin/format_all.sh src_js",
     "server": "yarn bs:build; node src_ws/service.bs.js"
   },
   "devDependencies": {
@@ -42,6 +42,7 @@
     "bs-webworkers": "^0.2.4",
     "bufferutil": "^4.0.1",
     "emotion": "^10.0.27",
+    "path": "^0.12.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-syntax-highlighter": "^12.2.1",

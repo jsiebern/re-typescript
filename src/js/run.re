@@ -5,72 +5,17 @@ open Js_of_ocaml;
 
 type jsstr = Js.t(Js.js_string);
 
-let test_loader: module Loader.T = (module Fs.Loader);
-let test_resolver: module Resolver.T =
-  (module
-   Resolver.Make({
-     let config = {Resolver.loader: test_loader, tsconfig: None};
-   }));
-
 let print__structure = (~file_path, config) => {
-  open Re_typescript_printer.Tree_utils.Exceptions;
+  let content = Fs.Loader.file_read(file_path);
 
-  let r_content = ref(None);
-  let r_lexbuf = ref(None);
-  try(
+  switch (content) {
+  | Error(e) => CCResult.Error((Bridge.Js_unknown, e))
+  | Ok(content) =>
+    let files = [(file_path |> Fp.toString, content)];
+
     CCResult.Ok(
-      Re_typescript_printer.structure_from_ts(
-        ~ctx=config,
-        ~parser=
-          content => {
-            let lexbuf = Lexing.from_string(content |> CCString.trim);
-            r_content := Some(content);
-            r_lexbuf := Some(lexbuf);
-            Ok(Parser_incr.parse(lexbuf));
-          },
-        ~resolver=test_resolver,
-        file_path,
-      ),
-    )
-  ) {
-  | Lexer.SyntaxError(msg) =>
-    let content = r_content^ |> CCOpt.get_exn;
-    let lexbuf = r_lexbuf^ |> CCOpt.get_exn;
-    CCResult.Error((
-      Bridge.Base_lexer_error,
-      Error.parser_error(
-        ~msg,
-        ~content,
-        ~start=lexbuf.lex_start_p,
-        ~end_=lexbuf.lex_curr_p,
-      ),
-    ));
-  | Parser_incr.Parsing_error(_)
-  | Parser.Error =>
-    let content = r_content^ |> CCOpt.get_exn;
-    let lexbuf = r_lexbuf^ |> CCOpt.get_exn;
-    CCResult.Error((
-      Bridge.Base_parser_error,
-      Error.parser_error(
-        ~msg=?None,
-        ~content,
-        ~start=lexbuf.lex_start_p,
-        ~end_=lexbuf.lex_curr_p,
-      ),
-    ));
-
-  | Parser_unexpected(msg) => CCResult.Error((Bridge.Parser_unexpected, msg))
-  | Parser_error(msg) => CCResult.Error((Bridge.Parser_error, msg))
-  | Parser_parameter_error(msg) =>
-    CCResult.Error((Bridge.Parser_parameter_error, msg))
-  | Parser_unsupported(msg, pos) =>
-    let content = r_content^ |> CCOpt.get_exn;
-    CCResult.Error((
-      Bridge.Parser_unsupported(pos),
-      Error.parser_error_with_info(~msg, ~content, pos),
-    ));
-  | Optimizer_error(msg) => CCResult.Error((Bridge.Optimizer_error, msg))
-  | other_exn => CCResult.Error((Js_unknown, Printexc.to_string(other_exn)))
+      Re_typescript_ts_parser.structure_from_ts(~ctx=config, files),
+    );
   };
 };
 
@@ -84,7 +29,7 @@ let print__reason = (~file_path, config) => {
           Format.str_formatter,
           (str, []),
         );
-        Bridge.Ok((Format.flush_str_formatter() |> CCString.trim, None));
+        Bridge.Ok((Format.flush_str_formatter() |> CCString.trim, ""));
       }
     ) {
     | Syntaxerr.Error(error) =>
@@ -141,7 +86,7 @@ let print__ocaml = (~file_path, config) => {
           Format.str_formatter,
           (str, []),
         );
-        Bridge.Ok((Format.flush_str_formatter() |> CCString.trim, None));
+        Bridge.Ok((Format.flush_str_formatter() |> CCString.trim, ""));
       }
     ) {
     | Syntaxerr.Error(error) =>
@@ -165,35 +110,23 @@ let run = (json: jsstr) =>
   Bridge.string_of_parse_result(
     try({
       let parse_request = Bridge.parse_request_of_string(Js.to_string(json));
-      switch (parse_request.content) {
-      | Some(content) =>
-        Sys_js.update_file(~name=parse_request.file_path, ~content)
-      | None => ()
-      };
+      Sys_js.update_file(
+        ~name=parse_request.file_path,
+        ~content=parse_request.content,
+      );
       let file_path = Fp.absolute(parse_request.file_path);
-      switch (
-        parse_request.content,
-        switch (parse_request, file_path) {
-        | ({language: Reason, content, config, _}, Some(file_path)) =>
-          print__reason(~file_path, config)
-        | ({language: Ocaml, content, config, _}, Some(file_path)) =>
-          print__ocaml(~file_path, config)
-        | _ =>
-          Bridge.Error((
-            Js_unknown,
-            Printf.sprintf(
-              "Unknown error. Path \"%s\" probably not found.",
-              parse_request.file_path,
-            ),
-          ))
-        },
-      ) {
-      | (Some(_), r) => r
-      | (None, Error(_) as e) => e
-      | (None, Ok((code, _))) =>
-        Ok((
-          code,
-          Some(Sys_js.read_file(parse_request.file_path) |> CCString.trim),
+      switch (parse_request, file_path) {
+      | ({language: Reason, content, config, _}, Some(file_path)) =>
+        print__reason(~file_path, config)
+      | ({language: Ocaml, content, config, _}, Some(file_path)) =>
+        print__ocaml(~file_path, config)
+      | _ =>
+        Bridge.Error((
+          Js_unknown,
+          Printf.sprintf(
+            "Unknown error. Path \"%s\" probably not found.",
+            parse_request.file_path,
+          ),
         ))
       };
     }) {

@@ -7,14 +7,14 @@ type parse_language = [
 ] <ocaml repr="classic">
 type parse_request = {
   language: parse_language;
-  content: string option;
+  content: string;
   config: config;
   file_path: string;
 }
 
 type parse_result = [
   | Error of (parse_error_kind * string)
-  | Ok of (string * string option)
+  | Ok of (string * string)
 ] <ocaml repr="classic">
 
 type parse_error_kind = [
