@@ -692,8 +692,7 @@ and parse__typeOfNode_exn =
     | `ArrayType({elementType, _}) =>
       Array(
         parse__typeOfNode_exn(
-          ~isDeclarationChild,
-          ~identChain,
+          ~identChain=identChain @ ["t"],
           ~parent,
           elementType,
         ),

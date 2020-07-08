@@ -5,18 +5,7 @@ open Re_typescript_fs;
 let file = (
   "/root/src/bin.d.ts",
   {|
-        export interface Map<A,B> {
-        a: A;
-        b: B;
-      }
-      export interface RecoilRootProps<C> {
-        initializeState?: (options: {
-          set: <T>(recoilVal: T, newVal: T) => void;
-          setUnvalidatedAtomValues: (atomMap: Map<string, C>) => void;
-        }) => void;
-      }
-
-      type use_it = RecoilRootProps<string>;
+  type x = {field: string}[];
 |},
 );
 
