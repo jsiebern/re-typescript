@@ -191,9 +191,9 @@ type node = [
   | `TypeQuery of node_Generic
   | `TypeLiteral of node_TypeLiteral
   | `ArrayType of node_ArrayType
-  | `TupleType of node_Generic
-  | `OptionalType of node_Generic
-  | `RestType of node_Generic
+  | `TupleType of node_TupleType
+  | `OptionalType of node_OptionalType
+  | `RestType of node_RestType
   | `UnionType of node_UnionType
   | `IntersectionType of node_IntersectionType
   | `ConditionalType of node_Generic
@@ -562,6 +562,19 @@ and node_MethodSignature = {
   name: node option
 }
 
+and node_OptionalType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  type_: node
+}
+
 and node_Parameter = {
   pos: int;
   end_: int;
@@ -626,6 +639,19 @@ and node_QualifiedName = {
   right: node
 }
 
+and node_RestType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  type_: node
+}
+
 and node_SourceFile = {
   pos: int;
   end_: int;
@@ -644,6 +670,19 @@ and node_SourceFile = {
   isDeclarationFile: bool;
   nodeCount: int;
   identifierCount: int
+}
+
+and node_TupleType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  elementTypes: node list
 }
 
 and node_TypeAliasDeclaration = {
@@ -991,6 +1030,22 @@ type node_NodeWithTypeArguments = {
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
   typeArguments: node list option
+}
+
+type node_NamedTupleMember = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  dotDotDotToken: node option;
+  questionToken: node option;
+  name: node;
+  type_: node
 }
 
 type node_NamedDeclaration = {

@@ -12,7 +12,7 @@ include Rely.Make({
 module Impl =
   Re_typescript_ws_client.WsClient(
     {
-      let uri = Uri.of_string("http://127.0.0.1:82");
+      let uri = Uri.of_string("http://127.0.0.1:83");
     },
     {
       let onStateChange = _ => ();

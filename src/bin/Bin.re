@@ -5,8 +5,8 @@ open Re_typescript_fs;
 let file = (
   "/root/src/bin.d.ts",
   {|
-type with_param<a1, a2 = {inline: boolean}> = {a1:a1, a2:a2};
-type call_params = with_param<string>;
+ type with_param<a = [string, number]> = a;
+        type call_params = with_param; 
   |},
 );
 
@@ -24,21 +24,39 @@ let process =
             switch (ln) {
             | Some(ln) when CCString.find(~sub="Server: Running", ln) > (-1) =>
               process |> Lwt.return
-            | _ => readStart(process)
+            | ln =>
+              switch (ln) {
+              | None => ()
+              | Some(ln) => Console.log("> " ++ ln)
+              };
+              readStart(process);
             }
         );
       };
-      Lwt_process.open_process_full(
-        Lwt_process.shell("$(fnm exec -- which node) src_ws/service.bs.js"),
-      )
-      |> readStart;
+      let process =
+        Lwt_process.open_process_full(
+          Lwt_process.shell("$(fnm exec -- which node) src_ws/service.bs.js 84"),
+        );
+      let rec readStdErr = process =>
+          {
+            Console.log("E");
+            Lwt.map(ln => (process, ln), Lwt_io.read_line(process#stderr));
+          }
+          >>= (
+            ((process, ln)) => {
+              Console.log(ln);
+              readStdErr(process);
+            }
+          );
+        Lwt.async(() => readStdErr(process) >>= (_ => Lwt.return_unit));
+      Lwt_process.exec(("clear", [||])) >>= (_ => readStart(process));
     },
   );
 
 module Impl =
   Re_typescript_ws_client.WsClient(
     {
-      let uri = Uri.of_string("http://127.0.0.1:82");
+      let uri = Uri.of_string("http://127.0.0.1:84");
     },
     {
       let onStateChange = _ => ();

@@ -4,7 +4,7 @@
   "scripts": {
     "format": "dune build @fmt --auto-promote --root .",
     "run": "esy x Re_typescript",
-    "watch": "esy x redemon --paths=src --extensions=re,atd,mll,mly esy x Re_typescript",
+    "watch": "esy x redemon --paths=src --extensions=re,atd,mll,mly esy run",
     "watch-test": "esy x redemon --paths=tests,src --extensions=re,atd,mll,mly esy x RunTests.exe",
     "test": "esy x RunTests.exe",
     "test-u": "esy x RunTests.exe -u",

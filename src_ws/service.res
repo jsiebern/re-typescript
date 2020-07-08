@@ -1,6 +1,8 @@
 open Ws
 
-let wss = Server.make({port: 82})
+let port = Process.argv->Belt.Array.get(2)->Belt.Option.map(int_of_string)->Belt.Option.getWithDefault(82)
+
+let wss = Server.make({port: port})
 let address = wss->Server.address
 let log = msg => Js.log(`> Server: ${msg}`)
 let logClient = (id, msg) => log(`Client${id != "" ? `(${id})` : ""} -> ${msg}`)

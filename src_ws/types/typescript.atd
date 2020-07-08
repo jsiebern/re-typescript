@@ -156,6 +156,34 @@ type node_UnionType = {
     types: node list;
 }
 
+type node_TupleType = {
+    inherit node_Generic;
+
+    elementTypes: node list;
+}
+
+type node_NamedTupleMember = {
+    inherit node_Generic;
+
+    ?dotDotDotToken: node option;
+    ?questionToken: node option;
+    name: node;
+    type_ <json name="type">: node;
+}
+
+type node_RestType = {
+    inherit node_Generic;
+
+    type_ <json name="type">: node;
+}
+
+type node_OptionalType = {
+    inherit node_Generic;
+
+    type_ <json name="type">: node;
+}
+
+
 type node_SignatureDeclarationBase = {
     inherit node_NamedDeclaration;
 
@@ -427,9 +455,9 @@ type node = [
     | TypeQuery of node_Generic
     | TypeLiteral of node_TypeLiteral
     | ArrayType of node_ArrayType
-    | TupleType of node_Generic
-    | OptionalType of node_Generic
-    | RestType of node_Generic
+    | TupleType of node_TupleType
+    | OptionalType of node_OptionalType
+    | RestType of node_RestType
     | UnionType of node_UnionType
     | IntersectionType of node_IntersectionType
     | ConditionalType of node_Generic

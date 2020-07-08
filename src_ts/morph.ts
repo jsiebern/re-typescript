@@ -32,16 +32,8 @@ ts.createSourceFile;
 const created2 = project.createSourceFile(
   'simple.d.ts',
   `
-  export interface Map<A,B> {
-    a: A;
-    b: B;
-  }
-  export interface RecoilRootProps {
-    initializeState?: (options: {
-      set: <T>(recoilVal: T, newVal: T) => void; // Ignores type params on inline functions
-      setUnvalidatedAtomValues: (atomMap: Map<string, any>) => void;
-    }) => void;
-  }
+  type with_param<a = [string, number]> = a;
+        type call_params = with_param; 
 `
 );
 created2.getFilePath();
@@ -95,6 +87,9 @@ const recurse = (node: Node, level = 0) => {
   if (Node.isTypeParameteredNode(node)) {
     // console.log(node.getText());
     console.log(node.getTypeParameters().map(n => n.getName()));
+  }
+  if (Node.isTupleTypeNode(node)) {
+    console.log(node);
   }
 
   // const type = node.getSymbol()?.getDeclaredType();

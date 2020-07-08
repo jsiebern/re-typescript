@@ -493,6 +493,35 @@ and parse__TypeReference =
     });
   };
 }
+and parse__TupleType = (~parent, ~identChain, elements: list(Ts.node)) => {
+  Debug.add_pos("parse__TupleType");
+
+  let elements =
+    elements
+    |> CCList.mapi((i, type_node) => {
+         Debug.add(Printf.sprintf("Tuple type %i:", i));
+         let parsed_type =
+           switch (
+             parse__typeOfNode(
+               ~parent,
+               ~identChain=identChain @ [string_of_int(i + 1)],
+               type_node,
+             )
+           ) {
+           | None =>
+             Debug.raiseWith(
+               ~node=type_node,
+               "Could not resolve Tuple type member",
+             );
+             Base(Any);
+           | Some(t) => t
+           };
+         parsed_type;
+       });
+  let asTuple = Tuple(elements);
+  Debug.close_pos();
+  asTuple;
+}
 and parse__UnionType = (~parent, ~identChain, types: list(Ts.node)) => {
   Debug.add_pos("parse__UnionType");
 
@@ -624,6 +653,11 @@ and parse__typeOfNode_exn =
           elementType,
         ),
       )
+    | `TupleType({elementTypes, _}) as node =>
+     Debug.add("TupleType");
+      isDeclarationChild
+        ? parse__TupleType(~parent, ~identChain, elementTypes)
+        : parse__wrapNonDeclarationChild(~parent, ~identChain, node);
     | `UnionType({types, _}) as node =>
       Debug.add("UnionType");
       isDeclarationChild

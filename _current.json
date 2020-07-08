@@ -1,332 +1,129 @@
 {
-  "identifierCount": 10,
-  "nodeCount": 26,
+  "identifierCount": 5,
+  "nodeCount": 15,
   "isDeclarationFile": true,
   "languageVariant": 0,
   "fileName": "/root/src/bin.d.ts",
   "languageVersion": 99,
   "text":
-    "\ntype with_param<a1, a2 = {inline: boolean}> = {a1:a1, a2:a2};\ntype call_params = with_param<string>;\n  ",
+    "\n type with_param<a = [string, number]> = a;\n        type call_params = with_param; \n  ",
   "statements": [
     {
       "type": {
-        "members": [
-          {
-            "type": {
-              "typeName": {
-                "escapedText": "a1",
-                "resolvedType": {
-                  "kindName": "TypeParameter",
-                  "id": 78,
-                  "flags": 262144
-                },
-                "resolvedSymbol": {
-                  "name": "a1",
-                  "fullyQualifiedName": "a1",
-                  "id": 16,
-                  "flags": 262144
-                },
-                "flags": 8388608,
-                "kindName": "Identifier",
-                "kind": 75,
-                "end": 53,
-                "pos": 51
-              },
-              "resolvedType": {
-                "kindName": "TypeParameter",
-                "id": 78,
-                "flags": 262144
-              },
-              "flags": 8388608,
-              "kindName": "TypeReference",
-              "kind": 169,
-              "end": 53,
-              "pos": 51
-            },
-            "name": {
-              "escapedText": "a1",
-              "resolvedType": {
-                "kindName": "TypeParameter",
-                "id": 78,
-                "flags": 262144
-              },
-              "resolvedSymbol": {
-                "name": "a1",
-                "fullyQualifiedName": "__type.a1",
-                "id": 20,
-                "flags": 4
-              },
-              "flags": 8388608,
-              "kindName": "Identifier",
-              "kind": 75,
-              "end": 50,
-              "pos": 48
-            },
-            "resolvedType": {
-              "kindName": "TypeParameter",
-              "id": 78,
-              "flags": 262144
-            },
-            "resolvedSymbol": {
-              "name": "a1",
-              "fullyQualifiedName": "__type.a1",
-              "id": 20,
-              "flags": 4
-            },
-            "flags": 8388608,
-            "kindName": "PropertySignature",
-            "kind": 158,
-            "end": 54,
-            "pos": 48
+        "typeName": {
+          "escapedText": "a",
+          "resolvedType": {
+            "kindName": "TypeParameter",
+            "id": 77,
+            "flags": 262144
           },
-          {
-            "type": {
-              "typeName": {
-                "escapedText": "a2",
-                "resolvedType": {
-                  "kindName": "TypeParameter",
-                  "id": 79,
-                  "flags": 262144
-                },
-                "resolvedSymbol": {
-                  "name": "a2",
-                  "fullyQualifiedName": "a2",
-                  "id": 17,
-                  "flags": 262144
-                },
-                "flags": 8388608,
-                "kindName": "Identifier",
-                "kind": 75,
-                "end": 60,
-                "pos": 58
-              },
-              "resolvedType": {
-                "kindName": "TypeParameter",
-                "id": 79,
-                "flags": 262144
-              },
-              "flags": 8388608,
-              "kindName": "TypeReference",
-              "kind": 169,
-              "end": 60,
-              "pos": 58
-            },
-            "name": {
-              "escapedText": "a2",
-              "resolvedType": {
-                "kindName": "TypeParameter",
-                "id": 79,
-                "flags": 262144
-              },
-              "resolvedSymbol": {
-                "name": "a2",
-                "fullyQualifiedName": "__type.a2",
-                "id": 21,
-                "flags": 4
-              },
-              "flags": 8388608,
-              "kindName": "Identifier",
-              "kind": 75,
-              "end": 57,
-              "pos": 54
-            },
-            "resolvedType": {
-              "kindName": "TypeParameter",
-              "id": 79,
-              "flags": 262144
-            },
-            "resolvedSymbol": {
-              "name": "a2",
-              "fullyQualifiedName": "__type.a2",
-              "id": 21,
-              "flags": 4
-            },
-            "flags": 8388608,
-            "kindName": "PropertySignature",
-            "kind": 158,
-            "end": 60,
-            "pos": 54
-          }
-        ],
-        "resolvedType": {
-          "objectFlags": 201326608,
-          "kindName": "Anonymous",
-          "aliasTypeArguments": [
-            { "kindName": "TypeParameter", "id": 78, "flags": 262144 },
-            { "kindName": "TypeParameter", "id": 79, "flags": 262144 }
-          ],
-          "id": 77,
-          "flags": 524288
+          "resolvedSymbol": {
+            "name": "a",
+            "fullyQualifiedName": "a",
+            "id": 15,
+            "flags": 262144
+          },
+          "flags": 8388608,
+          "kindName": "Identifier",
+          "kind": 75,
+          "end": 43,
+          "pos": 41
         },
-        "resolvedSymbol": {
-          "name": "__type",
-          "fullyQualifiedName": "__type",
-          "id": 15,
-          "flags": 2048
+        "resolvedType": {
+          "kindName": "TypeParameter",
+          "id": 77,
+          "flags": 262144
         },
         "flags": 8388608,
-        "kindName": "TypeLiteral",
-        "kind": 173,
-        "end": 61,
-        "pos": 46
+        "kindName": "TypeReference",
+        "kind": 169,
+        "end": 43,
+        "pos": 41
       },
       "typeParameters": [
         {
+          "default": {
+            "elementTypes": [
+              {
+                "resolvedType": {
+                  "kindName": "String",
+                  "id": 12,
+                  "flags": 4
+                },
+                "flags": 8388608,
+                "kindName": "StringKeyword",
+                "kind": 143,
+                "end": 29,
+                "pos": 23
+              },
+              {
+                "resolvedType": {
+                  "kindName": "Number",
+                  "id": 13,
+                  "flags": 8
+                },
+                "flags": 8388608,
+                "kindName": "NumberKeyword",
+                "kind": 140,
+                "end": 37,
+                "pos": 30
+              }
+            ],
+            "resolvedType": {
+              "objectFlags": 4,
+              "kindName": "Object",
+              "id": 83,
+              "flags": 524288
+            },
+            "flags": 8388608,
+            "kindName": "TupleType",
+            "kind": 175,
+            "end": 38,
+            "pos": 21
+          },
           "name": {
-            "escapedText": "a1",
+            "escapedText": "a",
             "resolvedType": {
               "kindName": "TypeParameter",
-              "id": 78,
+              "id": 77,
               "flags": 262144
             },
             "resolvedSymbol": {
-              "name": "a1",
-              "fullyQualifiedName": "a1",
-              "id": 16,
+              "name": "a",
+              "fullyQualifiedName": "a",
+              "id": 15,
               "flags": 262144
             },
             "flags": 8388608,
             "kindName": "Identifier",
             "kind": 75,
             "end": 19,
-            "pos": 17
+            "pos": 18
           },
           "resolvedType": {
             "kindName": "TypeParameter",
-            "id": 78,
+            "id": 77,
             "flags": 262144
           },
           "resolvedSymbol": {
-            "name": "a1",
-            "fullyQualifiedName": "a1",
-            "id": 16,
+            "name": "a",
+            "fullyQualifiedName": "a",
+            "id": 15,
             "flags": 262144
           },
           "flags": 8388608,
           "kindName": "TypeParameter",
           "kind": 155,
-          "end": 19,
-          "pos": 17
-        },
-        {
-          "default": {
-            "members": [
-              {
-                "type": {
-                  "resolvedType": {
-                    "kindName": "Boolean",
-                    "id": 19,
-                    "flags": 1048592
-                  },
-                  "flags": 8388608,
-                  "kindName": "BooleanKeyword",
-                  "kind": 128,
-                  "end": 42,
-                  "pos": 34
-                },
-                "name": {
-                  "escapedText": "inline",
-                  "resolvedType": {
-                    "kindName": "Boolean",
-                    "id": 19,
-                    "flags": 1048592
-                  },
-                  "resolvedSymbol": {
-                    "name": "inline",
-                    "fullyQualifiedName": "__type.inline",
-                    "id": 19,
-                    "flags": 4
-                  },
-                  "flags": 8388608,
-                  "kindName": "Identifier",
-                  "kind": 75,
-                  "end": 33,
-                  "pos": 27
-                },
-                "resolvedType": {
-                  "kindName": "Boolean",
-                  "id": 19,
-                  "flags": 1048592
-                },
-                "resolvedSymbol": {
-                  "name": "inline",
-                  "fullyQualifiedName": "__type.inline",
-                  "id": 19,
-                  "flags": 4
-                },
-                "flags": 8388608,
-                "kindName": "PropertySignature",
-                "kind": 158,
-                "end": 42,
-                "pos": 27
-              }
-            ],
-            "resolvedType": {
-              "objectFlags": 201326608,
-              "kindName": "Anonymous",
-              "id": 80,
-              "flags": 524288
-            },
-            "resolvedSymbol": {
-              "name": "__type",
-              "fullyQualifiedName": "__type",
-              "id": 18,
-              "flags": 2048
-            },
-            "flags": 8388608,
-            "kindName": "TypeLiteral",
-            "kind": 173,
-            "end": 43,
-            "pos": 25
-          },
-          "name": {
-            "escapedText": "a2",
-            "resolvedType": {
-              "kindName": "TypeParameter",
-              "id": 79,
-              "flags": 262144
-            },
-            "resolvedSymbol": {
-              "name": "a2",
-              "fullyQualifiedName": "a2",
-              "id": 17,
-              "flags": 262144
-            },
-            "flags": 8388608,
-            "kindName": "Identifier",
-            "kind": 75,
-            "end": 23,
-            "pos": 20
-          },
-          "resolvedType": {
-            "kindName": "TypeParameter",
-            "id": 79,
-            "flags": 262144
-          },
-          "resolvedSymbol": {
-            "name": "a2",
-            "fullyQualifiedName": "a2",
-            "id": 17,
-            "flags": 262144
-          },
-          "flags": 8388608,
-          "kindName": "TypeParameter",
-          "kind": 155,
-          "end": 43,
-          "pos": 20
+          "end": 38,
+          "pos": 18
         }
       ],
       "name": {
         "escapedText": "with_param",
         "resolvedType": {
-          "objectFlags": 201326608,
-          "kindName": "Anonymous",
-          "aliasTypeArguments": [
-            { "kindName": "TypeParameter", "id": 78, "flags": 262144 },
-            { "kindName": "TypeParameter", "id": 79, "flags": 262144 }
-          ],
+          "kindName": "TypeParameter",
           "id": 77,
-          "flags": 524288
+          "flags": 262144
         },
         "resolvedSymbol": {
           "name": "with_param",
@@ -337,18 +134,13 @@
         "flags": 8388608,
         "kindName": "Identifier",
         "kind": 75,
-        "end": 16,
-        "pos": 5
+        "end": 17,
+        "pos": 6
       },
       "resolvedType": {
-        "objectFlags": 201326608,
-        "kindName": "Anonymous",
-        "aliasTypeArguments": [
-          { "kindName": "TypeParameter", "id": 78, "flags": 262144 },
-          { "kindName": "TypeParameter", "id": 79, "flags": 262144 }
-        ],
+        "kindName": "TypeParameter",
         "id": 77,
-        "flags": 524288
+        "flags": 262144
       },
       "resolvedSymbol": {
         "name": "with_param",
@@ -359,7 +151,7 @@
       "flags": 8388608,
       "kindName": "TypeAliasDeclaration",
       "kind": 247,
-      "end": 62,
+      "end": 44,
       "pos": 0
     },
     {
@@ -367,14 +159,9 @@
         "typeName": {
           "escapedText": "with_param",
           "resolvedType": {
-            "objectFlags": 201326608,
-            "kindName": "Anonymous",
-            "aliasTypeArguments": [
-              { "kindName": "TypeParameter", "id": 78, "flags": 262144 },
-              { "kindName": "TypeParameter", "id": 79, "flags": 262144 }
-            ],
+            "kindName": "TypeParameter",
             "id": 77,
-            "flags": 524288
+            "flags": 262144
           },
           "resolvedSymbol": {
             "name": "with_param",
@@ -385,130 +172,63 @@
           "flags": 8388608,
           "kindName": "Identifier",
           "kind": 75,
-          "end": 92,
-          "pos": 81
+          "end": 82,
+          "pos": 71
         },
-        "typeArguments": [
-          {
-            "resolvedType": { "kindName": "String", "id": 12, "flags": 4 },
-            "flags": 8388608,
-            "kindName": "StringKeyword",
-            "kind": 143,
-            "end": 99,
-            "pos": 93
-          }
-        ],
         "resolvedType": {
-          "target": {
-            "objectFlags": 201326608,
-            "kindName": "Anonymous",
-            "aliasTypeArguments": [
-              { "kindName": "TypeParameter", "id": 78, "flags": 262144 },
-              { "kindName": "TypeParameter", "id": 79, "flags": 262144 }
-            ],
-            "id": 77,
-            "flags": 524288
-          },
-          "objectFlags": 201326672,
-          "kindName": "Anonymous",
-          "aliasTypeArguments": [
-            { "kindName": "String", "id": 12, "flags": 4 },
-            {
-              "objectFlags": 201326608,
-              "kindName": "Anonymous",
-              "id": 80,
-              "flags": 524288
-            }
-          ],
-          "id": 81,
+          "objectFlags": 4,
+          "kindName": "Object",
+          "id": 83,
           "flags": 524288
         },
         "flags": 8388608,
         "kindName": "TypeReference",
         "kind": 169,
-        "end": 100,
-        "pos": 81
+        "end": 82,
+        "pos": 71
       },
       "name": {
         "escapedText": "call_params",
         "resolvedType": {
-          "target": {
-            "objectFlags": 201326608,
-            "kindName": "Anonymous",
-            "aliasTypeArguments": [
-              { "kindName": "TypeParameter", "id": 78, "flags": 262144 },
-              { "kindName": "TypeParameter", "id": 79, "flags": 262144 }
-            ],
-            "id": 77,
-            "flags": 524288
-          },
-          "objectFlags": 201326672,
-          "kindName": "Anonymous",
-          "aliasTypeArguments": [
-            { "kindName": "String", "id": 12, "flags": 4 },
-            {
-              "objectFlags": 201326608,
-              "kindName": "Anonymous",
-              "id": 80,
-              "flags": 524288
-            }
-          ],
-          "id": 81,
+          "objectFlags": 4,
+          "kindName": "Object",
+          "id": 83,
           "flags": 524288
         },
         "resolvedSymbol": {
           "name": "call_params",
           "fullyQualifiedName": "call_params",
-          "id": 22,
+          "id": 16,
           "flags": 524288
         },
         "flags": 8388608,
         "kindName": "Identifier",
         "kind": 75,
-        "end": 79,
-        "pos": 67
+        "end": 69,
+        "pos": 57
       },
       "resolvedType": {
-        "target": {
-          "objectFlags": 201326608,
-          "kindName": "Anonymous",
-          "aliasTypeArguments": [
-            { "kindName": "TypeParameter", "id": 78, "flags": 262144 },
-            { "kindName": "TypeParameter", "id": 79, "flags": 262144 }
-          ],
-          "id": 77,
-          "flags": 524288
-        },
-        "objectFlags": 201326672,
-        "kindName": "Anonymous",
-        "aliasTypeArguments": [
-          { "kindName": "String", "id": 12, "flags": 4 },
-          {
-            "objectFlags": 201326608,
-            "kindName": "Anonymous",
-            "id": 80,
-            "flags": 524288
-          }
-        ],
-        "id": 81,
+        "objectFlags": 4,
+        "kindName": "Object",
+        "id": 83,
         "flags": 524288
       },
       "resolvedSymbol": {
         "name": "call_params",
         "fullyQualifiedName": "call_params",
-        "id": 22,
+        "id": 16,
         "flags": 524288
       },
       "flags": 8388608,
       "kindName": "TypeAliasDeclaration",
       "kind": 247,
-      "end": 101,
-      "pos": 62
+      "end": 83,
+      "pos": 44
     }
   ],
   "flags": 8388672,
   "kindName": "SourceFile",
   "kind": 290,
-  "end": 104,
+  "end": 87,
   "pos": 0
 }

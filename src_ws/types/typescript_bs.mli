@@ -224,6 +224,19 @@ and node_MethodSignature = Typescript_t.node_MethodSignature = {
   name: node option
 }
 
+and node_OptionalType = Typescript_t.node_OptionalType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  type_: node
+}
+
 and node_Parameter = Typescript_t.node_Parameter = {
   pos: int;
   end_: int;
@@ -288,6 +301,19 @@ and node_QualifiedName = Typescript_t.node_QualifiedName = {
   right: node
 }
 
+and node_RestType = Typescript_t.node_RestType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  type_: node
+}
+
 and node_SourceFile = Typescript_t.node_SourceFile = {
   pos: int;
   end_: int;
@@ -306,6 +332,19 @@ and node_SourceFile = Typescript_t.node_SourceFile = {
   isDeclarationFile: bool;
   nodeCount: int;
   identifierCount: int
+}
+
+and node_TupleType = Typescript_t.node_TupleType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  elementTypes: node list
 }
 
 and node_TypeAliasDeclaration = Typescript_t.node_TypeAliasDeclaration = {
@@ -631,6 +670,22 @@ type node_NodeWithTypeArguments = Typescript_t.node_NodeWithTypeArguments = {
   typeArguments: node list option
 }
 
+type node_NamedTupleMember = Typescript_t.node_NamedTupleMember = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  dotDotDotToken: node option;
+  questionToken: node option;
+  name: node;
+  type_: node
+}
+
 type node_NamedDeclaration = Typescript_t.node_NamedDeclaration = {
   pos: int;
   end_: int;
@@ -730,6 +785,10 @@ val read_node_MethodSignature :  node_MethodSignature Atdgen_codec_runtime.Decod
 
 val write_node_MethodSignature :  node_MethodSignature Atdgen_codec_runtime.Encode.t
 
+val read_node_OptionalType :  node_OptionalType Atdgen_codec_runtime.Decode.t
+
+val write_node_OptionalType :  node_OptionalType Atdgen_codec_runtime.Encode.t
+
 val read_node_Parameter :  node_Parameter Atdgen_codec_runtime.Decode.t
 
 val write_node_Parameter :  node_Parameter Atdgen_codec_runtime.Encode.t
@@ -746,9 +805,17 @@ val read_node_QualifiedName :  node_QualifiedName Atdgen_codec_runtime.Decode.t
 
 val write_node_QualifiedName :  node_QualifiedName Atdgen_codec_runtime.Encode.t
 
+val read_node_RestType :  node_RestType Atdgen_codec_runtime.Decode.t
+
+val write_node_RestType :  node_RestType Atdgen_codec_runtime.Encode.t
+
 val read_node_SourceFile :  node_SourceFile Atdgen_codec_runtime.Decode.t
 
 val write_node_SourceFile :  node_SourceFile Atdgen_codec_runtime.Encode.t
+
+val read_node_TupleType :  node_TupleType Atdgen_codec_runtime.Decode.t
+
+val write_node_TupleType :  node_TupleType Atdgen_codec_runtime.Encode.t
 
 val read_node_TypeAliasDeclaration :  node_TypeAliasDeclaration Atdgen_codec_runtime.Decode.t
 
@@ -865,6 +932,10 @@ val write_node_SignatureDeclarationBase :  node_SignatureDeclarationBase Atdgen_
 val read_node_NodeWithTypeArguments :  node_NodeWithTypeArguments Atdgen_codec_runtime.Decode.t
 
 val write_node_NodeWithTypeArguments :  node_NodeWithTypeArguments Atdgen_codec_runtime.Encode.t
+
+val read_node_NamedTupleMember :  node_NamedTupleMember Atdgen_codec_runtime.Decode.t
+
+val write_node_NamedTupleMember :  node_NamedTupleMember Atdgen_codec_runtime.Encode.t
 
 val read_node_NamedDeclaration :  node_NamedDeclaration Atdgen_codec_runtime.Decode.t
 

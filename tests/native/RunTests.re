@@ -50,10 +50,10 @@ let runTests = () => {
 exception IsDone;
 exception ServerError(Lwt_stream.t(string));
 let server = () => {
-  Logs.debug(m => m("Executing: node src_ws/service.bs.js"));
+  Logs.debug(m => m("Executing: node src_ws/service.bs.js 83"));
 
   Lwt_process.open_process_full(
-    Lwt_process.shell("$(fnm exec -- which node) src_ws/service.bs.js"),
+    Lwt_process.shell("$(fnm exec -- which node) src_ws/service.bs.js 83"),
   )
   |> Lwt.return
   >>= (

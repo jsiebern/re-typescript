@@ -1,9 +1,9 @@
 type parameter logic › can have inline records at call site
-type with_param_a2 = {inline: bool}
-and with_param('a1, 'a2) = {
+type with_param('a1, 'a2) = {
   a1: 'a1,
   a2: 'a2,
 }
-and call_params_0 = {another_inline: float}
-and call_params = with_param(call_params_0, with_param_a2);
+and call_params_a1 = {another_inline: float}
+and with_param_a2 = {inline: bool}
+and call_params = with_param(call_params_a1, with_param_a2);
 

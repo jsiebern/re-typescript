@@ -83,18 +83,6 @@ describe("type parameter logic", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
-  test(
-    "still generates default inline values, even if overriden", ({expect, _}) => {
-    expect.string(
-      print(
-        {|
-        type with_param<a1, a2 = {inline: boolean}> = {a1:a1, a2:a2};
-        type call_params = with_param<string, number>;
-    |},
-      ),
-    ).
-      toMatchSnapshot()
-  });
   test("can use various default structures", ({expect, _}) => {
     expect.string(
       print(
