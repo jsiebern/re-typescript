@@ -1,6 +1,6 @@
 open Typescript_t;
 
-let typeParametersOfNode = (node: node) => {
+let rec typeParametersOfNode = (node: node) => {
   switch (node) {
   | `FunctionDeclaration({typeParameters: Some(tp), _})
   | `TypeAliasDeclaration({typeParameters: Some(tp), _})
@@ -10,9 +10,7 @@ let typeParametersOfNode = (node: node) => {
   //| `ClassDeclaration({ typeParameters: Some(tp) })
   | _ => []
   };
-};
-
-let rec identifierOfNode = (node: node) =>
+} and identifierOfNode = (node: node) =>
   switch (node) {
   | `FunctionDeclaration(({name: Some(name), _}: node_FunctionDeclaration))
   | `InterfaceDeclaration({name, _})
@@ -27,9 +25,7 @@ let rec identifierOfNode = (node: node) =>
     | None => raise(Not_found)
     | Some(symbol) => symbol.name
     }
-  };
-
-let typeParametersOfNodeRec = (node: node) => {
+  } and typeParametersOfNodeRec = (~statements: option(list(node))=?, node: node) => {
   let rec walk = (~params=[], node: node) => {
     switch (node) {
     | `TypeAliasDeclaration({typeParameters: tp, type_, _}) =>
@@ -53,8 +49,17 @@ let typeParametersOfNodeRec = (node: node) => {
     | `ArrayType({elementType, _}) => walk(~params, elementType)
     | `PropertySignature({type_: Some(type_), _})
     | `Parameter({type_: Some(type_), _}) => walk(~params, type_)
-    | `TypeReference({typeArguments: Some(typeArguments), _}) =>
-      let sub = typeArguments |> CCList.map(p => walk(p)) |> CCList.concat;
+    | `TypeReference({typeArguments: Some(typeArguments), typeName, _}) =>
+      let sub = switch (statements, Typescript_unwrap.unwrap_Node(typeName).resolvedSymbol) {
+        | (None, _) => []
+        | (Some(statements), Some({id: Some(id), _})) =>
+          findNodeForSymbolId(statements, id)
+          |> CCOpt.map(walk)
+          |> CCOpt.value(~default=[]);
+        | _ => []
+      };
+
+      let sub = sub @ typeArguments |> CCList.map(p => walk(p)) |> CCList.concat;
       params @ sub;
     | `TypeReference(
                  (
@@ -68,7 +73,17 @@ let typeParametersOfNodeRec = (node: node) => {
                    }: node_TypeReference
                  ),
                ) =>
-               params @ [
+               
+                let sub = switch (statements, Typescript_unwrap.unwrap_Node(typeName).resolvedSymbol) {
+                  | (None, _) => []
+                  | (Some(statements), Some({id: Some(id), _})) =>
+                    findNodeForSymbolId(statements, id)
+                    |> CCOpt.map(walk)
+                    |> CCOpt.value(~default=[]);
+                  | _ => []
+                };
+
+               params @ sub @ [
                  `TypeParameter({
                    pos,
                    end_,
@@ -85,6 +100,17 @@ let typeParametersOfNodeRec = (node: node) => {
                    resolvedType: None,
                  }),
                ]
+    | `TypeReference({typeName, _}) =>
+      let sub = switch (statements, Typescript_unwrap.unwrap_Node(typeName).resolvedSymbol) {
+        | (None, _) => []
+        | (Some(statements), Some({id: Some(id), _})) =>
+          findNodeForSymbolId(statements, id)
+          |> CCOpt.map(walk)
+          |> CCOpt.value(~default=[]);
+        | _ => []
+      };
+      params @ sub
+    | `TypeParameter(_) as tp => params @ [tp]
     | _ => params
     };
   };
@@ -104,9 +130,7 @@ let typeParametersOfNodeRec = (node: node) => {
            )
          )
       |> CCList.rev;
-};
-
-let findNodeForSymbolId = (statements: list(node), symbolId: int) => {
+} and findNodeForSymbolId = (statements: list(node), symbolId: int) => {
   statements
   |> CCList.find_opt(stmnt =>
        switch (stmnt) {
@@ -130,8 +154,6 @@ let findNodeForSymbolId = (statements: list(node), symbolId: int) => {
        //| `ClassDeclaration({ resolvedSymbol: Some({id: Some(id),_}) })
        }
      );
-};
-
-let getFullyQualifiedName = (node: node) =>
+} and getFullyQualifiedName = (node: node) =>
   Typescript_unwrap.unwrap_Node(node).resolvedSymbol
   |> CCOpt.map(symbol => symbol.fullyQualifiedName);

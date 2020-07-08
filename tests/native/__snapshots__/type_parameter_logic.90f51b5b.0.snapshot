@@ -7,7 +7,7 @@ and recoilRootProps_initializeState_options('T, 'C) = {
   set: (~recoilVal: 'T, ~newVal: 'T) => unit,
   setUnvalidatedAtomValues: (~atomMap: map(string, 'C)) => unit,
 }
-and recoilRootProps('T, 'C) = {
+and recoilRootProps('C, 'T) = {
   initializeState:
     option(
       (~options: recoilRootProps_initializeState_options('T, 'C)) => unit,

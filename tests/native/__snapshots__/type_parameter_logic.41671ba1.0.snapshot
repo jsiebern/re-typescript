@@ -7,10 +7,11 @@ and recoilRootProps_initializeState_options('T, 'C) = {
   set: (~recoilVal: 'T, ~newVal: 'T) => unit,
   setUnvalidatedAtomValues: (~atomMap: map(string, 'C)) => unit,
 }
-and recoilRootProps_initializeState('T, 'C) =
-  (~options: recoilRootProps_initializeState_options('T, 'C)) => unit
 and recoilRootProps('C, 'T) = {
-  initializeState: option(recoilRootProps_initializeState('T, 'C)),
+  initializeState:
+    option(
+      (~options: recoilRootProps_initializeState_options('T, 'C)) => unit,
+    ),
 }
 and use_it('T) = recoilRootProps(string, 'T);
 

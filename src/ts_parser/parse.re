@@ -346,25 +346,42 @@ and parse__EnumDeclaration = (declaration: Ts.node_EnumDeclaration) => {
   order.lst = order.lst @ [path];
   Debug.close_pos();
 }
-and parse__DeclarationTypeParameters = (~parent: Ts.node, ~identChain, typeParameters: option(list(Ts.node))) => {
-  Debug.add_pos("parse__DeclarationTypeParameters");
-  let typeParameters = Some(typeParametersOfNodeRec(parent));
-  let tp = {
-    typeParameters
-    |> CCOpt.map_or(~default=[], params =>
-         params
-         |> CCList.mapi((i, param) =>
-              {
-                tp_name: Ident.of_string(identifierOfNode(param)),
-                tp_extends: None,
-                tp_default: None,
-              }
-            )
-       );
-  };
-  Debug.close_pos();
-  tp;
-}
+and parse__DeclarationTypeParameters = (~parent: Ts.node, ~identChain, ~target_type: option(ts_type)=?, typeParameters: option(list(Ts.node))) => {
+    Debug.add_pos("parse__DeclarationTypeParameters");
+    let typeParameters = Some(typeParametersOfNodeRec(parent));
+    let tp = {
+      typeParameters
+      |> CCOpt.map_or(~default=[], params =>
+           params
+           |> CCList.mapi((i, param) => {
+                  let name = identifierOfNode(param);
+                  {
+                    tp_name: Ident.of_string(name),
+                    tp_extends: None,
+                    tp_default: None/* switch (param) {
+                      | `TypeParameter({default: Some(default), _}) => parse__typeOfNode(~parent, ~identChain=identChain @ [name], default)
+                      | _ => None
+                    }*/
+                  }
+                }
+              )
+         );
+    };
+    let tp = tp @ switch (target_type) {
+      | Some(Reference({ tr_parameters, _ })) => tr_parameters |> CCList.filter_map(
+        fun
+          | Arg(ident) => Some({
+              tp_name: ident,
+              tp_extends: None,
+              tp_default: None,
+            })
+          | _ => None
+      )
+      | _ => []
+    };
+    Debug.close_pos();
+    tp;
+  }
 and parse__TypeAliasDeclaration = (declaration: Ts.node_TypeAliasDeclaration) => {
   Debug.add_pos("parse__TypeAliasDeclaration");
   let parent = `TypeAliasDeclaration(declaration);
@@ -390,6 +407,7 @@ and parse__TypeAliasDeclaration = (declaration: Ts.node_TypeAliasDeclaration) =>
           parse__DeclarationTypeParameters(
             ~parent,
             ~identChain,
+            ~target_type=?type_,
             declaration.typeParameters,
           ),
       });
@@ -430,7 +448,7 @@ and parse__TypeReference =
     | Some({id: Some(id), _}) =>
       findNodeForSymbolId(order.raw, id)
       |> CCOpt.map(typeParametersOfNodeRec)
-      |> CCOpt.value(~default=[])
+      |> CCOpt.value(~default=[]);
     | _ => []
     };
   let arguments = type_ref.typeArguments |> CCOpt.value(~default=[]);
@@ -473,7 +491,11 @@ and parse__TypeReference =
                  ],
                  arg,
                )
-             | _ => None
+             | (
+              `TypeParameter({name, _}: Ts.node_TypeParameter),
+              None
+             ) => Some(Arg(identifierOfNode(name) |> Ident.of_string))
+             | (node,_) => Debug.add_node(node); Debug.raiseWith(~node, "Invalid TypeParameter"); None
              }
            );
       }

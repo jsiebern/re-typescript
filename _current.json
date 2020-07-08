@@ -1,192 +1,15 @@
 {
-  "identifierCount": 12,
-  "nodeCount": 29,
+  "identifierCount": 23,
+  "nodeCount": 62,
   "isDeclarationFile": true,
   "languageVariant": 0,
   "fileName": "/root/src/bin.d.ts",
   "languageVersion": 99,
   "text":
-    "\n export function someFunction<A,B,C>(a: A, b: B): { b: B, c: C };\n",
+    "\n        export interface Map<A,B> {\n        a: A;\n        b: B;\n      }\n      export interface RecoilRootProps<C> {\n        initializeState?: (options: {\n          set: <T>(recoilVal: T, newVal: T) => void;\n          setUnvalidatedAtomValues: (atomMap: Map<string, C>) => void;\n        }) => void;\n      }\n\n      type use_it = RecoilRootProps<string>;\n",
   "statements": [
     {
-      "name": {
-        "escapedText": "someFunction",
-        "resolvedType": {
-          "objectFlags": 16,
-          "kindName": "Anonymous",
-          "id": 77,
-          "flags": 524288
-        },
-        "resolvedSymbol": {
-          "name": "someFunction",
-          "fullyQualifiedName": "\"/root/src/bin\".someFunction",
-          "id": 15,
-          "flags": 16
-        },
-        "flags": 8388608,
-        "kindName": "Identifier",
-        "kind": 75,
-        "end": 30,
-        "pos": 17
-      },
-      "type": {
-        "members": [
-          {
-            "type": {
-              "typeName": {
-                "escapedText": "B",
-                "resolvedType": {
-                  "kindName": "TypeParameter",
-                  "id": 79,
-                  "flags": 262144
-                },
-                "resolvedSymbol": {
-                  "name": "B",
-                  "fullyQualifiedName": "B",
-                  "id": 17,
-                  "flags": 262144
-                },
-                "flags": 8388608,
-                "kindName": "Identifier",
-                "kind": 75,
-                "end": 57,
-                "pos": 55
-              },
-              "resolvedType": {
-                "kindName": "TypeParameter",
-                "id": 79,
-                "flags": 262144
-              },
-              "flags": 8388608,
-              "kindName": "TypeReference",
-              "kind": 169,
-              "end": 57,
-              "pos": 55
-            },
-            "name": {
-              "escapedText": "b",
-              "resolvedType": {
-                "kindName": "TypeParameter",
-                "id": 79,
-                "flags": 262144
-              },
-              "resolvedSymbol": {
-                "name": "b",
-                "fullyQualifiedName": "__type.b",
-                "id": 22,
-                "flags": 4
-              },
-              "flags": 8388608,
-              "kindName": "Identifier",
-              "kind": 75,
-              "end": 54,
-              "pos": 52
-            },
-            "resolvedType": {
-              "kindName": "TypeParameter",
-              "id": 79,
-              "flags": 262144
-            },
-            "resolvedSymbol": {
-              "name": "b",
-              "fullyQualifiedName": "__type.b",
-              "id": 22,
-              "flags": 4
-            },
-            "flags": 8388608,
-            "kindName": "PropertySignature",
-            "kind": 158,
-            "end": 58,
-            "pos": 52
-          },
-          {
-            "type": {
-              "typeName": {
-                "escapedText": "C",
-                "resolvedType": {
-                  "kindName": "TypeParameter",
-                  "id": 80,
-                  "flags": 262144
-                },
-                "resolvedSymbol": {
-                  "name": "C",
-                  "fullyQualifiedName": "C",
-                  "id": 18,
-                  "flags": 262144
-                },
-                "flags": 8388608,
-                "kindName": "Identifier",
-                "kind": 75,
-                "end": 63,
-                "pos": 61
-              },
-              "resolvedType": {
-                "kindName": "TypeParameter",
-                "id": 80,
-                "flags": 262144
-              },
-              "flags": 8388608,
-              "kindName": "TypeReference",
-              "kind": 169,
-              "end": 63,
-              "pos": 61
-            },
-            "name": {
-              "escapedText": "c",
-              "resolvedType": {
-                "kindName": "TypeParameter",
-                "id": 80,
-                "flags": 262144
-              },
-              "resolvedSymbol": {
-                "name": "c",
-                "fullyQualifiedName": "__type.c",
-                "id": 23,
-                "flags": 4
-              },
-              "flags": 8388608,
-              "kindName": "Identifier",
-              "kind": 75,
-              "end": 60,
-              "pos": 58
-            },
-            "resolvedType": {
-              "kindName": "TypeParameter",
-              "id": 80,
-              "flags": 262144
-            },
-            "resolvedSymbol": {
-              "name": "c",
-              "fullyQualifiedName": "__type.c",
-              "id": 23,
-              "flags": 4
-            },
-            "flags": 8388608,
-            "kindName": "PropertySignature",
-            "kind": 158,
-            "end": 63,
-            "pos": 58
-          }
-        ],
-        "resolvedType": {
-          "objectFlags": 16,
-          "kindName": "Anonymous",
-          "id": 81,
-          "flags": 524288
-        },
-        "resolvedSymbol": {
-          "name": "__type",
-          "fullyQualifiedName": "__type",
-          "id": 21,
-          "flags": 2048
-        },
-        "flags": 8388608,
-        "kindName": "TypeLiteral",
-        "kind": 173,
-        "end": 65,
-        "pos": 50
-      },
-      "parameters": [
+      "members": [
         {
           "type": {
             "typeName": {
@@ -198,15 +21,15 @@
               },
               "resolvedSymbol": {
                 "name": "A",
-                "fullyQualifiedName": "A",
-                "id": 16,
+                "fullyQualifiedName": "\"/root/src/bin\".Map.A",
+                "id": 15,
                 "flags": 262144
               },
               "flags": 8388608,
               "kindName": "Identifier",
               "kind": 75,
-              "end": 42,
-              "pos": 40
+              "end": 49,
+              "pos": 47
             },
             "resolvedType": {
               "kindName": "TypeParameter",
@@ -216,8 +39,8 @@
             "flags": 8388608,
             "kindName": "TypeReference",
             "kind": 169,
-            "end": 42,
-            "pos": 40
+            "end": 49,
+            "pos": 47
           },
           "name": {
             "escapedText": "a",
@@ -228,15 +51,15 @@
             },
             "resolvedSymbol": {
               "name": "a",
-              "fullyQualifiedName": "a",
-              "id": 19,
-              "flags": 1
+              "fullyQualifiedName": "\"/root/src/bin\".Map.a",
+              "id": 18,
+              "flags": 4
             },
             "flags": 8388608,
             "kindName": "Identifier",
             "kind": 75,
-            "end": 39,
-            "pos": 38
+            "end": 46,
+            "pos": 36
           },
           "resolvedType": {
             "kindName": "TypeParameter",
@@ -245,15 +68,15 @@
           },
           "resolvedSymbol": {
             "name": "a",
-            "fullyQualifiedName": "a",
-            "id": 19,
-            "flags": 1
+            "fullyQualifiedName": "\"/root/src/bin\".Map.a",
+            "id": 18,
+            "flags": 4
           },
           "flags": 8388608,
-          "kindName": "Parameter",
-          "kind": 156,
-          "end": 42,
-          "pos": 38
+          "kindName": "PropertySignature",
+          "kind": 158,
+          "end": 50,
+          "pos": 36
         },
         {
           "type": {
@@ -266,15 +89,15 @@
               },
               "resolvedSymbol": {
                 "name": "B",
-                "fullyQualifiedName": "B",
-                "id": 17,
+                "fullyQualifiedName": "\"/root/src/bin\".Map.B",
+                "id": 16,
                 "flags": 262144
               },
               "flags": 8388608,
               "kindName": "Identifier",
               "kind": 75,
-              "end": 48,
-              "pos": 46
+              "end": 63,
+              "pos": 61
             },
             "resolvedType": {
               "kindName": "TypeParameter",
@@ -284,8 +107,8 @@
             "flags": 8388608,
             "kindName": "TypeReference",
             "kind": 169,
-            "end": 48,
-            "pos": 46
+            "end": 63,
+            "pos": 61
           },
           "name": {
             "escapedText": "b",
@@ -296,15 +119,15 @@
             },
             "resolvedSymbol": {
               "name": "b",
-              "fullyQualifiedName": "b",
-              "id": 20,
-              "flags": 1
+              "fullyQualifiedName": "\"/root/src/bin\".Map.b",
+              "id": 19,
+              "flags": 4
             },
             "flags": 8388608,
             "kindName": "Identifier",
             "kind": 75,
-            "end": 45,
-            "pos": 43
+            "end": 60,
+            "pos": 50
           },
           "resolvedType": {
             "kindName": "TypeParameter",
@@ -313,15 +136,15 @@
           },
           "resolvedSymbol": {
             "name": "b",
-            "fullyQualifiedName": "b",
-            "id": 20,
-            "flags": 1
+            "fullyQualifiedName": "\"/root/src/bin\".Map.b",
+            "id": 19,
+            "flags": 4
           },
           "flags": 8388608,
-          "kindName": "Parameter",
-          "kind": 156,
-          "end": 48,
-          "pos": 43
+          "kindName": "PropertySignature",
+          "kind": 158,
+          "end": 64,
+          "pos": 50
         }
       ],
       "typeParameters": [
@@ -335,15 +158,15 @@
             },
             "resolvedSymbol": {
               "name": "A",
-              "fullyQualifiedName": "A",
-              "id": 16,
+              "fullyQualifiedName": "\"/root/src/bin\".Map.A",
+              "id": 15,
               "flags": 262144
             },
             "flags": 8388608,
             "kindName": "Identifier",
             "kind": 75,
-            "end": 32,
-            "pos": 31
+            "end": 31,
+            "pos": 30
           },
           "resolvedType": {
             "kindName": "TypeParameter",
@@ -352,15 +175,15 @@
           },
           "resolvedSymbol": {
             "name": "A",
-            "fullyQualifiedName": "A",
-            "id": 16,
+            "fullyQualifiedName": "\"/root/src/bin\".Map.A",
+            "id": 15,
             "flags": 262144
           },
           "flags": 8388608,
           "kindName": "TypeParameter",
           "kind": 155,
-          "end": 32,
-          "pos": 31
+          "end": 31,
+          "pos": 30
         },
         {
           "name": {
@@ -372,15 +195,15 @@
             },
             "resolvedSymbol": {
               "name": "B",
-              "fullyQualifiedName": "B",
-              "id": 17,
+              "fullyQualifiedName": "\"/root/src/bin\".Map.B",
+              "id": 16,
               "flags": 262144
             },
             "flags": 8388608,
             "kindName": "Identifier",
             "kind": 75,
-            "end": 34,
-            "pos": 33
+            "end": 33,
+            "pos": 32
           },
           "resolvedType": {
             "kindName": "TypeParameter",
@@ -389,65 +212,46 @@
           },
           "resolvedSymbol": {
             "name": "B",
-            "fullyQualifiedName": "B",
-            "id": 17,
+            "fullyQualifiedName": "\"/root/src/bin\".Map.B",
+            "id": 16,
             "flags": 262144
           },
           "flags": 8388608,
           "kindName": "TypeParameter",
           "kind": 155,
-          "end": 34,
-          "pos": 33
-        },
-        {
-          "name": {
-            "escapedText": "C",
-            "resolvedType": {
-              "kindName": "TypeParameter",
-              "id": 80,
-              "flags": 262144
-            },
-            "resolvedSymbol": {
-              "name": "C",
-              "fullyQualifiedName": "C",
-              "id": 18,
-              "flags": 262144
-            },
-            "flags": 8388608,
-            "kindName": "Identifier",
-            "kind": 75,
-            "end": 36,
-            "pos": 35
-          },
-          "resolvedType": {
-            "kindName": "TypeParameter",
-            "id": 80,
-            "flags": 262144
-          },
-          "resolvedSymbol": {
-            "name": "C",
-            "fullyQualifiedName": "C",
-            "id": 18,
-            "flags": 262144
-          },
-          "flags": 8388608,
-          "kindName": "TypeParameter",
-          "kind": 155,
-          "end": 36,
-          "pos": 35
+          "end": 33,
+          "pos": 32
         }
       ],
+      "name": {
+        "escapedText": "Map",
+        "resolvedType": {
+          "kindName": "ClassOrInterface",
+          "id": 77,
+          "flags": 524288
+        },
+        "resolvedSymbol": {
+          "name": "Map",
+          "fullyQualifiedName": "\"/root/src/bin\".Map",
+          "id": 14,
+          "flags": 64
+        },
+        "flags": 8388608,
+        "kindName": "Identifier",
+        "kind": 75,
+        "end": 29,
+        "pos": 25
+      },
       "resolvedType": {
-        "objectFlags": 16,
-        "kindName": "Anonymous",
+        "kindName": "ClassOrInterface",
         "id": 77,
         "flags": 524288
       },
       "resolvedSymbol": {
-        "name": "someFunction",
-        "fullyQualifiedName": "\"/root/src/bin\".someFunction",
-        "id": 15,
-        "flags": 16
+        "name": "Map",
+        "fullyQualifiedName": "\"/root/src/bin\".Map",
+        "id": 14,
+        "flags": 64
       },
       "modifiers": [
         {
@@ -455,20 +259,771 @@
           "flags": 8388608,
           "kindName": "ExportKeyword",
           "kind": 89,
-          "end": 8,
+          "end": 15,
           "pos": 0
         }
       ],
       "flags": 8388608,
-      "kindName": "FunctionDeclaration",
-      "kind": 244,
-      "end": 66,
+      "kindName": "InterfaceDeclaration",
+      "kind": 246,
+      "end": 72,
       "pos": 0
+    },
+    {
+      "members": [
+        {
+          "type": {
+            "type": {
+              "resolvedType": {
+                "kindName": "Void",
+                "id": 24,
+                "flags": 16384
+              },
+              "flags": 8388608,
+              "kindName": "VoidKeyword",
+              "kind": 110,
+              "end": 297,
+              "pos": 292
+            },
+            "parameters": [
+              {
+                "type": {
+                  "members": [
+                    {
+                      "type": {
+                        "type": {
+                          "resolvedType": {
+                            "kindName": "Void",
+                            "id": 24,
+                            "flags": 16384
+                          },
+                          "flags": 8388608,
+                          "kindName": "VoidKeyword",
+                          "kind": 110,
+                          "end": 206,
+                          "pos": 201
+                        },
+                        "parameters": [
+                          {
+                            "type": {
+                              "typeName": {
+                                "escapedText": "T",
+                                "resolvedType": {
+                                  "kindName": "TypeParameter",
+                                  "id": 87,
+                                  "flags": 262144
+                                },
+                                "resolvedSymbol": {
+                                  "name": "T",
+                                  "fullyQualifiedName": "T",
+                                  "id": 28,
+                                  "flags": 262144
+                                },
+                                "flags": 8388608,
+                                "kindName": "Identifier",
+                                "kind": 75,
+                                "end": 186,
+                                "pos": 184
+                              },
+                              "resolvedType": {
+                                "kindName": "TypeParameter",
+                                "id": 87,
+                                "flags": 262144
+                              },
+                              "flags": 8388608,
+                              "kindName": "TypeReference",
+                              "kind": 169,
+                              "end": 186,
+                              "pos": 184
+                            },
+                            "name": {
+                              "escapedText": "recoilVal",
+                              "resolvedType": {
+                                "kindName": "TypeParameter",
+                                "id": 87,
+                                "flags": 262144
+                              },
+                              "resolvedSymbol": {
+                                "name": "recoilVal",
+                                "fullyQualifiedName": "recoilVal",
+                                "id": 29,
+                                "flags": 1
+                              },
+                              "flags": 8388608,
+                              "kindName": "Identifier",
+                              "kind": 75,
+                              "end": 183,
+                              "pos": 174
+                            },
+                            "resolvedType": {
+                              "kindName": "TypeParameter",
+                              "id": 87,
+                              "flags": 262144
+                            },
+                            "resolvedSymbol": {
+                              "name": "recoilVal",
+                              "fullyQualifiedName": "recoilVal",
+                              "id": 29,
+                              "flags": 1
+                            },
+                            "flags": 8388608,
+                            "kindName": "Parameter",
+                            "kind": 156,
+                            "end": 186,
+                            "pos": 174
+                          },
+                          {
+                            "type": {
+                              "typeName": {
+                                "escapedText": "T",
+                                "resolvedType": {
+                                  "kindName": "TypeParameter",
+                                  "id": 87,
+                                  "flags": 262144
+                                },
+                                "resolvedSymbol": {
+                                  "name": "T",
+                                  "fullyQualifiedName": "T",
+                                  "id": 28,
+                                  "flags": 262144
+                                },
+                                "flags": 8388608,
+                                "kindName": "Identifier",
+                                "kind": 75,
+                                "end": 197,
+                                "pos": 195
+                              },
+                              "resolvedType": {
+                                "kindName": "TypeParameter",
+                                "id": 87,
+                                "flags": 262144
+                              },
+                              "flags": 8388608,
+                              "kindName": "TypeReference",
+                              "kind": 169,
+                              "end": 197,
+                              "pos": 195
+                            },
+                            "name": {
+                              "escapedText": "newVal",
+                              "resolvedType": {
+                                "kindName": "TypeParameter",
+                                "id": 87,
+                                "flags": 262144
+                              },
+                              "resolvedSymbol": {
+                                "name": "newVal",
+                                "fullyQualifiedName": "newVal",
+                                "id": 30,
+                                "flags": 1
+                              },
+                              "flags": 8388608,
+                              "kindName": "Identifier",
+                              "kind": 75,
+                              "end": 194,
+                              "pos": 187
+                            },
+                            "resolvedType": {
+                              "kindName": "TypeParameter",
+                              "id": 87,
+                              "flags": 262144
+                            },
+                            "resolvedSymbol": {
+                              "name": "newVal",
+                              "fullyQualifiedName": "newVal",
+                              "id": 30,
+                              "flags": 1
+                            },
+                            "flags": 8388608,
+                            "kindName": "Parameter",
+                            "kind": 156,
+                            "end": 197,
+                            "pos": 187
+                          }
+                        ],
+                        "typeParameters": [
+                          {
+                            "name": {
+                              "escapedText": "T",
+                              "resolvedType": {
+                                "kindName": "TypeParameter",
+                                "id": 87,
+                                "flags": 262144
+                              },
+                              "resolvedSymbol": {
+                                "name": "T",
+                                "fullyQualifiedName": "T",
+                                "id": 28,
+                                "flags": 262144
+                              },
+                              "flags": 8388608,
+                              "kindName": "Identifier",
+                              "kind": 75,
+                              "end": 172,
+                              "pos": 171
+                            },
+                            "resolvedType": {
+                              "kindName": "TypeParameter",
+                              "id": 87,
+                              "flags": 262144
+                            },
+                            "resolvedSymbol": {
+                              "name": "T",
+                              "fullyQualifiedName": "T",
+                              "id": 28,
+                              "flags": 262144
+                            },
+                            "flags": 8388608,
+                            "kindName": "TypeParameter",
+                            "kind": 155,
+                            "end": 172,
+                            "pos": 171
+                          }
+                        ],
+                        "resolvedType": {
+                          "objectFlags": 16,
+                          "kindName": "Anonymous",
+                          "id": 86,
+                          "flags": 524288
+                        },
+                        "resolvedSymbol": {
+                          "name": "__type",
+                          "fullyQualifiedName": "__type",
+                          "id": 27,
+                          "flags": 2048
+                        },
+                        "flags": 8388608,
+                        "kindName": "FunctionType",
+                        "kind": 170,
+                        "end": 206,
+                        "pos": 169
+                      },
+                      "name": {
+                        "originalKeywordKind": 142,
+                        "escapedText": "set",
+                        "resolvedType": {
+                          "objectFlags": 16,
+                          "kindName": "Anonymous",
+                          "id": 86,
+                          "flags": 524288
+                        },
+                        "resolvedSymbol": {
+                          "name": "set",
+                          "fullyQualifiedName": "__type.set",
+                          "id": 26,
+                          "flags": 4
+                        },
+                        "flags": 8388608,
+                        "kindName": "Identifier",
+                        "kind": 75,
+                        "end": 168,
+                        "pos": 154
+                      },
+                      "resolvedType": {
+                        "objectFlags": 16,
+                        "kindName": "Anonymous",
+                        "id": 86,
+                        "flags": 524288
+                      },
+                      "resolvedSymbol": {
+                        "name": "set",
+                        "fullyQualifiedName": "__type.set",
+                        "id": 26,
+                        "flags": 4
+                      },
+                      "flags": 8388608,
+                      "kindName": "PropertySignature",
+                      "kind": 158,
+                      "end": 207,
+                      "pos": 154
+                    },
+                    {
+                      "type": {
+                        "type": {
+                          "resolvedType": {
+                            "kindName": "Void",
+                            "id": 24,
+                            "flags": 16384
+                          },
+                          "flags": 8388608,
+                          "kindName": "VoidKeyword",
+                          "kind": 110,
+                          "end": 277,
+                          "pos": 272
+                        },
+                        "parameters": [
+                          {
+                            "type": {
+                              "typeName": {
+                                "escapedText": "Map",
+                                "resolvedType": {
+                                  "kindName": "ClassOrInterface",
+                                  "id": 77,
+                                  "flags": 524288
+                                },
+                                "resolvedSymbol": {
+                                  "name": "Map",
+                                  "fullyQualifiedName":
+                                    "\"/root/src/bin\".Map",
+                                  "id": 14,
+                                  "flags": 64
+                                },
+                                "flags": 8388608,
+                                "kindName": "Identifier",
+                                "kind": 75,
+                                "end": 257,
+                                "pos": 253
+                              },
+                              "typeArguments": [
+                                {
+                                  "resolvedType": {
+                                    "kindName": "String",
+                                    "id": 12,
+                                    "flags": 4
+                                  },
+                                  "flags": 8388608,
+                                  "kindName": "StringKeyword",
+                                  "kind": 143,
+                                  "end": 264,
+                                  "pos": 258
+                                },
+                                {
+                                  "typeName": {
+                                    "escapedText": "C",
+                                    "resolvedType": {
+                                      "kindName": "TypeParameter",
+                                      "id": 82,
+                                      "flags": 262144
+                                    },
+                                    "resolvedSymbol": {
+                                      "name": "C",
+                                      "fullyQualifiedName":
+                                        "\"/root/src/bin\".RecoilRootProps.C",
+                                      "id": 21,
+                                      "flags": 262144
+                                    },
+                                    "flags": 8388608,
+                                    "kindName": "Identifier",
+                                    "kind": 75,
+                                    "end": 267,
+                                    "pos": 265
+                                  },
+                                  "resolvedType": {
+                                    "kindName": "TypeParameter",
+                                    "id": 82,
+                                    "flags": 262144
+                                  },
+                                  "flags": 8388608,
+                                  "kindName": "TypeReference",
+                                  "kind": 169,
+                                  "end": 267,
+                                  "pos": 265
+                                }
+                              ],
+                              "resolvedType": {
+                                "objectFlags": 4,
+                                "kindName": "Object",
+                                "id": 89,
+                                "flags": 524288
+                              },
+                              "flags": 8388608,
+                              "kindName": "TypeReference",
+                              "kind": 169,
+                              "end": 268,
+                              "pos": 253
+                            },
+                            "name": {
+                              "escapedText": "atomMap",
+                              "resolvedType": {
+                                "objectFlags": 4,
+                                "kindName": "Object",
+                                "id": 89,
+                                "flags": 524288
+                              },
+                              "resolvedSymbol": {
+                                "name": "atomMap",
+                                "fullyQualifiedName": "atomMap",
+                                "id": 33,
+                                "flags": 1
+                              },
+                              "flags": 8388608,
+                              "kindName": "Identifier",
+                              "kind": 75,
+                              "end": 252,
+                              "pos": 245
+                            },
+                            "resolvedType": {
+                              "objectFlags": 4,
+                              "kindName": "Object",
+                              "id": 89,
+                              "flags": 524288
+                            },
+                            "resolvedSymbol": {
+                              "name": "atomMap",
+                              "fullyQualifiedName": "atomMap",
+                              "id": 33,
+                              "flags": 1
+                            },
+                            "flags": 8388608,
+                            "kindName": "Parameter",
+                            "kind": 156,
+                            "end": 268,
+                            "pos": 245
+                          }
+                        ],
+                        "resolvedType": {
+                          "objectFlags": 16,
+                          "kindName": "Anonymous",
+                          "id": 88,
+                          "flags": 524288
+                        },
+                        "resolvedSymbol": {
+                          "name": "__type",
+                          "fullyQualifiedName": "__type",
+                          "id": 32,
+                          "flags": 2048
+                        },
+                        "flags": 8388608,
+                        "kindName": "FunctionType",
+                        "kind": 170,
+                        "end": 277,
+                        "pos": 243
+                      },
+                      "name": {
+                        "escapedText": "setUnvalidatedAtomValues",
+                        "resolvedType": {
+                          "objectFlags": 16,
+                          "kindName": "Anonymous",
+                          "id": 88,
+                          "flags": 524288
+                        },
+                        "resolvedSymbol": {
+                          "name": "setUnvalidatedAtomValues",
+                          "fullyQualifiedName":
+                            "__type.setUnvalidatedAtomValues",
+                          "id": 31,
+                          "flags": 4
+                        },
+                        "flags": 8388608,
+                        "kindName": "Identifier",
+                        "kind": 75,
+                        "end": 242,
+                        "pos": 207
+                      },
+                      "resolvedType": {
+                        "objectFlags": 16,
+                        "kindName": "Anonymous",
+                        "id": 88,
+                        "flags": 524288
+                      },
+                      "resolvedSymbol": {
+                        "name": "setUnvalidatedAtomValues",
+                        "fullyQualifiedName":
+                          "__type.setUnvalidatedAtomValues",
+                        "id": 31,
+                        "flags": 4
+                      },
+                      "flags": 8388608,
+                      "kindName": "PropertySignature",
+                      "kind": 158,
+                      "end": 278,
+                      "pos": 207
+                    }
+                  ],
+                  "resolvedType": {
+                    "objectFlags": 16,
+                    "kindName": "Anonymous",
+                    "id": 85,
+                    "flags": 524288
+                  },
+                  "resolvedSymbol": {
+                    "name": "__type",
+                    "fullyQualifiedName": "__type",
+                    "id": 25,
+                    "flags": 2048
+                  },
+                  "flags": 8388608,
+                  "kindName": "TypeLiteral",
+                  "kind": 173,
+                  "end": 288,
+                  "pos": 152
+                },
+                "name": {
+                  "escapedText": "options",
+                  "resolvedType": {
+                    "objectFlags": 16,
+                    "kindName": "Anonymous",
+                    "id": 85,
+                    "flags": 524288
+                  },
+                  "resolvedSymbol": {
+                    "name": "options",
+                    "fullyQualifiedName": "options",
+                    "id": 24,
+                    "flags": 1
+                  },
+                  "flags": 8388608,
+                  "kindName": "Identifier",
+                  "kind": 75,
+                  "end": 151,
+                  "pos": 144
+                },
+                "resolvedType": {
+                  "objectFlags": 16,
+                  "kindName": "Anonymous",
+                  "id": 85,
+                  "flags": 524288
+                },
+                "resolvedSymbol": {
+                  "name": "options",
+                  "fullyQualifiedName": "options",
+                  "id": 24,
+                  "flags": 1
+                },
+                "flags": 8388608,
+                "kindName": "Parameter",
+                "kind": 156,
+                "end": 288,
+                "pos": 144
+              }
+            ],
+            "resolvedType": {
+              "objectFlags": 16,
+              "kindName": "Anonymous",
+              "id": 84,
+              "flags": 524288
+            },
+            "resolvedSymbol": {
+              "name": "__type",
+              "fullyQualifiedName": "__type",
+              "id": 23,
+              "flags": 2048
+            },
+            "flags": 8388608,
+            "kindName": "FunctionType",
+            "kind": 170,
+            "end": 297,
+            "pos": 142
+          },
+          "questionToken": {
+            "resolvedType": { "kindName": "Any", "id": 4, "flags": 1 },
+            "flags": 8388608,
+            "kindName": "QuestionToken",
+            "kind": 57,
+            "end": 141,
+            "pos": 140
+          },
+          "name": {
+            "escapedText": "initializeState",
+            "resolvedType": {
+              "objectFlags": 16,
+              "kindName": "Anonymous",
+              "id": 84,
+              "flags": 524288
+            },
+            "resolvedSymbol": {
+              "name": "initializeState",
+              "fullyQualifiedName":
+                "\"/root/src/bin\".RecoilRootProps.initializeState",
+              "id": 22,
+              "flags": 16777220
+            },
+            "flags": 8388608,
+            "kindName": "Identifier",
+            "kind": 75,
+            "end": 140,
+            "pos": 116
+          },
+          "resolvedType": {
+            "objectFlags": 16,
+            "kindName": "Anonymous",
+            "id": 84,
+            "flags": 524288
+          },
+          "resolvedSymbol": {
+            "name": "initializeState",
+            "fullyQualifiedName":
+              "\"/root/src/bin\".RecoilRootProps.initializeState",
+            "id": 22,
+            "flags": 16777220
+          },
+          "flags": 8388608,
+          "kindName": "PropertySignature",
+          "kind": 158,
+          "end": 298,
+          "pos": 116
+        }
+      ],
+      "typeParameters": [
+        {
+          "name": {
+            "escapedText": "C",
+            "resolvedType": {
+              "kindName": "TypeParameter",
+              "id": 82,
+              "flags": 262144
+            },
+            "resolvedSymbol": {
+              "name": "C",
+              "fullyQualifiedName": "\"/root/src/bin\".RecoilRootProps.C",
+              "id": 21,
+              "flags": 262144
+            },
+            "flags": 8388608,
+            "kindName": "Identifier",
+            "kind": 75,
+            "end": 113,
+            "pos": 112
+          },
+          "resolvedType": {
+            "kindName": "TypeParameter",
+            "id": 82,
+            "flags": 262144
+          },
+          "resolvedSymbol": {
+            "name": "C",
+            "fullyQualifiedName": "\"/root/src/bin\".RecoilRootProps.C",
+            "id": 21,
+            "flags": 262144
+          },
+          "flags": 8388608,
+          "kindName": "TypeParameter",
+          "kind": 155,
+          "end": 113,
+          "pos": 112
+        }
+      ],
+      "name": {
+        "escapedText": "RecoilRootProps",
+        "resolvedType": {
+          "kindName": "ClassOrInterface",
+          "id": 81,
+          "flags": 524288
+        },
+        "resolvedSymbol": {
+          "name": "RecoilRootProps",
+          "fullyQualifiedName": "\"/root/src/bin\".RecoilRootProps",
+          "id": 20,
+          "flags": 64
+        },
+        "flags": 8388608,
+        "kindName": "Identifier",
+        "kind": 75,
+        "end": 111,
+        "pos": 95
+      },
+      "resolvedType": {
+        "kindName": "ClassOrInterface",
+        "id": 81,
+        "flags": 524288
+      },
+      "resolvedSymbol": {
+        "name": "RecoilRootProps",
+        "fullyQualifiedName": "\"/root/src/bin\".RecoilRootProps",
+        "id": 20,
+        "flags": 64
+      },
+      "modifiers": [
+        {
+          "resolvedType": { "kindName": "Any", "id": 4, "flags": 1 },
+          "flags": 8388608,
+          "kindName": "ExportKeyword",
+          "kind": 89,
+          "end": 85,
+          "pos": 72
+        }
+      ],
+      "flags": 8388608,
+      "kindName": "InterfaceDeclaration",
+      "kind": 246,
+      "end": 306,
+      "pos": 72
+    },
+    {
+      "type": {
+        "typeName": {
+          "escapedText": "RecoilRootProps",
+          "resolvedType": {
+            "kindName": "ClassOrInterface",
+            "id": 81,
+            "flags": 524288
+          },
+          "resolvedSymbol": {
+            "name": "RecoilRootProps",
+            "fullyQualifiedName": "\"/root/src/bin\".RecoilRootProps",
+            "id": 20,
+            "flags": 64
+          },
+          "flags": 8388608,
+          "kindName": "Identifier",
+          "kind": 75,
+          "end": 343,
+          "pos": 327
+        },
+        "typeArguments": [
+          {
+            "resolvedType": { "kindName": "String", "id": 12, "flags": 4 },
+            "flags": 8388608,
+            "kindName": "StringKeyword",
+            "kind": 143,
+            "end": 350,
+            "pos": 344
+          }
+        ],
+        "resolvedType": {
+          "objectFlags": 4,
+          "kindName": "Object",
+          "id": 90,
+          "flags": 524288
+        },
+        "flags": 8388608,
+        "kindName": "TypeReference",
+        "kind": 169,
+        "end": 351,
+        "pos": 327
+      },
+      "name": {
+        "escapedText": "use_it",
+        "resolvedType": {
+          "objectFlags": 4,
+          "kindName": "Object",
+          "id": 90,
+          "flags": 524288
+        },
+        "resolvedSymbol": {
+          "name": "use_it",
+          "fullyQualifiedName": "\"/root/src/bin\".use_it",
+          "id": 34,
+          "flags": 524288
+        },
+        "flags": 8388608,
+        "kindName": "Identifier",
+        "kind": 75,
+        "end": 325,
+        "pos": 318
+      },
+      "resolvedType": {
+        "objectFlags": 4,
+        "kindName": "Object",
+        "id": 90,
+        "flags": 524288
+      },
+      "resolvedSymbol": {
+        "name": "use_it",
+        "fullyQualifiedName": "\"/root/src/bin\".use_it",
+        "id": 34,
+        "flags": 524288
+      },
+      "flags": 8388608,
+      "kindName": "TypeAliasDeclaration",
+      "kind": 247,
+      "end": 352,
+      "pos": 306
     }
   ],
   "flags": 8388672,
   "kindName": "SourceFile",
   "kind": 290,
-  "end": 67,
+  "end": 353,
   "pos": 0
 }

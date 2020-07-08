@@ -117,7 +117,9 @@ describe("type parameter logic", ({test, _}) => {
       ),
     ).
       toMatchSnapshot();
-    expect.string(
+  });
+  test("default parameter can be another union", ({expect,_}) => {
+      expect.string(
       print(
         {|
       type with_param2<a = string | number> = a;
