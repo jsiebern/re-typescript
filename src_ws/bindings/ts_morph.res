@@ -85,6 +85,7 @@ module Node = {
   @bs.set
   external setResolvedSymbol: (t, Symbol.t) => unit = "resolvedSymbol"
   @bs.set external setKindName: (t, string) => unit = "kindName"
+  @bs.set external setResolvedTypeParams: (t, array<t>) => unit = "resolvedTypeParams"
 
   @bs.send external getType: t => option<Type.t> = "getType"
   @bs.send external getSymbol: t => option<Symbol.t> = "getSymbol"
@@ -99,6 +100,14 @@ module Node = {
   external forEachDescendant: (t, (. t) => unit) => unit = "forEachDescendant"
   @bs.send external getChildren: t => array<t> = "getChildren"
   @bs.get external compilerNode: t => Typescript_raw.node = "compilerNode"
+
+  @bs.send external getTypeParameters: t => array<t> = "getTypeParameters";
+}
+module NodeStatic = {
+  type t;
+
+  @bs.val @bs.module("ts-morph") external t: t = "Node";
+  @bs.send external isTypeParameteredNode: (t, Node.t) => bool = "isTypeParameteredNode";
 }
 
 module SourceFile = {

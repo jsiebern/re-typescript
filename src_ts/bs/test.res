@@ -6,6 +6,10 @@ let sourceFile =
   project->Project.createSourceFile(
     "test.d.ts",
     `
+interface i_1<C, A = string> { field1: A, fieldx: C }
+interface i_2<B, A, B> extends i_1<A> { field2: B }
+type x = i_2<boolean, string>;
+type y = i_1<string>;
 `,
   );
 sourceFile->SourceFile.saveSync;

@@ -2,6 +2,7 @@ module Ts = Typescript_t;
 module Types = Re_typescript_printer.Tree_types;
 
 module Debug = Parse_debug;
+open Parse_utils;
 
 // -------------------------------------------------------------
 // --- Todo ---
@@ -76,6 +77,7 @@ let rec parse__node = (node: Ts.node) => {
 and parse__SignatureDeclarationLike =
     (
       ~parent: Ts.node,
+      ~identChain,
       ~parameters: list(Ts.node),
       ~return_type: option(Ts.node),
     ) => {
@@ -84,7 +86,7 @@ and parse__SignatureDeclarationLike =
   let fu_return =
     switch (return_type) {
     | None => Base(Any) // No return: void
-    | Some(dec_type) => parse__typeOfNode_exn(~parent, dec_type)
+    | Some(dec_type) => parse__typeOfNode_exn(~parent, ~identChain, dec_type)
     };
   let fn = {
     fu_params:
@@ -99,7 +101,13 @@ and parse__SignatureDeclarationLike =
              ) as param => {
                fp_name: escapedText |> Ident.of_string,
                fp_type:
-                 switch (parse__typeOfNode(~parent, param)) {
+                 switch (
+                   parse__typeOfNode(
+                     ~parent,
+                     ~identChain=identChain @ [escapedText],
+                     param,
+                   )
+                 ) {
                  | Some(t) => t
                  | None => raise(Not_found)
                  },
@@ -116,11 +124,7 @@ and parse__SignatureDeclarationLike =
 and parse__FunctionDeclaration = (declaration: Ts.node_FunctionDeclaration) => {
   Debug.add_pos("parse__FunctionDeclaration");
   let parent = `FunctionDeclaration(declaration);
-  let name =
-    switch (declaration.name) {
-    | Some(`Identifier({escapedText, _})) => escapedText
-    | _ => raise(Not_found)
-    };
+  let name = identifierOfNode(parent);
 
   let td =
     Types.TypeDeclaration({
@@ -128,11 +132,16 @@ and parse__FunctionDeclaration = (declaration: Ts.node_FunctionDeclaration) => {
       td_type:
         parse__SignatureDeclarationLike(
           ~parent,
+          ~identChain=[name],
           ~parameters=declaration.parameters,
           ~return_type=declaration.type_,
         ),
       td_parameters:
-        parse__DeclarationTypeParameters(~parent, declaration.typeParameters),
+        parse__DeclarationTypeParameters(
+          ~parent,
+          ~identChain=[name],
+          declaration.typeParameters,
+        ),
     });
   let path = ([name], []);
   Hashtbl.add(types, path, td);
@@ -140,8 +149,13 @@ and parse__FunctionDeclaration = (declaration: Ts.node_FunctionDeclaration) => {
   Debug.close_pos();
   ();
 }
-and parse__Signature = (~parent: Ts.node, signature: Ts.node) => {
+and parse__Signature = (~parent: Ts.node, ~identChain, signature: Ts.node) => {
   Debug.add_pos("parse__Signature");
+  let isOptional =
+    switch (signature) {
+    | `PropertySignature({questionToken: Some(_), _}) => true
+    | _ => false
+    };
   switch (signature) {
   | `IndexSignature(_) => None
   | `MethodSignature(
@@ -155,7 +169,13 @@ and parse__Signature = (~parent: Ts.node, signature: Ts.node) => {
       ),
     ) as pSig =>
     let type_result =
-      switch (parse__typeOfNode(~parent, pSig)) {
+      switch (
+        parse__typeOfNode(
+          ~parent,
+          ~identChain=identChain @ [escapedText],
+          pSig,
+        )
+      ) {
       | Some(t) => t
       | None =>
         Debug.add_node(pSig);
@@ -164,7 +184,10 @@ and parse__Signature = (~parent: Ts.node, signature: Ts.node) => {
       };
 
     Debug.close_pos();
-    Some((escapedText |> Ident.of_string, type_result));
+    Some((
+      escapedText |> Ident.of_string,
+      isOptional ? Optional(type_result) : type_result,
+    ));
   | node =>
     Debug.add_node(node);
     Debug.raiseWith("Signature not resolveable");
@@ -175,16 +198,12 @@ and parse__Signature = (~parent: Ts.node, signature: Ts.node) => {
 and parse__InterfaceDeclaration = (declaration: Ts.node_InterfaceDeclaration) => {
   Debug.add_pos("parse__InterfaceDeclaration");
   let parent = `InterfaceDeclaration(declaration);
-  let name =
-    switch (declaration.name) {
-    | `Identifier({escapedText, _}) => escapedText
-    | _ => raise(Not_found)
-    };
+  let name = identifierOfNode(parent);
 
   let members =
     declaration.members
     |> CCList.filter_map(member =>
-         switch (parse__Signature(~parent, member)) {
+         switch (parse__Signature(~parent, ~identChain=[name], member)) {
          | None => None
          | Some((name, t)) => Some({f_name: name, f_type: t}: ts_field)
          }
@@ -200,7 +219,11 @@ and parse__InterfaceDeclaration = (declaration: Ts.node_InterfaceDeclaration) =>
           }
           : Interface(members, false),
       td_parameters:
-        parse__DeclarationTypeParameters(~parent, declaration.typeParameters),
+        parse__DeclarationTypeParameters(
+          ~parent,
+          ~identChain=[name],
+          declaration.typeParameters,
+        ),
     });
   let path = ([name], []);
   Hashtbl.add(types, path, td);
@@ -208,7 +231,42 @@ and parse__InterfaceDeclaration = (declaration: Ts.node_InterfaceDeclaration) =>
   ();
   Debug.close_pos();
 }
-and parse__TypeLiteral = (~parent: Ts.node, type_literal: Ts.node_TypeLiteral) => {
+and parse__IntersectionType =
+    (
+      ~parent: Ts.node,
+      ~identChain,
+      intersection_type: Ts.node_IntersectionType,
+    ) => {
+  Debug.add_pos("parse__IntersectionType");
+
+  let types =
+    intersection_type.types
+    |> CCList.mapi((i, type_node) => {
+         Debug.add(Printf.sprintf("Intersection type %i:", i));
+         let parsed_type =
+           switch (
+             parse__typeOfNode(
+               ~parent,
+               ~identChain=identChain @ [string_of_int(i + 1)],
+               type_node,
+             )
+           ) {
+           | None =>
+             Debug.raiseWith(
+               ~node=type_node,
+               "Could not resolve intersection type member",
+             );
+             Base(Any);
+           | Some(t) => t
+           };
+         parsed_type;
+       });
+  let asTuple = Tuple(types);
+  Debug.close_pos();
+  asTuple;
+}
+and parse__TypeLiteral =
+    (~parent: Ts.node, ~identChain, type_literal: Ts.node_TypeLiteral) => {
   Debug.add_pos("parse__TypeLiteral");
   let isObject =
     switch (
@@ -222,7 +280,7 @@ and parse__TypeLiteral = (~parent: Ts.node, type_literal: Ts.node_TypeLiteral) =
     let members =
       type_literal.members
       |> CCList.filter_map(member =>
-           switch (parse__Signature(~parent, member)) {
+           switch (parse__Signature(~parent, ~identChain, member)) {
            | None => None
            | Some((name, t)) => Some({f_name: name, f_type: t}: ts_field)
            }
@@ -272,25 +330,19 @@ and parse__EnumDeclaration = (declaration: Ts.node_EnumDeclaration) => {
   Debug.close_pos();
 }
 and parse__DeclarationTypeParameters = {
+  // TODO: Defaults
   Debug.add_pos("parse__DeclarationTypeParameters");
-  (~parent: Ts.node, typeParameters: option(list(Ts.node))) => {
+  (~parent: Ts.node, ~identChain, typeParameters: option(list(Ts.node))) => {
+    let typeParameters = Some(typeParametersOfNodeRec(parent));
     let tp = {
       typeParameters
       |> CCOpt.map_or(~default=[], params =>
            params
-           |> CCList.map(param =>
-                switch (param) {
-                | `TypeParameter(
-                    (
-                      {name: `Identifier({escapedText, _}), _}: Ts.node_TypeParameter
-                    ),
-                  ) => {
-                    tp_name: Ident.of_string(escapedText),
-                    tp_extends: None,
-                    tp_default: None,
-                  }
-
-                | _ => raise(Not_found)
+           |> CCList.mapi((i, param) =>
+                {
+                  tp_name: Ident.of_string(identifierOfNode(param)),
+                  tp_extends: None,
+                  tp_default: None,
                 }
               )
          );
@@ -302,6 +354,7 @@ and parse__DeclarationTypeParameters = {
 and parse__TypeAliasDeclaration = (declaration: Ts.node_TypeAliasDeclaration) => {
   Debug.add_pos("parse__TypeAliasDeclaration");
   let parent = `TypeAliasDeclaration(declaration);
+  let identChain = [Parse_utils.identifierOfNode(parent)];
   switch (declaration) {
   // ConditionalType will never be printed, no such concept in reason
   | {type_: `ConditionalType(_), _} => ()
@@ -311,6 +364,7 @@ and parse__TypeAliasDeclaration = (declaration: Ts.node_TypeAliasDeclaration) =>
       parse__typeOfNode_forEach(
         ~isDeclarationChild=true,
         ~parent,
+        ~identChain,
         [declaration.type_],
       );
     let path = ([escapedText], []);
@@ -321,6 +375,7 @@ and parse__TypeAliasDeclaration = (declaration: Ts.node_TypeAliasDeclaration) =>
         td_parameters:
           parse__DeclarationTypeParameters(
             ~parent,
+            ~identChain,
             declaration.typeParameters,
           ),
       });
@@ -352,7 +407,8 @@ and parse__EntityName = (~parent, entity_name: Ts.node) => {
   | _ => (local_name, "")
   };
 }
-and parse__TypeReference = (~parent, type_ref: Ts.node_TypeReference): ts_type => {
+and parse__TypeReference =
+    (~parent, ~identChain, type_ref: Ts.node_TypeReference): ts_type => {
   Debug.add_pos("parse__TypeReference");
 
   let args =
@@ -360,7 +416,7 @@ and parse__TypeReference = (~parent, type_ref: Ts.node_TypeReference): ts_type =
     |> CCOpt.map_or(
          ~default=[],
          CCList.filter_map(
-           parse__typeOfNode(~parent=`TypeReference(type_ref)),
+           parse__typeOfNode(~parent=`TypeReference(type_ref), ~identChain),
          ),
        );
 
@@ -388,7 +444,7 @@ and parse__TypeReference = (~parent, type_ref: Ts.node_TypeReference): ts_type =
     });
   };
 }
-and parse__UnionType = (~parent, types: list(Ts.node)) => {
+and parse__UnionType = (~parent, ~identChain, types: list(Ts.node)) => {
   Debug.add_pos("parse__UnionType");
 
   let types =
@@ -396,7 +452,13 @@ and parse__UnionType = (~parent, types: list(Ts.node)) => {
     |> CCList.mapi((i, type_node) => {
          Debug.add(Printf.sprintf("Union type %i:", i));
          let parsed_type =
-           switch (parse__typeOfNode(~parent, type_node)) {
+           switch (
+             parse__typeOfNode(
+               ~parent,
+               ~identChain=identChain @ [string_of_int(i + 1)],
+               type_node,
+             )
+           ) {
            | None =>
              Debug.raiseWith(
                ~node=type_node,
@@ -417,17 +479,12 @@ and parse__UnionType = (~parent, types: list(Ts.node)) => {
   Debug.close_pos();
   result;
 }
-and parse__wrapNonDeclarationChild = (~parent, node: Ts.node): ts_type => {
+and parse__wrapNonDeclarationChild =
+    (~parent, ~identChain, node: Ts.node): ts_type => {
   Debug.add_pos("parse__wrapNonDeclarationChild");
   let values = node |> Typescript_unwrap.unwrap_Node;
-  let parentSymbol = (parent |> Typescript_unwrap.unwrap_Node).resolvedSymbol;
-  let identName =
-    switch (parentSymbol, values.resolvedSymbol) {
-    | (Some({name, _}), Some(child)) => name ++ child.name
-    | (Some({name, _}), None) => name ++ "__type"
-    | (None, Some({name, _})) => "__" ++ name
-    | (None, None) => raise(Not_found)
-    };
+  let identName = identChain |> CCList.to_string(~sep="_", a => a);
+  let typeParams = typeParametersOfNodeRec(parent);
   parse__TypeAliasDeclaration({
     pos: values.pos,
     end_: values.end_,
@@ -456,29 +513,47 @@ and parse__wrapNonDeclarationChild = (~parent, node: Ts.node): ts_type => {
         resolvedSymbol: None,
         originalKeywordKind: None,
       }),
-    typeParameters: None,
+    typeParameters: Some(typeParams),
     type_: node,
   });
   Debug.close_pos();
   Reference({
     tr_path: [identName],
     tr_path_resolved: Some(([identName], [])),
-    tr_parameters: [],
+    tr_parameters:
+      typeParams
+      |> CCList.filter_map(param =>
+           Typescript_unwrap.unwrap_Name(param)
+           |> CCOpt.map(name => Arg(Ident.of_string(name)))
+         ),
   });
 }
 and parse__typeOfNode_forEach =
-    (~isDeclarationChild=false, ~parent: Ts.node, nodes: list(Ts.node))
+    (
+      ~isDeclarationChild=false,
+      ~identChain,
+      ~parent: Ts.node,
+      nodes: list(Ts.node),
+    )
     : option(ts_type) => {
-  nodes |> CCList.find_map(parse__typeOfNode(~isDeclarationChild, ~parent));
+  nodes
+  |> CCList.find_map(
+       parse__typeOfNode(~isDeclarationChild, ~identChain, ~parent),
+     );
 }
 and parse__typeOfNode =
-    (~isDeclarationChild=false, ~parent: Ts.node, node: Ts.node)
+    (~isDeclarationChild=false, ~identChain, ~parent: Ts.node, node: Ts.node)
     : option(ts_type) =>
-  try(Some(parse__typeOfNode_exn(~isDeclarationChild, ~parent, node))) {
+  try(
+    Some(
+      parse__typeOfNode_exn(~isDeclarationChild, ~identChain, ~parent, node),
+    )
+  ) {
   | Not_found => None
   }
 and parse__typeOfNode_exn =
-    (~isDeclarationChild=false, ~parent: Ts.node, node: Ts.node): ts_type => {
+    (~isDeclarationChild=false, ~identChain, ~parent: Ts.node, node: Ts.node)
+    : ts_type => {
   Debug.add_pos("parse__typeOfNode_exn");
   Debug.add_node_pair(parent, node);
   let result =
@@ -492,43 +567,80 @@ and parse__typeOfNode_exn =
     | `UndefinedKeyword(_) => Base(Undefined)
     | `NeverKeyword(_) => Base(Never)
     | `ArrayType({elementType, _}) =>
-      Array(parse__typeOfNode_exn(~isDeclarationChild, ~parent, elementType))
+      Array(
+        parse__typeOfNode_exn(
+          ~isDeclarationChild,
+          ~identChain,
+          ~parent,
+          elementType,
+        ),
+      )
     | `UnionType({types, _}) as node =>
       Debug.add("UnionType");
       isDeclarationChild
-        ? parse__UnionType(~parent, types)
-        : parse__wrapNonDeclarationChild(~parent, node);
-    | `FunctionType({type_, parameters, _})
-    | `MethodSignature({type_, parameters, _}) =>
-      Debug.add("MethodSignature");
+        ? parse__UnionType(~parent, ~identChain, types)
+        : parse__wrapNonDeclarationChild(~parent, ~identChain, node);
+    | `FunctionType({type_, parameters, typeParameters, _})
+    | `MethodSignature({type_, parameters, typeParameters, _}) =>
+      Debug.add("FunctionType / MethodSignature");
       parse__SignatureDeclarationLike(
         ~parent,
+        ~identChain,
         ~parameters,
         ~return_type=type_,
       );
     | `PropertySignature({type_: Some(type_node), _}) as p =>
       Debug.add("PropertySignature");
-      parse__typeOfNode_exn(~isDeclarationChild, ~parent=p, type_node);
+      parse__typeOfNode_exn(
+        ~isDeclarationChild,
+        ~identChain,
+        ~parent=p,
+        type_node,
+      );
     | `Parameter({type_: Some(type_), _}) as p =>
       Debug.add("Parameter (with type)");
-      parse__typeOfNode_exn(~isDeclarationChild, ~parent=p, type_);
+      parse__typeOfNode_exn(
+        ~isDeclarationChild,
+        ~parent=p,
+        ~identChain,
+        type_,
+      );
     | `Parameter({name, _}) as p =>
       Debug.add("Parameter (no type)");
-      parse__typeOfNode_exn(~isDeclarationChild, ~parent=p, name);
+      parse__typeOfNode_exn(
+        ~isDeclarationChild,
+        ~parent=p,
+        ~identChain,
+        name,
+      );
     | `Identifier({resolvedType: Some(resolvedType), _}) =>
       Debug.add("Identifier");
-      parse__typeOfType(~isDeclarationChild, ~parent, resolvedType);
+      parse__typeOfType(
+        ~isDeclarationChild,
+        ~parent,
+        ~identChain,
+        resolvedType,
+      );
     | `TypeParameter({name, _}) as tp =>
       Debug.add("TypeParameter");
-      parse__typeOfNode_exn(~isDeclarationChild, ~parent=tp, name);
+      parse__typeOfNode_exn(
+        ~isDeclarationChild,
+        ~parent=tp,
+        ~identChain,
+        name,
+      );
     | `TypeReference(tr) =>
       Debug.add("TypeReference");
-      parse__TypeReference(~parent, tr);
+      parse__TypeReference(~parent, ~identChain, tr);
     | `TypeLiteral(tl) as node =>
       Debug.add("TypeLiteral");
       isDeclarationChild
-        ? parse__TypeLiteral(~parent, tl)
-        : parse__wrapNonDeclarationChild(~parent, node);
+        ? parse__TypeLiteral(~parent, ~identChain, tl)
+        : parse__wrapNonDeclarationChild(~parent, ~identChain, node);
+    | `IntersectionType(it) as node =>
+      isDeclarationChild
+        ? parse__IntersectionType(~parent, ~identChain, it)
+        : parse__wrapNonDeclarationChild(~parent, ~identChain, node)
     | otherNode =>
       Debug.add("OtherNode:");
       Debug.add_node(otherNode);
@@ -536,10 +648,12 @@ and parse__typeOfNode_exn =
       switch (asGeneric) {
       | {resolvedType: Some(resolvedType), _} =>
         Debug.add("Node->ResolvedType");
-        parse__typeOfType(~isDeclarationChild, ~parent, resolvedType);
-      | {resolvedSymbol: Some({resolvedType: Some(resolvedType), _}), _} =>
-        Debug.add("Symbol->ResolvedType");
-        parse__typeOfType(~isDeclarationChild, ~parent, resolvedType);
+        parse__typeOfType(
+          ~isDeclarationChild,
+          ~parent,
+          ~identChain,
+          resolvedType,
+        );
       | _ =>
         Console.log(
           Typescript_j.string_of_node(node)
@@ -553,7 +667,12 @@ and parse__typeOfNode_exn =
   result;
 }
 and parse__typeOfType =
-    (~isDeclarationChild=false, ~parent: Ts.node, type_def: Ts.type_)
+    (
+      ~isDeclarationChild=false,
+      ~parent: Ts.node,
+      ~identChain,
+      type_def: Ts.type_,
+    )
     : Types.ts_type => {
   Debug.add_pos("parse__typeOfType");
   Debug.add_pair(parent, type_def);
@@ -567,7 +686,12 @@ and parse__typeOfType =
     | `TypeParameter(_) =>
       switch (parent) {
       | `Parameter({type_: Some(type_), _}) =>
-        parse__typeOfNode_exn(~isDeclarationChild, ~parent, type_)
+        parse__typeOfNode_exn(
+          ~isDeclarationChild,
+          ~parent,
+          ~identChain,
+          type_,
+        )
       | otherParent =>
         switch (otherParent |> Typescript_unwrap.unwrap_Node) {
         | {

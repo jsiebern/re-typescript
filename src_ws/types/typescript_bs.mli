@@ -1,6 +1,13 @@
 (* Auto-generated from "typescript.atd" *)
               [@@@ocaml.warning "-27-32-35-39"]
 
+type symbol = Typescript_t.symbol = {
+  flags: int;
+  id: int option;
+  fullyQualifiedName: string;
+  name: string
+}
+
 type node = Typescript_t.node
 
 and node_ArrayType = Typescript_t.node_ArrayType = {
@@ -184,8 +191,20 @@ and node_InterfaceDeclaration = Typescript_t.node_InterfaceDeclaration = {
   resolvedType: type_ option;
   name: node;
   typeParameters: node list option;
-  heritageClauses: node list option;
   members: node list
+}
+
+and node_IntersectionType = Typescript_t.node_IntersectionType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  types: node list
 }
 
 and node_MethodSignature = Typescript_t.node_MethodSignature = {
@@ -404,14 +423,6 @@ and node_VariableDeclarationList =
   declarations: node list
 }
 
-and symbol = Typescript_t.symbol = {
-  flags: int;
-  id: int option;
-  resolvedType: type_ option;
-  fullyQualifiedName: string;
-  name: string
-}
-
 and type_ = Typescript_t.type_
 
 and type_AnonymousType = Typescript_t.type_AnonymousType = {
@@ -501,8 +512,7 @@ and type_TypeParameter = Typescript_t.type_TypeParameter = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
-  kindName: string;
-  constraint_: type_ option
+  kindName: string
 }
 
 and type_TypeReference = Typescript_t.type_TypeReference = {
@@ -656,6 +666,10 @@ type node_FunctionLikeDeclarationBase =
   body: node option
 }
 
+val read_symbol :  symbol Atdgen_codec_runtime.Decode.t
+
+val write_symbol :  symbol Atdgen_codec_runtime.Encode.t
+
 val read_node :  node Atdgen_codec_runtime.Decode.t
 
 val write_node :  node Atdgen_codec_runtime.Encode.t
@@ -707,6 +721,10 @@ val write_node_IndexSignature :  node_IndexSignature Atdgen_codec_runtime.Encode
 val read_node_InterfaceDeclaration :  node_InterfaceDeclaration Atdgen_codec_runtime.Decode.t
 
 val write_node_InterfaceDeclaration :  node_InterfaceDeclaration Atdgen_codec_runtime.Encode.t
+
+val read_node_IntersectionType :  node_IntersectionType Atdgen_codec_runtime.Decode.t
+
+val write_node_IntersectionType :  node_IntersectionType Atdgen_codec_runtime.Encode.t
 
 val read_node_MethodSignature :  node_MethodSignature Atdgen_codec_runtime.Decode.t
 
@@ -763,10 +781,6 @@ val write_node_VariableDeclaration :  node_VariableDeclaration Atdgen_codec_runt
 val read_node_VariableDeclarationList :  node_VariableDeclarationList Atdgen_codec_runtime.Decode.t
 
 val write_node_VariableDeclarationList :  node_VariableDeclarationList Atdgen_codec_runtime.Encode.t
-
-val read_symbol :  symbol Atdgen_codec_runtime.Decode.t
-
-val write_symbol :  symbol Atdgen_codec_runtime.Encode.t
 
 val read_type_ :  type_ Atdgen_codec_runtime.Decode.t
 

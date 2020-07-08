@@ -56,7 +56,7 @@ type node_InterfaceDeclaration = {
 
     name: node ;
     ?typeParameters: node list option ;
-    ?heritageClauses:  node list option ;
+    (* ?heritageClauses:  node list option ; *)
     members: node list ;
 }
 
@@ -236,6 +236,12 @@ type node_PropertyDeclaration = {
     ?exclamationToken: node option ;
     ?type_ <json name="type">: node option ;
     ?initializer_ <json name="initializer">: node option ;
+}
+
+type node_IntersectionType = {
+    inherit node_Generic;
+
+    types: node list;
 }
 
 type node = [
@@ -425,7 +431,7 @@ type node = [
     | OptionalType of node_Generic
     | RestType of node_Generic
     | UnionType of node_UnionType
-    | IntersectionType of node_Generic
+    | IntersectionType of node_IntersectionType
     | ConditionalType of node_Generic
     | InferType of node_Generic
     | ParenthesizedType of node_Generic
@@ -581,7 +587,7 @@ type node = [
 type symbol  = {
     flags: int ;
     ?id: int option ;
-    ?resolvedType: type_ option ;
+    (* ?resolvedType: type_ option ; *)
     fullyQualifiedName: string ;
     name: string ;
 }
@@ -665,7 +671,7 @@ type type_AnonymousType = {
 type type_TypeParameter = {
     inherit type_Generic;
 
-    ?constraint_ <json name="constraint">: type_ option;
+    (*?constraint_ <json name="constraint">: type_ option;*)
 }
 
 type conditionalRoot = {
@@ -722,6 +728,7 @@ type type_ = [
     | Unknown of type_Generic
     | Null of type_Generic
     | Undefined of type_Generic
+    | Never of type_Generic
     | TypeReference of type_TypeReference
     | Anonymous of type_AnonymousType
     | Unidentified of type_Unidentified

@@ -375,6 +375,7 @@ let unwrap_Type = (type_: Typescript_t.type_): Typescript_t.type_Generic =>
   | `TypeReference(inner) => inner |> toGeneric
   | `Anonymous(inner) => inner |> toGeneric
   | `Unidentified(inner) => inner |> toGeneric
+  | `Never(inner) => inner |> toGeneric
   };
 
 let unwrap_Name = (node: Ts.node) => {

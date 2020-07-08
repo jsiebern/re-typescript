@@ -14,6 +14,9 @@ let isVoid = (. t: Type.t) => {
 let isObjectKeyword = (. t: Type.t) => {
   getKindNameOfType(. t) === Some("ObjectKeyword")
 }
+let isNever = (. t: Type.t) => {
+  getKindNameOfType(. t) === Some("NeverKeyword")
+}
 
 let identifyType = (. t: Type.t) => {
   open Type
@@ -72,6 +75,8 @@ let identifyType = (. t: Type.t) => {
     "ObjectKeyword"
   } else if isVoid(. t) {
     "Void"
+  } else if isNever(. t) {
+    "Never"
   } else {
     "Unidentified"
   }
@@ -143,6 +148,7 @@ let rec visitNode = (. node: Node.t) => {
       try visitType(. t) catch {
       | UnidentifiedType(t) =>
         Js.logMany([
+          "Symbol.getDeclaredType"->Obj.magic,
           node->Node.getStartLineNumber,
           node->Node.getEndLineNumber,
           node->Node.getPos,
@@ -164,6 +170,7 @@ let rec visitNode = (. node: Node.t) => {
     try visitType(. t) catch {
     | UnidentifiedType(t) =>
       Js.logMany([
+        "Node.getType"->Obj.magic,
         node->Node.getStartLineNumber,
         node->Node.getEndLineNumber,
         node->Node.getPos,

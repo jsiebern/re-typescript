@@ -1,6 +1,13 @@
 (* Auto-generated from "typescript.atd" *)
               [@@@ocaml.warning "-27-32-35-39"]
 
+type symbol = {
+  flags: int;
+  id: int option;
+  fullyQualifiedName: string;
+  name: string
+}
+
 type node = [
     `SourceFile of node_SourceFile
   | `TypeAliasDeclaration of node_TypeAliasDeclaration
@@ -188,7 +195,7 @@ type node = [
   | `OptionalType of node_Generic
   | `RestType of node_Generic
   | `UnionType of node_UnionType
-  | `IntersectionType of node_Generic
+  | `IntersectionType of node_IntersectionType
   | `ConditionalType of node_Generic
   | `InferType of node_Generic
   | `ParenthesizedType of node_Generic
@@ -522,8 +529,20 @@ and node_InterfaceDeclaration = {
   resolvedType: type_ option;
   name: node;
   typeParameters: node list option;
-  heritageClauses: node list option;
   members: node list
+}
+
+and node_IntersectionType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  types: node list
 }
 
 and node_MethodSignature = {
@@ -741,14 +760,6 @@ and node_VariableDeclarationList = {
   declarations: node list
 }
 
-and symbol = {
-  flags: int;
-  id: int option;
-  resolvedType: type_ option;
-  fullyQualifiedName: string;
-  name: string
-}
-
 and type_ = [
     `ObjectKeyword of type_Generic
   | `Void of type_Generic
@@ -775,6 +786,7 @@ and type_ = [
   | `Unknown of type_Generic
   | `Null of type_Generic
   | `Undefined of type_Generic
+  | `Never of type_Generic
   | `TypeReference of type_TypeReference
   | `Anonymous of type_AnonymousType
   | `Unidentified of type_Unidentified
@@ -867,8 +879,7 @@ and type_TypeParameter = {
   id: int option;
   pattern: node option;
   aliasTypeArguments: type_ list option;
-  kindName: string;
-  constraint_: type_ option
+  kindName: string
 }
 
 and type_TypeReference = {

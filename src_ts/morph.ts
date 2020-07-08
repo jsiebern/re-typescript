@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { Type, Project, Node, ts, createWrappedNode } from 'ts-morph';
+import { Type, Project, Node, ts, TypeParameteredNode } from 'ts-morph';
 import * as common from '@ts-morph/common';
 import { walkNodes } from './ast';
 import { strict } from 'assert';
@@ -32,16 +32,15 @@ ts.createSourceFile;
 const created2 = project.createSourceFile(
   'simple.d.ts',
   `
-  export interface IMutation {
-    method: string
-    delimiter: string
-    path: string
-    args: any[]
-    hasChangedValue: boolean
-    revert: () => void
+  export interface Map<A,B> {
+    a: A;
+    b: B;
   }
-  export interface IMutationTree<T extends object> {
-    mutations: IMutation[]
+  export interface RecoilRootProps {
+    initializeState?: (options: {
+      set: <T>(recoilVal: T, newVal: T) => void; // Ignores type params on inline functions
+      setUnvalidatedAtomValues: (atomMap: Map<string, any>) => void;
+    }) => void;
   }
 `
 );
@@ -92,31 +91,10 @@ const recurseType = (type: Type | undefined, level = 0) => {
   // type.getUnionTypes().forEach((t) => recurseType(t, level + 1));
 };
 const recurse = (node: Node, level = 0) => {
-  if (node.getKindName() === 'ArrayType') {
-    console.log('\n\n\n');
-    console.log(node.getKindName());
-    const ct = node.getType().getArrayElementType()?.compilerType;
-    if (ct) {
-      console.log(c.typeToTypeNode(ct)?.kind);
-      const k = c.typeToTypeNode(ct)?.kind;
-      if (k) {
-        console.log(common.getSyntaxKindName(k));
-      }
-    }
-    console.log(
-      common.getSyntaxKindName(
-        // @ts-ignore
-        c.typeToTypeNode(
-          // @ts-ignore
-          node.getType().getArrayElementType()?.compilerType.kind
-        )
-      )
-    );
-    console.log(node.getType().getArrayElementType()?.getText());
-    // @ts-ignore
-    console.log(node.getType().compilerType.elementType);
-    console.log('\n\n\n');
-    return;
+
+  if (Node.isTypeParameteredNode(node)) {
+    // console.log(node.getText());
+    console.log(node.getTypeParameters().map(n => n.getName()));
   }
 
   // const type = node.getSymbol()?.getDeclaredType();

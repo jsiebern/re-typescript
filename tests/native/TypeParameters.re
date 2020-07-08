@@ -40,17 +40,17 @@ describe("type parameter logic", ({test, _}) => {
       toThrow();
   });
   test("throws on 2 or more identical parameter names", ({expect, _}) => {
-    // expect.fn(() =>
-    //   print(
-    //     {|
-    //     interface i_1<C, A = string> { field1: A, fieldx: C };
-    //     interface i_2<B, A, B> extends i_1<A> { field2: B }
-    //     type x = i_2<boolean, string>;
-    //     type y = i_1<string>;
-    // |},
-    //   )
-    // ).
-    //   toThrow();
+    expect.fn(() =>
+      print(
+        {|
+        interface i_1<C, A = string> { field1: A, fieldx: C }
+        interface i_2<B, A, B> extends i_1<A> { field2: B }
+        type x = i_2<boolean, string>;
+        type y = i_1<string>;
+    |},
+      )
+    ).
+      toThrow();
     expect.fn(() =>
       print(
         {|
@@ -59,7 +59,7 @@ describe("type parameter logic", ({test, _}) => {
     |},
       )
     ).
-      toThrow()
+      toThrow();
   });
   test("can have inline records as defaults", ({expect, _}) => {
     expect.string(
@@ -166,46 +166,46 @@ describe("type parameter logic", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
-  // test(
-  //   "type parameters can get referenced back to the parent when being applied",
-  //   ({expect, _}) => {
-  //   expect.string(
-  //     print(
-  //       {|
-  //     interface IPromise<X> {
-  //       field: X;
-  //     }
+  test(
+    "type parameters can get referenced back to the parent when being applied",
+    ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface IPromise<X> {
+        field: X;
+      }
 
-  //     type ResouceResult<T> = T & {
-  //       promise: IPromise<T>;
-  //       resolved: boolean;
-  //     };
-  //   |},
-  //     ),
-  //   ).
-  //     toMatchSnapshot()
-  // });
-  // test(
-  //   "type parameters that are defined inline will be bubbled up the tree",
-  //   ({expect, _}) => {
-  //   expect.string(
-  //     print(
-  //       {|
-  //     export interface Map<A,B> {
-  //       a: A;
-  //       b: B;
-  //     };
-  //     export interface RecoilRootProps {
-  //       initializeState?: (options: {
-  //         set: <T>(recoilVal: T, newVal: T) => void; // Ignores type params on inline functions
-  //         setUnvalidatedAtomValues: (atomMap: Map<string, any>) => void;
-  //       }) => void;
-  //     }
-  //   |},
-  //     ),
-  //   ).
-  //     toMatchSnapshot()
-  // });
+      type ResouceResult<T> = T & {
+        promise: IPromise<T>;
+        resolved: boolean;
+      };
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
+  test(
+    "type parameters that are defined inline will be bubbled up the tree",
+    ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      export interface Map<A,B> {
+        a: A;
+        b: B;
+      }
+      export interface RecoilRootProps {
+        initializeState?: (options: {
+          set: <T>(recoilVal: T, newVal: T) => void; // Ignores type params on inline functions
+          setUnvalidatedAtomValues: (atomMap: Map<string, any>) => void;
+        }) => void;
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
   // test(
   //   "bubbling type parameters can be combined with regular ones",
   //   ({expect, _}) => {

@@ -10,13 +10,9 @@
    (:standard -w -30))))
 
 (rule
- (targets typescript_t.ml typescript_t.mli typescript_j.ml typescript_j.mli
-   typescript_flags.re typescript.atd)
- (deps
-  (:script
-   (file copy_atd_file.js)))
+ (targets typescript_t.ml typescript_t.mli typescript_j.ml typescript_j.mli)
+ (deps typescript.atd)
  (action
   (progn
-   (run node %{script} %{project_root})
-   (run atdgen -t typescript.atd)
-   (run atdgen -j -j-std typescript.atd))))
+   (run atdgen -t %{deps})
+   (run atdgen -j -j-std %{deps}))))

@@ -5,26 +5,16 @@ open Re_typescript_fs;
 let file = (
   "/root/src/bin.d.ts",
   {|
-// interface IPromise<X> {
-//   field: X;
-// }
-
-// type ResouceResult<T> = T & {
-//   promise: IPromise<T>;
-//   resolved: boolean;
-// };
-
-
-// interface i_1<C, A = string> { field1: A, fieldx: C };
-//         interface i_2<B, A, B> extends i_1<A> { field2: B }
-//         type x = i_2<boolean, string>;
-//         type y = i_1<string>;
-
-
-
-
-
-
+export interface Map<A,B> {
+  a: A;
+  b: B;
+}
+export interface RecoilRootProps {
+  initializeState?: (options: {
+    set: <T>(recoilVal: T, newVal: T) => void; // Ignores type params on inline functions
+    setUnvalidatedAtomValues: (atomMap: Map<string, any>) => void;
+  }) => void;
+}
   |},
 );
 
@@ -49,7 +39,23 @@ let files =
         >>= (
           () =>
             switch (message) {
-            | Some(`ParseOk(parsed)) => Lwt.return(parsed)
+            | Some(`ParseOk(parsed)) =>
+              Lwt_io.lines_to_file(
+                (
+                  Sys.getenv("PROJECT_ROOT")
+                  |> CCString.split_on_char(':')
+                  |> CCList.get_at_idx_exn(0)
+                )
+                ++ "/_current.json",
+                parsed
+                |> CCList.get_at_idx_exn(0)
+                |> snd
+                |> Yojson.Basic.from_string
+                |> Yojson.Basic.pretty_to_string
+                |> CCString.lines
+                |> Lwt_stream.of_list,
+              )
+              >>= (_ => Lwt.return(parsed))
             | Some(`ParseError(e)) =>
               Console.log("\n\n" ++ e ++ "\n\n");
               Lwt.fail_with("ParseError");
@@ -59,68 +65,6 @@ let files =
         )
     ),
   );
-
-// module SS = CCSet.Make(String);
-// type res = {
-//   client_id: string,
-//   files: list((string, string)),
-//   files_done: SS.t,
-// };
-// exception Done(res);
-// let parse_files = () => {
-//   let (send, recv, close) = Lwt_main.run(Impl.connect());
-//   send(`Initialize) |> Lwt.ignore_result;
-
-//   let rec recv_forever = (res: res) =>
-//     recv()
-//     >>= (
-//       maybeValue =>
-//         {
-//           switch (maybeValue) {
-//           | Some(`Initialized(client_id)) =>
-//             send(
-//               `CreateFile((
-//                 client_id,
-//                 res.files |> CCList.get_at_idx_exn(0) |> fst,
-//               )),
-//             )
-//             |> Lwt.map(_ => {...res, client_id})
-//           | Some(`FileCreated(path)) =>
-//             send(
-//               `SetFileContents((
-//                 res.client_id,
-//                 path,
-//                 res.files |> CCList.find(((p, _)) => p == path) |> snd,
-//               )),
-//             )
-//             |> Lwt.map(_ => res)
-//           | Some(`FileContentsOk(path)) =>
-//             let res = {...res, files_done: res.files_done |> SS.add(path)};
-//             switch (
-//               res.files
-//               |> CCList.find_opt(((p, _)) => !SS.mem(p, res.files_done))
-//             ) {
-//             | None => send(`Parse(res.client_id)) |> Lwt.map(_ => res)
-//             | Some((file, _)) =>
-//               send(`CreateFile((res.client_id, file))) |> Lwt.map(_ => res)
-//             };
-//           | Some(`ParseOk(files)) => Lwt.fail(Done({...res, files}))
-//           | _ => Lwt.return(res)
-//           };
-//         }
-//         >>= recv_forever
-//     );
-//   try(
-//     Lwt_main.run(recv_forever({client_id: "", files, files_done: SS.empty}))
-//   ) {
-//   | Done(res) =>
-//     send(`Destroy(res.client_id)) >>= (() => close()) |> Lwt.ignore_result;
-
-//     res;
-//   };
-// };
-
-// let res = parse_files();
 
 let () =
   try(
