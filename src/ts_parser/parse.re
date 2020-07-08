@@ -578,26 +578,31 @@ and parse__UnionType = (~parent, ~identChain, types: list(Ts.node)) => {
            | Some(t) => t
            };
        });
-  
-  let result = if (parsed_types |> CCList.for_all(
-    fun
-      | Literal(String(_)) => true
-      | _ => false
-  )) {
-    // String Literal
-    StringLiteral(parsed_types |> CCList.map(
-      fun
-        | Literal(String(ident)) => ident
-        | _ => raise(Failure("Unexpected"))
-    ))
-  } else {
-   Union(parsed_types |> CCList.map(parsed_type => {
-     um_ident: get_union_type_name(parsed_type),
-     um_type: parsed_type,
-     um_classifier: "",
-   }));
-  };
 
+  let result = switch(parsed_types) {
+    | [] => Base(Never)
+    | [one] => one
+    | parsed_types =>
+      if (parsed_types |> CCList.for_all(
+        fun
+          | Literal(String(_)) => true
+          | _ => false
+      )) {
+        // String Literal
+        StringLiteral(parsed_types |> CCList.map(
+          fun
+            | Literal(String(ident)) => ident
+            | _ => raise(Failure("Unexpected"))
+        ))
+      } else {
+        // Typed union
+       Union(parsed_types |> CCList.map(parsed_type => {
+         um_ident: get_union_type_name(parsed_type),
+         um_type: parsed_type,
+         um_classifier: "",
+       }));
+    };
+  };
 
   Debug.close_pos();
   result;
@@ -702,11 +707,45 @@ and parse__typeOfNode_exn =
       isDeclarationChild
         ? parse__TupleType(~parent, ~identChain, elementTypes)
         : parse__wrapNonDeclarationChild(~parent, ~identChain, node);
-    | `UnionType({types, _}) as node =>
-      Debug.add("UnionType");
-      isDeclarationChild
-        ? parse__UnionType(~parent, ~identChain, types)
-        : parse__wrapNonDeclarationChild(~parent, ~identChain, node);
+    | `UnionType({types, _} as unionNode)  =>
+      // Union get's a little bit of a special treatment (because of null / undefined)
+      switch (types |> CCList.partition(fun | `UndefinedKeyword(_) => true | _ => false)) {
+        | ([_,..._], rest) => 
+        Debug.add("Union: optional")
+          Optional(
+        parse__typeOfNode_exn(
+          ~identChain=["t_optional", ...identChain],
+          ~parent,
+          `UnionType({...unionNode, types: rest}),
+        ),
+      )
+        | ([], types) => 
+      switch (types |> CCList.partition(fun | `NullKeyword(_) => true | _ => false)) {
+        | ([_,..._], rest) => 
+          Debug.add("Union: Nullable");
+          Nullable(
+        parse__typeOfNode_exn(
+          ~identChain=["t_nullable", ...identChain],
+          ~parent,
+          `UnionType({...unionNode, types: rest}),
+        ),
+        )
+        | ([], types) =>
+        Debug.add("UnionType");
+        let identChain = switch (identChain) {
+          | ["t_nullable", "t_optional", ...rest]
+          | ["t_nullable", ...rest]
+          | ["t_optional", ...rest] => rest @ ["t"]
+          | other => other
+        };
+        switch (types) {
+          | [] => Base(Never)
+          | [one] => parse__typeOfNode_exn(~parent, ~identChain, one)
+          | more => isDeclarationChild ? parse__UnionType(~parent, ~identChain, more) :
+          parse__wrapNonDeclarationChild(~parent, ~identChain, `UnionType({...unionNode, types: more}));
+       };
+        }
+      }
     | `FunctionType({type_, parameters, typeParameters, _})
     | `MethodSignature({type_, parameters, typeParameters, _}) =>
       Debug.add("FunctionType / MethodSignature");

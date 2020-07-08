@@ -1,119 +1,160 @@
 {
   "identifierCount": 2,
-  "nodeCount": 9,
+  "nodeCount": 12,
   "isDeclarationFile": true,
   "languageVariant": 0,
   "fileName": "/root/src/bin.d.ts",
   "languageVersion": 99,
-  "text": "\n  type x = {field: string}[];\n",
+  "text":
+    "\n            export function someOtherFunction(): null | { inline: string };\n",
   "statements": [
     {
+      "name": {
+        "escapedText": "someOtherFunction",
+        "resolvedType": {
+          "objectFlags": 16,
+          "kindName": "Anonymous",
+          "id": 77,
+          "flags": 524288
+        },
+        "resolvedSymbol": {
+          "name": "someOtherFunction",
+          "fullyQualifiedName": "\"/root/src/bin\".someOtherFunction",
+          "id": 15,
+          "flags": 16
+        },
+        "flags": 8388608,
+        "kindName": "Identifier",
+        "kind": 75,
+        "end": 46,
+        "pos": 28
+      },
       "type": {
-        "elementType": {
-          "members": [
-            {
-              "type": {
-                "resolvedType": {
-                  "kindName": "String",
-                  "id": 12,
-                  "flags": 4
+        "types": [
+          {
+            "resolvedType": { "kindName": "Null", "id": 11, "flags": 65536 },
+            "flags": 8388608,
+            "kindName": "NullKeyword",
+            "kind": 100,
+            "end": 54,
+            "pos": 49
+          },
+          {
+            "members": [
+              {
+                "type": {
+                  "resolvedType": {
+                    "kindName": "String",
+                    "id": 12,
+                    "flags": 4
+                  },
+                  "flags": 8388608,
+                  "kindName": "StringKeyword",
+                  "kind": 143,
+                  "end": 73,
+                  "pos": 66
                 },
-                "flags": 8388608,
-                "kindName": "StringKeyword",
-                "kind": 143,
-                "end": 26,
-                "pos": 19
-              },
-              "name": {
-                "escapedText": "field",
+                "name": {
+                  "escapedText": "inline",
+                  "resolvedType": {
+                    "kindName": "String",
+                    "id": 12,
+                    "flags": 4
+                  },
+                  "resolvedSymbol": {
+                    "name": "inline",
+                    "fullyQualifiedName": "__type.inline",
+                    "id": 17,
+                    "flags": 4
+                  },
+                  "flags": 8388608,
+                  "kindName": "Identifier",
+                  "kind": 75,
+                  "end": 65,
+                  "pos": 58
+                },
                 "resolvedType": {
                   "kindName": "String",
                   "id": 12,
                   "flags": 4
                 },
                 "resolvedSymbol": {
-                  "name": "field",
-                  "fullyQualifiedName": "__type.field",
-                  "id": 16,
+                  "name": "inline",
+                  "fullyQualifiedName": "__type.inline",
+                  "id": 17,
                   "flags": 4
                 },
                 "flags": 8388608,
-                "kindName": "Identifier",
-                "kind": 75,
-                "end": 18,
-                "pos": 13
-              },
-              "resolvedType": { "kindName": "String", "id": 12, "flags": 4 },
-              "resolvedSymbol": {
-                "name": "field",
-                "fullyQualifiedName": "__type.field",
-                "id": 16,
-                "flags": 4
-              },
-              "flags": 8388608,
-              "kindName": "PropertySignature",
-              "kind": 158,
-              "end": 26,
-              "pos": 13
-            }
-          ],
-          "resolvedType": {
-            "objectFlags": 16,
-            "kindName": "Anonymous",
-            "id": 78,
-            "flags": 524288
-          },
-          "resolvedSymbol": {
-            "name": "__type",
-            "fullyQualifiedName": "__type",
-            "id": 15,
-            "flags": 2048
-          },
-          "flags": 8388608,
-          "kindName": "TypeLiteral",
-          "kind": 173,
-          "end": 27,
-          "pos": 11
-        },
-        "resolvedType": { "kindName": "Array", "id": 77, "flags": 524288 },
-        "flags": 8388608,
-        "kindName": "ArrayType",
-        "kind": 174,
-        "end": 29,
-        "pos": 11
-      },
-      "name": {
-        "escapedText": "x",
-        "resolvedType": { "kindName": "Array", "id": 77, "flags": 524288 },
-        "resolvedSymbol": {
-          "name": "x",
-          "fullyQualifiedName": "x",
-          "id": 14,
+                "kindName": "PropertySignature",
+                "kind": 158,
+                "end": 73,
+                "pos": 58
+              }
+            ],
+            "resolvedType": {
+              "objectFlags": 16,
+              "kindName": "Anonymous",
+              "id": 78,
+              "flags": 524288
+            },
+            "resolvedSymbol": {
+              "name": "__type",
+              "fullyQualifiedName": "__type",
+              "id": 16,
+              "flags": 2048
+            },
+            "flags": 8388608,
+            "kindName": "TypeLiteral",
+            "kind": 173,
+            "end": 75,
+            "pos": 56
+          }
+        ],
+        "resolvedType": {
+          "objectFlags": 16,
+          "kindName": "Anonymous",
+          "id": 78,
           "flags": 524288
         },
         "flags": 8388608,
-        "kindName": "Identifier",
-        "kind": 75,
-        "end": 9,
-        "pos": 7
+        "kindName": "UnionType",
+        "kind": 178,
+        "end": 75,
+        "pos": 49
       },
-      "resolvedType": { "kindName": "Array", "id": 77, "flags": 524288 },
-      "resolvedSymbol": {
-        "name": "x",
-        "fullyQualifiedName": "x",
-        "id": 14,
+      "parameters": [],
+      "resolvedType": {
+        "objectFlags": 16,
+        "kindName": "Anonymous",
+        "id": 77,
         "flags": 524288
       },
+      "resolvedSymbol": {
+        "name": "someOtherFunction",
+        "fullyQualifiedName": "\"/root/src/bin\".someOtherFunction",
+        "id": 15,
+        "flags": 16
+      },
+      "modifiers": [
+        {
+          "resolvedType": { "kindName": "Any", "id": 4, "flags": 1 },
+          "flags": 8388608,
+          "kindName": "ExportKeyword",
+          "kind": 89,
+          "end": 19,
+          "pos": 0
+        }
+      ],
       "flags": 8388608,
-      "kindName": "TypeAliasDeclaration",
-      "kind": 247,
-      "end": 30,
+      "kindName": "FunctionDeclaration",
+      "kind": 244,
+      "end": 76,
       "pos": 0
     }
   ],
   "flags": 8388672,
   "kindName": "SourceFile",
   "kind": 290,
-  "end": 31,
+  "end": 77,
   "pos": 0
 }

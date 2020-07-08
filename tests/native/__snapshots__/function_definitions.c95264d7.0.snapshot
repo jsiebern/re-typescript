@@ -1,5 +1,4 @@
 function definitions › function with inline arguments
-type someFunction_b = {inline: float};
 module SomeFunction_a: {
   type t;
   let string: string => t;
@@ -11,6 +10,8 @@ module SomeFunction_a: {
   let string = (v: string) => Any(v);
   let number = (v: float) => Any(v);
 };
-type someFunction =
-  (~a: SomeFunction_a.t, ~b: option(someFunction_b)=?, unit) => string;
+type someFunction_a = SomeFunction_a.t;
+type someFunction_b = {inline: float}
+and someFunction =
+  (~a: someFunction_a, ~b: option(someFunction_b)=?, unit) => string;
 

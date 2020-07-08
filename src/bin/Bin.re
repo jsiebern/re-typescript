@@ -5,7 +5,7 @@ open Re_typescript_fs;
 let file = (
   "/root/src/bin.d.ts",
   {|
-  type x = {field: string}[];
+            export function someOtherFunction(): null | { inline: string };
 |},
 );
 
