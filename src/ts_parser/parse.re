@@ -17,8 +17,11 @@ open Types;
 open Re_typescript_printer.Tree_utils;
 
 let types: Hashtbl.t(ts_path, ts_type) = Hashtbl.create(10);
-type order = {mutable lst: list(ts_path)};
-let order = {lst: []};
+type order = {
+  mutable lst: list(ts_path),
+  mutable raw: list(Ts.node),
+};
+let order = {lst: [], raw: []};
 
 let rec parse__node = (node: Ts.node) => {
   Debug.add_pos("parse__node");
@@ -411,14 +414,60 @@ and parse__TypeReference =
     (~parent, ~identChain, type_ref: Ts.node_TypeReference): ts_type => {
   Debug.add_pos("parse__TypeReference");
 
+  let resolvedParameters =
+    switch (Typescript_unwrap.unwrap_Node(type_ref.typeName).resolvedSymbol) {
+    | Some({id: Some(id), _}) =>
+      findNodeForSymbolId(order.raw, id)
+      |> CCOpt.map(typeParametersOfNodeRec)
+      |> CCOpt.value(~default=[])
+    | _ => []
+    };
+  let arguments = type_ref.typeArguments |> CCOpt.value(~default=[]);
+
   let args =
-    type_ref.typeArguments
-    |> CCOpt.map_or(
-         ~default=[],
-         CCList.filter_map(
-           parse__typeOfNode(~parent=`TypeReference(type_ref), ~identChain),
-         ),
-       );
+    (
+      if (CCList.length(resolvedParameters) === 0) {
+        arguments
+        |> CCList.mapi((i, arg) =>
+             parse__typeOfNode(
+               ~parent=`TypeReference(type_ref),
+               ~identChain=identChain @ [string_of_int(i + 1)],
+               arg,
+             )
+           );
+      } else {
+        resolvedParameters
+        |> CCList.mapi((i, param) =>
+             switch (param, arguments |> CCList.get_at_idx(i)) {
+             | (
+                 `TypeParameter(({name, _}: Ts.node_TypeParameter)),
+                 Some(arg),
+               ) =>
+               parse__typeOfNode(
+                 ~parent=`TypeReference(type_ref),
+                 ~identChain=identChain @ [identifierOfNode(name)],
+                 arg,
+               )
+             | (
+                 `TypeParameter(
+                   ({name, default: Some(arg), _}: Ts.node_TypeParameter),
+                 ),
+                 None,
+               ) =>
+               parse__typeOfNode(
+                 ~parent=`TypeReference(type_ref),
+                 ~identChain=[
+                   identifierOfNode(type_ref.typeName),
+                   identifierOfNode(name),
+                 ],
+                 arg,
+               )
+             | _ => None
+             }
+           );
+      }
+    )
+    |> CCList.keep_some;
 
   let (name, fullyQualifiedName) =
     parse__EntityName(~parent, type_ref.typeName);
@@ -721,7 +770,8 @@ and parse__typeOfType =
   result;
 }
 and parse__sourceFile = (sourceFile: Ts.node_SourceFile) => {
-  sourceFile.statements
+  order.raw = sourceFile.statements;
+  order.raw
   |> CCList.iter(node => {
        Debug.set_current(node);
        parse__node(node);
@@ -730,6 +780,7 @@ and parse__sourceFile = (sourceFile: Ts.node_SourceFile) => {
 and parse = (source: string) => {
   Hashtbl.clear(types);
   order.lst = [];
+  order.raw = [];
 
   switch (Typescript_j.node_of_string(source)) {
   | `SourceFile(sf) => parse__sourceFile(sf)

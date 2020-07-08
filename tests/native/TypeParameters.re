@@ -11,7 +11,7 @@ describe("type parameters generation & grammar", ({test, _}) => {
         {|
             type with_param<a1, a2 extends a1> = { a1: a1, a2: a2 };
             type with_param_2<a1, a2 extends string, a3 = string> = {a1: a1, a2: a2, a3: a3};
-            type with_param_3<a1, a2 extends string, a3 extends a2 = string> = {a1: a1, a2: a2, a3: a3};
+            type with_param_3<a1, a2 extends string, a3 extends a2> = {a1: a1, a2: a2, a3: a3};
         |},
       ),
     ).
@@ -206,27 +206,27 @@ describe("type parameter logic", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
-  // test(
-  //   "bubbling type parameters can be combined with regular ones",
-  //   ({expect, _}) => {
-  //   expect.string(
-  //     print(
-  //       {|
-  //     export interface Map<A,B> {
-  //       a: A;
-  //       b: B;
-  //     };
-  //     export interface RecoilRootProps<C> {
-  //       initializeState?: (options: {
-  //         set: <T>(recoilVal: T, newVal: T) => void;
-  //         setUnvalidatedAtomValues: (atomMap: Map<string, C>) => void;
-  //       }) => void;
-  //     }
-  //   |},
-  //     ),
-  //   ).
-  //     toMatchSnapshot()
-  // });
+  test(
+    "bubbling type parameters can be combined with regular ones",
+    ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      export interface Map<A,B> {
+        a: A;
+        b: B;
+      }
+      export interface RecoilRootProps<C> {
+        initializeState?: (options: {
+          set: <T>(recoilVal: T, newVal: T) => void;
+          setUnvalidatedAtomValues: (atomMap: Map<string, C>) => void;
+        }) => void;
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
   test(
     "unresolvable type params get passed on as far down as possible",
     ({expect, _}) => {

@@ -1,8 +1,8 @@
 type parameter logic › can have inline records as defaults
-type with_param_a2 = {inline: bool}
-and with_param('a1, 'a2) = {
+type with_param('a1, 'a2) = {
   a1: 'a1,
   a2: 'a2,
 }
+and with_param_a2 = {inline: bool}
 and call_params = with_param(string, with_param_a2);
 

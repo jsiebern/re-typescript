@@ -5,18 +5,35 @@ open Re_typescript_fs;
 let file = (
   "/root/src/bin.d.ts",
   {|
-export interface Map<A,B> {
-  a: A;
-  b: B;
-}
-export interface RecoilRootProps {
-  initializeState?: (options: {
-    set: <T>(recoilVal: T, newVal: T) => void; // Ignores type params on inline functions
-    setUnvalidatedAtomValues: (atomMap: Map<string, any>) => void;
-  }) => void;
-}
+type with_param<a1, a2 = {inline: boolean}> = {a1:a1, a2:a2};
+type call_params = with_param<string>;
   |},
 );
+
+let process =
+  Lwt_main.run(
+    {
+      let rec readStart = process => {
+        let lines = Lwt_io.read_lines(process#stdout);
+        Lwt.pick([
+          Lwt_unix.sleep(1.0) >>= (_ => Lwt.return_none),
+          lines |> Lwt_stream.peek,
+        ])
+        >>= (
+          ln =>
+            switch (ln) {
+            | Some(ln) when CCString.find(~sub="Server: Running", ln) > (-1) =>
+              process |> Lwt.return
+            | _ => readStart(process)
+            }
+        );
+      };
+      Lwt_process.open_process_full(
+        Lwt_process.shell("$(fnm exec -- which node) src_ws/service.bs.js"),
+      )
+      |> readStart;
+    },
+  );
 
 module Impl =
   Re_typescript_ws_client.WsClient(
@@ -122,3 +139,6 @@ let () =
     Console.error(e);
     raise(e);
   };
+
+process#terminate;
+Lwt_main.run(Lwt_unix.waitpid([], process#pid));
