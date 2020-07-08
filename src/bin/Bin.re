@@ -5,9 +5,8 @@ open Re_typescript_fs;
 let file = (
   "/root/src/bin.d.ts",
   {|
- type with_param<a = [string, number]> = a;
-        type call_params = with_param; 
-  |},
+ export function someFunction<A,B,C>(a: A, b: B): { b: B, c: C };
+|},
 );
 
 let process =
@@ -39,7 +38,6 @@ let process =
         );
       let rec readStdErr = process =>
           {
-            Console.log("E");
             Lwt.map(ln => (process, ln), Lwt_io.read_line(process#stderr));
           }
           >>= (
@@ -48,7 +46,12 @@ let process =
               readStdErr(process);
             }
           );
-        Lwt.async(() => readStdErr(process) >>= (_ => Lwt.return_unit));
+        Lwt.async(() => 
+        Lwt.catch(() =>
+          readStdErr(process) >>= (_ => Lwt.return_unit),
+          _ => Lwt.return_unit
+          )
+        );
       Lwt_process.exec(("clear", [||])) >>= (_ => readStart(process));
     },
   );
@@ -104,14 +107,6 @@ let files =
 let () =
   try(
     {
-      print_newline();
-      Random.self_init();
-      Console.log((
-        Random.int(1000000),
-        Random.int(1000000),
-        Random.int(1000000),
-        Random.int(1000000),
-      ));
       Console.log("--------------------------------------");
       let str =
         Re_typescript_ts_parser.structure_from_ts(

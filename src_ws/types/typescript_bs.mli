@@ -207,6 +207,19 @@ and node_IntersectionType = Typescript_t.node_IntersectionType = {
   types: node list
 }
 
+and node_LiteralType = Typescript_t.node_LiteralType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  literal: node
+}
+
 and node_MethodSignature = Typescript_t.node_MethodSignature = {
   pos: int;
   end_: int;
@@ -780,6 +793,10 @@ val write_node_InterfaceDeclaration :  node_InterfaceDeclaration Atdgen_codec_ru
 val read_node_IntersectionType :  node_IntersectionType Atdgen_codec_runtime.Decode.t
 
 val write_node_IntersectionType :  node_IntersectionType Atdgen_codec_runtime.Encode.t
+
+val read_node_LiteralType :  node_LiteralType Atdgen_codec_runtime.Decode.t
+
+val write_node_LiteralType :  node_LiteralType Atdgen_codec_runtime.Encode.t
 
 val read_node_MethodSignature :  node_MethodSignature Atdgen_codec_runtime.Decode.t
 

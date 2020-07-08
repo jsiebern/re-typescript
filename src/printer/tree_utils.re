@@ -156,10 +156,15 @@ let rec get_union_type_name = (um_type: ts_type) => {
   | Base(Null) => "null"
   | Base(Undefined) => "undefined"
   | Base(Any) => "any"
+  | Base(This) => "this"
   | Base(GenericFunction) => "func"
   | Base(GenericObject) => "obj"
   | Set(t) => Printf.sprintf("set_%s", get_union_type_name(t))
-  | Function(_) => "func"
+  | Function(_) => "func" 
+  | Literal(String(ident)) => Ident.ident(ident)
+  | Literal(Number(num)) => Printf.sprintf("_%i", int_of_float(num))
+  | Literal(Boolean(true)) => "true"
+  | Literal(Boolean(false)) => "false"
   | Reference({tr_path_resolved, _}) =>
     tr_path_resolved
     |> CCOpt.flat_map(((path, sub)) =>
@@ -353,6 +358,10 @@ let rec ts_to_string = (t: ts_type) =>
   | Base(Undefined) => "Base_Undefined"
   | Base(GenericFunction) => "Base_GenericFunction"
   | Base(GenericObject) => "Base_GenericObject"
+  | Base(This) => "Base_This"
+  | Literal(String(ident)) => Printf.sprintf("Literal_String (%s)", Ident.value(ident))
+  | Literal(Number(num)) => Printf.sprintf("Literal_Number (%f)", num)
+  | Literal(Boolean(b)) => Printf.sprintf("Literal_Boolean (%s)", b ? "true" : "false")
   | Set(t) => Printf.sprintf("Set<%s>", ts_to_string(t))
   | Interface(f, extended) =>
     Printf.sprintf(

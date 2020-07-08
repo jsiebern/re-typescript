@@ -54,11 +54,9 @@ let typeParametersOfNodeRec = (node: node) => {
     | `PropertySignature({type_: Some(type_), _})
     | `Parameter({type_: Some(type_), _}) => walk(~params, type_)
     | `TypeReference({typeArguments: Some(typeArguments), _}) =>
-      let sub =
-        typeArguments
-        |> CCList.filter_map(arg =>
-             switch (arg) {
-             | `TypeReference(
+      let sub = typeArguments |> CCList.map(p => walk(p)) |> CCList.concat;
+      params @ sub;
+    | `TypeReference(
                  (
                    {
                      resolvedType: Some(`TypeParameter(_)),
@@ -70,7 +68,7 @@ let typeParametersOfNodeRec = (node: node) => {
                    }: node_TypeReference
                  ),
                ) =>
-               Some(
+               params @ [
                  `TypeParameter({
                    pos,
                    end_,
@@ -86,27 +84,26 @@ let typeParametersOfNodeRec = (node: node) => {
                    resolvedSymbol: None,
                    resolvedType: None,
                  }),
-               )
-             | _ => None
-             }
-           );
-      params @ sub;
+               ]
     | _ => params
     };
   };
   walk(node)
-  |> CCList.uniq(~eq=(a, b) =>
-       Typescript_unwrap.(
-         {
-           identifierOfNode(a) == identifierOfNode(b)
-           || {
-             let a = unwrap_Node(a);
-             let b = unwrap_Node(b);
-             a.pos === b.pos && a.end_ === b.end_;
-           };
-         }
-       )
-     );
+      |> CCList.rev
+      |> CCList.uniq(
+        ~eq=(a, b) =>
+           Typescript_unwrap.(
+             {
+               identifierOfNode(a) == identifierOfNode(b)
+               || {
+                 let a = unwrap_Node(a);
+                 let b = unwrap_Node(b);
+                 a.pos === b.pos && a.end_ === b.end_;
+               };
+             }
+           )
+         )
+      |> CCList.rev;
 };
 
 let findNodeForSymbolId = (statements: list(node), symbolId: int) => {

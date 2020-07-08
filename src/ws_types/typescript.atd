@@ -101,6 +101,12 @@ type node_TypeLiteral = {
     members: node list ;
 }
 
+type node_LiteralType = {
+    inherit node_Generic;
+
+    literal: node;
+}
+
 type node_PropertySignature = {
     inherit node_Generic;
 
@@ -467,7 +473,7 @@ type node = [
     | TypeOperator of node_TypeOperator
     | IndexedAccessType of node_Generic
     | MappedType of node_Generic
-    | LiteralType of node_Generic
+    | LiteralType of node_LiteralType
     | NamedTupleMember of node_Generic
     | ImportType of node_Generic
     | ObjectBindingPattern of node_Generic

@@ -68,6 +68,7 @@ module Make = (Config: Config) : Ast_generator.T => {
             | Never
             | GenericFunction
             | GenericObject
+            | This
             | Any =>
               gen_config.has_any = true;
               generate_base_type("any");
@@ -75,6 +76,15 @@ module Make = (Config: Config) : Ast_generator.T => {
           ),
         td_prepend: None,
         td_append: None,
+      }
+    | Literal(literal) => 
+      // Todo: Implement literal type printing
+      gen_config.has_any = true; 
+      {
+        td_kind: Ptype_abstract,
+        td_type: Some(generate_base_type("any")),
+        td_prepend: None,
+        td_append: None
       }
     | Set(inner) =>
       // Todo: Vendor a Set definition

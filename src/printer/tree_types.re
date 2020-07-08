@@ -1,3 +1,5 @@
+[@ocaml.warning "-30"];
+
 type ts_path = (list(string), list(string));
 
 /**
@@ -80,6 +82,7 @@ and ts_base_type =
   | Null
   | Undefined
   | Never
+  | This
   | GenericFunction
   | GenericObject
 /**
@@ -96,9 +99,17 @@ and ts_union_member = {
   um_classifier: string,
 }
 /**
+    Literals
+*/
+and ts_literal =
+  | String(ts_identifier)
+  | Number(float)
+  | Boolean(bool)
+/**
     Types
  */
 and ts_type =
+  | Literal(ts_literal)  
   | Function(ts_function)
   | Union(list(ts_union_member))
   | MixedLiteral(ts_mixed_literal)

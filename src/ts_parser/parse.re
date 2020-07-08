@@ -88,8 +88,8 @@ and parse__SignatureDeclarationLike =
   Debug.add("Return:");
   let fu_return =
     switch (return_type) {
-    | None => Base(Any) // No return: void
-    | Some(dec_type) => parse__typeOfNode_exn(~parent, ~identChain, dec_type)
+    | None => Base(Void) // No return: void
+    | Some(dec_type) => parse__typeOfNode_exn(~parent, ~identChain=identChain @ ["return"], dec_type)
     };
   let fn = {
     fu_params:
@@ -268,6 +268,20 @@ and parse__IntersectionType =
   Debug.close_pos();
   asTuple;
 }
+and parse__LiteralType = (~parent: Ts.node, ~identChain, literal_type: Ts.node_LiteralType) => {
+  Debug.add_pos("parse__LiteralType"); 
+  let lt = switch (literal_type.literal) {
+   | `TrueKeyword(_) => Literal(Boolean(true))
+   | `FalseKeyword(_) => Literal(Boolean(false))
+   | otherNode => switch (literal_type.resolvedType) {
+     | Some(resolvedType) => parse__typeOfType(~parent, ~identChain, resolvedType)
+     | None => Debug.raiseWith(~node=otherNode, "Could not parse literal type node");
+     Base(Any)
+   }
+  };
+  Debug.close_pos();
+  lt;
+}
 and parse__TypeLiteral =
     (~parent: Ts.node, ~identChain, type_literal: Ts.node_TypeLiteral) => {
   Debug.add_pos("parse__TypeLiteral");
@@ -332,27 +346,24 @@ and parse__EnumDeclaration = (declaration: Ts.node_EnumDeclaration) => {
   order.lst = order.lst @ [path];
   Debug.close_pos();
 }
-and parse__DeclarationTypeParameters = {
-  // TODO: Defaults
+and parse__DeclarationTypeParameters = (~parent: Ts.node, ~identChain, typeParameters: option(list(Ts.node))) => {
   Debug.add_pos("parse__DeclarationTypeParameters");
-  (~parent: Ts.node, ~identChain, typeParameters: option(list(Ts.node))) => {
-    let typeParameters = Some(typeParametersOfNodeRec(parent));
-    let tp = {
-      typeParameters
-      |> CCOpt.map_or(~default=[], params =>
-           params
-           |> CCList.mapi((i, param) =>
-                {
-                  tp_name: Ident.of_string(identifierOfNode(param)),
-                  tp_extends: None,
-                  tp_default: None,
-                }
-              )
-         );
-    };
-    Debug.close_pos();
-    tp;
+  let typeParameters = Some(typeParametersOfNodeRec(parent));
+  let tp = {
+    typeParameters
+    |> CCOpt.map_or(~default=[], params =>
+         params
+         |> CCList.mapi((i, param) =>
+              {
+                tp_name: Ident.of_string(identifierOfNode(param)),
+                tp_extends: None,
+                tp_default: None,
+              }
+            )
+       );
   };
+  Debug.close_pos();
+  tp;
 }
 and parse__TypeAliasDeclaration = (declaration: Ts.node_TypeAliasDeclaration) => {
   Debug.add_pos("parse__TypeAliasDeclaration");
@@ -525,11 +536,10 @@ and parse__TupleType = (~parent, ~identChain, elements: list(Ts.node)) => {
 and parse__UnionType = (~parent, ~identChain, types: list(Ts.node)) => {
   Debug.add_pos("parse__UnionType");
 
-  let types =
+  let parsed_types =
     types
     |> CCList.mapi((i, type_node) => {
          Debug.add(Printf.sprintf("Union type %i:", i));
-         let parsed_type =
            switch (
              parse__typeOfNode(
                ~parent,
@@ -545,15 +555,28 @@ and parse__UnionType = (~parent, ~identChain, types: list(Ts.node)) => {
              Base(Any);
            | Some(t) => t
            };
-
-         {
-           um_ident: get_union_type_name(parsed_type),
-           um_type: parsed_type,
-           um_classifier: "",
-         };
        });
+  
+  let result = if (parsed_types |> CCList.for_all(
+    fun
+      | Literal(String(_)) => true
+      | _ => false
+  )) {
+    // String Literal
+    StringLiteral(parsed_types |> CCList.map(
+      fun
+        | Literal(String(ident)) => ident
+        | _ => raise(Failure("Unexpected"))
+    ))
+  } else {
+   Union(parsed_types |> CCList.map(parsed_type => {
+     um_ident: get_union_type_name(parsed_type),
+     um_type: parsed_type,
+     um_classifier: "",
+   }));
+  };
 
-  let result = Union(types);
+
   Debug.close_pos();
   result;
 }
@@ -562,7 +585,7 @@ and parse__wrapNonDeclarationChild =
   Debug.add_pos("parse__wrapNonDeclarationChild");
   let values = node |> Typescript_unwrap.unwrap_Node;
   let identName = identChain |> CCList.to_string(~sep="_", a => a);
-  let typeParams = typeParametersOfNodeRec(parent);
+  let typeParams = typeParametersOfNodeRec(node);
   parse__TypeAliasDeclaration({
     pos: values.pos,
     end_: values.end_,
@@ -715,6 +738,9 @@ and parse__typeOfNode_exn =
     | `TypeReference(tr) =>
       Debug.add("TypeReference");
       parse__TypeReference(~parent, ~identChain, tr);
+    | `LiteralType(lt) => 
+      Debug.add("LiteralType");
+      parse__LiteralType(~parent, ~identChain, lt)
     | `TypeLiteral(tl) as node =>
       Debug.add("TypeLiteral");
       isDeclarationChild
@@ -765,7 +791,9 @@ and parse__typeOfType =
     | `Number(_) => Base(Number)
     | `Any(_) => Base(Any)
     | `Boolean(_) => Base(Boolean)
-    | `StringLiteral({value, _}) => StringLiteral([value |> Ident.of_string])
+    // Todo: | `EnumLiteral(_)
+    | `StringLiteral({value, _}) => Literal(String(value |> Ident.of_string))
+    | `NumberLiteral({value, _}) => Literal(Number(value))
     | `TypeParameter(_) =>
       switch (parent) {
       | `Parameter({type_: Some(type_), _}) =>

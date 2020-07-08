@@ -203,7 +203,7 @@ type node = [
   | `TypeOperator of node_TypeOperator
   | `IndexedAccessType of node_Generic
   | `MappedType of node_Generic
-  | `LiteralType of node_Generic
+  | `LiteralType of node_LiteralType
   | `NamedTupleMember of node_Generic
   | `ImportType of node_Generic
   | `ObjectBindingPattern of node_Generic
@@ -543,6 +543,19 @@ and node_IntersectionType = {
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
   types: node list
+}
+
+and node_LiteralType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  literal: node
 }
 
 and node_MethodSignature = {

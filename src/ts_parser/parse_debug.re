@@ -156,7 +156,7 @@ let print_path = () => {
     ),
   );
 };
-let raiseWith = (~type_=?, ~node=?, str) =>
+let raiseWith = (~exn=true, ~type_=?, ~node=?, str) =>
   if (parse.enabled) {
     {
       if (str !== "") {
@@ -237,10 +237,13 @@ let raiseWith = (~type_=?, ~node=?, str) =>
         ),
       );
     };
-    if (parse.enabled) {
+    if (exn && parse.enabled) {
       raise(Parse_error_with_path(str));
     };
   };
 let raise = () => {
   raiseWith("");
+};
+let print = () => {
+  raiseWith(~exn=false, "");
 };
