@@ -299,20 +299,20 @@ and parse__LiteralType =
 and parse__TypeLiteral =
     (~parent: Ts.node, ~identChain, type_literal: Ts.node_TypeLiteral) => {
   Debug.add_pos("parse__TypeLiteral");
-    let members =
-      type_literal.members
-      |> CCList.filter_map(member =>
-           switch (parse__Signature(~parent, ~identChain, member)) {
-           | None => None
-           | Some((name, t)) => Some({f_name: name, f_type: t}: ts_field)
-           }
-         );
-    Debug.close_pos();
-    members |> CCList.is_empty
-      ? {
-        Base(Any);
-      }
-      : Interface(members, false);
+  let members =
+    type_literal.members
+    |> CCList.filter_map(member =>
+         switch (parse__Signature(~parent, ~identChain, member)) {
+         | None => None
+         | Some((name, t)) => Some({f_name: name, f_type: t}: ts_field)
+         }
+       );
+  Debug.close_pos();
+  members |> CCList.is_empty
+    ? {
+      Base(Any);
+    }
+    : Interface(members, false);
 }
 and parse__EnumDeclaration = (declaration: Ts.node_EnumDeclaration) => {
   Debug.add_pos("parse__EnumDeclaration");
@@ -612,24 +612,30 @@ and parse__UnionType = (~parent, ~identChain, types: list(Ts.node)) => {
   Debug.close_pos();
   result;
 }
-and parse__IndexedAccessType = (~parent, ~identChain, iat: Ts.node_IndexedAccessType) => {
+and parse__IndexedAccessType =
+    (~parent, ~identChain, iat: Ts.node_IndexedAccessType) => {
   Debug.add_pos("parse__IndexedAccessType");
   let parent = `IndexedAccessType(iat);
-  let index = switch(parse__typeOfNode(~parent, ~identChain, iat.indexType)) {
+  let index =
+    switch (parse__typeOfNode(~parent, ~identChain, iat.indexType)) {
     | Some(Literal(String(ident))) => Ident.ident(ident)
-    | Some(Literal(Number(num))) => Printf.sprintf("_%f", num);
+    | Some(Literal(Number(num))) => Printf.sprintf("_%f", num)
     | _ => "t"
-  };
+    };
   let identChain = identChain @ [index];
- 
+
   let objNode = CCOpt.get_exn(iat.typeNode);
-  
-  let result = switch (parse__typeOfNode(~parent, ~identChain, objNode)) {
+
+  let result =
+    switch (parse__typeOfNode(~parent, ~identChain, objNode)) {
     | Some(result) => result
     | None =>
-    Debug.raiseWith(~node=iat.objectType, "Could not parse indexed access target");
-    Base(Any)
-  }
+      Debug.raiseWith(
+        ~node=iat.objectType,
+        "Could not parse indexed access target",
+      );
+      Base(Any);
+    };
   Debug.close_pos();
   result;
 }

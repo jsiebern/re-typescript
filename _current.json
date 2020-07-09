@@ -42,7 +42,7 @@
               "resolvedSymbol": {
                 "name": "a",
                 "fullyQualifiedName": "__type.a",
-                "id": 235835,
+                "id": 16,
                 "flags": 4
               },
               "flags": 8388608,
@@ -63,7 +63,7 @@
             "resolvedSymbol": {
               "name": "a",
               "fullyQualifiedName": "__type.a",
-              "id": 235835,
+              "id": 16,
               "flags": 4
             },
             "flags": 8388608,
@@ -103,7 +103,7 @@
               "resolvedSymbol": {
                 "name": "b",
                 "fullyQualifiedName": "__type.b",
-                "id": 235836,
+                "id": 17,
                 "flags": 4
               },
               "flags": 8388608,
@@ -124,7 +124,7 @@
             "resolvedSymbol": {
               "name": "b",
               "fullyQualifiedName": "__type.b",
-              "id": 235836,
+              "id": 17,
               "flags": 4
             },
             "flags": 8388608,
@@ -159,7 +159,7 @@
         "resolvedSymbol": {
           "name": "__type",
           "fullyQualifiedName": "__type",
-          "id": 235834,
+          "id": 15,
           "flags": 2048
         },
         "flags": 8388608,
@@ -195,7 +195,7 @@
         "resolvedSymbol": {
           "name": "c",
           "fullyQualifiedName": "c",
-          "id": 235833,
+          "id": 14,
           "flags": 524288
         },
         "flags": 8388608,
@@ -229,7 +229,7 @@
       "resolvedSymbol": {
         "name": "c",
         "fullyQualifiedName": "c",
-        "id": 235833,
+        "id": 14,
         "flags": 524288
       },
       "flags": 8388608,
@@ -422,7 +422,7 @@
             "resolvedSymbol": {
               "name": "c",
               "fullyQualifiedName": "c",
-              "id": 235833,
+              "id": 14,
               "flags": 524288
             },
             "flags": 8388608,
@@ -536,7 +536,7 @@
         "resolvedSymbol": {
           "name": "d",
           "fullyQualifiedName": "d",
-          "id": 235837,
+          "id": 18,
           "flags": 524288
         },
         "flags": 8388608,
@@ -581,7 +581,7 @@
       "resolvedSymbol": {
         "name": "d",
         "fullyQualifiedName": "d",
-        "id": 235837,
+        "id": 18,
         "flags": 524288
       },
       "flags": 8388608,

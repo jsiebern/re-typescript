@@ -39,6 +39,92 @@ let optimizeReferences = (order: list(identPath), types: types) => {
   order^
   |> CCList.iter(path => {
        switch (Hashtbl.find_opt(types, path)) {
+       // ----------------------------------
+       // --- Array
+       // ----------------------------------
+       | Some(
+           TypeDeclaration(
+             {td_type: Array(Reference({tr_path, _})), _} as td,
+           ),
+         )
+           when
+             Hashtbl.find_opt(refCount, tr_path)
+             |> CCOpt.map(CCList.length)
+             |> CCOpt.value(~default=0) == 1 =>
+         switch (Hashtbl.find_opt(types, tr_path)) {
+         | Some(TypeDeclaration({td_type, _}) as t) when canBeInline(t) =>
+           // Remove the extra type def from order
+           order :=
+             order^
+             |> CCList.remove_one(~eq=CCList.equal(CCString.equal), tr_path);
+           // An replace the reference inside of the field
+           Hashtbl.replace(
+             types,
+             path,
+             TypeDeclaration({...td, td_type: Array(td_type)}),
+           );
+         | Some(_) => ()
+         | None => ()
+         }
+
+       // ----------------------------------
+       // --- Optional
+       // ----------------------------------
+       | Some(
+           TypeDeclaration(
+             {td_type: Optional(Reference({tr_path, _})), _} as td,
+           ),
+         )
+           when
+             Hashtbl.find_opt(refCount, tr_path)
+             |> CCOpt.map(CCList.length)
+             |> CCOpt.value(~default=0) == 1 =>
+         switch (Hashtbl.find_opt(types, tr_path)) {
+         | Some(TypeDeclaration({td_type, _}) as t) when canBeInline(t) =>
+           // Remove the extra type def from order
+           order :=
+             order^
+             |> CCList.remove_one(~eq=CCList.equal(CCString.equal), tr_path);
+           // An replace the reference inside of the field
+           Hashtbl.replace(
+             types,
+             path,
+             TypeDeclaration({...td, td_type: Optional(td_type)}),
+           );
+         | Some(_) => ()
+         | None => ()
+         }
+
+       // ----------------------------------
+       // --- Nullable
+       // ----------------------------------
+       | Some(
+           TypeDeclaration(
+             {td_type: Nullable(Reference({tr_path, _})), _} as td,
+           ),
+         )
+           when
+             Hashtbl.find_opt(refCount, tr_path)
+             |> CCOpt.map(CCList.length)
+             |> CCOpt.value(~default=0) == 1 =>
+         switch (Hashtbl.find_opt(types, tr_path)) {
+         | Some(TypeDeclaration({td_type, _}) as t) when canBeInline(t) =>
+           // Remove the extra type def from order
+           order :=
+             order^
+             |> CCList.remove_one(~eq=CCList.equal(CCString.equal), tr_path);
+           // And replace the reference inside of the field
+           Hashtbl.replace(
+             types,
+             path,
+             TypeDeclaration({...td, td_type: Nullable(td_type)}),
+           );
+         | Some(_) => ()
+         | None => ()
+         }
+       // ----------------------------------
+       // --- Function Return / Parameters
+       // ----------------------------------
        | Some(
            TypeDeclaration(
              {td_type: Function({fu_return, fu_params}), _} as td,
@@ -102,6 +188,88 @@ let optimizeReferences = (order: list(identPath), types: types) => {
              td_type:
                Function({fu_return: new_return, fu_params: new_params}),
            }),
+         );
+
+       // ----------------------------------
+       // --- Interface Fields
+       // ----------------------------------
+       | Some(
+           TypeDeclaration({td_type: Interface(fields, extended), _} as td),
+         ) =>
+         let new_fields =
+           fields
+           |> CCList.map(field => {
+                switch (field) {
+                | {f_type: Reference({tr_path, _}), _}
+                    when
+                      Hashtbl.find_opt(refCount, tr_path)
+                      |> CCOpt.map(CCList.length)
+                      |> CCOpt.value(~default=0) == 1 =>
+                  switch (Hashtbl.find_opt(types, tr_path)) {
+                  | Some(TypeDeclaration({td_type, _}) as t)
+                      when canBeInline(t) =>
+                    // Remove the extra type def from order
+                    order :=
+                      order^
+                      |> CCList.remove_one(
+                           ~eq=CCList.equal(CCString.equal),
+                           tr_path,
+                         );
+                    // An replace the reference inside of the field
+                    {...field, f_type: td_type};
+                  | Some(_) => field
+                  | None => field
+                  }
+
+                | field => field
+                }
+              });
+
+         Hashtbl.replace(
+           types,
+           path,
+           TypeDeclaration({
+             ...td,
+             td_type: Interface(new_fields, extended),
+           }),
+         );
+
+       // ----------------------------------
+       // --- Tuple Members
+       // ----------------------------------
+       | Some(TypeDeclaration({td_type: Tuple(members), _} as td)) =>
+         let new_members =
+           members
+           |> CCList.map(member => {
+                switch (member) {
+                | Reference({tr_path, _})
+                    when
+                      Hashtbl.find_opt(refCount, tr_path)
+                      |> CCOpt.map(CCList.length)
+                      |> CCOpt.value(~default=0) == 1 =>
+                  switch (Hashtbl.find_opt(types, tr_path)) {
+                  | Some(TypeDeclaration({td_type, _}) as t)
+                      when canBeInline(t) =>
+                    // Remove the extra type def from order
+                    order :=
+                      order^
+                      |> CCList.remove_one(
+                           ~eq=CCList.equal(CCString.equal),
+                           tr_path,
+                         );
+                    // An replace the reference inside of the field
+                    td_type;
+                  | Some(_) => member
+                  | None => member
+                  }
+                | member => member
+                }
+              });
+
+         Hashtbl.replace(
+           types,
+           path,
+           TypeDeclaration({...td, td_type: Tuple(new_members)}),
          );
 
        | _ => ()

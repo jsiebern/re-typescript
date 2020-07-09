@@ -19,7 +19,7 @@ describe("reference resolution", ({test, _}) => {
       interface I_Ref {
         f_num: number;
         f_str: t_str;
-      };
+      }
       type r_ref = {
         inner: I_Ref
       }
@@ -36,7 +36,7 @@ describe("reference resolution", ({test, _}) => {
       interface I_Ref {
         f_num: number;
         f_inner: I_Ref
-      };
+      }
     |},
       ),
     ).
