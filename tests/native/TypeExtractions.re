@@ -75,7 +75,7 @@ describe("type extractions", ({test, _}) => {
               inline: {
                 num: number
               }
-            };
+            }
             type str = IMain['simple']
             type obj = IMain['inline'];
             type num = obj['num'];

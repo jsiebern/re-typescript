@@ -5,15 +5,12 @@ open Re_typescript_fs;
 let file = (
   "/root/src/bin.d.ts",
   {|
-    interface iTest {
-                field: string;
-                action: (a: string, b?: number) => void;
-            }
-            type access = iTest['action'];
+type c = {a: string, b: number};
+            type d = c['a' | 'b']
 |},
 );
 
-let process =
+/*let process =
   Lwt_main.run(
     {
       let rec readStart = process => {
@@ -50,7 +47,7 @@ let process =
               readStdErr(process);
             }
           );
-        Lwt.async(() => 
+        Lwt.async(() =>
         Lwt.catch(() =>
           readStdErr(process) >>= (_ => Lwt.return_unit),
           _ => Lwt.return_unit
@@ -58,7 +55,7 @@ let process =
         );
       Lwt_process.exec(("clear", [||])) >>= (_ => readStart(process));
     },
-  );
+  );*/
 
 module Impl =
   Re_typescript_ws_client.WsClient(
@@ -157,5 +154,5 @@ let () =
     raise(e);
   };
 
-process#terminate;
-Lwt_main.run(Lwt_unix.waitpid([], process#pid));
+//process#terminate;
+//Lwt_main.run(Lwt_unix.waitpid([], process#pid));

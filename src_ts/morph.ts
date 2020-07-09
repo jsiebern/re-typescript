@@ -1,5 +1,12 @@
 import * as fs from 'fs';
-import { Type, Project, Node, ts, createWrappedNode } from 'ts-morph';
+import {
+  Type,
+  Project,
+  Node,
+  ts,
+  createWrappedNode,
+  SourceFile,
+} from 'ts-morph';
 import * as common from '@ts-morph/common';
 import { walkNodes } from './ast';
 import { strict } from 'assert';
@@ -61,12 +68,10 @@ const recurseType = (type: Type | undefined, level = 0) => {
     '  '.repeat(level),
     't: ' + type.getText() + ' ' + type.getFlags()
   );
-  [
-  ].forEach((t) => recurseType(t, level + 1));
+  [].forEach((t) => recurseType(t, level + 1));
   type.getTupleElements().forEach((t) => recurseType(t, level + 1));
 };
 const recurse = (node: Node, level = 0) => {
-
   if (Node.isIndexedAccessTypeNode(node)) {
     // console.log(node.getKindName())
     // node.getType().getCallSignatures().forEach(cs => {
@@ -76,7 +81,15 @@ const recurse = (node: Node, level = 0) => {
 
     // console.log(tc.compilerObject.typeToTypeNode(node.getType().compilerType));
     // @ts-ignore
-    console.log((tc.compilerObject.typeToTypeNode(node.getType().compilerType)?.kind))
+    tc.compilerObject.runWithCancellationToken;
+    const cNode = tc.compilerObject.typeToTypeNode(node.getType().compilerType);
+    if (cNode) {
+      const node = createWrappedNode(cNode, {
+        typeChecker: tc.compilerObject,
+        sourceFile: created2.compilerNode,
+      });
+      console.log(node.getKindName());
+    }
     // node.getType().getBaseTypes().forEach(bt => console.log(bt.isString() ? 'string' : 'other'))
   }
 

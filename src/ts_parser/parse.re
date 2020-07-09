@@ -299,15 +299,6 @@ and parse__LiteralType =
 and parse__TypeLiteral =
     (~parent: Ts.node, ~identChain, type_literal: Ts.node_TypeLiteral) => {
   Debug.add_pos("parse__TypeLiteral");
-  let isObject =
-    switch (
-      type_literal.resolvedType |> CCOpt.map(Typescript_unwrap.unwrap_Type)
-    ) {
-    | None => false
-    | Some({flags, _}) =>
-      Typescript_flags.Type.(flags |> Obj.magic && object_)
-    };
-  if (isObject) {
     let members =
       type_literal.members
       |> CCList.filter_map(member =>
@@ -322,13 +313,6 @@ and parse__TypeLiteral =
         Base(Any);
       }
       : Interface(members, false);
-  } else {
-    Console.error("Currently invalid type literal:");
-    Debug.add_node(`TypeLiteral(type_literal));
-    Debug.close_pos();
-    Debug.raise();
-    Base(Any);
-  };
 }
 and parse__EnumDeclaration = (declaration: Ts.node_EnumDeclaration) => {
   Debug.add_pos("parse__EnumDeclaration");
@@ -637,8 +621,10 @@ and parse__IndexedAccessType = (~parent, ~identChain, iat: Ts.node_IndexedAccess
     | _ => "t"
   };
   let identChain = identChain @ [index];
-
-  let result = switch (parse__typeOfNode(~parent, ~identChain, iat.objectType)) {
+ 
+  let objNode = CCOpt.get_exn(iat.typeNode);
+  
+  let result = switch (parse__typeOfNode(~parent, ~identChain, objNode)) {
     | Some(result) => result
     | None =>
     Debug.raiseWith(~node=iat.objectType, "Could not parse indexed access target");

@@ -199,12 +199,13 @@ let oneOf = (decoders, json) => {
   let rec inner = (decoders, errors) =>
     switch decoders {
     | list[] =>
-      // let revErrors = List.rev(errors)
+    
+      let revErrors = List.rev(errors) |> Belt.List.toArray |> Js.Array.joinWith(", ")
 
       \"@@"(
         raise,
         DecodeError(
-          `All decoders given to oneOf failed. Here are all the errors: $revErrors. And the JSON being decoded: ${_stringify(
+          `All decoders given to oneOf failed. Here are all the errors: ${revErrors}. And the JSON being decoded: ${_stringify(
             json,
           )}`,
         ),

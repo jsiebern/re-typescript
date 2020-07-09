@@ -4,10 +4,12 @@ let project = Runtime.project;
 
 let sourceFile =
   project->Project.createSourceFile(
-    "test.d.ts",
-    `
-type with_param<a = [string, number]> = a;
-        type call_params = with_param; 
+    "test.d.ts", `
+ interface iTest {
+                field: string;
+                action: (a: string, b?: number) => void;
+            }
+            type access = iTest['action'];
 `,
   );
 sourceFile->SourceFile.saveSync;
@@ -26,7 +28,7 @@ project
     let node = sourceFile->SourceFile.compilerNodeJson;
     let parsed = Typescript_bs.read_node(node);
 
-    // Js.log(parsed->Typescript_bs.write_node->Js.Json.stringifyWithSpace(2));
+    Js.log(parsed->Typescript_bs.write_node->Js.Json.stringifyWithSpace(2));
     Fs.writeFileSync(
       "src_ts/bs/test.json",
       parsed->Typescript_bs.write_node->Js.Json.stringifyWithSpace(2),

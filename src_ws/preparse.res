@@ -1,20 +1,15 @@
 open Ts_morph
 
-let activeProject: ref<option<Project.t>> = ref(None);
+let activeProject: ref<Project.t> = ref(""->Obj.magic);
+let activeSourceFile: ref<SourceFile.t> = ref(""->Obj.magic)
 let getTypeNode = (. n: Node.t) => {
-  let typeChecker = (switch (activeProject.contents) {
-    | None => Runtime.typeChecker
-    | Some(project) => project->Project.getTypeChecker->TypeChecker.compilerObject
-  });
+  let typeChecker = activeProject.contents->Project.getTypeChecker->TypeChecker.compilerObject;
   let type_ = n->Node.getType->Belt.Option.map(Type.compilerType);
   type_->Belt.Option.flatMap(Ts_Typechecker.typeToTypeNode(typeChecker));
 };
 
 let getKindNameOfType = (. t: Type.t) => {
-  (switch (activeProject.contents) {
-    | None => Runtime.typeChecker
-    | Some(project) => project->Project.getTypeChecker->TypeChecker.compilerObject
-  })
+  activeProject.contents->Project.getTypeChecker->TypeChecker.compilerObject
   ->Ts_Typechecker.typeToTypeNode(t->Type.compilerType)
   ->Belt.Option.map(Typescript_raw.Node.kind)
   ->Belt.Option.flatMap(id => Typescript_syntaxkind.kindCache->Belt.Map.Int.get(id))
@@ -176,7 +171,7 @@ let rec visitNode = (. node: Node.t) => {
       ->Symbol.compilerSymbol
       ->Typescript_raw.Symbol.setFullyQualifiedName(symbol->Symbol.getFullyQualifiedName)
     }
-    node->Node.compilerNode->Typescript_raw.Node.setResolvedSymbol(symbol->Symbol.compilerSymbol)
+    node->Node.compilerNode->Typescript_raw.Node.setResolvedSymbol(Some(symbol->Symbol.compilerSymbol))
   }
   switch node->Node.getType {
   | None => ()
@@ -194,26 +189,36 @@ let rec visitNode = (. node: Node.t) => {
       ])
     }
 
-    node->Node.compilerNode->Typescript_raw.Node.setResolvedType(t->Type.compilerType)
+    node->Node.compilerNode->Typescript_raw.Node.setResolvedType(Some(t->Type.compilerType))
   }
   node->Node.compilerNode->Typescript_raw.Node.setKindName(node->Node.getKindName)
   switch (getTypeNode(. node)) {
     | None => ()
     | Some(typeNode) =>
-      // let wrappedNode = createWrappedNode(typeNode, {"typeChecker": typeChecker });
-      // visitNode(. typeNode->Obj.magic);
-      
-      typeNode->Typescript_raw.Node.setKindName(Typescript_syntaxkind.kindCache->Belt.Map.Int.get(typeNode->Typescript_raw.Node.kind)->Belt.Option.getExn)
-      node->Node.compilerNode->Typescript_raw.Node.setTypeNode(Some(typeNode))
+      /*typeNode->Typescript_raw.Node.setKindName(Typescript_syntaxkind.kindCache->Belt.Map.Int.get(typeNode->Typescript_raw.Node.kind)->Belt.Option.getExn)
+       typeNode->Typescript_raw.Node.setResolvedType(None)
+       typeNode->Typescript_raw.Node.setResolvedSymbol(None)*/
+       let typeChecker = activeProject.contents->Project.getTypeChecker->TypeChecker.compilerObject;
+       let sourceFile = activeSourceFile.contents->SourceFile.toNode->Node.compilerNode;
+       let wrappedNode = createWrappedNode(typeNode, {
+         typeChecker,
+         sourceFile 
+       });
+       //Js.log(wrappedNode->Node.getKindName);
+      wrappedNode->Node.compilerNode->Typescript_raw.Node.setKindName(wrappedNode->Node.getKindName)
+       wrappedNode->Node.compilerNode->Typescript_raw.Node.setResolvedSymbol(None)
+      wrappedNode->Node.compilerNode->Typescript_raw.Node.setResolvedType(wrappedNode->Node.getType->Belt.Option.map(Type.compilerType))
+      node->Node.compilerNode->Typescript_raw.Node.setTypeNode(Some(wrappedNode->Node.compilerNode))
   };
   node->Node.getChildren->Belt.Array.forEachU(visitNode)
 }
 
 let preParse = (~sourceFiles=[], project) => {
   Set.clear(idCache)
-  activeProject := Some(project);
+  activeProject := project;
   
   (sourceFiles->Belt.Array.length === 0 ? project->Project.getSourceFiles : sourceFiles)->Belt.Array.forEachU((. sourceFile) => {
+    activeSourceFile := sourceFile;
     sourceFile
     ->SourceFile.toNode
     ->Node.compilerNode

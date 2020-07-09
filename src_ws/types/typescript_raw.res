@@ -4,8 +4,8 @@ type type_
 
 module Node = {
   @bs.set
-  external setResolvedSymbol: (node, symbol) => unit = "resolvedSymbol"
-  @bs.set external setResolvedType: (node, type_) => unit = "resolvedType"
+  external setResolvedSymbol: (node, option<symbol>) => unit = "resolvedSymbol"
+  @bs.set external setResolvedType: (node, option<type_>) => unit = "resolvedType"
   @bs.set external setKindName: (node, string) => unit = "kindName"
   @bs.set external setTypeNode: (node, option<node>) => unit = "typeNode"
 

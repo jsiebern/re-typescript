@@ -83,6 +83,10 @@ module Symbol = {
 module Node = {
   type t
   @bs.val external isSourceFile: t => bool = "isSourceFile"
+  @bs.send external forEachChild: (t, t => unit) => unit = "forEachChild";
+  @bs.send external forEachChildU: (t, (. t) => unit) => unit = "forEachChild";
+  @bs.send external forEachDescendant: (t, t => unit) => unit = "forEachDescendant";
+  @bs.send external forEachDescendantU: (t, (. t) => unit) => unit = "forEachDescendant";
 
   @bs.set
   external setResolvedSymbol: (t, Symbol.t) => unit = "resolvedSymbol"
@@ -111,7 +115,6 @@ module NodeStatic = {
   @bs.val @bs.module("ts-morph") external t: t = "Node";
   @bs.send external isTypeParameteredNode: (t, Node.t) => bool = "isTypeParameteredNode";
 }
-@bs.val @bs.module("ts-morph") external createWrappedNode: (Typescript_raw.node, {..}) => Node.t = "createWrappedNode";
 
 module SourceFile = {
   type t
@@ -135,6 +138,12 @@ module FileSystem = {
   @bs.send external readFileSync: (t, string) => string = "readFileSync"
   @bs.send external writeFileSync: (t, string, string) => unit = "writeFileSync"
 }
+
+type wrapperOptions = {
+  typeChecker: Ts_Typechecker.t,
+  sourceFile: Typescript_raw.node,
+};
+@bs.val @bs.module("ts-morph") external createWrappedNode: (Typescript_raw.node, wrapperOptions) => Node.t = "createWrappedNode";
 
 module Project = {
   type t
