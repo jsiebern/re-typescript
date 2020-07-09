@@ -381,7 +381,7 @@ let rec ts_to_string = (t: ts_type) =>
   | Array(_) => "Array"
   | Optional(_) => "Optional"
   | Nullable(_) => "Nullable"
-  | Reference({tr_path, tr_path_resolved, tr_parameters}) =>
+  | Reference({tr_path, tr_path_resolved, tr_parameters, _}) =>
     Printf.sprintf(
       "Reference (resolved: %s, parameters: %s)",
       Path.pp(tr_path_resolved |> CCOpt.get_exn),

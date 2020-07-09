@@ -5,7 +5,7 @@ open Re_typescript_fs;
 let file = (
   "/root/src/bin.d.ts",
   {|
-            export function someOtherFunction(): null | { inline: string };
+           export function someFunction(a: number, b: [ number, { field: string } ]): [string, boolean];
 |},
 );
 

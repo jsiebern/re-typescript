@@ -828,6 +828,7 @@ and parse__type_reference = (~path, type_ref: Ts.type_reference): ts_type => {
         RefInline.add(~path, resolved);
       };
       Reference({
+        tr_from: [],
         tr_path: ref_path,
         tr_path_resolved: Some(resolved),
         tr_parameters: parameters,
@@ -1285,6 +1286,7 @@ and parse__inline = (~path, ~parameters=?, type_) => {
     };
   Ref.resolve_ref(~from=path, path) |> ignore;
   Reference({
+    tr_from: [],
     tr_path: fst(path),
     tr_path_resolved: Some(path),
     tr_parameters: args |> CCList.map(a => Arg(a)),

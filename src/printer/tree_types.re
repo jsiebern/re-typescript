@@ -38,6 +38,7 @@ and ts_import =
  */
 and ts_type_reference = {
   tr_path: list(string),
+  tr_from: list(string),
   tr_path_resolved: option(ts_path),
   tr_parameters: list(ts_type),
 }

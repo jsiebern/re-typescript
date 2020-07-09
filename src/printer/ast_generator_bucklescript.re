@@ -101,7 +101,7 @@ module Make = (Config: Config) : Ast_generator.T => {
         td_prepend: None,
         td_append: None,
       };
-    | Reference({tr_path_resolved, tr_parameters, tr_path}) =>
+    | Reference({tr_path_resolved, tr_parameters, tr_path, _}) =>
       switch (tr_path_resolved) {
       | None =>
         Console.warn(
@@ -385,6 +385,7 @@ module Make = (Config: Config) : Ast_generator.T => {
                        um_classifier: "",
                        um_type:
                          Reference({
+                           tr_from: ref_path |> fst,
                            tr_path: path |> Path.to_unscoped_path,
                            tr_path_resolved: Some(ref_path),
                            tr_parameters:
