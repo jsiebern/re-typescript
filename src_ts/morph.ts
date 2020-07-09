@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { Type, Project, Node, ts, TypeParameteredNode } from 'ts-morph';
+import { Type, Project, Node, ts, createWrappedNode } from 'ts-morph';
 import * as common from '@ts-morph/common';
 import { walkNodes } from './ast';
 import { strict } from 'assert';
@@ -32,8 +32,12 @@ ts.createSourceFile;
 const created2 = project.createSourceFile(
   'simple.d.ts',
   `
-  type with_param<a = [string, number]> = a;
-        type call_params = with_param; 
+  interface iTest {
+    field: string;
+    action: (a: string, b?: number) => void;
+}
+type access = iTest['action'];
+type strAcc = iTest['field'];
 `
 );
 created2.getFilePath();
@@ -46,13 +50,6 @@ const errors = diagnostics.length
   ? project.formatDiagnosticsWithColorAndContext(diagnostics)
   : undefined;
 
-// project.getSourceFiles().forEach((node) => {
-//   // @ts-ignore
-//   console.log(node.compilerNode.texts);
-//   console.log(node.getKind(), Node.isSourceFile(node));
-//   console.log(ts.isSourceFile(node.compilerNode));
-// });
-
 const c = project.getTypeChecker().compilerObject;
 const tc = project.getTypeChecker();
 
@@ -64,33 +61,32 @@ const recurseType = (type: Type | undefined, level = 0) => {
     '  '.repeat(level),
     't: ' + type.getText() + ' ' + type.getFlags()
   );
-  // type.getAliasTypeArguments().forEach((t) => recurseType(t, level + 1));
   [
-    // type.getApparentType(),
-    // type.getArrayElementType(),
-    // type.getBaseTypeOfLiteralType(),
-    // type.getConstraint(),
-    // type.getDefault(),
-    // type.getNonNullableType(),
-    // type.getNumberIndexType(),
-    // type.getStringIndexType(),
-    // type.getTargetType(),
   ].forEach((t) => recurseType(t, level + 1));
-  // type.getBaseTypes().forEach((t) => recurseType(t, level + 1));
-  // type.getIntersectionTypes().forEach((t) => recurseType(t, level + 1));
   type.getTupleElements().forEach((t) => recurseType(t, level + 1));
-  // type.getTypeArguments().forEach((t) => recurseType(t, level + 1));
-  // type.getUnionTypes().forEach((t) => recurseType(t, level + 1));
 };
 const recurse = (node: Node, level = 0) => {
 
-  if (Node.isTypeParameteredNode(node)) {
-    // console.log(node.getText());
-    console.log(node.getTypeParameters().map(n => n.getName()));
+  if (Node.isIndexedAccessTypeNode(node)) {
+    // console.log(node.getKindName())
+    // node.getType().getCallSignatures().forEach(cs => {
+    //   console.log("Y")
+    //   console.log(cs.getDeclaration().getKindName())
+    // })
+
+    // console.log(tc.compilerObject.typeToTypeNode(node.getType().compilerType));
+    // @ts-ignore
+    console.log((tc.compilerObject.typeToTypeNode(node.getType().compilerType)?.kind))
+    // node.getType().getBaseTypes().forEach(bt => console.log(bt.isString() ? 'string' : 'other'))
   }
-  if (Node.isTupleTypeNode(node)) {
-    console.log(node);
-  }
+
+  // if (Node.isTypeParameteredNode(node)) {
+  //   // console.log(node.getText());
+  //   console.log(node.getTypeParameters().map(n => n.getName()));
+  // }
+  // if (Node.isTupleTypeNode(node)) {
+  //   console.log(node);
+  // }
 
   // const type = node.getSymbol()?.getDeclaredType();
   // console.log('  '.repeat(level), node.getKindName() + ':');

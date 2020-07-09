@@ -7,6 +7,7 @@ module Node = {
   external setResolvedSymbol: (node, symbol) => unit = "resolvedSymbol"
   @bs.set external setResolvedType: (node, type_) => unit = "resolvedType"
   @bs.set external setKindName: (node, string) => unit = "kindName"
+  @bs.set external setTypeNode: (node, option<node>) => unit = "typeNode"
 
   @bs.send external isEnumDeclaration: node => bool = "isEnumDeclaration"
   @bs.get external kind: node => int = "kind"

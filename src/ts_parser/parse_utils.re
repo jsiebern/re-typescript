@@ -109,6 +109,7 @@ and typeParametersOfNodeRec =
           constraint_: None,
           kindName: "TypeParameter",
           kind: (-1),
+          typeNode: None,
           default: None,
           expression: None,
           flags,

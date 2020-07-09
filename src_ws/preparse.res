@@ -1,10 +1,24 @@
 open Ts_morph
 
-let getKindNameOfType = (. t: Type.t) =>
-  Runtime.typeChecker
+let activeProject: ref<option<Project.t>> = ref(None);
+let getTypeNode = (. n: Node.t) => {
+  let typeChecker = (switch (activeProject.contents) {
+    | None => Runtime.typeChecker
+    | Some(project) => project->Project.getTypeChecker->TypeChecker.compilerObject
+  });
+  let type_ = n->Node.getType->Belt.Option.map(Type.compilerType);
+  type_->Belt.Option.flatMap(Ts_Typechecker.typeToTypeNode(typeChecker));
+};
+
+let getKindNameOfType = (. t: Type.t) => {
+  (switch (activeProject.contents) {
+    | None => Runtime.typeChecker
+    | Some(project) => project->Project.getTypeChecker->TypeChecker.compilerObject
+  })
   ->Ts_Typechecker.typeToTypeNode(t->Type.compilerType)
   ->Belt.Option.map(Typescript_raw.Node.kind)
   ->Belt.Option.flatMap(id => Typescript_syntaxkind.kindCache->Belt.Map.Int.get(id))
+}
 let isTypeReference = (. t: Type.t) => {
   getKindNameOfType(. t) === Some("TypeReference")
 }
@@ -179,14 +193,25 @@ let rec visitNode = (. node: Node.t) => {
         node->Node.getText->Obj.magic,
       ])
     }
+
     node->Node.compilerNode->Typescript_raw.Node.setResolvedType(t->Type.compilerType)
   }
   node->Node.compilerNode->Typescript_raw.Node.setKindName(node->Node.getKindName)
+  switch (getTypeNode(. node)) {
+    | None => ()
+    | Some(typeNode) =>
+      // let wrappedNode = createWrappedNode(typeNode, {"typeChecker": typeChecker });
+      // visitNode(. typeNode->Obj.magic);
+      
+      typeNode->Typescript_raw.Node.setKindName(Typescript_syntaxkind.kindCache->Belt.Map.Int.get(typeNode->Typescript_raw.Node.kind)->Belt.Option.getExn)
+      node->Node.compilerNode->Typescript_raw.Node.setTypeNode(Some(typeNode))
+  };
   node->Node.getChildren->Belt.Array.forEachU(visitNode)
 }
 
 let preParse = (~sourceFiles=[], project) => {
   Set.clear(idCache)
+  activeProject := Some(project);
   
   (sourceFiles->Belt.Array.length === 0 ? project->Project.getSourceFiles : sourceFiles)->Belt.Array.forEachU((. sourceFile) => {
     sourceFile

@@ -13,6 +13,7 @@ type node_Generic = {
     ?decorators: node list option ;
     ?resolvedSymbol: symbol option ;
     ?resolvedType: type_ option ;
+    ?typeNode: node option ;
 }
 
 type node_SourceFile = {
@@ -278,6 +279,13 @@ type node_IntersectionType = {
     types: node list;
 }
 
+type node_IndexedAccessType = {
+    inherit node_Generic;
+
+    objectType: node;
+    indexType: node;
+}
+
 type node = [
     | SourceFile of node_SourceFile
     | TypeAliasDeclaration of node_TypeAliasDeclaration
@@ -471,7 +479,7 @@ type node = [
     | ParenthesizedType of node_Generic
     | ThisType of node_Generic
     | TypeOperator of node_TypeOperator
-    | IndexedAccessType of node_Generic
+    | IndexedAccessType of node_IndexedAccessType
     | MappedType of node_Generic
     | LiteralType of node_LiteralType
     | NamedTupleMember of node_Generic

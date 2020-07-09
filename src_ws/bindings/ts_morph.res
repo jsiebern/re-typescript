@@ -4,6 +4,7 @@ module TypeChecker = {
   @bs.get external compilerObject: t => Ts_Typechecker.t = "compilerObject"
 }
 
+
 module Type = {
   type t
 
@@ -64,6 +65,7 @@ module Type = {
   @bs.send external isAnonymous: t => bool = "isAnonymous"
 }
 
+
 module Symbol = {
   type t
 
@@ -109,6 +111,7 @@ module NodeStatic = {
   @bs.val @bs.module("ts-morph") external t: t = "Node";
   @bs.send external isTypeParameteredNode: (t, Node.t) => bool = "isTypeParameteredNode";
 }
+@bs.val @bs.module("ts-morph") external createWrappedNode: (Typescript_raw.node, {..}) => Node.t = "createWrappedNode";
 
 module SourceFile = {
   type t

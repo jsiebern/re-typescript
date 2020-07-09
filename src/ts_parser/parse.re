@@ -37,6 +37,7 @@ let rec parse__node = (node: Ts.node) => {
           end_,
           kind,
           kindName,
+          typeNode,
           flags,
           modifiers,
           decorators,
@@ -58,6 +59,7 @@ let rec parse__node = (node: Ts.node) => {
       end_,
       kind,
       kindName,
+      typeNode,
       flags,
       modifiers,
       decorators,
@@ -626,6 +628,25 @@ and parse__UnionType = (~parent, ~identChain, types: list(Ts.node)) => {
   Debug.close_pos();
   result;
 }
+and parse__IndexedAccessType = (~parent, ~identChain, iat: Ts.node_IndexedAccessType) => {
+  Debug.add_pos("parse__IndexedAccessType");
+  let parent = `IndexedAccessType(iat);
+  let index = switch(parse__typeOfNode(~parent, ~identChain, iat.indexType)) {
+    | Some(Literal(String(ident))) => Ident.ident(ident)
+    | Some(Literal(Number(num))) => Printf.sprintf("_%f", num);
+    | _ => "t"
+  };
+  let identChain = identChain @ [index];
+
+  let result = switch (parse__typeOfNode(~parent, ~identChain, iat.objectType)) {
+    | Some(result) => result
+    | None =>
+    Debug.raiseWith(~node=iat.objectType, "Could not parse indexed access target");
+    Base(Any)
+  }
+  Debug.close_pos();
+  result;
+}
 and parse__wrapNonDeclarationChild =
     (~parent, ~identChain, node: Ts.node): ts_type => {
   Debug.add_pos("parse__wrapNonDeclarationChild");
@@ -640,6 +661,7 @@ and parse__wrapNonDeclarationChild =
       // Fix: Retrieve real kind
       kind: (-1),
       kindName: "TypeAliasDeclaration",
+      typeNode: None,
       // Fix
       flags: Typescript_flags.Node.const |> Obj.magic,
       modifiers: None,
@@ -649,6 +671,7 @@ and parse__wrapNonDeclarationChild =
       name:
         `Identifier({
           resolvedType: None,
+          typeNode: None,
           escapedText: identName,
           pos: values.pos,
           end_: values.end_,
@@ -789,6 +812,9 @@ and parse__typeOfNode_exn =
           };
         }
       }
+    | `IndexedAccessType(iat) =>
+      Debug.add("IndexedAccessType");
+      parse__IndexedAccessType(~parent, ~identChain, iat);
     | `FunctionType({type_, parameters, typeParameters, _})
     | `MethodSignature({type_, parameters, typeParameters, _}) =>
       Debug.add("FunctionType / MethodSignature");

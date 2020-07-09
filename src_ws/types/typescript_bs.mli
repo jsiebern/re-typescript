@@ -20,6 +20,7 @@ and node_ArrayType = Typescript_t.node_ArrayType = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   elementType: node
 }
 
@@ -33,6 +34,7 @@ and node_BindingElement = Typescript_t.node_BindingElement = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   propertyName: node option;
   dotDotDotToken: node option;
   name: node;
@@ -49,6 +51,7 @@ and node_CallSignature = Typescript_t.node_CallSignature = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node option;
   typeParameters: node list option;
   parameters: node list;
@@ -66,6 +69,7 @@ and node_EnumDeclaration = Typescript_t.node_EnumDeclaration = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node;
   members: node list
 }
@@ -80,6 +84,7 @@ and node_EnumMember = Typescript_t.node_EnumMember = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node;
   initializer_: node option
 }
@@ -94,6 +99,7 @@ and node_FunctionDeclaration = Typescript_t.node_FunctionDeclaration = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   typeParameters: node list option;
   parameters: node list;
   type_: node option;
@@ -115,6 +121,7 @@ and node_FunctionType = Typescript_t.node_FunctionType = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node option;
   typeParameters: node list option;
   parameters: node list;
@@ -131,7 +138,8 @@ and node_Generic = Typescript_t.node_Generic = {
   modifiers: node list option;
   decorators: node list option;
   resolvedSymbol: symbol option;
-  resolvedType: type_ option
+  resolvedType: type_ option;
+  typeNode: node option
 }
 
 and node_HeritageClause = Typescript_t.node_HeritageClause = {
@@ -144,6 +152,7 @@ and node_HeritageClause = Typescript_t.node_HeritageClause = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   token: int;
   types: node list option
 }
@@ -158,6 +167,7 @@ and node_Identifier = Typescript_t.node_Identifier = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   escapedText: string;
   originalKeywordKind: int option
 }
@@ -172,11 +182,27 @@ and node_IndexSignature = Typescript_t.node_IndexSignature = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   typeParameters: node list option;
   parameters: node list;
   type_: node option;
   typeArguments: node list option;
   name: node option
+}
+
+and node_IndexedAccessType = Typescript_t.node_IndexedAccessType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeNode: node option;
+  objectType: node;
+  indexType: node
 }
 
 and node_InterfaceDeclaration = Typescript_t.node_InterfaceDeclaration = {
@@ -189,6 +215,7 @@ and node_InterfaceDeclaration = Typescript_t.node_InterfaceDeclaration = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node;
   typeParameters: node list option;
   members: node list
@@ -204,6 +231,7 @@ and node_IntersectionType = Typescript_t.node_IntersectionType = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   types: node list
 }
 
@@ -217,6 +245,7 @@ and node_LiteralType = Typescript_t.node_LiteralType = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   literal: node
 }
 
@@ -230,6 +259,7 @@ and node_MethodSignature = Typescript_t.node_MethodSignature = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   typeParameters: node list option;
   parameters: node list;
   type_: node option;
@@ -247,6 +277,7 @@ and node_OptionalType = Typescript_t.node_OptionalType = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   type_: node
 }
 
@@ -260,6 +291,7 @@ and node_Parameter = Typescript_t.node_Parameter = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   dotDotDotToken: node option;
   name: node;
   questionToken: node option;
@@ -277,6 +309,7 @@ and node_PropertyDeclaration = Typescript_t.node_PropertyDeclaration = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node;
   questionToken: node option;
   exclamationToken: node option;
@@ -294,6 +327,7 @@ and node_PropertySignature = Typescript_t.node_PropertySignature = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node;
   questionToken: node option;
   type_: node option;
@@ -310,6 +344,7 @@ and node_QualifiedName = Typescript_t.node_QualifiedName = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   left: node;
   right: node
 }
@@ -324,6 +359,7 @@ and node_RestType = Typescript_t.node_RestType = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   type_: node
 }
 
@@ -337,6 +373,7 @@ and node_SourceFile = Typescript_t.node_SourceFile = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   statements: node list;
   text: string;
   languageVersion: int;
@@ -357,6 +394,7 @@ and node_TupleType = Typescript_t.node_TupleType = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   elementTypes: node list
 }
 
@@ -370,6 +408,7 @@ and node_TypeAliasDeclaration = Typescript_t.node_TypeAliasDeclaration = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node;
   typeParameters: node list option;
   type_: node
@@ -385,6 +424,7 @@ and node_TypeLiteral = Typescript_t.node_TypeLiteral = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   members: node list
 }
 
@@ -398,6 +438,7 @@ and node_TypeOperator = Typescript_t.node_TypeOperator = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   operator: int;
   type_: node
 }
@@ -412,6 +453,7 @@ and node_TypeParameter = Typescript_t.node_TypeParameter = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node;
   constraint_: node option;
   default: node option;
@@ -428,6 +470,7 @@ and node_TypeReference = Typescript_t.node_TypeReference = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   typeArguments: node list option;
   typeName: node
 }
@@ -442,6 +485,7 @@ and node_UnionType = Typescript_t.node_UnionType = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   types: node list
 }
 
@@ -455,6 +499,7 @@ and node_VariableDeclaration = Typescript_t.node_VariableDeclaration = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node;
   exclamationToken: node option;
   type_: node option;
@@ -472,6 +517,7 @@ and node_VariableDeclarationList =
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   declarations: node list
 }
 
@@ -649,6 +695,7 @@ type node_TypeElement = Typescript_t.node_TypeElement = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   questionToken: node option
 }
 
@@ -663,6 +710,7 @@ type node_SignatureDeclarationBase =
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node option;
   typeParameters: node list option;
   parameters: node list;
@@ -680,6 +728,7 @@ type node_NodeWithTypeArguments = Typescript_t.node_NodeWithTypeArguments = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   typeArguments: node list option
 }
 
@@ -693,6 +742,7 @@ type node_NamedTupleMember = Typescript_t.node_NamedTupleMember = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   dotDotDotToken: node option;
   questionToken: node option;
   name: node;
@@ -709,6 +759,7 @@ type node_NamedDeclaration = Typescript_t.node_NamedDeclaration = {
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node option
 }
 
@@ -723,6 +774,7 @@ type node_FunctionLikeDeclarationBase =
   decorators: node list option;
   resolvedSymbol: symbol option;
   resolvedType: type_ option;
+  typeNode: node option;
   name: node option;
   typeParameters: node list option;
   parameters: node list;
@@ -785,6 +837,10 @@ val write_node_Identifier :  node_Identifier Atdgen_codec_runtime.Encode.t
 val read_node_IndexSignature :  node_IndexSignature Atdgen_codec_runtime.Decode.t
 
 val write_node_IndexSignature :  node_IndexSignature Atdgen_codec_runtime.Encode.t
+
+val read_node_IndexedAccessType :  node_IndexedAccessType Atdgen_codec_runtime.Decode.t
+
+val write_node_IndexedAccessType :  node_IndexedAccessType Atdgen_codec_runtime.Encode.t
 
 val read_node_InterfaceDeclaration :  node_InterfaceDeclaration Atdgen_codec_runtime.Decode.t
 
