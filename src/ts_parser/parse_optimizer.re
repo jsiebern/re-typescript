@@ -2,18 +2,24 @@ module Types = Re_typescript_printer.Tree_types;
 open Types;
 open Parse_utils;
 
+let debug_enabled = ref(false);
+let debug = (value: 'a) => debug_enabled^ ? Console.log(value) : ();
+
 type types = Hashtbl.t(identPath, ts_type);
 let refCount: Hashtbl.t(identPath, list(identPath)) = Hashtbl.create(10);
 
-let canBeInline = (t: ts_type) =>
+let rec canBeInline = (t: ts_type) => {
+  debug(Re_typescript_printer.Tree_utils.ts_to_string(t));
   switch (t) {
   | Interface(_) => false
+  | Arg(_) => false
+  | TypeDeclaration({td_type, _}) => canBeInline(td_type)
   | _ => true
   };
+};
 
 let optimizeReferences = (order: list(identPath), types: types) => {
   let rec walk = (t: ts_type) => {
-    // Console.log(Re_typescript_printer.Tree_utils.ts_to_string(t));
     switch (t) {
     | TypeDeclaration({td_type, td_parameters, _}) =>
       [td_type, ...td_parameters |> CCList.filter_map(tp => tp.tp_default)]
@@ -21,6 +27,16 @@ let optimizeReferences = (order: list(identPath), types: types) => {
     | Function({fu_return, fu_params}) =>
       [fu_return, ...fu_params |> CCList.map(p => p.fp_type)]
       |> CCList.iter(walk)
+    | Interface(fields, _) =>
+      fields |> CCList.map(f => f.f_type) |> CCList.iter(walk)
+    | Union(members) =>
+      members |> CCList.map(m => m.um_type) |> CCList.iter(walk)
+    | Nullable(member)
+    | Optional(member)
+    | Set(member)
+    | Array(member) => walk(member)
+    | Tuple(members) => members |> CCList.iter(walk)
+    | Module({m_types, _}) => m_types |> CCList.iter(walk)
     | Reference({tr_path, tr_from, tr_parameters, _}) =>
       tr_parameters |> CCList.iter(walk);
       Hashtbl.replace(
@@ -38,6 +54,12 @@ let optimizeReferences = (order: list(identPath), types: types) => {
 
   order^
   |> CCList.iter(path => {
+         debug((
+           "> ",
+           path,
+           Hashtbl.find_opt(types, path)
+           |> CCOpt.map(Re_typescript_printer.Tree_utils.ts_to_string),
+         ));
        switch (Hashtbl.find_opt(types, path)) {
        // ----------------------------------
        // --- Array
@@ -248,8 +270,8 @@ let optimizeReferences = (order: list(identPath), types: types) => {
                       |> CCOpt.map(CCList.length)
                       |> CCOpt.value(~default=0) == 1 =>
                   switch (Hashtbl.find_opt(types, tr_path)) {
-                  | Some(TypeDeclaration({td_type, _}) as t)
-                      when canBeInline(t) =>
+                  | Some(TypeDeclaration({td_type, _}))
+                      when canBeInline(td_type) =>
                     // Remove the extra type def from order
                     order :=
                       order^

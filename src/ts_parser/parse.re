@@ -505,6 +505,7 @@ and parse__TypeReference =
     Arg(name |> Ident.of_string);
   | (_, "Function") => Base(GenericFunction)
   | (_, "Object") => Base(GenericObject)
+  | (_, "Array") => Array(args |> CCList.get_at_idx_exn(0))
   | (_, "Set") =>
     // TODO: Make this cleaner
     Set(args |> CCList.get_at_idx_exn(0))
@@ -972,6 +973,7 @@ and parse = (source: string) => {
   };
 
   let order = order.lst;
+  //Parse_optimizer.debug_enabled := true;
   let (order, types) = Parse_optimizer.optimizeReferences(order, types);
 
   let pathMap = Hashtbl.create(Hashtbl.length(types));

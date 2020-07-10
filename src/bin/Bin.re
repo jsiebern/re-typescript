@@ -5,8 +5,18 @@ open Re_typescript_fs;
 let file = (
   "/root/src/bin.d.ts",
   {|
-type c = {a: string, b: number};
-            type d = c['a' | 'b']
+// type c = {a: string, b: number};
+// type d = c['a' | 'b']
+
+// interface IMain {
+//   simple: string,
+//   inline: {
+//     num: number
+//   }
+// }
+// type str = IMain['simple']
+// type obj = IMain['inline'];
+// type num = obj['num'];
 |},
 );
 
