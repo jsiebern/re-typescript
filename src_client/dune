@@ -1,6 +1,5 @@
 (executables
  (names src_client)
- (modules ast src_client ts_morph ts_raw)
  (js_of_ocaml)
  (libraries gen_js_api js_of_ocaml reason console.lib containers)
  (preprocess
@@ -8,15 +7,19 @@
  (modes js))
 
 (rule
- (targets ts_raw.ml ts_morph.ml)
- (deps ts_raw.rei ts_morph.rei)
+ (targets ts_raw.ml ts_morph.ml ts_nodes.ml)
+ (deps ts_raw.rei ts_morph.rei ts_nodes.rei)
  (action
   (progn
    (bash "refmt --interface=true --print=ml ts_raw.rei > temp_raw.ml")
    (bash "refmt --interface=true --print=ml ts_morph.rei > ts_morph.ml")
+   (bash "refmt --interface=true --print=ml ts_nodes.rei > ts_nodes.ml")
    (bash "rm ts_raw.rei")
    (bash "rm ts_morph.rei")
+   (bash "rm ts_nodes.rei")
    (bash "mv temp_raw.ml ts_raw.mli")
    (bash "mv ts_morph.ml ts_morph.mli")
+   (bash "mv ts_nodes.ml ts_nodes.mli")
    (bash "%{bin:gen_js_api} ts_raw.mli")
-   (bash "%{bin:gen_js_api} ts_morph.mli"))))
+   (bash "%{bin:gen_js_api} ts_morph.mli")
+   (bash "%{bin:gen_js_api} ts_nodes.mli"))))
