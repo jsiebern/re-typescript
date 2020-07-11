@@ -1,4 +1,4 @@
-(lang dune 1.11)
+(lang dune 2.0)
 
 (name "re_typescript")
 
@@ -17,6 +17,7 @@
 
 (generate_opam_files true)
 
-(using fmt 1.2)
-
 (using menhir 2.0)
+
+(formatting
+ (enabled_for reason ocaml))

@@ -9,6 +9,7 @@
     "test": "esy x RunTests.exe",
     "test-u": "esy x RunTests.exe -u",
     "js": "esy dune build ./src/js/re_typescript_js.bc.js",
+    "client": "esy dune build ./src_client/src_client.bc.js",
     "js-release": "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
     "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },
@@ -17,6 +18,7 @@
     "@opam/base-unix": "base",
     "@opam/containers": "2.8.1",
     "@opam/dune": "*",
+    "@opam/gen_js_api": "1.0.6",
     "@opam/iter": "1.2.1",
     "@opam/js_of_ocaml": "3.6.0",
     "@opam/js_of_ocaml-ppx": "3.6.0",
@@ -46,7 +48,15 @@
   },
   "esy": {
     "build": [
-      ["refmterr", "dune", "build", "--profile", "dev", "-p", "#{self.name}"]
+      [
+        "refmterr",
+        "dune",
+        "build",
+        "--profile",
+        "dev",
+        "-p",
+        "#{self.name}"
+      ]
     ],
     "buildsInSource": "_build",
     "exportedEnv": {

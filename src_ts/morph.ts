@@ -18,6 +18,7 @@ const project = new Project({
     noEmitOnError: false,
   },
 });
+project.createSourceFile
 project.saveSync;
 // const created = project.createSourceFile(
 //   'foo.d.ts',

@@ -7,7 +7,7 @@ homepage: "https://jsiebern.github.io/re-typescript/"
 doc: "https://github.com/jsiebern/re-typescript"
 bug-reports: "https://github.com/jsiebern/re-typescript/issues"
 depends: [
-  "dune" {>= "1.11"}
+  "dune" {>= "2.0"}
 ]
 build: [
   ["dune" "subst"] {pinned}
