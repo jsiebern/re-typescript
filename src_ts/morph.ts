@@ -68,8 +68,13 @@ const recurseType = (type: Type | undefined, level = 0) => {
   type.getTupleElements().forEach((t) => recurseType(t, level + 1));
 };
 const recurse = (node: Node, level = 0) => {
-  // @ts-ignore
-  console.log(node.kind);
+
+  if (Node.isTypeAliasDeclaration(node)) {
+    node.getName();
+    node.getTypeNode()
+  }
+
+
   if (node.getKindName() === 'ParenthesizedType') {
     // @ts-ignore
     // console.log(node.compilerNode.type);

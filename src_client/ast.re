@@ -1,3 +1,5 @@
+[@ocaml.warning "-30"];
+
 module rec Node_id: {
   type t = pri int;
   let make: int => t;
@@ -5,7 +7,14 @@ module rec Node_id: {
   type t = int;
   let make = v => v;
 }
-and Identifier: {type t = string;} = Identifier
+and Identifier: {
+  type path = array(t)
+  and t =
+    | Module(string)
+    | TypeName(string)
+    | SubName(string)
+    | SubIdent(int);
+} = Identifier
 and Project: {type t = array(Node.node(Node.Constraint.exactlySourceFile));} = Project
 and TypeDeclaration: {
   type t = {
@@ -102,6 +111,8 @@ and Node: {
       type atLeastNever('a) = [> | `Never] as 'a;
       type exactlyThis = [ | `This];
       type atLeastThis('a) = [> | `This] as 'a;
+      type exactlyRelevantKeyword = [ | `RelevantKeyword];
+      type atLeastRelevantKeyword('a) = [> | `RelevantKeyword] as 'a;
 
       type any = [
         exactlyString
@@ -113,6 +124,7 @@ and Node: {
         | exactlyUndefined
         | exactlyNever
         | exactlyThis
+        | exactlyRelevantKeyword
       ];
     };
   };
@@ -139,6 +151,8 @@ and Node: {
     | TypeDeclaration(TypeDeclaration.t)
       : node(Constraint.atLeastTypeDeclaration('poly))
   and kind_basic('tag) =
+    | RelevantKeyword(string)
+      : kind_basic(Constraint.Basic.atLeastRelevantKeyword('poly))
     | String: kind_basic(Constraint.Basic.atLeastString('poly))
     | Number: kind_basic(Constraint.Basic.atLeastNumber('poly))
     | Boolean: kind_basic(Constraint.Basic.atLeastBoolean('poly))
@@ -152,6 +166,13 @@ and Node: {
     | String(string): kind_literal(Constraint.Literal.atLeastString('poly))
     | Number(float): kind_literal(Constraint.Literal.atLeastNumber('poly))
     | Boolean(bool): kind_literal(Constraint.Literal.atLeastBoolean('poly));
+
+  module Escape: {
+    external toAssignable:
+      node(Constraint.any) => node(Constraint.assignable) =
+      "%identity";
+  };
 } = Node;
 
-type node_references = Hashtbl.t(array(string), array(array(string)));
+type node_order = array(Identifier.path);
+type node_references = Hashtbl.t(Identifier.path, array(Identifier.path));

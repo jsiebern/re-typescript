@@ -24,30 +24,15 @@ let p = Project.make(c);
 let sf = p#createSourceFile("/path/file.d.ts", "type x = string");
 sf#saveSync();
 
-include (
-          [%js]: {
-            [@js.global "JSON.stringify"]
-            let pp_json:
-              (
-                Ojs.t,
-                ~int: [@js.default 0] int=?,
-                ~indent: [@js.default 2] int=?
-              ) =>
-              unit;
-          }
-        );
-
 let diagnostics = p#getPreEmitDiagnostics();
 let diagnosticsResult = p#formatDiagnosticsWithColorAndContext(diagnostics);
-Console.log(diagnosticsResult != "" ? diagnosticsResult : "It's okay");
+Console.log(
+  diagnosticsResult != "" ? diagnosticsResult : "> Diagnostics okay",
+);
 
-(sf |> SourceFile.cast)#forEachDescendant(node => {
-  Console.log(
-    switch (node |> Ts_nodes_util.identifyNode) {
-    | Ts_nodes.Identify.TypeAliasDeclaration(_) => "TA"
-    | StringKeyword(_) => "STR"
-    | _ => "Otjh"
-    },
-  );
-  ();
-});
+let source_files = [|sf|];
+
+switch (Parser.parse__Entry(~source_files)) {
+| [|(_, _, parsed)|] => Console.log(Js_of_ocaml.Json.output(parsed))
+| _ => raise(Failure("Unexpected result"))
+};

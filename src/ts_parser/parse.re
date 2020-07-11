@@ -285,7 +285,8 @@ and parse__LiteralType =
     | `TrueKeyword(_) => Literal(Boolean(true))
     | `FalseKeyword(_) => Literal(Boolean(false))
     | `NumericLiteral({text, _})
-    | `FirstLiteralToken({text, _}) => Literal(Number(float_of_string(text)))
+    | `FirstLiteralToken({text, _}) =>
+      Literal(Number(float_of_string(text)))
     | otherNode =>
       switch (literal_type.resolvedType) {
       | Some(resolvedType) =>
@@ -598,11 +599,11 @@ and parse__UnionType = (~parent, ~identChain, types: list(Ts.node)) => {
              ),
         );
       } else if (parsed_types
-          |> CCList.for_all(
-               fun
-               | Literal(Number(_)) => true
-               | _ => false,
-             )) {
+                 |> CCList.for_all(
+                      fun
+                      | Literal(Number(_)) => true
+                      | _ => false,
+                    )) {
         // Numeric Literal
         NumericLiteral(
           parsed_types
@@ -613,25 +614,34 @@ and parse__UnionType = (~parent, ~identChain, types: list(Ts.node)) => {
              ),
         );
       } else if (parsed_types
-          |> CCList.for_all(
-               fun
-               | Literal(_) => true
-               | _ => false,
-             )) {
+                 |> CCList.for_all(
+                      fun
+                      | Literal(_) => true
+                      | _ => false,
+                    )) {
         // Mixed Literal
-        let mixedLiteral = parsed_types
-          |> CCList.fold_left((p) =>
-               fun
-               | Literal(Number(value)) => {...p, numbers: [int_of_float(value), ...p.numbers] }
-               | Literal(String(ident)) => {...p, strings: [ident, ...p.strings]}
-               | Literal(Boolean(b)) => {...p, bools: [b, ...p.bools]}
-               | _ => raise(Failure("Unexpected")),
-             { strings: [], numbers: [], bools: [] });
+        let mixedLiteral =
+          parsed_types
+          |> CCList.fold_left(
+               p =>
+                 fun
+                 | Literal(Number(value)) => {
+                     ...p,
+                     numbers: [int_of_float(value), ...p.numbers],
+                   }
+                 | Literal(String(ident)) => {
+                     ...p,
+                     strings: [ident, ...p.strings],
+                   }
+                 | Literal(Boolean(b)) => {...p, bools: [b, ...p.bools]}
+                 | _ => raise(Failure("Unexpected")),
+               {strings: [], numbers: [], bools: []},
+             );
         MixedLiteral({
           strings: mixedLiteral.strings |> CCList.rev,
           numbers: mixedLiteral.numbers |> CCList.rev,
           bools: mixedLiteral.bools |> CCList.rev,
-        })
+        });
       } else {
         // Typed union
         Union(
@@ -762,7 +772,7 @@ and parse__typeOfNode_exn =
   let result =
     switch (node) {
     | `ParenthesizedType({type_, _}) =>
-       parse__typeOfNode_exn(~isDeclarationChild, ~identChain, ~parent, type_)
+      parse__typeOfNode_exn(~isDeclarationChild, ~identChain, ~parent, type_)
     | `VoidKeyword(_) => Base(Void)
     | `StringKeyword(_) => Base(String)
     | `NumberKeyword(_) => Base(Number)
@@ -772,7 +782,7 @@ and parse__typeOfNode_exn =
     | `UndefinedKeyword(_) => Base(Undefined)
     | `NeverKeyword(_) => Base(Never)
     | `FirstLiteralToken({text, _})
-    | `NumericLiteral({text,_}) => raise(Failure(text))
+    | `NumericLiteral({text, _}) => raise(Failure(text))
     | `ArrayType({elementType, _}) =>
       Array(
         parse__typeOfNode_exn(

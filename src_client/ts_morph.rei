@@ -82,6 +82,7 @@ module Node: {
       pub forEachChild: (t => unit) => unit;
       pub getChildren: unit => array(t);
       pub getDescendants: unit => array(t);
+      pub getExportedDeclarations: unit => array(t);
       // Type Information
       pub getTypeParameters: unit => array(t);
       pub getText: unit => string;
@@ -105,14 +106,16 @@ module SourceFile: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ojs.obj;
+      inherit Node.t;
       pub saveSync: unit => unit;
       pub refreshFromFileSystemSync: unit => unit;
       pub getFilePath: unit => string;
       pub compilerNode: Ts_raw.Node.t;
+      pub getBaseName: unit => string;
+      pub getBaseNameWithoutExtension: unit => string;
     };
   [@js.cast]
-  let cast: t => Node.t;
+  let castToNode: t => Node.t;
 
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
