@@ -3,25 +3,23 @@
   "namespace": true,
   "sources": [
     {
-      "dir": "src_js",
-      "subdirs": true
-    },
-    {
-      "dir": "src_ts",
-      "subdirs": true
-    },
-    {
-      "dir": "src_ws",
+      "dir": "src_client",
       "subdirs": true
     }
   ],
-  "reason": { "react-jsx": 3 },
+  "reason": {
+    "react-jsx": 3
+  },
   "package-specs": {
     "module": "commonjs",
     "in-source": true
   },
-  "ppx-flags": ["@davesnx/styled-ppx/styled-ppx"],
-  "bsc-flags": ["-bs-super-errors -bs-g"],
+  "ppx-flags": [
+    "@davesnx/styled-ppx/styled-ppx"
+  ],
+  "bsc-flags": [
+    "-bs-super-errors -bs-g"
+  ],
   "bs-dependencies": [
     "reason-react",
     "bs-webworkers",
