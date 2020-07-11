@@ -77,6 +77,8 @@ module Make = (Config: Config) : Ast_generator.T => {
         td_prepend: None,
         td_append: None,
       }
+    | Literal(String(ident)) => generate_type_def(~ctx, ~path, ~parameters, StringLiteral([ident]))
+    | Literal(Number(num)) => generate_type_def(~ctx, ~path, ~parameters, NumericLiteral([int_of_float(num)]))
     | Literal(literal) => 
       // Todo: Implement literal type printing
       gen_config.has_any = true; 

@@ -13,6 +13,7 @@ let unwrap_Node = (node: Ts.node): Ts.node_Generic =>
   | `PrivateIdentifier(inner) => inner |> toGeneric
   | `StringLiteral(inner) => inner |> toGeneric
   | `NumericLiteral(inner) => inner |> toGeneric
+  | `FirstLiteralToken(inner) => inner |> toGeneric
   | `Unknown(inner) => inner |> toGeneric
   | `EndOfFileToken(inner) => inner |> toGeneric
   | `SingleLineCommentTrivia(inner) => inner |> toGeneric

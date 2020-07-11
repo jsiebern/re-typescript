@@ -115,31 +115,6 @@ module Exceptions = {
   exception Needs_lazy;
 };
 
-let replace_ref_in_union_members =
-    (~sub: Path.t, ~by: Path.t, ~parameters, members: list(ts_union_member)) => {
-  let rec run = (t: ts_type) =>
-    switch (t) {
-    | Reference({tr_path_resolved: Some(tr_path), _} as rf)
-        when Path.eq(tr_path, sub) =>
-      Reference({
-        ...rf,
-        tr_path_resolved: Some(by),
-        tr_parameters: parameters |> CCList.map(param => Arg(param)),
-      })
-    | Array(t) => Array(run(t))
-    | Nullable(t) => Nullable(run(t))
-    | Optional(t) => Optional(run(t))
-    | Interface(fields, b) =>
-      Interface(
-        fields |> CCList.map(field => {...field, f_type: run(field.f_type)}),
-        b,
-      )
-    | other => other
-    };
-  members
-  |> CCList.map(({um_type, _} as um) => {...um, um_type: run(um_type)});
-};
-
 // let has_ref_or_arg_from_ident = (~ident: Ident.t, ty: Ts.type_) => {
 //   let rec run = (t: Ts.type_) => switch(t) {
 //     | Array(t) => Array(run(t))
@@ -160,7 +135,7 @@ let rec get_union_type_name = (um_type: ts_type) => {
   | Base(GenericFunction) => "func"
   | Base(GenericObject) => "obj"
   | Set(t) => Printf.sprintf("set_%s", get_union_type_name(t))
-  | Function(_) => "func" 
+  | Function(_) => "func"
   | Literal(String(ident)) => Ident.ident(ident)
   | Literal(Number(num)) => Printf.sprintf("_%i", int_of_float(num))
   | Literal(Boolean(true)) => "true"
@@ -359,9 +334,11 @@ let rec ts_to_string = (t: ts_type) =>
   | Base(GenericFunction) => "Base_GenericFunction"
   | Base(GenericObject) => "Base_GenericObject"
   | Base(This) => "Base_This"
-  | Literal(String(ident)) => Printf.sprintf("Literal_String (%s)", Ident.value(ident))
+  | Literal(String(ident)) =>
+    Printf.sprintf("Literal_String (%s)", Ident.value(ident))
   | Literal(Number(num)) => Printf.sprintf("Literal_Number (%f)", num)
-  | Literal(Boolean(b)) => Printf.sprintf("Literal_Boolean (%s)", b ? "true" : "false")
+  | Literal(Boolean(b)) =>
+    Printf.sprintf("Literal_Boolean (%s)", b ? "true" : "false")
   | Set(t) => Printf.sprintf("Set<%s>", ts_to_string(t))
   | Interface(f, extended) =>
     Printf.sprintf(
@@ -396,3 +373,43 @@ let rec ts_to_string = (t: ts_type) =>
   | Arg(i) => Printf.sprintf("Arg: %s", Ident.value(i))
   }
 and ts_lst_to_string = lst => CCList.to_string(~sep=", ", ts_to_string, lst);
+
+let replace_ref_in_union_members =
+    (~sub: Path.t, ~by: Path.t, ~parameters, members: list(ts_union_member)) => {
+  let rec run = (~i=(-1), t: ts_type) => {
+    // TODO: We need a way better pre-ast representatino
+    let sub =
+      i > (-1)
+        ? (
+          [
+            CCList.get_at_idx_exn(0, fst(sub)) ++ "_" ++ string_of_int(i + 1),
+          ],
+          [],
+        )
+        : sub;
+    switch (t) {
+    | Reference({tr_path_resolved: Some(tr_path), _} as rf)
+        when {
+          Path.eq(tr_path, sub);
+        } =>
+      Reference({
+        ...rf,
+        tr_path_resolved: Some(by),
+        tr_parameters: parameters |> CCList.map(param => Arg(param)),
+      })
+    | Array(t) => Array(run(t))
+    | Nullable(t) => Nullable(run(t))
+    | Optional(t) => Optional(run(t))
+    | Interface(fields, b) =>
+      Interface(
+        fields |> CCList.map(field => {...field, f_type: run(field.f_type)}),
+        b,
+      )
+    | other => other
+    };
+  };
+  members
+  |> CCList.mapi((i, {um_type, _} as um) =>
+       {...um, um_type: run(~i, um_type)}
+     );
+};

@@ -149,26 +149,12 @@ describe("type unions", ({test, _}) => {
       toMatchSnapshot()
   });
 
-  test("can use recursion in unions", ({expect, _}) => {
-    expect.string(print({|
-        type rec_x = rec_x | "str" | 3;
-    |})).
-      toMatchSnapshot()
-  });
   test(
     "can use recursion in unions in combination with type params",
     ({expect, _}) => {
     expect.string(print({|
         type x<B> = string | B;
     |})).
-      toMatchSnapshot()
-  });
-  test("can use recursion in nested union types", ({expect, _}) => {
-    expect.string(
-      print({|
-        type rec_x = rec_x | Array<rec_x>;
-    |}),
-    ).
       toMatchSnapshot()
   });
   test("can use recursion in nested union types 2", ({expect, _}) => {
@@ -180,7 +166,7 @@ describe("type unions", ({test, _}) => {
       toMatchSnapshot()
   });
   test(
-    "can use recursion in nested union types when using type params",
+    "can use recursion in nested union types when using type params - arrays",
     ({expect, _}) => {
     expect.string(
       print(
@@ -192,7 +178,7 @@ describe("type unions", ({test, _}) => {
       toMatchSnapshot()
   });
   test(
-    "can use recursion in nested union types when using type params 2",
+    "can use recursion in nested union types when using type params - objects",
     ({expect, _}) => {
     expect.string(
       print({|

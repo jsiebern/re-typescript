@@ -17,6 +17,37 @@ let file = (
 // type str = IMain['simple']
 // type obj = IMain['inline'];
 // type num = obj['num'];
+
+// --- can be generated inline
+// interface obj {
+//   field: 'red' | 'blue',
+// }
+// type in_arr = Array<obj['field']>;
+
+
+// --- can use recursion in nested union types
+type ValueOrObj<T> = T | { obj_value: T };
+// type rec_y = string | { inline_obj: rec_y };
+// type rec_y<T> = T | { inline_obj: rec_y<T> };
+
+
+// module ValueOrObj: {
+//   type t('T)
+//   and valueOrObj_1('T) = {obj_value: 'T};
+//   let t: 'T => t('T);
+//   let valueOrObj_1: valueOrObj_1('T) => t('T);
+// } = {
+//   [@unboxed]
+//   type t('T) =
+//     | Any('a): t('T)
+//   and valueOrObj_1('T) = {obj_value: 'T};
+//   let t = (v: 'T) => Any(v);
+//   let valueOrObj_1 = (v: valueOrObj_1('T)) => Any(v);
+// };
+// type valueOrObj('T) = ValueOrObj.t('T);
+
+
+
 |},
 );
 

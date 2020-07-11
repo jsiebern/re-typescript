@@ -274,16 +274,30 @@ type node_PropertyDeclaration = {
 }
 
 type node_IntersectionType = {
-    inherit node_Generic;
+    inherit node_Generic ;
 
-    types: node list;
+    types: node list ;
 }
 
 type node_IndexedAccessType = {
     inherit node_Generic;
 
-    objectType: node;
-    indexType: node;
+    objectType: node ;
+    indexType: node ;
+}
+
+type node_ParenthesizedType = {
+    inherit node_Generic;
+
+    type_ <json name="type">: node ;
+}
+
+type node_LiteralLikeNode = {
+    inherit node_Generic;
+
+    text: string ;
+    ?isUnterminated: bool option;
+    ?hasExtendedUnicodeEscape: bool option;
 }
 
 type node = [
@@ -294,8 +308,9 @@ type node = [
     | HeritageClause of node_HeritageClause
     | Identifier of node_Identifier
     | PrivateIdentifier of node_Generic
-    | StringLiteral of node_Generic
-    | NumericLiteral of node_Generic
+    | StringLiteral of node_LiteralLikeNode
+    | NumericLiteral of node_LiteralLikeNode
+    | FirstLiteralToken of node_LiteralLikeNode
     | Unknown of node_Generic
     | EndOfFileToken of node_Generic
     | SingleLineCommentTrivia of node_Generic
@@ -304,7 +319,7 @@ type node = [
     | WhitespaceTrivia of node_Generic
     | ShebangTrivia of node_Generic
     | ConflictMarkerTrivia of node_Generic
-    | BigIntLiteral of node_Generic
+    | BigIntLiteral of node_LiteralLikeNode
     | JsxText of node_Generic
     | JsxTextAllWhiteSpaces of node_Generic
     | RegularExpressionLiteral of node_Generic
@@ -476,7 +491,7 @@ type node = [
     | IntersectionType of node_IntersectionType
     | ConditionalType of node_Generic
     | InferType of node_Generic
-    | ParenthesizedType of node_Generic
+    | ParenthesizedType of node_ParenthesizedType
     | ThisType of node_Generic
     | TypeOperator of node_TypeOperator
     | IndexedAccessType of node_IndexedAccessType

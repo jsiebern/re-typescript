@@ -1,102 +1,18 @@
 {
-  "identifierCount": 7,
-  "nodeCount": 25,
+  "identifierCount": 1,
+  "nodeCount": 13,
   "isDeclarationFile": true,
   "languageVariant": 0,
   "fileName": "/test.d.ts",
   "languageVersion": 99,
-  "text": "\n interface iTest {\n                field: string;\n                action: (a: string, b?: number) => void;\n            }\n            type access = iTest['action'];\n",
+  "text": "\n type variant = 2 | 4 | 8 | 16;\n",
   "statements": [
     {
-      "members": [
-        {
-          "type": {
-            "typeNode": {
-              "resolvedType": {
-                "kindName": "Any",
-                "id": 4,
-                "flags": 1
-              },
-              "flags": 8,
-              "kindName": "StringKeyword",
-              "kind": 143,
-              "end": -1,
-              "pos": -1
-            },
-            "resolvedType": {
-              "kindName": "String",
-              "id": 12,
-              "flags": 4
-            },
-            "flags": 8388608,
-            "kindName": "StringKeyword",
-            "kind": 143,
-            "end": 49,
-            "pos": 42
-          },
-          "name": {
-            "escapedText": "field",
-            "typeNode": {
-              "resolvedType": {
-                "kindName": "Any",
-                "id": 4,
-                "flags": 1
-              },
-              "flags": 8,
-              "kindName": "StringKeyword",
-              "kind": 143,
-              "end": -1,
-              "pos": -1
-            },
-            "resolvedType": {
-              "kindName": "String",
-              "id": 12,
-              "flags": 4
-            },
-            "resolvedSymbol": {
-              "name": "field",
-              "fullyQualifiedName": "iTest.field",
-              "id": 21432,
-              "flags": 4
-            },
-            "flags": 8388608,
-            "kindName": "Identifier",
-            "kind": 75,
-            "end": 41,
-            "pos": 19
-          },
-          "typeNode": {
-            "resolvedType": {
-              "kindName": "Any",
-              "id": 4,
-              "flags": 1
-            },
-            "flags": 8,
-            "kindName": "StringKeyword",
-            "kind": 143,
-            "end": -1,
-            "pos": -1
-          },
-          "resolvedType": {
-            "kindName": "String",
-            "id": 12,
-            "flags": 4
-          },
-          "resolvedSymbol": {
-            "name": "field",
-            "fullyQualifiedName": "iTest.field",
-            "id": 21432,
-            "flags": 4
-          },
-          "flags": 8388608,
-          "kindName": "PropertySignature",
-          "kind": 158,
-          "end": 50,
-          "pos": 19
-        },
-        {
-          "type": {
-            "type": {
+      "type": {
+        "types": [
+          {
+            "literal": {
+              "text": "2",
               "typeNode": {
                 "resolvedType": {
                   "kindName": "Any",
@@ -104,496 +20,232 @@
                   "flags": 1
                 },
                 "flags": 8,
-                "kindName": "VoidKeyword",
-                "kind": 110,
+                "kindName": "AnyKeyword",
+                "kind": 125,
                 "end": -1,
                 "pos": -1
               },
               "resolvedType": {
-                "kindName": "Void",
-                "id": 24,
-                "flags": 16384
+                "kindName": "Any",
+                "id": 4,
+                "flags": 1
               },
               "flags": 8388608,
-              "kindName": "VoidKeyword",
-              "kind": 110,
-              "end": 106,
-              "pos": 101
+              "kindName": "NumericLiteral",
+              "kind": 8,
+              "end": 18,
+              "pos": 16
             },
-            "parameters": [
-              {
-                "type": {
-                  "typeNode": {
-                    "resolvedType": {
-                      "kindName": "Any",
-                      "id": 4,
-                      "flags": 1
-                    },
-                    "flags": 8,
-                    "kindName": "StringKeyword",
-                    "kind": 143,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "resolvedType": {
-                    "kindName": "String",
-                    "id": 12,
-                    "flags": 4
-                  },
-                  "flags": 8388608,
-                  "kindName": "StringKeyword",
-                  "kind": 143,
-                  "end": 85,
-                  "pos": 78
-                },
-                "name": {
-                  "escapedText": "a",
-                  "typeNode": {
-                    "resolvedType": {
-                      "kindName": "Any",
-                      "id": 4,
-                      "flags": 1
-                    },
-                    "flags": 8,
-                    "kindName": "StringKeyword",
-                    "kind": 143,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "resolvedType": {
-                    "kindName": "String",
-                    "id": 12,
-                    "flags": 4
-                  },
-                  "resolvedSymbol": {
-                    "name": "a",
-                    "fullyQualifiedName": "a",
-                    "id": 21433,
-                    "flags": 1
-                  },
-                  "flags": 8388608,
-                  "kindName": "Identifier",
-                  "kind": 75,
-                  "end": 77,
-                  "pos": 76
-                },
-                "typeNode": {
-                  "resolvedType": {
-                    "kindName": "Any",
-                    "id": 4,
-                    "flags": 1
-                  },
-                  "flags": 8,
-                  "kindName": "StringKeyword",
-                  "kind": 143,
-                  "end": -1,
-                  "pos": -1
-                },
-                "resolvedType": {
-                  "kindName": "String",
-                  "id": 12,
-                  "flags": 4
-                },
-                "resolvedSymbol": {
-                  "name": "a",
-                  "fullyQualifiedName": "a",
-                  "id": 21433,
-                  "flags": 1
-                },
-                "flags": 8388608,
-                "kindName": "Parameter",
-                "kind": 156,
-                "end": 85,
-                "pos": 76
-              },
-              {
-                "type": {
-                  "typeNode": {
-                    "resolvedType": {
-                      "kindName": "Any",
-                      "id": 4,
-                      "flags": 1
-                    },
-                    "flags": 8,
-                    "kindName": "NumberKeyword",
-                    "kind": 140,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "resolvedType": {
-                    "kindName": "Number",
-                    "id": 13,
-                    "flags": 8
-                  },
-                  "flags": 8388608,
-                  "kindName": "NumberKeyword",
-                  "kind": 140,
-                  "end": 97,
-                  "pos": 90
-                },
-                "questionToken": {
-                  "typeNode": {
-                    "resolvedType": {
-                      "kindName": "Any",
-                      "id": 4,
-                      "flags": 1
-                    },
-                    "flags": 8,
-                    "kindName": "AnyKeyword",
-                    "kind": 125,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "resolvedType": {
-                    "kindName": "Any",
-                    "id": 4,
-                    "flags": 1
-                  },
-                  "flags": 8388608,
-                  "kindName": "QuestionToken",
-                  "kind": 57,
-                  "end": 89,
-                  "pos": 88
-                },
-                "name": {
-                  "escapedText": "b",
-                  "typeNode": {
-                    "resolvedType": {
-                      "kindName": "Any",
-                      "id": 4,
-                      "flags": 1
-                    },
-                    "flags": 8,
-                    "kindName": "NumberKeyword",
-                    "kind": 140,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "resolvedType": {
-                    "kindName": "Number",
-                    "id": 13,
-                    "flags": 8
-                  },
-                  "resolvedSymbol": {
-                    "name": "b",
-                    "fullyQualifiedName": "b",
-                    "id": 21434,
-                    "flags": 1
-                  },
-                  "flags": 8388608,
-                  "kindName": "Identifier",
-                  "kind": 75,
-                  "end": 88,
-                  "pos": 86
-                },
-                "typeNode": {
-                  "resolvedType": {
-                    "kindName": "Any",
-                    "id": 4,
-                    "flags": 1
-                  },
-                  "flags": 8,
-                  "kindName": "NumberKeyword",
-                  "kind": 140,
-                  "end": -1,
-                  "pos": -1
-                },
-                "resolvedType": {
-                  "kindName": "Number",
-                  "id": 13,
-                  "flags": 8
-                },
-                "resolvedSymbol": {
-                  "name": "b",
-                  "fullyQualifiedName": "b",
-                  "id": 21434,
-                  "flags": 1
-                },
-                "flags": 8388608,
-                "kindName": "Parameter",
-                "kind": 156,
-                "end": 97,
-                "pos": 86
-              }
-            ],
             "typeNode": {
-              "type": {
+              "literal": {
+                "text": "2",
                 "flags": 8,
-                "kindName": "VoidKeyword",
-                "kind": 110,
+                "kindName": "FirstLiteralToken",
+                "kind": 8,
                 "end": -1,
                 "pos": -1
               },
-              "parameters": [
-                {
-                  "type": {
-                    "flags": 8,
-                    "kindName": "StringKeyword",
-                    "kind": 143,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "name": {
-                    "escapedText": "a",
-                    "flags": 8388616,
-                    "kindName": "Identifier",
-                    "kind": 75,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "flags": 8,
-                  "kindName": "Parameter",
-                  "kind": 156,
-                  "end": -1,
-                  "pos": -1
-                },
-                {
-                  "type": {
-                    "flags": 8,
-                    "kindName": "NumberKeyword",
-                    "kind": 140,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "questionToken": {
-                    "flags": 8,
-                    "kindName": "QuestionToken",
-                    "kind": 57,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "name": {
-                    "escapedText": "b",
-                    "flags": 8388616,
-                    "kindName": "Identifier",
-                    "kind": 75,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "flags": 8,
-                  "kindName": "Parameter",
-                  "kind": 156,
-                  "end": -1,
-                  "pos": -1
-                }
-              ],
               "resolvedType": {
                 "kindName": "Any",
                 "id": 4,
                 "flags": 1
               },
               "flags": 8,
-              "kindName": "FunctionType",
-              "kind": 170,
+              "kindName": "LiteralType",
+              "kind": 187,
               "end": -1,
               "pos": -1
             },
             "resolvedType": {
-              "objectFlags": 16,
-              "kindName": "Anonymous",
-              "id": 78,
-              "flags": 524288
-            },
-            "resolvedSymbol": {
-              "name": "__type",
-              "fullyQualifiedName": "__type",
-              "id": 21436,
-              "flags": 2048
+              "value": 2,
+              "kindName": "NumberLiteral",
+              "id": 77,
+              "flags": 256
             },
             "flags": 8388608,
-            "kindName": "FunctionType",
-            "kind": 170,
-            "end": 106,
-            "pos": 74
+            "kindName": "LiteralType",
+            "kind": 187,
+            "end": 18,
+            "pos": 16
           },
-          "name": {
-            "escapedText": "action",
-            "typeNode": {
-              "type": {
+          {
+            "literal": {
+              "text": "4",
+              "typeNode": {
+                "resolvedType": {
+                  "kindName": "Any",
+                  "id": 4,
+                  "flags": 1
+                },
                 "flags": 8,
-                "kindName": "VoidKeyword",
-                "kind": 110,
+                "kindName": "AnyKeyword",
+                "kind": 125,
                 "end": -1,
                 "pos": -1
               },
-              "parameters": [
-                {
-                  "type": {
-                    "flags": 8,
-                    "kindName": "StringKeyword",
-                    "kind": 143,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "name": {
-                    "escapedText": "a",
-                    "flags": 8388616,
-                    "kindName": "Identifier",
-                    "kind": 75,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "flags": 8,
-                  "kindName": "Parameter",
-                  "kind": 156,
-                  "end": -1,
-                  "pos": -1
-                },
-                {
-                  "type": {
-                    "flags": 8,
-                    "kindName": "NumberKeyword",
-                    "kind": 140,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "questionToken": {
-                    "flags": 8,
-                    "kindName": "QuestionToken",
-                    "kind": 57,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "name": {
-                    "escapedText": "b",
-                    "flags": 8388616,
-                    "kindName": "Identifier",
-                    "kind": 75,
-                    "end": -1,
-                    "pos": -1
-                  },
-                  "flags": 8,
-                  "kindName": "Parameter",
-                  "kind": 156,
-                  "end": -1,
-                  "pos": -1
-                }
-              ],
+              "resolvedType": {
+                "kindName": "Any",
+                "id": 4,
+                "flags": 1
+              },
+              "flags": 8388608,
+              "kindName": "NumericLiteral",
+              "kind": 8,
+              "end": 22,
+              "pos": 20
+            },
+            "typeNode": {
+              "literal": {
+                "text": "4",
+                "flags": 8,
+                "kindName": "FirstLiteralToken",
+                "kind": 8,
+                "end": -1,
+                "pos": -1
+              },
               "resolvedType": {
                 "kindName": "Any",
                 "id": 4,
                 "flags": 1
               },
               "flags": 8,
-              "kindName": "FunctionType",
-              "kind": 170,
+              "kindName": "LiteralType",
+              "kind": 187,
               "end": -1,
               "pos": -1
             },
             "resolvedType": {
-              "objectFlags": 16,
-              "kindName": "Anonymous",
-              "id": 78,
-              "flags": 524288
-            },
-            "resolvedSymbol": {
-              "name": "action",
-              "fullyQualifiedName": "iTest.action",
-              "id": 21435,
-              "flags": 4
+              "value": 4,
+              "kindName": "NumberLiteral",
+              "id": 79,
+              "flags": 256
             },
             "flags": 8388608,
-            "kindName": "Identifier",
-            "kind": 75,
-            "end": 73,
-            "pos": 50
+            "kindName": "LiteralType",
+            "kind": 187,
+            "end": 22,
+            "pos": 20
           },
-          "typeNode": {
-            "type": {
-              "flags": 8,
-              "kindName": "VoidKeyword",
-              "kind": 110,
-              "end": -1,
-              "pos": -1
-            },
-            "parameters": [
-              {
-                "type": {
-                  "flags": 8,
-                  "kindName": "StringKeyword",
-                  "kind": 143,
-                  "end": -1,
-                  "pos": -1
-                },
-                "name": {
-                  "escapedText": "a",
-                  "flags": 8388616,
-                  "kindName": "Identifier",
-                  "kind": 75,
-                  "end": -1,
-                  "pos": -1
+          {
+            "literal": {
+              "text": "8",
+              "typeNode": {
+                "resolvedType": {
+                  "kindName": "Any",
+                  "id": 4,
+                  "flags": 1
                 },
                 "flags": 8,
-                "kindName": "Parameter",
-                "kind": 156,
+                "kindName": "AnyKeyword",
+                "kind": 125,
                 "end": -1,
                 "pos": -1
               },
-              {
-                "type": {
-                  "flags": 8,
-                  "kindName": "NumberKeyword",
-                  "kind": 140,
-                  "end": -1,
-                  "pos": -1
-                },
-                "questionToken": {
-                  "flags": 8,
-                  "kindName": "QuestionToken",
-                  "kind": 57,
-                  "end": -1,
-                  "pos": -1
-                },
-                "name": {
-                  "escapedText": "b",
-                  "flags": 8388616,
-                  "kindName": "Identifier",
-                  "kind": 75,
-                  "end": -1,
-                  "pos": -1
-                },
+              "resolvedType": {
+                "kindName": "Any",
+                "id": 4,
+                "flags": 1
+              },
+              "flags": 8388608,
+              "kindName": "NumericLiteral",
+              "kind": 8,
+              "end": 26,
+              "pos": 24
+            },
+            "typeNode": {
+              "literal": {
+                "text": "8",
                 "flags": 8,
-                "kindName": "Parameter",
-                "kind": 156,
+                "kindName": "FirstLiteralToken",
+                "kind": 8,
                 "end": -1,
                 "pos": -1
-              }
-            ],
-            "resolvedType": {
-              "kindName": "Any",
-              "id": 4,
-              "flags": 1
+              },
+              "resolvedType": {
+                "kindName": "Any",
+                "id": 4,
+                "flags": 1
+              },
+              "flags": 8,
+              "kindName": "LiteralType",
+              "kind": 187,
+              "end": -1,
+              "pos": -1
             },
-            "flags": 8,
-            "kindName": "FunctionType",
-            "kind": 170,
-            "end": -1,
-            "pos": -1
+            "resolvedType": {
+              "value": 8,
+              "kindName": "NumberLiteral",
+              "id": 81,
+              "flags": 256
+            },
+            "flags": 8388608,
+            "kindName": "LiteralType",
+            "kind": 187,
+            "end": 26,
+            "pos": 24
           },
-          "resolvedType": {
-            "objectFlags": 16,
-            "kindName": "Anonymous",
-            "id": 78,
-            "flags": 524288
-          },
-          "resolvedSymbol": {
-            "name": "action",
-            "fullyQualifiedName": "iTest.action",
-            "id": 21435,
-            "flags": 4
-          },
-          "flags": 8388608,
-          "kindName": "PropertySignature",
-          "kind": 158,
-          "end": 107,
-          "pos": 50
-        }
-      ],
-      "name": {
-        "escapedText": "iTest",
+          {
+            "literal": {
+              "text": "16",
+              "typeNode": {
+                "resolvedType": {
+                  "kindName": "Any",
+                  "id": 4,
+                  "flags": 1
+                },
+                "flags": 8,
+                "kindName": "AnyKeyword",
+                "kind": 125,
+                "end": -1,
+                "pos": -1
+              },
+              "resolvedType": {
+                "kindName": "Any",
+                "id": 4,
+                "flags": 1
+              },
+              "flags": 8388608,
+              "kindName": "NumericLiteral",
+              "kind": 8,
+              "end": 31,
+              "pos": 28
+            },
+            "typeNode": {
+              "literal": {
+                "text": "16",
+                "flags": 8,
+                "kindName": "FirstLiteralToken",
+                "kind": 8,
+                "end": -1,
+                "pos": -1
+              },
+              "resolvedType": {
+                "kindName": "Any",
+                "id": 4,
+                "flags": 1
+              },
+              "flags": 8,
+              "kindName": "LiteralType",
+              "kind": 187,
+              "end": -1,
+              "pos": -1
+            },
+            "resolvedType": {
+              "value": 16,
+              "kindName": "NumberLiteral",
+              "id": 83,
+              "flags": 256
+            },
+            "flags": 8388608,
+            "kindName": "LiteralType",
+            "kind": 187,
+            "end": 31,
+            "pos": 28
+          }
+        ],
         "typeNode": {
           "typeName": {
-            "escapedText": "iTest",
+            "escapedText": "variant",
             "flags": 8,
             "kindName": "Identifier",
             "kind": 75,
@@ -612,25 +264,110 @@
           "pos": -1
         },
         "resolvedType": {
-          "kindName": "ClassOrInterface",
-          "id": 77,
-          "flags": 524288
+          "types": [
+            {
+              "value": 2,
+              "kindName": "NumberLiteral",
+              "id": 77,
+              "flags": 256
+            },
+            {
+              "value": 4,
+              "kindName": "NumberLiteral",
+              "id": 79,
+              "flags": 256
+            },
+            {
+              "value": 8,
+              "kindName": "NumberLiteral",
+              "id": 81,
+              "flags": 256
+            },
+            {
+              "value": 16,
+              "kindName": "NumberLiteral",
+              "id": 83,
+              "flags": 256
+            }
+          ],
+          "kindName": "Union",
+          "id": 85,
+          "flags": 1048576
+        },
+        "flags": 8388608,
+        "kindName": "UnionType",
+        "kind": 178,
+        "end": 31,
+        "pos": 16
+      },
+      "name": {
+        "escapedText": "variant",
+        "typeNode": {
+          "typeName": {
+            "escapedText": "variant",
+            "flags": 8,
+            "kindName": "Identifier",
+            "kind": 75,
+            "end": -1,
+            "pos": -1
+          },
+          "resolvedType": {
+            "kindName": "Any",
+            "id": 4,
+            "flags": 1
+          },
+          "flags": 8,
+          "kindName": "TypeReference",
+          "kind": 169,
+          "end": -1,
+          "pos": -1
+        },
+        "resolvedType": {
+          "types": [
+            {
+              "value": 2,
+              "kindName": "NumberLiteral",
+              "id": 77,
+              "flags": 256
+            },
+            {
+              "value": 4,
+              "kindName": "NumberLiteral",
+              "id": 79,
+              "flags": 256
+            },
+            {
+              "value": 8,
+              "kindName": "NumberLiteral",
+              "id": 81,
+              "flags": 256
+            },
+            {
+              "value": 16,
+              "kindName": "NumberLiteral",
+              "id": 83,
+              "flags": 256
+            }
+          ],
+          "kindName": "Union",
+          "id": 85,
+          "flags": 1048576
         },
         "resolvedSymbol": {
-          "name": "iTest",
-          "fullyQualifiedName": "iTest",
+          "name": "variant",
+          "fullyQualifiedName": "variant",
           "id": 21431,
-          "flags": 64
+          "flags": 524288
         },
         "flags": 8388608,
         "kindName": "Identifier",
         "kind": 75,
-        "end": 17,
-        "pos": 11
+        "end": 14,
+        "pos": 6
       },
       "typeNode": {
         "typeName": {
-          "escapedText": "iTest",
+          "escapedText": "variant",
           "flags": 8,
           "kindName": "Identifier",
           "kind": 75,
@@ -649,565 +386,52 @@
         "pos": -1
       },
       "resolvedType": {
-        "kindName": "ClassOrInterface",
-        "id": 77,
-        "flags": 524288
-      },
-      "resolvedSymbol": {
-        "name": "iTest",
-        "fullyQualifiedName": "iTest",
-        "id": 21431,
-        "flags": 64
-      },
-      "flags": 8388608,
-      "kindName": "InterfaceDeclaration",
-      "kind": 246,
-      "end": 121,
-      "pos": 0
-    },
-    {
-      "type": {
-        "indexType": {
-          "literal": {
-            "typeNode": {
-              "resolvedType": {
-                "kindName": "Any",
-                "id": 4,
-                "flags": 1
-              },
-              "flags": 8,
-              "kindName": "AnyKeyword",
-              "kind": 125,
-              "end": -1,
-              "pos": -1
-            },
-            "resolvedType": {
-              "kindName": "Any",
-              "id": 4,
-              "flags": 1
-            },
-            "resolvedSymbol": {
-              "name": "action",
-              "fullyQualifiedName": "iTest.action",
-              "id": 21435,
-              "flags": 4
-            },
-            "flags": 8388608,
-            "kindName": "StringLiteral",
-            "kind": 10,
-            "end": 162,
-            "pos": 154
-          },
-          "typeNode": {
-            "literal": {
-              "flags": 8,
-              "kindName": "StringLiteral",
-              "kind": 10,
-              "end": -1,
-              "pos": -1
-            },
-            "resolvedType": {
-              "kindName": "Any",
-              "id": 4,
-              "flags": 1
-            },
-            "flags": 8,
-            "kindName": "LiteralType",
-            "kind": 187,
-            "end": -1,
-            "pos": -1
-          },
-          "resolvedType": {
-            "value": "action",
-            "kindName": "StringLiteral",
-            "id": 79,
-            "flags": 128
-          },
-          "flags": 8388608,
-          "kindName": "LiteralType",
-          "kind": 187,
-          "end": 162,
-          "pos": 154
-        },
-        "objectType": {
-          "typeName": {
-            "escapedText": "iTest",
-            "typeNode": {
-              "typeName": {
-                "escapedText": "iTest",
-                "flags": 8,
-                "kindName": "Identifier",
-                "kind": 75,
-                "end": -1,
-                "pos": -1
-              },
-              "resolvedType": {
-                "kindName": "Any",
-                "id": 4,
-                "flags": 1
-              },
-              "flags": 8,
-              "kindName": "TypeReference",
-              "kind": 169,
-              "end": -1,
-              "pos": -1
-            },
-            "resolvedType": {
-              "kindName": "ClassOrInterface",
-              "id": 77,
-              "flags": 524288
-            },
-            "resolvedSymbol": {
-              "name": "iTest",
-              "fullyQualifiedName": "iTest",
-              "id": 21431,
-              "flags": 64
-            },
-            "flags": 8388608,
-            "kindName": "Identifier",
-            "kind": 75,
-            "end": 153,
-            "pos": 147
-          },
-          "typeNode": {
-            "typeName": {
-              "escapedText": "iTest",
-              "flags": 8,
-              "kindName": "Identifier",
-              "kind": 75,
-              "end": -1,
-              "pos": -1
-            },
-            "resolvedType": {
-              "kindName": "Any",
-              "id": 4,
-              "flags": 1
-            },
-            "flags": 8,
-            "kindName": "TypeReference",
-            "kind": 169,
-            "end": -1,
-            "pos": -1
-          },
-          "resolvedType": {
-            "kindName": "ClassOrInterface",
+        "types": [
+          {
+            "value": 2,
+            "kindName": "NumberLiteral",
             "id": 77,
-            "flags": 524288
-          },
-          "flags": 8388608,
-          "kindName": "TypeReference",
-          "kind": 169,
-          "end": 153,
-          "pos": 147
-        },
-        "typeNode": {
-          "type": {
-            "flags": 8,
-            "kindName": "VoidKeyword",
-            "kind": 110,
-            "end": -1,
-            "pos": -1
-          },
-          "parameters": [
-            {
-              "type": {
-                "flags": 8,
-                "kindName": "StringKeyword",
-                "kind": 143,
-                "end": -1,
-                "pos": -1
-              },
-              "name": {
-                "escapedText": "a",
-                "typeNode": {
-                  "resolvedType": {
-                    "kindName": "Any",
-                    "id": 4,
-                    "flags": 1
-                  },
-                  "flags": 8,
-                  "kindName": "StringKeyword",
-                  "kind": 143,
-                  "end": -1,
-                  "pos": -1
-                },
-                "resolvedType": {
-                  "kindName": "String",
-                  "id": 12,
-                  "flags": 4
-                },
-                "resolvedSymbol": {
-                  "name": "a",
-                  "fullyQualifiedName": "a",
-                  "id": 21433,
-                  "flags": 1
-                },
-                "flags": 8388616,
-                "kindName": "Identifier",
-                "kind": 75,
-                "end": -1,
-                "pos": -1
-              },
-              "flags": 8,
-              "kindName": "Parameter",
-              "kind": 156,
-              "end": -1,
-              "pos": -1
-            },
-            {
-              "type": {
-                "flags": 8,
-                "kindName": "NumberKeyword",
-                "kind": 140,
-                "end": -1,
-                "pos": -1
-              },
-              "questionToken": {
-                "flags": 8,
-                "kindName": "QuestionToken",
-                "kind": 57,
-                "end": -1,
-                "pos": -1
-              },
-              "name": {
-                "escapedText": "b",
-                "typeNode": {
-                  "resolvedType": {
-                    "kindName": "Any",
-                    "id": 4,
-                    "flags": 1
-                  },
-                  "flags": 8,
-                  "kindName": "NumberKeyword",
-                  "kind": 140,
-                  "end": -1,
-                  "pos": -1
-                },
-                "resolvedType": {
-                  "kindName": "Number",
-                  "id": 13,
-                  "flags": 8
-                },
-                "resolvedSymbol": {
-                  "name": "b",
-                  "fullyQualifiedName": "b",
-                  "id": 21434,
-                  "flags": 1
-                },
-                "flags": 8388616,
-                "kindName": "Identifier",
-                "kind": 75,
-                "end": -1,
-                "pos": -1
-              },
-              "flags": 8,
-              "kindName": "Parameter",
-              "kind": 156,
-              "end": -1,
-              "pos": -1
-            }
-          ],
-          "resolvedType": {
-            "kindName": "Any",
-            "id": 4,
-            "flags": 1
-          },
-          "flags": 8,
-          "kindName": "FunctionType",
-          "kind": 170,
-          "end": -1,
-          "pos": -1
-        },
-        "resolvedType": {
-          "objectFlags": 16,
-          "kindName": "Anonymous",
-          "id": 78,
-          "flags": 524288
-        },
-        "flags": 8388608,
-        "kindName": "IndexedAccessType",
-        "kind": 185,
-        "end": 163,
-        "pos": 147
-      },
-      "name": {
-        "escapedText": "access",
-        "typeNode": {
-          "type": {
-            "flags": 8,
-            "kindName": "VoidKeyword",
-            "kind": 110,
-            "end": -1,
-            "pos": -1
-          },
-          "parameters": [
-            {
-              "type": {
-                "flags": 8,
-                "kindName": "StringKeyword",
-                "kind": 143,
-                "end": -1,
-                "pos": -1
-              },
-              "name": {
-                "escapedText": "a",
-                "typeNode": {
-                  "resolvedType": {
-                    "kindName": "Any",
-                    "id": 4,
-                    "flags": 1
-                  },
-                  "flags": 8,
-                  "kindName": "StringKeyword",
-                  "kind": 143,
-                  "end": -1,
-                  "pos": -1
-                },
-                "resolvedType": {
-                  "kindName": "String",
-                  "id": 12,
-                  "flags": 4
-                },
-                "resolvedSymbol": {
-                  "name": "a",
-                  "fullyQualifiedName": "a",
-                  "id": 21433,
-                  "flags": 1
-                },
-                "flags": 8388616,
-                "kindName": "Identifier",
-                "kind": 75,
-                "end": -1,
-                "pos": -1
-              },
-              "flags": 8,
-              "kindName": "Parameter",
-              "kind": 156,
-              "end": -1,
-              "pos": -1
-            },
-            {
-              "type": {
-                "flags": 8,
-                "kindName": "NumberKeyword",
-                "kind": 140,
-                "end": -1,
-                "pos": -1
-              },
-              "questionToken": {
-                "flags": 8,
-                "kindName": "QuestionToken",
-                "kind": 57,
-                "end": -1,
-                "pos": -1
-              },
-              "name": {
-                "escapedText": "b",
-                "typeNode": {
-                  "resolvedType": {
-                    "kindName": "Any",
-                    "id": 4,
-                    "flags": 1
-                  },
-                  "flags": 8,
-                  "kindName": "NumberKeyword",
-                  "kind": 140,
-                  "end": -1,
-                  "pos": -1
-                },
-                "resolvedType": {
-                  "kindName": "Number",
-                  "id": 13,
-                  "flags": 8
-                },
-                "resolvedSymbol": {
-                  "name": "b",
-                  "fullyQualifiedName": "b",
-                  "id": 21434,
-                  "flags": 1
-                },
-                "flags": 8388616,
-                "kindName": "Identifier",
-                "kind": 75,
-                "end": -1,
-                "pos": -1
-              },
-              "flags": 8,
-              "kindName": "Parameter",
-              "kind": 156,
-              "end": -1,
-              "pos": -1
-            }
-          ],
-          "resolvedType": {
-            "kindName": "Any",
-            "id": 4,
-            "flags": 1
-          },
-          "flags": 8,
-          "kindName": "FunctionType",
-          "kind": 170,
-          "end": -1,
-          "pos": -1
-        },
-        "resolvedType": {
-          "objectFlags": 16,
-          "kindName": "Anonymous",
-          "id": 78,
-          "flags": 524288
-        },
-        "resolvedSymbol": {
-          "name": "access",
-          "fullyQualifiedName": "access",
-          "id": 21437,
-          "flags": 524288
-        },
-        "flags": 8388608,
-        "kindName": "Identifier",
-        "kind": 75,
-        "end": 145,
-        "pos": 138
-      },
-      "typeNode": {
-        "type": {
-          "flags": 8,
-          "kindName": "VoidKeyword",
-          "kind": 110,
-          "end": -1,
-          "pos": -1
-        },
-        "parameters": [
-          {
-            "type": {
-              "flags": 8,
-              "kindName": "StringKeyword",
-              "kind": 143,
-              "end": -1,
-              "pos": -1
-            },
-            "name": {
-              "escapedText": "a",
-              "typeNode": {
-                "resolvedType": {
-                  "kindName": "Any",
-                  "id": 4,
-                  "flags": 1
-                },
-                "flags": 8,
-                "kindName": "StringKeyword",
-                "kind": 143,
-                "end": -1,
-                "pos": -1
-              },
-              "resolvedType": {
-                "kindName": "String",
-                "id": 12,
-                "flags": 4
-              },
-              "resolvedSymbol": {
-                "name": "a",
-                "fullyQualifiedName": "a",
-                "id": 21433,
-                "flags": 1
-              },
-              "flags": 8388616,
-              "kindName": "Identifier",
-              "kind": 75,
-              "end": -1,
-              "pos": -1
-            },
-            "flags": 8,
-            "kindName": "Parameter",
-            "kind": 156,
-            "end": -1,
-            "pos": -1
+            "flags": 256
           },
           {
-            "type": {
-              "flags": 8,
-              "kindName": "NumberKeyword",
-              "kind": 140,
-              "end": -1,
-              "pos": -1
-            },
-            "questionToken": {
-              "flags": 8,
-              "kindName": "QuestionToken",
-              "kind": 57,
-              "end": -1,
-              "pos": -1
-            },
-            "name": {
-              "escapedText": "b",
-              "typeNode": {
-                "resolvedType": {
-                  "kindName": "Any",
-                  "id": 4,
-                  "flags": 1
-                },
-                "flags": 8,
-                "kindName": "NumberKeyword",
-                "kind": 140,
-                "end": -1,
-                "pos": -1
-              },
-              "resolvedType": {
-                "kindName": "Number",
-                "id": 13,
-                "flags": 8
-              },
-              "resolvedSymbol": {
-                "name": "b",
-                "fullyQualifiedName": "b",
-                "id": 21434,
-                "flags": 1
-              },
-              "flags": 8388616,
-              "kindName": "Identifier",
-              "kind": 75,
-              "end": -1,
-              "pos": -1
-            },
-            "flags": 8,
-            "kindName": "Parameter",
-            "kind": 156,
-            "end": -1,
-            "pos": -1
+            "value": 4,
+            "kindName": "NumberLiteral",
+            "id": 79,
+            "flags": 256
+          },
+          {
+            "value": 8,
+            "kindName": "NumberLiteral",
+            "id": 81,
+            "flags": 256
+          },
+          {
+            "value": 16,
+            "kindName": "NumberLiteral",
+            "id": 83,
+            "flags": 256
           }
         ],
-        "resolvedType": {
-          "kindName": "Any",
-          "id": 4,
-          "flags": 1
-        },
-        "flags": 8,
-        "kindName": "FunctionType",
-        "kind": 170,
-        "end": -1,
-        "pos": -1
-      },
-      "resolvedType": {
-        "objectFlags": 16,
-        "kindName": "Anonymous",
-        "id": 78,
-        "flags": 524288
+        "kindName": "Union",
+        "id": 85,
+        "flags": 1048576
       },
       "resolvedSymbol": {
-        "name": "access",
-        "fullyQualifiedName": "access",
-        "id": 21437,
+        "name": "variant",
+        "fullyQualifiedName": "variant",
+        "id": 21431,
         "flags": 524288
       },
       "flags": 8388608,
       "kindName": "TypeAliasDeclaration",
       "kind": 247,
-      "end": 164,
-      "pos": 121
+      "end": 32,
+      "pos": 0
     }
   ],
   "flags": 8388672,
   "kindName": "SourceFile",
   "kind": 290,
-  "end": 165,
+  "end": 33,
   "pos": 0
 }

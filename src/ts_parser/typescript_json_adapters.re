@@ -19,7 +19,7 @@ module KindName = {
     | malformed => malformed
     };
 
-  let restore = (x: t): t =>
+  let restore = (x: t): t => {
     switch (x) {
     | `List([`String(type_), `Assoc(fields)]) =>
       let fields = [
@@ -31,4 +31,5 @@ module KindName = {
     | `String(type_) as x => x
     | malformed => malformed
     };
+  };
 };

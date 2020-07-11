@@ -5,11 +5,7 @@ let project = Runtime.project;
 let sourceFile =
   project->Project.createSourceFile(
     "test.d.ts", `
- interface iTest {
-                field: string;
-                action: (a: string, b?: number) => void;
-            }
-            type access = iTest['action'];
+ type variant = 2 | 4 | 8 | 16;
 `,
   );
 sourceFile->SourceFile.saveSync;

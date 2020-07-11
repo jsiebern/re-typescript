@@ -235,6 +235,22 @@ and node_IntersectionType = Typescript_t.node_IntersectionType = {
   types: node list
 }
 
+and node_LiteralLikeNode = Typescript_t.node_LiteralLikeNode = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeNode: node option;
+  text: string;
+  isUnterminated: bool option;
+  hasExtendedUnicodeEscape: bool option
+}
+
 and node_LiteralType = Typescript_t.node_LiteralType = {
   pos: int;
   end_: int;
@@ -297,6 +313,20 @@ and node_Parameter = Typescript_t.node_Parameter = {
   questionToken: node option;
   type_: node option;
   initializer_: node option
+}
+
+and node_ParenthesizedType = Typescript_t.node_ParenthesizedType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeNode: node option;
+  type_: node
 }
 
 and node_PropertyDeclaration = Typescript_t.node_PropertyDeclaration = {
@@ -850,6 +880,10 @@ val read_node_IntersectionType :  node_IntersectionType Atdgen_codec_runtime.Dec
 
 val write_node_IntersectionType :  node_IntersectionType Atdgen_codec_runtime.Encode.t
 
+val read_node_LiteralLikeNode :  node_LiteralLikeNode Atdgen_codec_runtime.Decode.t
+
+val write_node_LiteralLikeNode :  node_LiteralLikeNode Atdgen_codec_runtime.Encode.t
+
 val read_node_LiteralType :  node_LiteralType Atdgen_codec_runtime.Decode.t
 
 val write_node_LiteralType :  node_LiteralType Atdgen_codec_runtime.Encode.t
@@ -865,6 +899,10 @@ val write_node_OptionalType :  node_OptionalType Atdgen_codec_runtime.Encode.t
 val read_node_Parameter :  node_Parameter Atdgen_codec_runtime.Decode.t
 
 val write_node_Parameter :  node_Parameter Atdgen_codec_runtime.Encode.t
+
+val read_node_ParenthesizedType :  node_ParenthesizedType Atdgen_codec_runtime.Decode.t
+
+val write_node_ParenthesizedType :  node_ParenthesizedType Atdgen_codec_runtime.Encode.t
 
 val read_node_PropertyDeclaration :  node_PropertyDeclaration Atdgen_codec_runtime.Decode.t
 

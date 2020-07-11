@@ -39,12 +39,7 @@ ts.createSourceFile;
 const created2 = project.createSourceFile(
   'simple.d.ts',
   `
-  interface iTest {
-    field: string;
-    action: (a: string, b?: number) => void;
-}
-type access = iTest['action'];
-type strAcc = iTest['field'];
+ type opt_in_arr = (string | undefined)[];
 `
 );
 created2.getFilePath();
@@ -72,26 +67,31 @@ const recurseType = (type: Type | undefined, level = 0) => {
   type.getTupleElements().forEach((t) => recurseType(t, level + 1));
 };
 const recurse = (node: Node, level = 0) => {
-  if (Node.isIndexedAccessTypeNode(node)) {
-    // console.log(node.getKindName())
-    // node.getType().getCallSignatures().forEach(cs => {
-    //   console.log("Y")
-    //   console.log(cs.getDeclaration().getKindName())
-    // })
-
-    // console.log(tc.compilerObject.typeToTypeNode(node.getType().compilerType));
+  if (node.getKindName() === 'ParenthesizedType') {
     // @ts-ignore
-    tc.compilerObject.runWithCancellationToken;
-    const cNode = tc.compilerObject.typeToTypeNode(node.getType().compilerType);
-    if (cNode) {
-      const node = createWrappedNode(cNode, {
-        typeChecker: tc.compilerObject,
-        sourceFile: created2.compilerNode,
-      });
-      console.log(node.getKindName());
-    }
-    // node.getType().getBaseTypes().forEach(bt => console.log(bt.isString() ? 'string' : 'other'))
+    // console.log(node.compilerNode.type);
   }
+
+  //  if (Node.isIndexedAccessTypeNode(node)) {
+  // console.log(node.getKindName())
+  // node.getType().getCallSignatures().forEach(cs => {
+  //   console.log("Y")
+  //   console.log(cs.getDeclaration().getKindName())
+  // })
+
+  // console.log(tc.compilerObject.typeToTypeNode(node.getType().compilerType));
+  // @ts-ignore
+  //tc.compilerObject.runWithCancellationToken;
+  //const cNode = tc.compilerObject.typeToTypeNode(node.getType().compilerType);
+  //if (cNode) {
+  //const node = createWrappedNode(cNode, {
+  //typeChecker: tc.compilerObject,
+  //sourceFile: created2.compilerNode,
+  //});
+  //console.log(node.getKindName());
+  //}
+  // node.getType().getBaseTypes().forEach(bt => console.log(bt.isString() ? 'string' : 'other'))
+  //
 
   // if (Node.isTypeParameteredNode(node)) {
   //   // console.log(node.getText());

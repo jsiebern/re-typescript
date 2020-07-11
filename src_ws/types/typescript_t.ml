@@ -16,8 +16,9 @@ type node = [
   | `HeritageClause of node_HeritageClause
   | `Identifier of node_Identifier
   | `PrivateIdentifier of node_Generic
-  | `StringLiteral of node_Generic
-  | `NumericLiteral of node_Generic
+  | `StringLiteral of node_LiteralLikeNode
+  | `NumericLiteral of node_LiteralLikeNode
+  | `FirstLiteralToken of node_LiteralLikeNode
   | `Unknown of node_Generic
   | `EndOfFileToken of node_Generic
   | `SingleLineCommentTrivia of node_Generic
@@ -26,7 +27,7 @@ type node = [
   | `WhitespaceTrivia of node_Generic
   | `ShebangTrivia of node_Generic
   | `ConflictMarkerTrivia of node_Generic
-  | `BigIntLiteral of node_Generic
+  | `BigIntLiteral of node_LiteralLikeNode
   | `JsxText of node_Generic
   | `JsxTextAllWhiteSpaces of node_Generic
   | `RegularExpressionLiteral of node_Generic
@@ -198,7 +199,7 @@ type node = [
   | `IntersectionType of node_IntersectionType
   | `ConditionalType of node_Generic
   | `InferType of node_Generic
-  | `ParenthesizedType of node_Generic
+  | `ParenthesizedType of node_ParenthesizedType
   | `ThisType of node_Generic
   | `TypeOperator of node_TypeOperator
   | `IndexedAccessType of node_IndexedAccessType
@@ -573,6 +574,22 @@ and node_IntersectionType = {
   types: node list
 }
 
+and node_LiteralLikeNode = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeNode: node option;
+  text: string;
+  isUnterminated: bool option;
+  hasExtendedUnicodeEscape: bool option
+}
+
 and node_LiteralType = {
   pos: int;
   end_: int;
@@ -635,6 +652,20 @@ and node_Parameter = {
   questionToken: node option;
   type_: node option;
   initializer_: node option
+}
+
+and node_ParenthesizedType = {
+  pos: int;
+  end_: int;
+  kind: int;
+  kindName: string;
+  flags: int;
+  modifiers: node list option;
+  decorators: node list option;
+  resolvedSymbol: symbol option;
+  resolvedType: type_ option;
+  typeNode: node option;
+  type_: node
 }
 
 and node_PropertyDeclaration = {
