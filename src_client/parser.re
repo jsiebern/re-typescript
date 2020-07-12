@@ -19,6 +19,7 @@ type scope = {
   source_file: option(Ts_nodes.SourceFile.t),
   parent: option(Ts_nodes.nodeKind),
   path: Identifier.path,
+  has_any: bool,
 };
 
 // ------------------------------------------------------------------------------------------
@@ -36,7 +37,12 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
          node_count: 0,
          exports_only: false,
        };
-       let scope = {source_file: None, parent: None, path: [||]};
+       let scope = {
+         source_file: None,
+         parent: None,
+         path: [||],
+         has_any: false,
+       };
 
        let source_file =
          source_file
@@ -98,7 +104,7 @@ and parse__Node__SourceFile =
   let (
     runtime: runtime,
     scope: scope,
-    types: array(Node.node(Node.Constraint.exactlyTypeDeclaration)),
+    types: array(Node.node(Node.Constraint.moduleLevel)),
   ) =
     CCArray.fold_left(
       ((runtime, scope, nodes), node) => {
@@ -110,10 +116,16 @@ and parse__Node__SourceFile =
       children_to_traverse,
     );
 
+  let (runtime, scope, prependFixtures) =
+    parse__Fixtures__ForSourceFile(~runtime, ~scope);
   (
     runtime,
     scope,
-    SourceFile({name: source_file_name, path: node#getFilePath(), types}),
+    SourceFile({
+      name: source_file_name,
+      path: node#getFilePath(),
+      types: CCArray.append(prependFixtures, types),
+    }),
   );
 }
 // ------------------------------------------------------------------------------------------
@@ -123,7 +135,7 @@ and parse__Node__SourceFile =
 // ------------------------------------------------------------------------------------------
 and parse__Node__Declaration:
   (~runtime: runtime, ~scope: scope, Ts_morph.Node.t) =>
-  (runtime, scope, Node.node(Node.Constraint.exactlyTypeDeclaration)) =
+  (runtime, scope, Node.node(Node.Constraint.moduleLevel)) =
   (~runtime, ~scope, node: Ts_morph.Node.t) => {
     let identified_node = Ts_nodes_util.identifyNode(node);
     switch (identified_node) {
@@ -148,7 +160,7 @@ and parse__Node__Declaration:
 // ------------------------------------------------------------------------------------------
 and parse__Node__TypeAliasDeclaration:
   (~runtime: runtime, ~scope: scope, Ts_nodes.TypeAliasDeclaration.t) =>
-  (runtime, scope, Node.node(Node.Constraint.exactlyTypeDeclaration)) =
+  (runtime, scope, Node.node(Node.Constraint.moduleLevel)) =
   (~runtime, ~scope, node: Ts_nodes.TypeAliasDeclaration.t) => {
     let type_name = Identifier.TypeName(node#getName());
     let scope = {
@@ -185,7 +197,23 @@ and parse__Node__Basic = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   | ObjectKeyword(_) => (runtime, scope, Basic(RelevantKeyword("Object")))
   | UndefinedKeyword(_) => (runtime, scope, Basic(Undefined))
   | BooleanKeyword(_) => (runtime, scope, Basic(Boolean))
-  | AnyKeyword(_) => (runtime, scope, Basic(Any))
+  | AnyKeyword(_) => (runtime, {...scope, has_any: true}, Basic(Any))
   | _ => raise(Failure("Not a basic type"))
   };
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- Adding Fixtures
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Fixtures__ForSourceFile = (~runtime, ~scope) => {
+  (
+    runtime,
+    scope,
+    if (scope.has_any) {
+      [|Fixture(AnyUnboxed)|];
+    } else {
+      [||];
+    },
+  );
 };

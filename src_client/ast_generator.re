@@ -1,4 +1,4 @@
-// TODO: Implement the options from before
+// TODO: Implement the options from before <--- ACTUALLY: I want this AST to be as pure as possible, so all the logic will be moved to the parser.
 // TODO: Implement the tests. Probably not a good idea to have JSOO run rely, but who knows
 open Migrate_parsetree;
 open Ast_406;
@@ -11,9 +11,8 @@ open Ast;
 type scope = {
   path: Identifier.path,
   parent: option(Node.node(Node.Constraint.any)),
-  has_any: bool,
 };
-let defaultScope = {path: [||], parent: None, has_any: false};
+let defaultScope = {path: [||], parent: None};
 
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -55,7 +54,6 @@ and print__Node__SourceFile =
   let scope = {
     parent: Some(SourceFile(node)),
     path: [|Module(module_name)|],
-    has_any: false,
   };
 
   let (scope, generated_structure) =
@@ -64,7 +62,7 @@ and print__Node__SourceFile =
     |> CCList.fold_left(
          ((scope, struct_carry), node) => {
            let (scope, generated_struct) =
-             print__Node__TypeDeclaration(~scope, node);
+             generate__Node__TypeDeclaration(~scope, node);
            (scope, struct_carry @ generated_struct);
          },
          (scope, []),
@@ -77,37 +75,36 @@ and print__Node__SourceFile =
 // --- Type Declarations
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
-and print__Node__TypeDeclaration =
+and generate__Node__TypeDeclaration =
+    (~scope, node: Node.node(Node.Constraint.moduleLevel)) => {
+  switch (node) {
+  | Fixture(_) as fixtureNode => generate__Fixture(~scope, fixtureNode)
+  | TypeDeclaration(node) =>
+    let type_name = node.name;
+    let scope = {
+      parent: Some(TypeDeclaration(node)),
+      path: scope.path |> CCArray.append([|type_name|]),
+    };
+
+    let (scope, annotated_type) =
+      generate__Node__Assignable_CoreType(~scope, node.annot);
+
     (
-      ~scope,
-      TypeDeclaration(node):
-        Node.node(Node.Constraint.exactlyTypeDeclaration),
-    ) => {
-  let type_name = node.name;
-  let scope = {
-    ...scope,
-    parent: Some(TypeDeclaration(node)),
-    path: scope.path |> CCArray.append([|type_name|]),
-  };
-
-  let (scope, annotated_type) =
-    generate__Node__Assignable_CoreType(~scope, node.annot);
-
-  (
-    scope,
-    switch (annotated_type) {
-    | None => []
-    | Some(annotated_type) => [
-        Util.make_type_declaration(
-          ~aliasName=Util.Naming.fromIdentifier(type_name),
-          ~aliasType=annotated_type,
-        ),
-      ]
-    },
-  );
+      scope,
+      switch (annotated_type) {
+      | None => []
+      | Some(annotated_type) => [
+          Util.make_type_declaration(
+            ~aliasName=Util.Naming.fromIdentifier(type_name),
+            ~aliasType=annotated_type,
+          ),
+        ]
+      },
+    );
   // extracted_nodes:
   // params: array(Node.node(Node.Constraint.exactlyTypeParameter)),
   // Util.make
+  };
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -126,7 +123,7 @@ and generate__Node__Assignable_CoreType =
   | Basic(This) => (scope, None)
   | Basic(RelevantKeyword(keyword)) =>
     // TODO: Implement stuff like Set / Map / Object / Function
-    return_basic(~scope={...scope, has_any: true}, "any")
+    return_basic(keyword)
   | Basic(basic) =>
     switch (basic) {
     | String => return_basic("string")
@@ -135,7 +132,7 @@ and generate__Node__Assignable_CoreType =
       return_basic("float")
     | Boolean => return_basic("bool")
     | Void => return_basic("unit")
-    | Any => return_basic(~scope={...scope, has_any: true}, "any")
+    | Any => return_basic("any")
     | Null =>
       return_basic(~inner=[Util.make_type_constraint("unit")], "Js.null")
     | Undefined =>
@@ -145,5 +142,16 @@ and generate__Node__Assignable_CoreType =
     | Never => raise(Failure("This case should not be reached"))
     }
   | _ => raise(Failure("Should this be handled here?"))
+  };
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- Generate Fixtures
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and generate__Fixture =
+    (~scope, Fixture(fixture): Node.node(Node.Constraint.exactlyFixture)) => {
+  switch (fixture) {
+  | AnyUnboxed => (scope, Util.make_any_helper_unboxed())
   };
 };

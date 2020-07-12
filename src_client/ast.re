@@ -58,6 +58,9 @@ and Node: {
     type exactlyTypeParameter = [ | `TypeParameter];
     type atLeastTypeParameter('a) = [> | `TypeParameter] as 'a;
 
+    type exactlyFixture = [ | `Fixture];
+    type atLeastFixture('a) = [> | `Fixture] as 'a;
+
     type any = [
       exactlyLiteral
       | exactlyBasic
@@ -68,6 +71,7 @@ and Node: {
       | exactlyReference
       | exactlyExtractedReference
       | exactlyTypeDeclaration
+      | exactlyFixture
     ];
 
     type assignable = [
@@ -78,6 +82,8 @@ and Node: {
       | exactlyNullable
       | exactlyReference
     ];
+
+    type moduleLevel = [ exactlyTypeDeclaration | exactlyFixture];
 
     module Literal: {
       type exactlyString = [ | `String];
@@ -127,6 +133,13 @@ and Node: {
         | exactlyRelevantKeyword
       ];
     };
+
+    module Fixture: {
+      type exactlyAnyUnboxed = [ | `AnyUnboxed];
+      type atLeastAnyUnboxed('a) = [> | `AnyUnboxed] as 'a;
+
+      type any = [ exactlyAnyUnboxed];
+    };
   };
 
   type node('tag) =
@@ -143,13 +156,17 @@ and Node: {
     | SourceFile({
         name: string,
         path: string,
-        types: array(Node.node(Constraint.exactlyTypeDeclaration)),
+        types: array(Node.node(Constraint.moduleLevel)),
       })
       : node(Constraint.atLeastSourceFile('poly))
     | Reference: node(Constraint.atLeastReference('poly))
     | ExtractedReference: node(Constraint.atLeastExtractedReference('poly))
     | TypeDeclaration(TypeDeclaration.t)
       : node(Constraint.atLeastTypeDeclaration('poly))
+    | Fixture(kind_fixture(Constraint.Fixture.any))
+      : node(Constraint.atLeastFixture('poly))
+  and kind_fixture('tag) =
+    | AnyUnboxed: kind_fixture(Constraint.Fixture.atLeastAnyUnboxed('poly))
   and kind_basic('tag) =
     | RelevantKeyword(string)
       : kind_basic(Constraint.Basic.atLeastRelevantKeyword('poly))

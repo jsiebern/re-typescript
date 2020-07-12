@@ -21,7 +21,16 @@ let c =
     (),
   );
 let p = Project.make(c);
-let sf = p#createSourceFile("/path/file.d.ts", "type x = string");
+let sf =
+  p#createSourceFile(
+    "/path/file.d.ts",
+    {|
+  type t_string = string
+  type t_any = any
+  // This is a comment
+/* This is a comment */
+|},
+  );
 sf#saveSync();
 
 let diagnostics = p#getPreEmitDiagnostics();

@@ -79,3 +79,9 @@ let make_option_of = wrap_type => {
 let make_tuple_of = types => {
   Typ.tuple(types);
 };
+
+let make_any_helper_unboxed = () => [%str
+  [@unboxed]
+  type any =
+    | Any('a): any
+];
