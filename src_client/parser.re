@@ -3,6 +3,9 @@
 // Could use a similar system to graphql-ppx (see https://github.com/reasonml-community/graphql-ppx/blob/master/src/base/validations.re for reference)
 open Ast;
 open Node;
+module Exceptions = {
+  exception UnexpectedAtThisPoint(string);
+};
 
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -66,11 +69,13 @@ and parse__Node__Generic =
   | StringKeyword(_)
   | NumberKeyword(_)
   | NeverKeyword(_)
+  | NullKeyword(_)
   | ObjectKeyword(_)
   | UndefinedKeyword(_)
   | BooleanKeyword(_)
   | VoidKeyword(_)
   | AnyKeyword(_) => parse__Node__Basic(~runtime, ~scope, identifiedNode)
+  | ArrayType(_) => parse__Node__Array(~runtime, ~scope, identifiedNode)
   | _ =>
     Console.error("> " ++ node#getKindName());
     raise(Failure("OH no"));
@@ -84,7 +89,7 @@ and parse__Node__Generic_assignable =
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
-// --- Generic Node ("Hub")
+// --- Source File
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 and parse__Node__SourceFile =
@@ -139,7 +144,8 @@ and parse__Node__Declaration:
     switch (identified_node) {
     // | ClassDeclaration
     // | InterfaceDeclaration
-    // | EnumDeclaration
+    | EnumDeclaration(enum) =>
+      parse__Node__EnumDeclaration(~runtime, ~scope, enum)
     // | FunctionDeclarationy
     // | VariableDeclaration
     | TypeAliasDeclaration(typeAlias) =>
@@ -153,6 +159,46 @@ and parse__Node__Declaration:
   }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
+// --- EnumDeclaration
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__EnumDeclaration =
+    (~runtime, ~scope, node: Ts_nodes.EnumDeclaration.t) => {
+  // TODO: Solving this simply for now, we need to look at the propertyName eventuall though!!
+  let members = node#getMembers();
+  let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
+    Identifier.TypeName(node#getName());
+  let scope = {
+    ...scope,
+    parent: Some(EnumDeclaration(node)),
+    path:
+      scope.path |> CCArray.append([|Identifier.TypeName(node#getName())|]),
+  };
+  let variant_constructors =
+    members
+    |> CCArray.map(member =>
+         {
+           VariantConstructor.name:
+             Identifier.VariantIdentifier(member#getName()),
+           arguments: [||],
+         }
+       );
+  let annotation = Variant(variant_constructors);
+
+  (
+    runtime,
+    scope,
+    TypeDeclaration({
+      path: scope.path,
+      extracted_nodes: [||],
+      name: type_name,
+      annot: annotation,
+      params: [||],
+    }),
+  );
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
 // --- TypeAliasDeclaration
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -160,11 +206,13 @@ and parse__Node__TypeAliasDeclaration:
   (~runtime: runtime, ~scope: scope, Ts_nodes.TypeAliasDeclaration.t) =>
   (runtime, scope, Node.node(Node.Constraint.moduleLevel)) =
   (~runtime, ~scope, node: Ts_nodes.TypeAliasDeclaration.t) => {
-    let type_name = Identifier.TypeName(node#getName());
+    let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
+      Identifier.TypeName(node#getName());
     let scope = {
       ...scope,
       parent: Some(TypeAliasDeclaration(node)),
-      path: scope.path |> CCArray.append([|type_name|]),
+      path:
+        scope.path |> CCArray.append([|Identifier.TypeName(node#getName())|]),
     };
 
     let (runtime, scope, annotation) =
@@ -194,9 +242,32 @@ and parse__Node__Basic = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   | NeverKeyword(_) => (runtime, scope, Basic(Never))
   | ObjectKeyword(_) => (runtime, scope, Basic(RelevantKeyword("Object")))
   | UndefinedKeyword(_) => (runtime, scope, Basic(Undefined))
+  | NullKeyword(_) => (runtime, scope, Basic(Null))
   | BooleanKeyword(_) => (runtime, scope, Basic(Boolean))
   | AnyKeyword(_) => (runtime, {...scope, has_any: true}, Basic(Any))
-  | _ => raise(Failure("Not a basic type"))
+  | _ => raise(Exceptions.UnexpectedAtThisPoint("Not a basic type"))
+  };
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- Arrays
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__Array = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
+  switch (node) {
+  | ArrayType(node) =>
+    let (runtime, scope, inner) =
+      // TODO: Handle potentially extracted type here
+      // Whenever "inner" types are parsed, we should use a separate "parse__Node" function
+      // Maybe
+      parse__Node__Generic_assignable(
+        ~runtime,
+        ~scope,
+        node#getElementTypeNode(),
+      );
+    (runtime, scope, Array(inner));
+
+  | _ => raise(Exceptions.UnexpectedAtThisPoint("Not an array"))
   };
 }
 // ------------------------------------------------------------------------------------------

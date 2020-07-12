@@ -73,10 +73,17 @@ const recurse = (node: Node, level = 0) => {
     node.getName();
     node.getTypeNode()
   }
-
+  if (Node.isEnumDeclaration(node)) {
+    const member = node.getMembers()[0];
+    member.getName
+    // const x = member.getInitializer()
+  }
+  if (Node.isIdentifier(node)) {
+    // node
+  }
 
   if (node.getKindName() === 'ParenthesizedType') {
-    // @ts-ignore
+    // @ts-ignore^
     // console.log(node.compilerNode.type);
   }
 

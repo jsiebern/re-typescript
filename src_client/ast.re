@@ -8,24 +8,57 @@ module rec Node_id: {
   let make = v => v;
 }
 and Identifier: {
-  type path = array(t)
-  and t =
-    | Module(string)
-    | TypeName(string)
-    | SubName(string)
-    | SubIdent(int);
+  module Constraint: {
+    type exactlyModule = [ | `Module];
+    type atLeastModule('a) = [> | `Module] as 'a;
+    type exactlyTypeName = [ | `TypeName];
+    type atLeastTypeName('a) = [> | `TypeName] as 'a;
+    type exactlyPropertyName = [ | `PropertyName];
+    type atLeastPropertyName('a) = [> | `PropertyName] as 'a;
+    type exactlyVariantIdentifier = [ | `VariantIdentifier];
+    type atLeastVariantIdentifier('a) = [> | `VariantIdentifier] as 'a;
+    type exactlySubName = [ | `SubName];
+    type atLeastSubName('a) = [> | `SubName] as 'a;
+    type exactlySubIdent = [ | `SubIdent];
+    type atLeastSubIdent('a) = [> | `SubIdent] as 'a;
+
+    type any = [
+      exactlyModule
+      | exactlyTypeName
+      | exactlyPropertyName
+      | exactlyVariantIdentifier
+      | exactlySubName
+      | exactlySubIdent
+    ];
+  };
+
+  type path = array(t(Constraint.any))
+  and t('kind) =
+    | Module(string): t(Constraint.atLeastModule('poly))
+    | TypeName(string): t(Constraint.atLeastTypeName('poly))
+    | PropertyName(string): t(Constraint.atLeastPropertyName('poly))
+    | VariantIdentifier(string)
+      : t(Constraint.atLeastVariantIdentifier('poly))
+    | SubName(string): t(Constraint.atLeastSubName('poly))
+    | SubIdent(int): t(Constraint.atLeastSubIdent('poly));
 } = Identifier
 and Project: {type t = array(Node.node(Node.Constraint.exactlySourceFile));} = Project
 and TypeDeclaration: {
   type t = {
-    path: array(Identifier.t),
+    path: array(Identifier.t(Identifier.Constraint.any)),
     extracted_nodes:
       array(Node.node(Node.Constraint.exactlyExtractedReference)),
-    name: Identifier.t,
+    name: Identifier.t(Identifier.Constraint.exactlyTypeName),
     annot: Node.node(Node.Constraint.assignable),
     params: array(Node.node(Node.Constraint.exactlyTypeParameter)),
   };
 } = TypeDeclaration
+and VariantConstructor: {
+  type t = {
+    name: Identifier.t(Identifier.Constraint.exactlyVariantIdentifier),
+    arguments: array(Node.node(Node.Constraint.assignable)),
+  };
+} = VariantConstructor
 and Node: {
   module Constraint: {
     type exactlySourceFile = [ | `SourceFile];
@@ -58,11 +91,15 @@ and Node: {
     type exactlyTypeParameter = [ | `TypeParameter];
     type atLeastTypeParameter('a) = [> | `TypeParameter] as 'a;
 
+    type exactlyVariant = [ | `Variant];
+    type atLeastVariant('a) = [> | `Variant] as 'a;
+
     type exactlyFixture = [ | `Fixture];
     type atLeastFixture('a) = [> | `Fixture] as 'a;
 
     type any = [
       exactlyLiteral
+      | exactlyVariant
       | exactlyBasic
       | exactlyArray
       | exactlyOptional
@@ -81,6 +118,7 @@ and Node: {
       | exactlyOptional
       | exactlyNullable
       | exactlyReference
+      | exactlyVariant
     ];
 
     type moduleLevel = [ exactlyTypeDeclaration | exactlyFixture];
@@ -143,6 +181,8 @@ and Node: {
   };
 
   type node('tag) =
+    | Variant(array(VariantConstructor.t))
+      : node(Constraint.atLeastVariant('poly))
     | Literal(kind_literal(Constraint.Literal.any))
       : node(Constraint.atLeastLiteral('poly))
     | Basic(kind_basic(Constraint.Basic.any))

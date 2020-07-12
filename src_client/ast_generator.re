@@ -80,27 +80,63 @@ and generate__Node__TypeDeclaration =
   switch (node) {
   | Fixture(_) as fixtureNode => generate__Fixture(~scope, fixtureNode)
   | TypeDeclaration(node) =>
-    let type_name = node.name;
+    let type_name =
+      Identifier.TypeName(
+        switch (node.name) {
+        | TypeName(str) => str
+        },
+      );
     let scope = {
       parent: Some(TypeDeclaration(node)),
-      path: scope.path |> CCArray.append([|type_name|]),
+      path: CCArray.append(scope.path, [||]),
     };
 
-    let (scope, annotated_type) =
-      generate__Node__Assignable_CoreType(~scope, node.annot);
-
-    (
-      scope,
-      switch (annotated_type) {
-      | None => []
-      | Some(annotated_type) => [
-          Util.make_type_declaration(
+    switch (node.annot) {
+    | Variant(variant_members) =>
+      // TODO: Use normal variant type for the time being, this need to change in several levels of complexity
+      // Each member could have been assiged another literal value (or not), there could be computated values
+      // Also TODO: There will be more types like this that need to be parsed here as some can't return a core_type
+      let type_kind =
+        Util.make_variant_kind(
+          variant_members
+          |> CCArray.map(member =>
+               Util.Naming.fromIdentifier(
+                 Identifier.VariantIdentifier(
+                   switch (member.VariantConstructor.name) {
+                   | VariantIdentifier(str) => str
+                   },
+                 ),
+               )
+             )
+          |> CCArray.to_list,
+        );
+      (
+        scope,
+        [
+          Util.make_type_declaration_of_kind(
             ~aliasName=Util.Naming.fromIdentifier(type_name),
-            ~aliasType=annotated_type,
+            ~kind=type_kind,
           ),
-        ]
-      },
-    );
+        ],
+      );
+
+    | annot =>
+      let (scope, annotated_type) =
+        generate__Node__Assignable_CoreType(~scope, annot);
+
+      (
+        scope,
+        switch (annotated_type) {
+        | None => []
+        | Some(annotated_type) => [
+            Util.make_type_declaration(
+              ~aliasName=Util.Naming.fromIdentifier(type_name),
+              ~aliasType=annotated_type,
+            ),
+          ]
+        },
+      );
+    };
   // extracted_nodes:
   // params: array(Node.node(Node.Constraint.exactlyTypeParameter)),
   // Util.make
@@ -141,6 +177,9 @@ and generate__Node__Assignable_CoreType =
     | This
     | Never => raise(Failure("This case should not be reached"))
     }
+  | Array(inner) =>
+    let (scope, inner) = generate__Node__Assignable_CoreType(~scope, inner);
+    (scope, inner |> CCOpt.map(inner => Util.make_array_of(inner)));
   | _ => raise(Failure("Should this be handled here?"))
   };
 }

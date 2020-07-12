@@ -24,6 +24,36 @@ module TypeAliasDeclaration: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module EnumMember: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ts_morph.Node.t;
+      pub getName: unit => string;
+      pub getInitializer: unit => Generic.t;
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  [@js.cast]
+  let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module EnumDeclaration: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ts_morph.Node.t;
+      pub getName: unit => string;
+      pub getMembers: unit => array(EnumMember.t);
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  [@js.cast]
+  let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 module SourceFile: {
   class t:
     (Ojs.t) =>
@@ -41,6 +71,19 @@ module Identifier: {
     (Ojs.t) =>
     {
       inherit Ts_morph.Node.t;
+      pub getImplementations: unit => Generic.t;
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module Array: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ts_morph.Node.t;
+      pub getElementTypeNode: unit => Generic.t;
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;
@@ -68,6 +111,7 @@ module Identify: {
     | [@js.arg "node"] [@js "BooleanKeyword"] BooleanKeyword(Generic.t)
     | [@js.arg "node"] [@js "VoidKeyword"] VoidKeyword(Generic.t)
     | [@js.arg "node"] [@js "AnyKeyword"] AnyKeyword(Generic.t)
+    | [@js.arg "node"] [@js "NullKeyword"] NullKeyword(Generic.t)
     | [@js.arg "node"] [@js "VariableDeclarationList"] VariableDeclarationList(
         Generic.t,
       )
@@ -83,8 +127,10 @@ module Identify: {
       )
     | [@js.arg "node"] [@js "TypeReference"] TypeReference(Generic.t)
     | [@js.arg "node"] [@js "QualifiedName"] QualifiedName(Generic.t)
-    | [@js.arg "node"] [@js "EnumDeclaration"] EnumDeclaration(Generic.t)
-    | [@js.arg "node"] [@js "EnumMember"] EnumMember(Generic.t)
+    | [@js.arg "node"] [@js "EnumDeclaration"] EnumDeclaration(
+        EnumDeclaration.t,
+      )
+    | [@js.arg "node"] [@js "EnumMember"] EnumMember(EnumMember.t)
     | [@js.arg "node"] [@js "UnionType"] UnionType(Generic.t)
     | [@js.arg "node"] [@js "TupleType"] TupleType(Generic.t)
     | [@js.arg "node"] [@js "NamedTupleMember"] NamedTupleMember(Generic.t)
@@ -99,7 +145,7 @@ module Identify: {
       FunctionLikeDeclarationBase(
         Generic.t,
       )
-    | [@js.arg "node"] [@js "ArrayType"] ArrayType(Generic.t)
+    | [@js.arg "node"] [@js "ArrayType"] ArrayType(Array.t)
     | [@js.arg "node"] [@js "FunctionDeclaration"] FunctionDeclaration(
         Generic.t,
       )

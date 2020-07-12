@@ -9,10 +9,12 @@ module Naming = {
   let moduleName = str => CCString.capitalize_ascii(str);
   let typeName = str => CCString.uncapitalize_ascii(str);
 
-  let fromIdentifier = (i: Ast.Identifier.t) =>
+  let fromIdentifier = (i: Ast.Identifier.t(Ast.Identifier.Constraint.any)) =>
     switch (i) {
     | Module(str) => moduleName(str)
+    | VariantIdentifier(str) => moduleName(str)
     | TypeName(str) => typeName(str)
+    | PropertyName(str) => typeName(str)
     | SubName(str) => typeName(str)
     | SubIdent(num) => Printf.sprintf("_%i", num)
     };
@@ -59,6 +61,29 @@ let make_type_declaration =
     ),
   pstr_loc: loc,
 };
+let make_type_declaration_of_kind =
+    (~aliasName: string, ~kind: type_kind): Parsetree.structure_item => {
+  pstr_desc:
+    Parsetree.Pstr_type(
+      Asttypes.Recursive,
+      [
+        {
+          ptype_name: {
+            txt: aliasName,
+            loc,
+          },
+          ptype_params: [],
+          ptype_cstrs: [],
+          ptype_kind: kind,
+          ptype_private: Asttypes.Public,
+          ptype_manifest: None,
+          ptype_attributes: [],
+          ptype_loc: loc,
+        },
+      ],
+    ),
+  pstr_loc: loc,
+};
 
 let make_type_constraint = (~inner=[], name) => {
   Typ.constr(Location.mknoloc(Longident.parse(name)), inner);
@@ -85,3 +110,10 @@ let make_any_helper_unboxed = () => [%str
   type any =
     | Any('a): any
 ];
+
+let make_variant_kind = (names: list(string)) => {
+  Ptype_variant(
+    names
+    |> CCListLabels.map(~f=name => Type.constructor(Location.mknoloc(name))),
+  );
+};

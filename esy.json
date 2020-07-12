@@ -2,17 +2,14 @@
   "name": "re_typescript",
   "description": "",
   "scripts": {
+    "dev": "esy dune build ./src_client/re_typescript_exec.bc.js",
+    "dev-watch": "esy x redemon --paths=src_client --extensions=re,atd,mll,mly ./dev.sh",
+    "tests": "esy dune build ./tests/native/RunTests.bc.js",
     "format": "dune build @fmt --auto-promote --root .",
     "run": "esy x Re_typescript",
-    "watch": "esy x redemon --paths=src --extensions=re,atd,mll,mly esy run",
-    "watch-test": "esy x redemon --paths=tests,src --extensions=re,atd,mll,mly esy x RunTests.exe",
     "test": "esy x RunTests.exe",
-    "test-u": "esy x RunTests.exe -u",
     "js": "esy dune build ./src/js/re_typescript_js.bc.js",
-    "client": "esy dune build ./src_client/re_typescript_exec.bc.js",
-    "tests": "esy dune build ./tests/native/RunTests.bc.js",
-    "js-release": "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
-    "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
+    "js-release": "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static"
   },
   "dependencies": {
     "@opam/atdgen": "2.2.1",
