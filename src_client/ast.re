@@ -168,9 +168,9 @@ and Node: {
     | Boolean(bool): kind_literal(Constraint.Literal.atLeastBoolean('poly));
 
   module Escape: {
-    external toAssignable:
-      node(Constraint.any) => node(Constraint.assignable) =
+    external toAssignable: node('a) => node(Constraint.assignable) =
       "%identity";
+    external toAny: node('a) => node(Constraint.any) = "%identity";
   };
 } = Node;
 

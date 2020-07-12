@@ -1,9 +1,10 @@
 (executables
  (names src_client)
  (js_of_ocaml)
- (libraries gen_js_api js_of_ocaml reason console.lib containers)
+ (libraries gen_js_api js_of_ocaml reason console.lib containers
+   ocaml-migrate-parsetree ppx_tools_versioned yojson)
  (preprocess
-  (pps gen_js_api.ppx js_of_ocaml-ppx))
+  (pps gen_js_api.ppx js_of_ocaml-ppx ppx_tools_versioned.metaquot_406))
  (modes js))
 
 (rule
