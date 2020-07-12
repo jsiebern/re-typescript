@@ -59,8 +59,6 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
 and parse__Node__Generic =
     (~runtime, ~scope, node: Ts_nodes.Generic.t)
     : (runtime, scope, Node.node(Node.Constraint.any)) => {
-  Console.log("> " ++ node#getKindName());
-
   let identifiedNode = Ts_nodes_util.identifyGenericNode(node);
   switch (identifiedNode) {
   | SourceFile(sourceFile) =>

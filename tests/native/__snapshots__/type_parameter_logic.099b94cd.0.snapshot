@@ -1,3 +1,0 @@
-type parameter logic › does not throw when construcing a faulty type, but will throw on call site
-type with_param('a1, 'a2, 'a3) = 'a3;
-

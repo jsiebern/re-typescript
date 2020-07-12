@@ -1,7 +1,0 @@
-config flags effects › omit_extended_unreferenced_records - off
-type i_1 = {field1: string}
-and i_2 = {
-  field1: string,
-  field2: bool,
-};
-

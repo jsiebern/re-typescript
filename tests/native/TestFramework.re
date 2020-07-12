@@ -1,6 +1,3 @@
-open Lwt.Infix;
-open Websocket;
-
 include Rely.Make({
   let config =
     Rely.TestFrameworkConfig.initialize({
@@ -9,60 +6,16 @@ include Rely.Make({
     });
 });
 
-module Impl =
-  Re_typescript_ws_client.WsClient(
-    {
-      let uri = Uri.of_string("http://127.0.0.1:83");
-    },
-    {
-      let onStateChange = _ => ();
-    },
-  );
+module Lib = Re_typescript_lib;
+let project = Lib.create_project(Lib.default_project_config);
 
-type connection = {
-  mutable close: unit => Lwt.t(unit),
-  mutable parse_file: string => Result.t(list((string, string)), string),
-  mutable is_connected: bool,
-};
-let connection = {
-  close: () => Lwt.return_unit,
-  parse_file: _ => Ok([]),
-  is_connected: false,
-};
-
-let config = Re_typescript_config.default_config;
-let print = (~ctx=config, value) => {
-  if (!connection.is_connected) {
-    let (send, recv, close) = Lwt_main.run(Impl.connect());
-    connection.close = close;
-    connection.parse_file = (
-      value =>
-        Lwt_main.run(
-          send(`QuickParse(("/test_framework.d.ts", value)))
-          >>= recv
-          >>= (
-            message =>
-              switch (message) {
-              | Some(`ParseOk(parsed)) => Lwt.return(Ok(parsed))
-              | Some(`ParseError(e)) => Lwt.return(Error(e))
-              | Some(_) => Lwt.fail_invalid_arg("Unexpected message type")
-              | None => Lwt.fail(Not_found)
-              }
-          ),
-        )
-    );
-    connection.is_connected = true;
-  };
-  let files = connection.parse_file(value);
-
-  switch (files) {
-  | Error(e) => raise(Failure(e))
-  | Ok(files) =>
-    let str = Re_typescript_ts_parser.structure_from_ts(~ctx, files);
-    Reason_toolchain.RE.print_implementation_with_comments(
-      Format.str_formatter,
-      (str, []),
-    );
-    Format.flush_str_formatter();
-  };
+type rndfun = unit => float;
+let rnd: rndfun = Js_of_ocaml.Js.Unsafe.global##._Math##.random;
+let print = (~ctx=?, value) => {
+  let file_path = Printf.sprintf("/%f/test.d.ts", rnd());
+  let source_file = project#createSourceFile(file_path, value);
+  source_file#saveSync();
+  let nodes = Lib.parse_files([|source_file|]);
+  let ast = Lib.get_generated_ast(nodes);
+  Lib.print_code(ast);
 };

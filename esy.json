@@ -9,7 +9,8 @@
     "test": "esy x RunTests.exe",
     "test-u": "esy x RunTests.exe -u",
     "js": "esy dune build ./src/js/re_typescript_js.bc.js",
-    "client": "esy dune build ./src_client/src_client.bc.js",
+    "client": "esy dune build ./src_client/re_typescript_exec.bc.js",
+    "tests": "esy dune build ./tests/native/RunTests.bc.js",
     "js-release": "esy dune build ./src/js/re_typescript_js.bc.js --profile release-static",
     "release-static": "dune build --root . --only-packages '#{self.name}' --ignore-promoted-rules --no-config --profile release-static"
   },

@@ -1,8 +1,0 @@
-config flags effects › suppress_warning_for_extended_records
-[@warning \"-30\"];
-type i_1 = {field1: string}
-and i_2 = {
-  field1: string,
-  field2: bool,
-};
-

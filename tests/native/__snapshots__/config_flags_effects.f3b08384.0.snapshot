@@ -1,9 +1,0 @@
-config flags effects › omit_extended_unreferenced_records - on (displays warning if necessary after all)
-[@warning \"-30\"];
-type i_1 = {field1: string}
-and i_2 = {
-  field1: string,
-  field2: bool,
-}
-and holds_ref = i_1;
-

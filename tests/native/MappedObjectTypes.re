@@ -1,13 +1,6 @@
 open TestFramework;
 
-let ctx = {
-  ...config,
-  bucklescript_config: {
-    ...config.bucklescript_config,
-    string_variant_mode: `Variant,
-    mixed_variant_mode: `Variant,
-  },
-};
+let ctx = ();
 
 describe("mapped object types", ({test, _}) => {
   test("map over predefined keys ", ({expect, _}) => {

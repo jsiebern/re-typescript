@@ -1,4 +1,4 @@
-(dirs src_client)
+(dirs src_client tests)
 
 (env
  (dev

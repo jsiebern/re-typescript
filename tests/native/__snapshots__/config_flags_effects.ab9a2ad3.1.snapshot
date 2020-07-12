@@ -1,3 +1,0 @@
-config flags effects › number_mode
-type t_number = int;
-

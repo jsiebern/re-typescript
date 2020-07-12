@@ -1,7 +1,0 @@
-config flags effects › omit_extended_unreferenced_records - on (resolves type params correctly, even if omitting the interface)
-type i_2('A, 'C) = {
-  field1: 'A,
-  field2: bool,
-  field3: 'C,
-};
-

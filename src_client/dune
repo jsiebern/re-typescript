@@ -1,8 +1,20 @@
-(executables
- (names src_client)
+(library
+ (name re_typescript_lib)
+ (public_name re_typescript.lib)
+ (ocamlopt_flags -linkall -g)
  (js_of_ocaml)
  (libraries gen_js_api js_of_ocaml reason console.lib containers
    ocaml-migrate-parsetree ppx_tools_versioned yojson)
+ (modules
+  (:standard \ Re_typescript_exec))
+ (preprocess
+  (pps gen_js_api.ppx js_of_ocaml-ppx ppx_tools_versioned.metaquot_406)))
+
+(executable
+ (name re_typescript_exec)
+ (js_of_ocaml)
+ (libraries js_of_ocaml console.lib re_typescript.lib)
+ (modules re_typescript_exec)
  (preprocess
   (pps gen_js_api.ppx js_of_ocaml-ppx ppx_tools_versioned.metaquot_406))
  (modes js))

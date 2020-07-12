@@ -1,13 +1,6 @@
 open TestFramework;
 
-let ctx = {
-  ...config,
-  bucklescript_config: {
-    ...config.bucklescript_config,
-    string_variant_mode: `Variant,
-    mixed_variant_mode: `Variant,
-  },
-};
+let ctx = ();
 describe("keyof operator", ({test, _}) => {
   test("throws for non object types", ({expect, _}) => {
     expect.fn(() => print({|
