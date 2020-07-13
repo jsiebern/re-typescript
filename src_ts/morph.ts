@@ -78,8 +78,8 @@ const recurse = (node: Node, level = 0) => {
     member.getName
     // const x = member.getInitializer()
   }
-  if (Node.isIdentifier(node)) {
-    // node
+  if (Node.isTupleTypeNode(node)) {
+    node
   }
 
   if (node.getKindName() === 'ParenthesizedType') {

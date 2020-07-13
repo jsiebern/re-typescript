@@ -97,6 +97,9 @@ and Node: {
     type exactlyFixture = [ | `Fixture];
     type atLeastFixture('a) = [> | `Fixture] as 'a;
 
+    type exactlyTuple = [ | `Tuple];
+    type atLeastTuple('a) = [> | `Tuple] as 'a;
+
     type any = [
       exactlyLiteral
       | exactlyVariant
@@ -109,6 +112,7 @@ and Node: {
       | exactlyExtractedReference
       | exactlyTypeDeclaration
       | exactlyFixture
+      | exactlyTuple
     ];
 
     type assignable = [
@@ -119,6 +123,7 @@ and Node: {
       | exactlyNullable
       | exactlyReference
       | exactlyVariant
+      | exactlyTuple
     ];
 
     type moduleLevel = [ exactlyTypeDeclaration | exactlyFixture];
@@ -183,6 +188,8 @@ and Node: {
   type node('tag) =
     | Variant(array(VariantConstructor.t))
       : node(Constraint.atLeastVariant('poly))
+    | Tuple(array(node(Constraint.assignable)))
+      : node(Constraint.atLeastTuple('poly))
     | Literal(kind_literal(Constraint.Literal.any))
       : node(Constraint.atLeastLiteral('poly))
     | Basic(kind_basic(Constraint.Basic.any))
@@ -194,6 +201,7 @@ and Node: {
     | Nullable(Node.node(Constraint.assignable))
       : node(Constraint.atLeastNullable('poly))
     | SourceFile({
+        // TODO: Replace SourceFile with Module
         name: string,
         path: string,
         types: array(Node.node(Constraint.moduleLevel)),

@@ -76,6 +76,7 @@ and parse__Node__Generic =
   | VoidKeyword(_)
   | AnyKeyword(_) => parse__Node__Basic(~runtime, ~scope, identifiedNode)
   | ArrayType(_) => parse__Node__Array(~runtime, ~scope, identifiedNode)
+  | TupleType(_) => parse__Node__Tuple(~runtime, ~scope, identifiedNode)
   | _ =>
     Console.error("> " ++ node#getKindName());
     raise(Failure("OH no"));
@@ -246,6 +247,38 @@ and parse__Node__Basic = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   | BooleanKeyword(_) => (runtime, scope, Basic(Boolean))
   | AnyKeyword(_) => (runtime, {...scope, has_any: true}, Basic(Any))
   | _ => raise(Exceptions.UnexpectedAtThisPoint("Not a basic type"))
+  };
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- Tuples
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__Tuple = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
+  switch (node) {
+  | TupleType(node) =>
+    // TODO: Handle potentially extracted type here
+    // Whenever "inner" types are parsed, we should use a separate "parse__Node" function
+    // Maybe
+
+    let children_to_traverse = node#getElementTypeNodes();
+    let (
+      runtime: runtime,
+      scope: scope,
+      inner: array(Node.node(Node.Constraint.assignable)),
+    ) =
+      CCArray.fold_left(
+        ((runtime, scope, nodes), node) => {
+          let (runtime, scope, res) =
+            parse__Node__Generic_assignable(~runtime, ~scope, node);
+          (runtime, scope, CCArray.append([|res|], nodes));
+        },
+        (runtime, scope, [||]),
+        children_to_traverse,
+      );
+
+    (runtime, scope, Tuple(inner));
+  | _ => raise(Exceptions.UnexpectedAtThisPoint("Not a tuple"))
   };
 }
 // ------------------------------------------------------------------------------------------

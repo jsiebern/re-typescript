@@ -58,12 +58,11 @@ and print__Node__SourceFile =
 
   let (scope, generated_structure) =
     node.types
-    |> CCArray.to_list
-    |> CCList.fold_left(
+    |> CCArray.fold_left(
          ((scope, struct_carry), node) => {
            let (scope, generated_struct) =
              generate__Node__TypeDeclaration(~scope, node);
-           (scope, struct_carry @ generated_struct);
+           (scope, generated_struct @ struct_carry);
          },
          (scope, []),
        );
@@ -180,6 +179,26 @@ and generate__Node__Assignable_CoreType =
   | Array(inner) =>
     let (scope, inner) = generate__Node__Assignable_CoreType(~scope, inner);
     (scope, inner |> CCOpt.map(inner => Util.make_array_of(inner)));
+  | Tuple(inner) =>
+    let (scope, types) =
+      inner
+      |> CCArray.fold_left(
+           ((scope, types), t) => {
+             let (scope, t) = generate__Node__Assignable_CoreType(~scope, t);
+             (
+               scope,
+               switch (t) {
+               | Some(t) => CCArray.append([|t|], types)
+               | None => types
+               },
+             );
+           },
+           (scope, [||]),
+         );
+    (
+      scope,
+      CCArray.length(types) > 0 ? Some(Util.make_tuple_of(types)) : None,
+    );
   | _ => raise(Failure("Should this be handled here?"))
   };
 }
