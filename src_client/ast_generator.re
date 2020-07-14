@@ -199,6 +199,63 @@ and generate__Node__Assignable_CoreType =
       scope,
       CCArray.length(types) > 0 ? Some(Util.make_tuple_of(types)) : None,
     );
+  | Function({return_type, parameters}) =>
+    let (scope, return_type) =
+      generate__Node__Assignable_CoreType(~scope, return_type);
+    let (scope, parameters) =
+      CCArray.fold_left(
+        (
+          (scope, params),
+          Node.Parameter({
+            name: Identifier.PropertyName(name),
+            is_optional,
+            type_,
+            named,
+          }):
+            Node.node(Node.Constraint.exactlyParameter),
+        ) => {
+          let (scope, t) =
+            generate__Node__Assignable_CoreType(~scope, type_);
+          let param = (
+            switch (is_optional, named) {
+            | (false, true)
+            | (true, _) => Some(name)
+            | (false, false) => None
+            },
+            is_optional,
+            t |> CCOpt.value(~default=Util.make_type_constraint("any")),
+          );
+          (scope, CCArray.append([|param|], params));
+        },
+        (scope, [||]),
+        parameters,
+      );
+
+    let parameter_count = CCArray.length(parameters);
+    let parameters =
+      parameter_count > 0
+        ? switch (CCArray.get(parameters, parameter_count - 1)) {
+          | (_, true, _) =>
+            CCArray.append(
+              parameters,
+              [|(None, false, Util.make_type_constraint("unit"))|],
+            )
+          | _ => parameters
+          }
+        : parameters;
+
+    (
+      scope,
+      Some(
+        Util.make_function_type(
+          parameter_count > 0
+            ? parameters
+            : [|(None, false, Util.make_type_constraint("unit"))|],
+          return_type
+          |> CCOpt.value(~default=Util.make_type_constraint("any")),
+        ),
+      ),
+    );
   | _ => raise(Failure("Should this be handled here?"))
   };
 }

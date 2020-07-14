@@ -120,3 +120,67 @@ let make_variant_kind = (names: list(string)) => {
 
 let make_tuple_of = (types: array(core_type)) =>
   Typ.tuple(types |> CCArray.to_list);
+
+// let rec make_arrow_for_params =
+//         (
+//           ~has_opt=false,
+//           types: list((option(string), bool, core_type)),
+//           final: core_type,
+//         ) => {
+//   switch (types) {
+//   | [] =>
+//     has_opt
+//       ? generate_arrow_for_params(
+//           ~has_opt=false,
+//           [(None, false, generate_base_type("unit"))],
+//           final,
+//         )
+//       : final
+//   | [(label, optional, type_), ...rest] =>
+//     Typ.arrow(
+//       switch (label, optional) {
+//       | (None, _) => Nolabel
+//       | (Some(l), false) => Labelled(l)
+//       | (Some(l), true) => Optional(l)
+//       },
+//       optional ? generate_base_type(~inner=[type_], "option") : type_,
+//       generate_arrow_for_params(
+//         ~has_opt=has_opt ? has_opt : optional,
+//         rest,
+//         final,
+//       ),
+//     )
+//   };
+// };
+// let make_arrow =
+//     (~params: list((option(string), bool, core_type)), ~return: core_type) => {
+//   switch (params) {
+//   | [] => make_arrow_for_params(~has_opt=true, [], return)
+//   | lst => make_arrow_for_params(lst, return)
+//   };
+// };
+
+let make_function_type = (params, returnType) =>
+  CCArray.fold_right(
+    ((name, is_optional, paramType), t) =>
+      Parsetree.{
+        ptyp_desc:
+          Parsetree.Ptyp_arrow(
+            switch (name, is_optional) {
+            | (Some(name), true) => Asttypes.Optional(name)
+            | (Some(name), false) => Asttypes.Labelled(name)
+            | (None, false) => Asttypes.Nolabel
+            | (None, true) =>
+              raise(
+                Failure("Cannot have unlabelled optional function argument"),
+              )
+            },
+            paramType,
+            t,
+          ),
+        ptyp_loc: loc,
+        ptyp_attributes: [],
+      },
+    params,
+    returnType,
+  );

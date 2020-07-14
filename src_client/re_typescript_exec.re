@@ -3,11 +3,11 @@ let test = (
   {|
 
 
-   declare enum Enum { red, Green, blue }
+   export default function(a: string, b?: number): void;
 
-type tpl = [string, number, boolean];
+   export function motha(one: string, two: boolean, three: [string, number]): string[];
 
-type s = string;
+
 |},
 );
 switch (Re_typescript_lib.quick_parse([|test|])) {

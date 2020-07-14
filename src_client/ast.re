@@ -100,6 +100,12 @@ and Node: {
     type exactlyTuple = [ | `Tuple];
     type atLeastTuple('a) = [> | `Tuple] as 'a;
 
+    type exactlyFunction = [ | `Function];
+    type atLeastFunction('a) = [> | `Function] as 'a;
+
+    type exactlyParameter = [ | `Paramter];
+    type atLeastParameter('a) = [> | `Paramter] as 'a;
+
     type any = [
       exactlyLiteral
       | exactlyVariant
@@ -113,6 +119,8 @@ and Node: {
       | exactlyTypeDeclaration
       | exactlyFixture
       | exactlyTuple
+      | exactlyFunction
+      | exactlyParameter
     ];
 
     type assignable = [
@@ -124,6 +132,7 @@ and Node: {
       | exactlyReference
       | exactlyVariant
       | exactlyTuple
+      | exactlyFunction
     ];
 
     type moduleLevel = [ exactlyTypeDeclaration | exactlyFixture];
@@ -186,6 +195,18 @@ and Node: {
   };
 
   type node('tag) =
+    | Parameter({
+        name: Identifier.t(Identifier.Constraint.exactlyPropertyName),
+        is_optional: bool,
+        type_: node(Constraint.assignable),
+        named: bool,
+      })
+      : node(Constraint.atLeastParameter('poly))
+    | Function({
+        parameters: array(node(Constraint.exactlyParameter)),
+        return_type: node(Constraint.assignable),
+      })
+      : node(Constraint.atLeastFunction('poly))
     | Variant(array(VariantConstructor.t))
       : node(Constraint.atLeastVariant('poly))
     | Tuple(array(node(Constraint.assignable)))

@@ -24,6 +24,42 @@ module TypeAliasDeclaration: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module Parameter: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ts_morph.Node.t;
+      pub getName: unit => string;
+      pub getTypeNode: unit => option(Generic.t);
+      pub getQuestionTokenNode: unit => option(Generic.t);
+      pub getDotDotDotToken: unit => option(Generic.t);
+      pub isRestParameter: unit => bool;
+      pub isParameterProperty: unit => bool;
+      pub isOptional: unit => bool;
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module FunctionDeclaration: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ts_morph.Node.t;
+      pub getName: unit => option(string);
+      pub isDefaultExport: unit => bool;
+      pub getReturnTypeNode: unit => option(Generic.t);
+      pub getTypeParameters: unit => array(Generic.t);
+      pub getParameters: unit => array(Parameter.t);
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  [@js.cast]
+  let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 module EnumMember: {
   class t:
     (Ojs.t) =>
@@ -159,12 +195,12 @@ module Identify: {
       )
     | [@js.arg "node"] [@js "ArrayType"] ArrayType(Array.t)
     | [@js.arg "node"] [@js "FunctionDeclaration"] FunctionDeclaration(
-        Generic.t,
+        FunctionDeclaration.t,
       )
     | [@js.arg "node"] [@js "MethodSignature"] MethodSignature(Generic.t)
     | [@js.arg "node"] [@js "IndexSignature"] IndexSignature(Generic.t)
     | [@js.arg "node"] [@js "CallSignature"] CallSignature(Generic.t)
-    | [@js.arg "node"] [@js "Parameter"] Parameter(Generic.t)
+    | [@js.arg "node"] [@js "Parameter"] Parameter(Parameter.t)
     | [@js.arg "node"] [@js "BindingElement"] BindingElement(Generic.t)
     | [@js.arg "node"] [@js "PropertyDeclaration"] PropertyDeclaration(
         Generic.t,

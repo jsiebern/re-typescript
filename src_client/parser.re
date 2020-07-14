@@ -147,7 +147,8 @@ and parse__Node__Declaration:
     // | InterfaceDeclaration
     | EnumDeclaration(enum) =>
       parse__Node__EnumDeclaration(~runtime, ~scope, enum)
-    // | FunctionDeclarationy
+    | FunctionDeclaration(fn_declaration) =>
+      parse__Node__FunctionDeclaration(~runtime, ~scope, fn_declaration)
     // | VariableDeclaration
     | TypeAliasDeclaration(typeAlias) =>
       parse__Node__TypeAliasDeclaration(~runtime, ~scope, typeAlias)
@@ -158,6 +159,70 @@ and parse__Node__Declaration:
       raise(Failure("Only declarations allowed here"));
     };
   }
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- FunctionDeclaration
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__FunctionDeclaration =
+    (~runtime, ~scope, node: Ts_nodes.FunctionDeclaration.t) => {
+  let name =
+    switch (node#getName()) {
+    | Some(name) => name
+    | None when node#isDefaultExport() => "default"
+    | None => raise(Failure("Expected a name for this function"))
+    };
+  let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
+    Identifier.TypeName(name);
+  let scope = {
+    ...scope,
+    parent: Some(FunctionDeclaration(node)),
+    path: scope.path |> CCArray.append([|Identifier.TypeName(name)|]),
+  };
+
+  let (runtime, scope, return_type) =
+    switch (node#getReturnTypeNode()) {
+    | Some(return_node) =>
+      parse__Node__Generic_assignable(~runtime, ~scope, return_node)
+    | None => (runtime, scope, Basic(Any))
+    };
+
+  let (runtime, scope, parameters) =
+    node#getParameters()
+    |> CCArray.fold_left(
+         ((runtime, scope, params), param) => {
+           let name = Identifier.PropertyName(param#getName());
+           let is_optional = param#isOptional();
+           // TODO: isRestParameter
+           let (runtime, scope, type_) =
+             switch (param#getTypeNode()) {
+             | None => (runtime, scope, Basic(Any))
+             | Some(t) => parse__Node__Generic_assignable(~runtime, ~scope, t)
+             };
+           (
+             runtime,
+             scope,
+             CCArray.append(
+               [|Parameter({name, is_optional, type_, named: is_optional})|],
+               params,
+             ),
+           );
+         },
+         (runtime, scope, [||]),
+       );
+
+  (
+    runtime,
+    scope,
+    TypeDeclaration({
+      path: scope.path,
+      extracted_nodes: [||],
+      name: type_name,
+      annot: Function({return_type, parameters}),
+      params: [||],
+    }),
+  );
+}
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 // --- EnumDeclaration
@@ -243,6 +308,7 @@ and parse__Node__Basic = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   | NeverKeyword(_) => (runtime, scope, Basic(Never))
   | ObjectKeyword(_) => (runtime, scope, Basic(RelevantKeyword("Object")))
   | UndefinedKeyword(_) => (runtime, scope, Basic(Undefined))
+  | VoidKeyword(_) => (runtime, scope, Basic(Void))
   | NullKeyword(_) => (runtime, scope, Basic(Null))
   | BooleanKeyword(_) => (runtime, scope, Basic(Boolean))
   | AnyKeyword(_) => (runtime, {...scope, has_any: true}, Basic(Any))
