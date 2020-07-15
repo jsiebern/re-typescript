@@ -13,6 +13,7 @@ import { walkNodes } from './ast';
 import { strict, notEqual } from 'assert';
 import { SCHED_RR } from 'cluster';
 
+
 const project = new Project({
   useInMemoryFileSystem: true,
   compilerOptions: {
@@ -69,15 +70,23 @@ const recurseType = (type: Type | undefined, level = 0) => {
   type.getTupleElements().forEach((t) => recurseType(t, level + 1));
 };
 const recurse = (node: Node, level = 0) => {
-  if (Node.isTypeAliasDeclaration(node)) {
-    node.getName();
-    node.getTypeNode();
-    node.getTypeParameters
+  if (Node.isIndexedAccessTypeNode(node)) {
+    node.getProject().getTypeChecker()
+    node.getObjectTypeNode().getType()
+    node.getIndexTypeNode
+    node.getType
+    node.getType().getSymbol
   }
-  if (Node.isFunctionTypeNode(node)) {
-    node.getParameters
-    node.getReturnTypeNode
-    node.getTypeParameters
+  if (Node.isLiteralTypeNode(node)) {
+    const l = node.getLiteral()
+    if (Node.isNumericLiteral(l)) {
+
+    }
+    if (Node.isStringLiteral(l)) {
+      l.getLiteralText()
+      l.getLiteralValue()
+    }
+
     // const x = member.getInitializer()
   }
   if (Node.isUnionTypeNode(node)) {

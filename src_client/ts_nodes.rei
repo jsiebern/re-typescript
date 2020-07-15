@@ -20,13 +20,52 @@ module Generic: {
       pub getEndLineNumber: unit => int;
       pub getKindName: unit => string;
       pub getSymbol: unit => option(Ts_morph.Symbol.t);
-      pub getType: unit => option(Ts_morph.Type.t);
       // Raw
       pub compilerNode: Ts_raw.Node.t;
       pub getProject: unit => Ts_morph.Project.t;
     };
   [@js.cast]
   let fromMorphNode: Ts_morph.Node.t => t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module Symbol: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ojs.obj;
+      // Type Information
+      pub getName: unit => string;
+      pub getFullyQualifiedName: unit => string;
+      pub getDeclarations: unit => array(Generic.t);
+      // Raw
+      pub compilerSymbol: Ts_raw.Symbol.t;
+    };
+
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module Type: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ojs.obj;
+      pub getSymbol: unit => Symbol.t;
+    };
+
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module WithGetType: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getType: unit => option(Type.t);
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  let toGeneric: t => Generic.t;
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
@@ -264,11 +303,62 @@ module TypeReference: {
       inherit Generic.t;
       pub getTypeName: unit => Identifier.t;
       pub getTypeArguments: unit => array(Generic.t);
+      pub getType: unit => option(Ts_morph.Type.t);
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
+};
+module IndexedAccessType: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getObjectTypeNode: unit => Generic.t;
+      pub getIndexTypeNode: unit => Generic.t;
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  [@js.cast]
+  let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module LiteralType: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getLiteral: unit => Generic.t;
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module LiteralLike: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getLiteralText: unit => string;
+      pub getLiteralValue: unit => string;
+    };
+};
+module StringLiteral: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit LiteralLike.t;
+    };
+};
+module NumericLiteral: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit LiteralLike.t;
+    };
 };
 
 module Identify: {
@@ -299,7 +389,7 @@ module Identify: {
         Generic.t,
       )
     | [@js.arg "node"] [@js "TypeLiteral"] TypeLiteral(TypeLiteral.t)
-    | [@js.arg "node"] [@js "LiteralType"] LiteralType(Generic.t)
+    | [@js.arg "node"] [@js "LiteralType"] LiteralType(LiteralType.t)
     | [@js.arg "node"] [@js "PropertySignature"] PropertySignature(
         PropertySignature.t,
       )
@@ -318,6 +408,8 @@ module Identify: {
     | [@js.arg "node"] [@js "NamedTupleMember"] NamedTupleMember(Generic.t)
     | [@js.arg "node"] [@js "RestType"] RestType(Generic.t)
     | [@js.arg "node"] [@js "OptionalType"] OptionalType(Generic.t)
+    | [@js.arg "node"] [@js "StringLiteral"] StringLiteral(StringLiteral.t)
+    | [@js.arg "node"] [@js "NumericLiteral"] NumericLiteral(NumericLiteral.t)
     | [@js.arg "node"] [@js "CallSignatureDeclaration"]
       CallSignatureDeclaration(
         Generic.t,
@@ -352,7 +444,9 @@ module Identify: {
         Generic.t,
       )
     | [@js.arg "node"] [@js "IntersectionType"] IntersectionType(Generic.t)
-    | [@js.arg "node"] [@js "IndexedAccessType"] IndexedAccessType(Generic.t)
+    | [@js.arg "node"] [@js "IndexedAccessType"] IndexedAccessType(
+        IndexedAccessType.t,
+      )
     | [@js.arg "node"] [@js "ParenthesizedType"] ParenthesizedType(Generic.t)
     | [@js.arg "node"] [@js "LiteralLikeNode"] LiteralLikeNode(Generic.t)
     | [@js.arg "node"] [@js "InterfaceDeclaration"] InterfaceDeclaration(

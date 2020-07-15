@@ -13,6 +13,7 @@
     "types": "./types.sh",
     "start": "cd docs; python -m SimpleHTTPServer",
     "ts": "yarn bs:build; yarn ts-node -P src_ts/tsconfig.json src_ts/morph.ts",
+    "tss": "npx ts-node -P src_ts/tsconfig.json src_ts/test.ts",
     "ast": "yarn bs:build; node src_ts/bs/test.bs.js",
     "format": "./_napkin/format_all.sh src_ws && ./_napkin/format_all.sh src_js",
     "server": "yarn bs:build; node src_ws/service.bs.js"

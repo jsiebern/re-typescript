@@ -85,6 +85,8 @@ and parse__Node__Generic =
   | UnionType(union) => parse__Node__UnionType(~runtime, ~scope, union)
   | FunctionType(func_type) =>
     parse__Node__FunctionType(~runtime, ~scope, func_type)
+  | IndexedAccessType(ind_acc_type) =>
+    parse__Node__IndexedAccessType(~runtime, ~scope, ind_acc_type)
   | _ =>
     raise(
       Exceptions.UnexpectedAtThisPoint(
@@ -249,6 +251,57 @@ and parse__Node__UnionType = (~runtime, ~scope, node: Ts_nodes.UnionType.t) => {
 and parse__AssignAny = (~runtime, ~scope) => {
   (runtime, {...scope, has_any: true}, Basic(Any));
 }
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- IndexedAccessType
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__IndexedAccessType =
+    (~runtime, ~scope, node: Ts_nodes.IndexedAccessType.t) => {
+  let index = node#getIndexTypeNode();
+  let index_stringified =
+    switch (Ts_nodes_util.identifyGenericNode(index)) {
+    | LiteralType(lt) =>
+      switch (Ts_nodes_util.identifyGenericNode(lt#getLiteral())) {
+      | StringLiteral(sl) => sl#getLiteralValue()
+      | NumericLiteral(nl) => nl#getLiteralValue()
+      | _ => "t"
+      }
+    | _ => "t"
+    };
+
+  // TODO: Make reosolving this type more robust
+  // Also TODO: Create something that can request a type reference and moves referenced types into their own type declaration
+  let resolved_type =
+    switch (
+      get__TypeNodeByTypeChecker(node |> Ts_nodes.IndexedAccessType.toGeneric)
+    ) {
+    | None =>
+      raise(
+        Exceptions.UnexpectedAtThisPoint(
+          "Could not resolve type for indexded access",
+        ),
+      )
+    | Some(node) => node
+    };
+
+  let base_path = scope.path;
+  let current_path =
+    base_path |> Path.add(Identifier.SubName(index_stringified));
+  let scope = scope |> Scope.replace_path_arr(current_path);
+  let (runtime, scope, result) =
+    parse__Node__Generic_assignable(~runtime, ~scope, resolved_type);
+
+  let scope = scope |> Scope.replace_path_arr(base_path);
+  (runtime, scope, result |> Node.Escape.toAny);
+}
+and get__TypeNodeByTypeChecker:
+  Ts_nodes.Generic.t => option(Ts_nodes.Generic.t) =
+  node => {
+    (node |> Ts_nodes.WithGetType.fromGeneric)#getType()
+    |> CCOpt.map(t => t#getSymbol()#getDeclarations())
+    |> CCOpt.flat_map(CCArray.get_safe(_, 0));
+  }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 // --- InterfaceDeclaration
