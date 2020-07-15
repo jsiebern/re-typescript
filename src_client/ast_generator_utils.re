@@ -8,6 +8,7 @@ let loc = Location.none;
 module Naming = {
   let moduleName = str => CCString.capitalize_ascii(str);
   let typeName = str => CCString.uncapitalize_ascii(str);
+  let propertyName = str => CCString.uncapitalize_ascii(str);
 
   let unwrap: type t. Ast.Identifier.t(t) => string =
     i =>
@@ -185,3 +186,27 @@ let make_record_kind =
        )
     |> CCArray.to_list,
   );
+
+module Unboxed = {
+  let t = params =>
+    Ast_helper.Typ.constr(
+      Location.mknoloc(Longident.Lident("t")),
+      params |> CCList.map(param => Typ.var(param)),
+    );
+  let make_unboxed_helper = () => (
+    [%stri
+      [@unboxed]
+      type t =
+        | Any('a): t
+    ],
+    [%sigi: type t],
+  );
+  let unboxed_func = (~params=[], name, ty: core_type) => (
+    [%stri
+      let [%p Pat.var(Location.mknoloc(name))] = (v: [%t ty]) => Any(v)
+    ],
+    Sig.value(
+      Val.mk(Location.mknoloc(name), [%type: [%t ty] => [%t t(params)]]),
+    ),
+  );
+};

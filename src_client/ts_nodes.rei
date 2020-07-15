@@ -166,6 +166,18 @@ module PropertySignature: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module UnionType: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ts_morph.Node.t;
+      pub getTypeNodes: unit => array(Generic.t);
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 
 module Identify: {
   [@js.sum "kindName"]
@@ -209,7 +221,7 @@ module Identify: {
         EnumDeclaration.t,
       )
     | [@js.arg "node"] [@js "EnumMember"] EnumMember(EnumMember.t)
-    | [@js.arg "node"] [@js "UnionType"] UnionType(Generic.t)
+    | [@js.arg "node"] [@js "UnionType"] UnionType(UnionType.t)
     | [@js.arg "node"] [@js "TupleType"] TupleType(Tuple.t)
     | [@js.arg "node"] [@js "NamedTupleMember"] NamedTupleMember(Generic.t)
     | [@js.arg "node"] [@js "RestType"] RestType(Generic.t)

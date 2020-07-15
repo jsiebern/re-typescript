@@ -29,7 +29,6 @@ let ast_node: type t. Node.node(t) => string =
         "Reference(%s)",
         Ast_generator_utils.Naming.full_identifier_of_path(target),
       )
-    | ExtractedReference => "ExtractedReference"
     | TypeParameter => "TypeParameter"
     | Variant(_) => "Variant"
     | Fixture(_) => "Fixture"

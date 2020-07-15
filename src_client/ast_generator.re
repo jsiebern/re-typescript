@@ -30,7 +30,8 @@ let rec generate =
   |> CCArray.to_list
   |> CCList.fold_left(
        ((scope, struct_carry), node) => {
-         let (scope, generated_struct) = print__Node__Module(~scope, node);
+         let (scope, generated_struct) =
+           generate__Node__Module(~scope, node);
          (scope, struct_carry @ [generated_struct]);
        },
        (scope, []),
@@ -41,7 +42,7 @@ let rec generate =
 // --- Module
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
-and print__Node__Module =
+and generate__Node__Module =
     (~scope, Module(node): Node.node(Node.Constraint.exactlyModule)) => {
   let module_name = Util.Naming.moduleName(node.name);
   let scope = {parent: Some(Module(node)), path: [|Module(module_name)|]};
@@ -61,12 +62,80 @@ and print__Node__Module =
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
+// --- Module Unboxed
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and generate__Node__ModuleUnboxed =
+    (~scope, Module(node): Node.node(Node.Constraint.exactlyModule)) => {
+  let module_name = Util.Naming.moduleName(node.name);
+  let scope = {parent: Some(Module(node)), path: [|Module(module_name)|]};
+
+  let (scope, generated_stri, generated_sigi) =
+    node.types
+    |> CCArray.fold_left(
+         ((scope, arr_stri, arr_sigi), node) => {
+           let res =
+             switch (node) {
+             | Ast.Node.Fixture(TUnboxed) =>
+               let (stri, sigi) = Util.Unboxed.make_unboxed_helper();
+               Some((scope, stri, sigi));
+             | Ast.Node.TypeDeclaration({annot, name: TypeName(name), _}) =>
+               let (scope, t) =
+                 generate__Node__Assignable_CoreType(~scope, annot);
+               switch (t) {
+               | None => None
+               | Some(t) =>
+                 let (stri, sigi) = Util.Unboxed.unboxed_func(name, t);
+
+                 Some((scope, stri, sigi));
+               };
+             | _ => None
+             };
+
+           switch (res) {
+           | None => (scope, arr_stri, arr_sigi)
+           | Some((scope, stri, sigi)) => (
+               scope,
+               CCArray.append(arr_stri, [|stri|]),
+               CCArray.append(arr_sigi, [|sigi|]),
+             )
+           };
+         },
+         (scope, [||], [||]),
+       );
+
+  (
+    scope,
+    Str.module_(
+      Mb.mk(
+        Location.mknoloc(module_name),
+        Mod.constraint_(
+          Mod.mk(Pmod_structure(CCArray.to_list(generated_stri))),
+          Mty.signature(CCArray.to_list(generated_sigi)),
+        ),
+      ),
+    ),
+  );
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
 // --- Type Declarations
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 and generate__Node__TypeDeclaration =
     (~scope, node: Node.node(Node.Constraint.moduleLevel)) => {
   switch (node) {
+  | Module({types, _}) as module_node
+      when
+        switch (CCArray.get_safe(types, 0)) {
+        | Some(Fixture(TUnboxed)) => true
+        | _ => false
+        } =>
+    let (scope, item) = generate__Node__ModuleUnboxed(~scope, module_node);
+    (scope, [item]);
+  | Module(_) as module_node =>
+    let (scope, item) = generate__Node__Module(~scope, module_node);
+    (scope, [item]);
   | Fixture(_) as fixtureNode => generate__Fixture(~scope, fixtureNode)
   | TypeDeclaration(node) =>
     let type_name =
@@ -223,7 +292,6 @@ and generate__Node__Assignable_CoreType =
       CCArray.length(types) > 0 ? Some(Util.make_tuple_of(types)) : None,
     );
   | Function({return_type, parameters}) =>
-    parameters |> CCArray.iter(p => Console.log(Pp.ast_node(p)));
     let (scope, return_type) =
       generate__Node__Assignable_CoreType(~scope, return_type);
     let (scope, parameters) =
@@ -310,5 +378,6 @@ and generate__Fixture =
     (~scope, Fixture(fixture): Node.node(Node.Constraint.exactlyFixture)) => {
   switch (fixture) {
   | AnyUnboxed => (scope, Util.make_any_helper_unboxed())
+  | TUnboxed => (scope, [fst(Util.Unboxed.make_unboxed_helper())])
   };
 };

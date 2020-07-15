@@ -46,8 +46,6 @@ and Project: {type t = array(Node.node(Node.Constraint.exactlyModule));} = Proje
 and TypeDeclaration: {
   type t = {
     path: array(Identifier.t(Identifier.Constraint.any)),
-    extracted_nodes:
-      array(Node.node(Node.Constraint.exactlyExtractedReference)),
     name: Identifier.t(Identifier.Constraint.exactlyTypeName),
     annot: Node.node(Node.Constraint.assignable),
     params: array(Node.node(Node.Constraint.exactlyTypeParameter)),
@@ -77,8 +75,6 @@ and Node: {
     type atLeastNullable('a) = [> | `Nullable] as 'a;
     type exactlyReference = [ | `Reference];
     type atLeastReference('a) = [> | `Reference] as 'a;
-    type exactlyExtractedReference = [ | `ExtractedReference];
-    type atLeastExtractedReference('a) = [> | `ExtractedReference] as 'a;
     type exactlyTypeParameter = [ | `TypeParameter];
     type atLeastTypeParameter('a) = [> | `TypeParameter] as 'a;
     type exactlyVariant = [ | `Variant];
@@ -103,7 +99,6 @@ and Node: {
       | exactlyNullable
       | exactlyModule
       | exactlyReference
-      | exactlyExtractedReference
       | exactlyTypeDeclaration
       | exactlyFixture
       | exactlyTuple
@@ -126,7 +121,11 @@ and Node: {
       | exactlyRecord
     ];
 
-    type moduleLevel = [ exactlyTypeDeclaration | exactlyFixture];
+    type moduleLevel = [
+      exactlyTypeDeclaration
+      | exactlyFixture
+      | exactlyModule
+    ];
 
     module Literal: {
       type exactlyString = [ | `String];
@@ -180,8 +179,10 @@ and Node: {
     module Fixture: {
       type exactlyAnyUnboxed = [ | `AnyUnboxed];
       type atLeastAnyUnboxed('a) = [> | `AnyUnboxed] as 'a;
+      type exactlyTUnboxed = [ | `TUnboxed];
+      type atLeastTUnboxed('a) = [> | `TUnboxed] as 'a;
 
-      type any = [ exactlyAnyUnboxed];
+      type any = [ exactlyAnyUnboxed | exactlyTUnboxed];
     };
   };
 
@@ -216,7 +217,6 @@ and Node: {
     | Nullable(Node.node(Constraint.assignable))
       : node(Constraint.atLeastNullable('poly))
     | Module({
-        // TODO: Replace Module with Module
         name: string,
         path: string,
         types: array(Node.node(Constraint.moduleLevel)),
@@ -227,13 +227,13 @@ and Node: {
         params: array(Node.node(Node.Constraint.exactlyTypeParameter)),
       })
       : node(Constraint.atLeastReference('poly))
-    | ExtractedReference: node(Constraint.atLeastExtractedReference('poly))
     | TypeDeclaration(TypeDeclaration.t)
       : node(Constraint.atLeastTypeDeclaration('poly))
     | Fixture(kind_fixture(Constraint.Fixture.any))
       : node(Constraint.atLeastFixture('poly))
   and kind_fixture('tag) =
     | AnyUnboxed: kind_fixture(Constraint.Fixture.atLeastAnyUnboxed('poly))
+    | TUnboxed: kind_fixture(Constraint.Fixture.atLeastTUnboxed('poly))
   and kind_basic('tag) =
     | RelevantKeyword(string)
       : kind_basic(Constraint.Basic.atLeastRelevantKeyword('poly))

@@ -79,15 +79,8 @@ const recurse = (node: Node, level = 0) => {
     member.getName
     // const x = member.getInitializer()
   }
-  if (Node.isTypeLiteralNode(node)) {
-    const member = node.getMembers()[0];
-    if (Node.isPropertySignature(member)) {
-      member.getName();
-      member.isReadonly();
-      member.getTypeNode();
-      member.getQuestionTokenNode();
-      member.getInitializer();
-    }
+  if (Node.isUnionTypeNode(node)) {
+    node.getTypeNodes
   }
 
   if (node.getKindName() === 'ParenthesizedType') {
