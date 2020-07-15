@@ -55,6 +55,7 @@ module Path = {
       switch (i) {
       | Module(str)
       | TypeName(str)
+      | TypeParameter(str)
       | PropertyName(str)
       | VariantIdentifier(str)
       | SubName(str) => str
@@ -68,6 +69,7 @@ module Path = {
         ? (arr, finished)
         : (
           switch (i) {
+          | TypeParameter(str)
           | PropertyName(str)
           | SubName(str) => (CCArray.append([|str|], arr), false)
           | SubIdent(num) => (

@@ -3,9 +3,7 @@ let test = (
   {|
 
 
-// export function someFunction<A,B,C>(a: A, b: B): C;
-type x<A> = A;
-type y = x<string>;
+export function someFunction(a: number, b: [ number, { field: string } ]): [string, boolean];
 
 
 |},

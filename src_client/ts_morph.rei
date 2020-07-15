@@ -53,23 +53,6 @@ module Type: {
   let t_to_js: t => Ojs.t;
 };
 
-module Symbol: {
-  class t:
-    (Ojs.t) =>
-    {
-      inherit Ojs.obj;
-      // Type Information
-      pub getDeclaredType: unit => option(Type.t);
-      pub getName: unit => string;
-      pub getFullyQualifiedName: unit => string;
-      // Raw
-      pub compilerSymbol: Ts_raw.Symbol.t;
-    };
-
-  let t_of_js: Ojs.t => t;
-  let t_to_js: t => Ojs.t;
-};
-
 module Node: {
   class t:
     (Ojs.t) =>
@@ -92,7 +75,6 @@ module Node: {
       pub getStartLineNumber: unit => int;
       pub getEndLineNumber: unit => int;
       pub getKindName: unit => string;
-      pub getSymbol: unit => option(Symbol.t);
       pub getType: unit => option(Type.t);
       // Raw
       pub compilerNode: Ts_raw.Node.t;
@@ -116,6 +98,24 @@ module SourceFile: {
     };
   [@js.cast]
   let castToNode: t => Node.t;
+
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+
+module Symbol: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ojs.obj;
+      // Type Information
+      pub getDeclaredType: unit => option(Type.t);
+      pub getName: unit => string;
+      pub getFullyQualifiedName: unit => string;
+      pub getDeclarations: unit => array(Node.t);
+      // Raw
+      pub compilerSymbol: Ts_raw.Symbol.t;
+    };
 
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;

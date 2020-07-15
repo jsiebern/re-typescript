@@ -21,6 +21,8 @@ and Identifier: {
     type atLeastSubName('a) = [> | `SubName] as 'a;
     type exactlySubIdent = [ | `SubIdent];
     type atLeastSubIdent('a) = [> | `SubIdent] as 'a;
+    type exactlyTypeParameter = [ | `TypeParameter];
+    type atLeastTypeParameter('a) = [> | `TypeParameter] as 'a;
 
     type any = [
       exactlyModule
@@ -29,11 +31,13 @@ and Identifier: {
       | exactlyVariantIdentifier
       | exactlySubName
       | exactlySubIdent
+      | exactlyTypeParameter
     ];
   };
 
   type path = array(t(Constraint.any))
   and t('kind) =
+    | TypeParameter(string): t(Constraint.atLeastTypeParameter('poly))
     | Module(string): t(Constraint.atLeastModule('poly))
     | TypeName(string): t(Constraint.atLeastTypeName('poly))
     | PropertyName(string): t(Constraint.atLeastPropertyName('poly))
@@ -48,7 +52,7 @@ and TypeDeclaration: {
     path: array(Identifier.t(Identifier.Constraint.any)),
     name: Identifier.t(Identifier.Constraint.exactlyTypeName),
     annot: Node.node(Node.Constraint.assignable),
-    params: array(Node.node(Node.Constraint.exactlyTypeParameter)),
+    params: array(Identifier.t(Identifier.Constraint.exactlyTypeParameter)),
   };
 } = TypeDeclaration
 and VariantConstructor: {
@@ -75,8 +79,6 @@ and Node: {
     type atLeastNullable('a) = [> | `Nullable] as 'a;
     type exactlyReference = [ | `Reference];
     type atLeastReference('a) = [> | `Reference] as 'a;
-    type exactlyTypeParameter = [ | `TypeParameter];
-    type atLeastTypeParameter('a) = [> | `TypeParameter] as 'a;
     type exactlyVariant = [ | `Variant];
     type atLeastVariant('a) = [> | `Variant] as 'a;
     type exactlyFixture = [ | `Fixture];
@@ -89,6 +91,8 @@ and Node: {
     type atLeastParameter('a) = [> | `Paramter] as 'a;
     type exactlyRecord = [ | `Record];
     type atLeastRecord('a) = [> | `Record] as 'a;
+    type exactlyGenericReference = [ | `GenericReference];
+    type atLeastGenericReference('a) = [> | `GenericReference] as 'a;
 
     type any = [
       exactlyLiteral
@@ -104,8 +108,8 @@ and Node: {
       | exactlyTuple
       | exactlyFunction
       | exactlyParameter
-      | exactlyTypeParameter
       | exactlyRecord
+      | exactlyGenericReference
     ];
 
     type assignable = [
@@ -119,6 +123,7 @@ and Node: {
       | exactlyTuple
       | exactlyFunction
       | exactlyRecord
+      | exactlyGenericReference
     ];
 
     type moduleLevel = [
@@ -187,7 +192,6 @@ and Node: {
   };
 
   type node('tag) =
-    | TypeParameter: node(Constraint.atLeastTypeParameter('poly))
     | Parameter({
         name: Identifier.t(Identifier.Constraint.exactlyPropertyName),
         is_optional: bool,
@@ -224,9 +228,13 @@ and Node: {
       : node(Constraint.atLeastModule('poly))
     | Reference({
         target: Identifier.path,
-        params: array(Node.node(Node.Constraint.exactlyTypeParameter)),
+        params: array(node(Constraint.assignable)),
       })
       : node(Constraint.atLeastReference('poly))
+    | GenericReference(
+        Identifier.t(Identifier.Constraint.exactlyTypeParameter),
+      )
+      : node(Constraint.atLeastGenericReference('poly))
     | TypeDeclaration(TypeDeclaration.t)
       : node(Constraint.atLeastTypeDeclaration('poly))
     | Fixture(kind_fixture(Constraint.Fixture.any))

@@ -72,6 +72,7 @@ const recurse = (node: Node, level = 0) => {
   if (Node.isTypeAliasDeclaration(node)) {
     node.getName();
     node.getTypeNode();
+    node.getTypeParameters
   }
   if (Node.isEnumDeclaration(node)) {
     const member = node.getMembers()[0];
@@ -84,20 +85,15 @@ const recurse = (node: Node, level = 0) => {
   if (Node.isTypeReferenceNode(node)) {
     node.getTypeArguments;
     const name = node.getTypeName();
+    const symbol = name.getSymbol();
+    if (symbol) {
+      symbol.getDeclarations()
+    }
+
+
     const typ = node.getType();
-  }
 
-  if (node.getKindName() === 'ParenthesizedType') {
-    // @ts-ignore^
-    // console.log(node.compilerNode.type);
   }
-
-  //  if (Node.isIndexedAccessTypeNode(node)) {
-  // console.log(node.getKindName())
-  // node.getType().getCallSignatures().forEach(cs => {
-  //   console.log("Y")
-  //   console.log(cs.getDeclaration().getKindName())
-  // })
 
   // console.log(tc.compilerObject.typeToTypeNode(node.getType().compilerType));
   // @ts-ignore

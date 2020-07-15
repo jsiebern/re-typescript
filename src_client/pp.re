@@ -3,6 +3,7 @@ open Ast;
 let identifier: type t. Identifier.t(t) => string =
   i =>
     switch (i) {
+    | TypeParameter(str) => Printf.sprintf("TypeParameter(%s)", str)
     | Module(str) => Printf.sprintf("Module(%s)", str)
     | TypeName(str) => Printf.sprintf("TypeName(%s)", str)
     | PropertyName(str) => Printf.sprintf("PropertyName(%s)", str)
@@ -18,6 +19,11 @@ let ast_node: type t. Node.node(t) => string =
     switch (n) {
     | Module(_) => "Module"
     | Literal(_) => "Literal"
+    | GenericReference(i) =>
+      Printf.sprintf(
+        "GenericReference(%s)",
+        Ast_generator_utils.Naming.fromIdentifier(i),
+      )
     | Basic(_) => "Basic"
     | TypeDeclaration({name, _}) =>
       Printf.sprintf("TypeDeclaration(%s)", identifier(name))
@@ -29,7 +35,6 @@ let ast_node: type t. Node.node(t) => string =
         "Reference(%s)",
         Ast_generator_utils.Naming.full_identifier_of_path(target),
       )
-    | TypeParameter => "TypeParameter"
     | Variant(_) => "Variant"
     | Fixture(_) => "Fixture"
     | Tuple(_) => "Tuple"

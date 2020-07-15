@@ -172,6 +172,10 @@ and generate__Node__TypeDeclaration =
         scope,
         [
           Util.make_type_declaration_of_kind(
+            ~params=
+              node.params
+              |> CCArray.map(Util.Naming.fromIdentifier)
+              |> CCArray.to_list,
             ~aliasName=Util.Naming.fromIdentifier(type_name),
             ~kind=type_kind,
           ),
@@ -205,6 +209,10 @@ and generate__Node__TypeDeclaration =
         scope,
         [
           Util.make_type_declaration_of_kind(
+            ~params=
+              node.params
+              |> CCArray.map(Util.Naming.fromIdentifier)
+              |> CCArray.to_list,
             ~aliasName=Util.Naming.fromIdentifier(type_name),
             ~kind=record_kind,
           ),
@@ -221,6 +229,10 @@ and generate__Node__TypeDeclaration =
         | None => []
         | Some(annotated_type) => [
             Util.make_type_declaration(
+              ~params=
+                node.params
+                |> CCArray.map(Util.Naming.fromIdentifier)
+                |> CCArray.to_list,
               ~aliasName=Util.Naming.fromIdentifier(type_name),
               ~aliasType=annotated_type,
             ),
@@ -286,7 +298,7 @@ and generate__Node__Assignable_CoreType =
              (
                scope,
                switch (t) {
-               | Some(t) => CCArray.append([|t|], types)
+               | Some(t) => CCArray.append(types, [|t|])
                | None => types
                },
              );
@@ -356,13 +368,28 @@ and generate__Node__Assignable_CoreType =
         "Error: Records can not be defined inline, they have to be extracted into their own TypeDeclaration",
       ),
     )
-  | Reference({target, _}) => (
+  | Reference({target, params}) =>
+    let generated_params =
+      params
+      |> CCArray.map(param =>
+           generate__Node__Assignable_CoreType(~scope, param)
+         )
+      |> CCArray.to_list
+      |> CCList.map(snd)
+      |> CCList.keep_some;
+
+    (
       scope,
       Some(
         Util.make_type_constraint(
+          ~inner=generated_params,
           Util.Naming.full_identifier_of_path(target),
         ),
       ),
+    );
+  | GenericReference(Identifier.TypeParameter(param)) => (
+      scope,
+      Some(Typ.var(param)),
     )
   | other =>
     raise(

@@ -18,6 +18,7 @@ module Naming = {
       | TypeName(str) => str
       | PropertyName(str) => str
       | SubName(str) => str
+      | TypeParameter(str) => str
       | SubIdent(num) => string_of_int(num)
       };
 
@@ -29,6 +30,7 @@ module Naming = {
       | TypeName(str) => typeName(str)
       | PropertyName(str) => typeName(str)
       | SubName(str) => typeName(str)
+      | TypeParameter(str) => str
       | SubIdent(num) => Printf.sprintf("_%i", num)
       };
 
@@ -70,7 +72,8 @@ let make_module = (moduleName, moduleItems): Parsetree.structure_item => {
 };
 
 let make_type_declaration =
-    (~aliasName: string, ~aliasType: core_type): Parsetree.structure_item => {
+    (~params=[], ~aliasName: string, ~aliasType: core_type)
+    : Parsetree.structure_item => {
   pstr_desc:
     Parsetree.Pstr_type(
       Asttypes.Recursive,
@@ -80,7 +83,9 @@ let make_type_declaration =
             txt: aliasName,
             loc,
           },
-          ptype_params: [],
+          ptype_params:
+            params
+            |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
           ptype_cstrs: [],
           ptype_kind: Parsetree.Ptype_abstract,
           ptype_private: Asttypes.Public,
@@ -93,7 +98,8 @@ let make_type_declaration =
   pstr_loc: loc,
 };
 let make_type_declaration_of_kind =
-    (~aliasName: string, ~kind: type_kind): Parsetree.structure_item => {
+    (~params=[], ~aliasName: string, ~kind: type_kind)
+    : Parsetree.structure_item => {
   pstr_desc:
     Parsetree.Pstr_type(
       Asttypes.Recursive,
@@ -103,7 +109,9 @@ let make_type_declaration_of_kind =
             txt: aliasName,
             loc,
           },
-          ptype_params: [],
+          ptype_params:
+            params
+            |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
           ptype_cstrs: [],
           ptype_kind: kind,
           ptype_private: Asttypes.Public,

@@ -12,7 +12,6 @@ module Generic: {
       pub getDescendants: unit => array(t);
       pub getExportedDeclarations: unit => array(t);
       // Type Information
-      pub getTypeParameters: unit => array(t);
       pub getText: unit => string;
       pub getKind: unit => int;
       pub getPos: unit => int;
@@ -31,11 +30,41 @@ module Generic: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
-module TypeAliasDeclaration: {
+module TypeParameter: {
   class t:
     (Ojs.t) =>
     {
       inherit Generic.t;
+      pub getConstraint: unit => option(Generic.t);
+      pub getDefault: unit => option(Generic.t);
+      pub getName: unit => string;
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  [@js.cast]
+  let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module TypeParametered: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getTypeParameters: unit => array(TypeParameter.t);
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  [@js.cast]
+  let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module TypeAliasDeclaration: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit TypeParametered.t;
       pub getName: unit => string;
       pub getTypeNode: unit => Generic.t;
     };
@@ -68,7 +97,7 @@ module FunctionDeclaration: {
   class t:
     (Ojs.t) =>
     {
-      inherit Generic.t;
+      inherit TypeParametered.t;
       pub getName: unit => option(string);
       pub isDefaultExport: unit => bool;
       pub getReturnTypeNode: unit => option(Generic.t);
@@ -227,7 +256,7 @@ module Identify: {
       )
     | [@js.arg "node"] [@js "Identifier"] Identifier(Identifier.t)
     | [@js.arg "node"] [@js "SourceFile"] SourceFile(SourceFile.t)
-    | [@js.arg "node"] [@js "TypeParameter"] TypeParameter(Generic.t)
+    | [@js.arg "node"] [@js "TypeParameter"] TypeParameter(TypeParameter.t)
     | [@js.arg "node"] [@js "NamedDeclaration"] NamedDeclaration(Generic.t)
     | [@js.arg "node"] [@js "HeritageClause"] HeritageClause(Generic.t)
     | [@js.arg "node"] [@js "TypeElement"] TypeElement(Generic.t)

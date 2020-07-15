@@ -303,6 +303,9 @@ and parse__Node__FunctionDeclaration =
          },
          (runtime, scope, [||]),
        );
+  let params =
+    node#getTypeParameters()
+    |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
 
   (
     runtime,
@@ -311,7 +314,7 @@ and parse__Node__FunctionDeclaration =
       path: scope.path,
       name: type_name,
       annot: Function({return_type, parameters}),
-      params: [||],
+      params,
     }),
   );
 }
@@ -450,6 +453,9 @@ and parse__Node__TypeAliasDeclaration:
       path:
         CCArray.append(scope.path, [|Identifier.TypeName(node#getName())|]),
     };
+    let params =
+      node#getTypeParameters()
+      |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
 
     let (runtime, scope, annotation) =
       parse__Node__Generic_assignable(~runtime, ~scope, node#getTypeNode());
@@ -461,7 +467,7 @@ and parse__Node__TypeAliasDeclaration:
         path: scope.path,
         name: type_name,
         annot: annotation,
-        params: [||],
+        params,
       }),
     );
   }
@@ -492,18 +498,17 @@ and parse__Node__Basic = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
 and parse__Node__Tuple = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   switch (node) {
   | TupleType(node) =>
-    // TODO: Handle potentially extracted type here
-    // Whenever "inner" types are parsed, we should use a separate "parse__Node" function
-    // Maybe
-
     let children_to_traverse = node#getElementTypeNodes();
+    let base_path = scope.path;
     let (
       runtime: runtime,
       scope: scope,
       inner: array(Node.node(Node.Constraint.assignable)),
     ) =
-      CCArray.fold_left(
-        ((runtime, scope, nodes), node) => {
+      CCArray.foldi(
+        ((runtime, scope, nodes), i, node) => {
+          let current_path = base_path |> Path.add(Identifier.SubIdent(i));
+          let scope = scope |> Scope.replace_path_arr(current_path);
           let (runtime, scope, res) =
             parse__Node__Generic_assignable(~runtime, ~scope, node);
           (runtime, scope, CCArray.append(nodes, [|res|]));
@@ -511,6 +516,7 @@ and parse__Node__Tuple = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
         (runtime, scope, [||]),
         children_to_traverse,
       );
+    let scope = scope |> Scope.replace_path_arr(base_path);
 
     (runtime, scope, Tuple(inner));
   | _ => raise(Exceptions.UnexpectedAtThisPoint("Not a tuple"))
@@ -523,19 +529,111 @@ and parse__Node__Tuple = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
 // ------------------------------------------------------------------------------------------
 and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   switch (node) {
+  // Is a reference to a generic type
+  | TypeReference(node)
+      when
+        node#getType()
+        |> CCOpt.map_or(~default=false, t => t#isTypeParameter()) => (
+      runtime,
+      scope,
+      GenericReference(
+        Identifier.TypeParameter(node#getTypeName()#getText()),
+      ),
+    )
+  // "Normal" reference
   | TypeReference(node) =>
-    node#getTypeArguments() |> CCArray.iter(n => Console.log(n#getKindName()));
+    let type_name = node#getTypeName();
 
+    // We can get the referenced type naively by symbol.declaration for now
+    // This might need to change in a more complex setting later
+    let type_arguments = node#getTypeArguments();
+    let declaration =
+      type_name#getSymbol()
+      |> CCOpt.map(symbol => symbol#getDeclarations())
+      |> CCOpt.flat_map(CCArray.get_safe(_, 0))
+      |> CCOpt.map(Ts_nodes.Generic.fromMorphNode);
+    let (runtime, scope, arguments) =
+      switch (declaration) {
+      | None =>
+        // If a declaration cannot be resolved, we'll just use the applied arguments and hope for the best
+        parse__ArrayOfGenerics(~runtime, ~scope, type_arguments)
+      | Some(declaration_node) =>
+        // Force cast this into a TypeParametered - this should be fine as we only need the `getTypeParameters` method, which should be present on any declaration type
+        let parameters =
+          Ts_nodes.TypeParametered.fromGeneric(declaration_node)#
+            getTypeParameters();
+        let (names, nodes) =
+          parameters
+          |> CCArray.foldi(
+               ((names, args), i, param) => {
+                 let name = param#getName();
+                 let arg_type =
+                   switch (CCArray.get_safe(type_arguments, i)) {
+                   | Some(arg) => arg
+                   | None =>
+                     switch (param#getDefault()) {
+                     | Some(arg) => arg
+                     | None =>
+                       raise(
+                         Exceptions.UnexpectedAtThisPoint(
+                           "Expects this type arg to at least have a default value",
+                         ),
+                       )
+                     }
+                   };
+                 (
+                   CCArray.append(names, [|name|]),
+                   CCArray.append(args, [|arg_type|]),
+                 );
+               },
+               ([||], [||]),
+             );
+        parse__ArrayOfGenerics(
+          ~scope_additions=names,
+          ~runtime,
+          ~scope,
+          nodes,
+        );
+      };
     (
       runtime,
       scope,
       Reference({
-        target: [|Identifier.TypeName(node#getTypeName()#getText())|],
-        params: [||],
+        target: [|Identifier.TypeName(type_name#getText())|],
+        params: arguments,
       }),
     );
   | _ => raise(Exceptions.UnexpectedAtThisPoint("Not a type reference"))
   };
+}
+and parse__ArrayOfGenerics =
+    (
+      ~scope_additions=[||],
+      ~runtime,
+      ~scope,
+      nodes: array(Ts_nodes.Generic.t),
+    ) => {
+  let base_path = scope.path;
+  let (runtime, scope, resolved) =
+    nodes
+    |> CCArray.foldi(
+         ((runtime, scope, resolved), i, node) => {
+           let append_to_path =
+             CCArray.get_safe(scope_additions, i)
+             |> CCOpt.map_or(~default=Identifier.SubIdent(i), v =>
+                  Identifier.SubName(v)
+                );
+           let current_path = base_path |> Path.add(append_to_path);
+           let scope = scope |> Scope.replace_path_arr(current_path);
+
+           let (runtime, scope, t) =
+             parse__Node__Generic_assignable(~runtime, ~scope, node);
+           (runtime, scope, CCArray.append(resolved, [|t|]));
+         },
+         (runtime, scope, [||]),
+       );
+  let scope = scope |> Scope.replace_path_arr(base_path);
+  (runtime, scope, resolved);
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
