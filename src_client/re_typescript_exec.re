@@ -3,8 +3,7 @@ let test = (
   {|
 
 
-declare function someFunction(): string;
-declare function someOtherFunction(): { inline: string };
+declare function someFunction(a: string | number, b?: { inline: number }): string;
 
 
 |},

@@ -38,6 +38,8 @@ module Scope = {
     (i, scope) => {...scope, path: CCArray.append(scope.path, [|i|])};
   let replace_path: (Identifier.t(_), scope) => scope =
     (i, scope) => {...scope, path: [|i|]};
+  let replace_path_arr: (array(Identifier.t(_)), scope) => scope =
+    (path, scope) => {...scope, path};
   let add_root_declaration =
       (root_declaration: Node.node(Node.Constraint.moduleLevel), scope) => {
     {
@@ -52,6 +54,7 @@ module Path = {
   let hd = (p: t) => {
     CCArray.get_safe(p, CCArray.length(p) - 1);
   };
+  let add = (i, p: t) => CCArray.append(p, [|i|]);
   let hd_unsafe = (p: t) => CCArray.get(p, CCArray.length(p) - 1);
   let is_sub = i =>
     switch (i) {
@@ -276,11 +279,8 @@ and parse__Node__FunctionDeclaration =
     };
   let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
     Identifier.TypeName(name);
-  let scope = {
-    ...scope,
-    parent: Some(FunctionDeclaration(node)),
-    path: CCArray.append(scope.path, [|Identifier.TypeName(name)|]),
-  };
+  let type_path = CCArray.append(scope.path, [|Identifier.TypeName(name)|]);
+  let scope = {...scope, parent: Some(FunctionDeclaration(node))};
 
   let (runtime, scope, return_type) =
     switch (node#getReturnTypeNode()) {
@@ -290,30 +290,31 @@ and parse__Node__FunctionDeclaration =
     | None => (runtime, scope, Basic(Any))
     };
 
-  let (runtime, parameters) =
+  let (runtime, scope, parameters) =
     node#getParameters()
     |> CCArray.foldi(
-         ((runtime, params), i, param) => {
+         ((runtime, scope, params), i, param) => {
            let name = Identifier.PropertyName(param#getName());
            let is_optional = param#isOptional();
-           let scope =
-             scope
-             |> Scope.add_to_path(Identifier.SubName(Path.unwrap(name)));
+           let current_path =
+             type_path |> Path.add(Identifier.SubName(Path.unwrap(name)));
+           let scope = scope |> Scope.replace_path_arr(current_path);
            // TODO: isRestParameter
-           let (runtime, _, type_) =
+           let (runtime, scope, type_) =
              switch (param#getTypeNode()) {
              | None => (runtime, scope, Basic(Any))
              | Some(t) => parse__Node__Generic_assignable(~runtime, ~scope, t)
              };
            (
              runtime,
+             scope,
              CCArray.append(
                params,
                [|Parameter({name, is_optional, type_, named: is_optional})|],
              ),
            );
          },
-         (runtime, [||]),
+         (runtime, scope, [||]),
        );
 
   (

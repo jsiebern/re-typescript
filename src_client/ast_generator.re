@@ -223,6 +223,7 @@ and generate__Node__Assignable_CoreType =
       CCArray.length(types) > 0 ? Some(Util.make_tuple_of(types)) : None,
     );
   | Function({return_type, parameters}) =>
+    parameters |> CCArray.iter(p => Console.log(Pp.ast_node(p)));
     let (scope, return_type) =
       generate__Node__Assignable_CoreType(~scope, return_type);
     let (scope, parameters) =
@@ -248,6 +249,7 @@ and generate__Node__Assignable_CoreType =
         (scope, [||]),
         parameters,
       );
+    let parameters = parameters |> CCArray.rev;
 
     let parameter_count = CCArray.length(parameters);
     let parameters =

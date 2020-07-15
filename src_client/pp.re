@@ -35,6 +35,7 @@ let ast_node: type t. Node.node(t) => string =
     | Fixture(_) => "Fixture"
     | Tuple(_) => "Tuple"
     | Function(_) => "Function"
-    | Parameter(_) => "Parameter"
+    | Parameter({name, _}) =>
+      Printf.sprintf("Parameter(%s)", identifier(name))
     | Record(_) => "Record"
     };
