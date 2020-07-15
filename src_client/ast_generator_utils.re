@@ -9,16 +9,46 @@ module Naming = {
   let moduleName = str => CCString.capitalize_ascii(str);
   let typeName = str => CCString.uncapitalize_ascii(str);
 
-  let fromIdentifier = (i: Ast.Identifier.t(Ast.Identifier.Constraint.any)) =>
-    switch (i) {
-    | Module(str) => moduleName(str)
-    | VariantIdentifier(str) => moduleName(str)
-    | TypeName(str) => typeName(str)
-    | PropertyName(str) => typeName(str)
-    | SubName(str) => typeName(str)
-    | SubIdent(num) => Printf.sprintf("_%i", num)
-    };
+  let unwrap: type t. Ast.Identifier.t(t) => string =
+    i =>
+      switch (i) {
+      | Module(str) => str
+      | VariantIdentifier(str) => str
+      | TypeName(str) => str
+      | PropertyName(str) => str
+      | SubName(str) => str
+      | SubIdent(num) => string_of_int(num)
+      };
+
+  let fromIdentifier: type t. Ast.Identifier.t(t) => string =
+    i =>
+      switch (i) {
+      | Module(str) => moduleName(str)
+      | VariantIdentifier(str) => moduleName(str)
+      | TypeName(str) => typeName(str)
+      | PropertyName(str) => typeName(str)
+      | SubName(str) => typeName(str)
+      | SubIdent(num) => Printf.sprintf("_%i", num)
+      };
+
+  let full_identifier_of_path = (p: Ast.Identifier.path) =>
+    p
+    |> CCArray.mapi((i, ident) =>
+         switch (ident, CCArray.get_safe(p, i + 1)) {
+         | (_, None) => unwrap(ident)
+         | (Ast.Identifier.Module(str), Some(_)) =>
+           Printf.sprintf("%s.", str)
+         | (_, Some(_)) => Printf.sprintf("%s_", unwrap(ident))
+         }
+       )
+    |> CCArray.to_string(~sep="", a => a);
 };
+
+let make_bs_as_attribute: string => attribute =
+  name => (
+    Location.mknoloc("bs.as"),
+    PStr([Str.eval(Ast_convenience_406.str(name))]),
+  );
 
 let make_module = (moduleName, moduleItems): Parsetree.structure_item => {
   pstr_desc:
@@ -121,45 +151,6 @@ let make_variant_kind = (names: list(string)) => {
 let make_tuple_of = (types: array(core_type)) =>
   Typ.tuple(types |> CCArray.to_list);
 
-// let rec make_arrow_for_params =
-//         (
-//           ~has_opt=false,
-//           types: list((option(string), bool, core_type)),
-//           final: core_type,
-//         ) => {
-//   switch (types) {
-//   | [] =>
-//     has_opt
-//       ? generate_arrow_for_params(
-//           ~has_opt=false,
-//           [(None, false, generate_base_type("unit"))],
-//           final,
-//         )
-//       : final
-//   | [(label, optional, type_), ...rest] =>
-//     Typ.arrow(
-//       switch (label, optional) {
-//       | (None, _) => Nolabel
-//       | (Some(l), false) => Labelled(l)
-//       | (Some(l), true) => Optional(l)
-//       },
-//       optional ? generate_base_type(~inner=[type_], "option") : type_,
-//       generate_arrow_for_params(
-//         ~has_opt=has_opt ? has_opt : optional,
-//         rest,
-//         final,
-//       ),
-//     )
-//   };
-// };
-// let make_arrow =
-//     (~params: list((option(string), bool, core_type)), ~return: core_type) => {
-//   switch (params) {
-//   | [] => make_arrow_for_params(~has_opt=true, [], return)
-//   | lst => make_arrow_for_params(lst, return)
-//   };
-// };
-
 let make_function_type = (params, returnType) =>
   CCArray.fold_right(
     ((name, is_optional, paramType), t) =>
@@ -183,4 +174,14 @@ let make_function_type = (params, returnType) =>
       },
     params,
     returnType,
+  );
+
+let make_record_kind =
+    (fields: array((string, core_type, list(attribute)))) =>
+  Ptype_record(
+    fields
+    |> CCArray.map(((name, type_, attrs)) =>
+         Type.field(~attrs, Location.mknoloc(name), type_)
+       )
+    |> CCArray.to_list,
   );

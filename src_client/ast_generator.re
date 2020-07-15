@@ -8,6 +8,8 @@ module Util = Ast_generator_utils;
 
 open Ast;
 
+exception AstGeneratorException(string);
+
 type scope = {
   path: Identifier.path,
   parent: option(Node.node(Node.Constraint.any)),
@@ -20,12 +22,15 @@ let defaultScope = {path: [||], parent: None};
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 let rec generate =
-        (~scope=defaultScope, nodes: array(Node.node(Node.Constraint.any))) => {
+        (
+          ~scope=defaultScope,
+          nodes: array(Node.node(Node.Constraint.exactlyModule)),
+        ) => {
   nodes
   |> CCArray.to_list
   |> CCList.fold_left(
        ((scope, struct_carry), node) => {
-         let (scope, generated_struct) = generate__Node(~scope, node);
+         let (scope, generated_struct) = print__Node__Module(~scope, node);
          (scope, struct_carry @ [generated_struct]);
        },
        (scope, []),
@@ -33,28 +38,13 @@ let rec generate =
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
-// --- Generate Node
+// --- Module
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
-and generate__Node = (~scope, node: Node.node(Node.Constraint.any)) => {
-  switch (node) {
-  | SourceFile(_) as source_file =>
-    print__Node__SourceFile(~scope, source_file)
-  | _ => raise(Failure("Not implemented"))
-  };
-}
-// ------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------
-// --- SourceFile
-// ------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------
-and print__Node__SourceFile =
-    (~scope, SourceFile(node): Node.node(Node.Constraint.exactlySourceFile)) => {
+and print__Node__Module =
+    (~scope, Module(node): Node.node(Node.Constraint.exactlyModule)) => {
   let module_name = Util.Naming.moduleName(node.name);
-  let scope = {
-    parent: Some(SourceFile(node)),
-    path: [|Module(module_name)|],
-  };
+  let scope = {parent: Some(Module(node)), path: [|Module(module_name)|]};
 
   let (scope, generated_structure) =
     node.types
@@ -62,7 +52,7 @@ and print__Node__SourceFile =
          ((scope, struct_carry), node) => {
            let (scope, generated_struct) =
              generate__Node__TypeDeclaration(~scope, node);
-           (scope, generated_struct @ struct_carry);
+           (scope, struct_carry @ generated_struct);
          },
          (scope, []),
        );
@@ -115,6 +105,39 @@ and generate__Node__TypeDeclaration =
           Util.make_type_declaration_of_kind(
             ~aliasName=Util.Naming.fromIdentifier(type_name),
             ~kind=type_kind,
+          ),
+        ],
+      );
+    | Record(parameters) =>
+      let (scope, fields) =
+        CCArray.fold_left(
+          (
+            (scope, params),
+            Node.Parameter({name, is_optional, type_, named}):
+              Node.node(Node.Constraint.exactlyParameter),
+          ) => {
+            let (scope, t) =
+              generate__Node__Assignable_CoreType(~scope, type_);
+            let name_original = Util.Naming.unwrap(name);
+            let name_reason = Util.Naming.fromIdentifier(name);
+            let param = (
+              name_reason,
+              t |> CCOpt.value(~default=Util.make_type_constraint("any")),
+              name_reason != name_original
+                ? [Util.make_bs_as_attribute(name_original)] : [],
+            );
+            (scope, CCArray.append(params, [|param|]));
+          },
+          (scope, [||]),
+          parameters,
+        );
+      let record_kind = Util.make_record_kind(fields);
+      (
+        scope,
+        [
+          Util.make_type_declaration_of_kind(
+            ~aliasName=Util.Naming.fromIdentifier(type_name),
+            ~kind=record_kind,
           ),
         ],
       );
@@ -206,12 +229,7 @@ and generate__Node__Assignable_CoreType =
       CCArray.fold_left(
         (
           (scope, params),
-          Node.Parameter({
-            name: Identifier.PropertyName(name),
-            is_optional,
-            type_,
-            named,
-          }):
+          Node.Parameter({name, is_optional, type_, named}):
             Node.node(Node.Constraint.exactlyParameter),
         ) => {
           let (scope, t) =
@@ -219,7 +237,7 @@ and generate__Node__Assignable_CoreType =
           let param = (
             switch (is_optional, named) {
             | (false, true)
-            | (true, _) => Some(name)
+            | (true, _) => Some(Util.Naming.fromIdentifier(name))
             | (false, false) => None
             },
             is_optional,
@@ -256,7 +274,29 @@ and generate__Node__Assignable_CoreType =
         ),
       ),
     );
-  | _ => raise(Failure("Should this be handled here?"))
+  | Record(_) =>
+    raise(
+      Failure(
+        "Error: Records can not be defined inline, they have to be extracted into their own TypeDeclaration",
+      ),
+    )
+  | Reference({target, _}) => (
+      scope,
+      Some(
+        Util.make_type_constraint(
+          Util.Naming.full_identifier_of_path(target),
+        ),
+      ),
+    )
+  | other =>
+    raise(
+      AstGeneratorException(
+        Printf.sprintf(
+          "> Error: Type '%s' should not be handled as an Assignable_CoreType",
+          Pp.ast_node(other),
+        ),
+      ),
+    )
   };
 }
 // ------------------------------------------------------------------------------------------

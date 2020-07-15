@@ -6,6 +6,7 @@ import {
   ts,
   createWrappedNode,
   SourceFile,
+  MemberExpression,
 } from 'ts-morph';
 import * as common from '@ts-morph/common';
 import { walkNodes } from './ast';
@@ -78,13 +79,15 @@ const recurse = (node: Node, level = 0) => {
     member.getName
     // const x = member.getInitializer()
   }
-  if (Node.isFunctionDeclaration(node)) {
-    node.getOverloads()
-    const param = node.getParameters()[0];
-    param.getName()
-    param.getTypeNode()
-    param.getQuestionTokenNode()
-    param.getDotDotDotToken()
+  if (Node.isTypeLiteralNode(node)) {
+    const member = node.getMembers()[0];
+    if (Node.isPropertySignature(member)) {
+      member.getName();
+      member.isReadonly();
+      member.getTypeNode();
+      member.getQuestionTokenNode();
+      member.getInitializer();
+    }
   }
 
   if (node.getKindName() === 'ParenthesizedType') {

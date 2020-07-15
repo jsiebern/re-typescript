@@ -3,9 +3,8 @@ let test = (
   {|
 
 
-   export default function(a: string, b?: number): void;
-
-   export function motha(one: string, two: boolean, three: [string, number]): string[];
+declare function someFunction(): string;
+declare function someOtherFunction(): { inline: string };
 
 
 |},

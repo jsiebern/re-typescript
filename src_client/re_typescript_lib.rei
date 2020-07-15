@@ -6,7 +6,7 @@ type config = Ts_morph.Project.Config.t;
 type project = Ts_morph.Project.t;
 type source_file = Ts_morph.SourceFile.t;
 type file = (string, string);
-type node = Ast.Node.node(Ast.Node.Constraint.any);
+type node = Ast.Node.node(Ast.Node.Constraint.exactlyModule);
 type ast_representation;
 
 let default_project_config: config;

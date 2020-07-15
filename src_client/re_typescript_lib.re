@@ -9,7 +9,7 @@ type config = Ts_morph.Project.Config.t;
 type project = Ts_morph.Project.t;
 type source_file = Ts_morph.SourceFile.t;
 type file = (string, string);
-type node = Ast.Node.node(Ast.Node.Constraint.any);
+type node = Ast.Node.node(Ast.Node.Constraint.exactlyModule);
 type ast_representation = Migrate_parsetree.Ast_406.Parsetree.structure_item;
 
 // Load Project into global namespace
@@ -77,10 +77,7 @@ let print_code = (~print_language=Reason, ast) => {
   Format.flush_str_formatter();
 };
 
-let parse_files = files => {
-  let files_parsed = Parser.parse__Entry(~source_files=files);
-  files_parsed |> CCArray.map(((_, _, parsed)) => parsed);
-};
+let parse_files = files => Parser.parse__Entry(~source_files=files);
 
 let quick_parse =
     (~config=default_project_config, files: array((string, string))) => {

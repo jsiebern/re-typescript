@@ -42,7 +42,7 @@ and Identifier: {
     | SubName(string): t(Constraint.atLeastSubName('poly))
     | SubIdent(int): t(Constraint.atLeastSubIdent('poly));
 } = Identifier
-and Project: {type t = array(Node.node(Node.Constraint.exactlySourceFile));} = Project
+and Project: {type t = array(Node.node(Node.Constraint.exactlyModule));} = Project
 and TypeDeclaration: {
   type t = {
     path: array(Identifier.t(Identifier.Constraint.any)),
@@ -61,50 +61,38 @@ and VariantConstructor: {
 } = VariantConstructor
 and Node: {
   module Constraint: {
-    type exactlySourceFile = [ | `SourceFile];
-    type atLeastSourceFile('a) = [> | `SourceFile] as 'a;
-
+    type exactlyModule = [ | `Module];
+    type atLeastModule('a) = [> | `Module] as 'a;
     type exactlyLiteral = [ | `Literal];
     type atLeastLiteral('a) = [> | `Literal] as 'a;
-
     type exactlyBasic = [ | `Basic];
     type atLeastBasic('a) = [> | `Basic] as 'a;
-
     type exactlyTypeDeclaration = [ | `TypeDeclaration];
     type atLeastTypeDeclaration('a) = [> | `TypeDeclaration] as 'a;
-
     type exactlyArray = [ | `Array];
     type atLeastArray('a) = [> | `Array] as 'a;
-
     type exactlyOptional = [ | `Optional];
     type atLeastOptional('a) = [> | `Optional] as 'a;
-
     type exactlyNullable = [ | `Nullable];
     type atLeastNullable('a) = [> | `Nullable] as 'a;
-
     type exactlyReference = [ | `Reference];
     type atLeastReference('a) = [> | `Reference] as 'a;
-
     type exactlyExtractedReference = [ | `ExtractedReference];
     type atLeastExtractedReference('a) = [> | `ExtractedReference] as 'a;
-
     type exactlyTypeParameter = [ | `TypeParameter];
     type atLeastTypeParameter('a) = [> | `TypeParameter] as 'a;
-
     type exactlyVariant = [ | `Variant];
     type atLeastVariant('a) = [> | `Variant] as 'a;
-
     type exactlyFixture = [ | `Fixture];
     type atLeastFixture('a) = [> | `Fixture] as 'a;
-
     type exactlyTuple = [ | `Tuple];
     type atLeastTuple('a) = [> | `Tuple] as 'a;
-
     type exactlyFunction = [ | `Function];
     type atLeastFunction('a) = [> | `Function] as 'a;
-
     type exactlyParameter = [ | `Paramter];
     type atLeastParameter('a) = [> | `Paramter] as 'a;
+    type exactlyRecord = [ | `Record];
+    type atLeastRecord('a) = [> | `Record] as 'a;
 
     type any = [
       exactlyLiteral
@@ -113,7 +101,7 @@ and Node: {
       | exactlyArray
       | exactlyOptional
       | exactlyNullable
-      | exactlySourceFile
+      | exactlyModule
       | exactlyReference
       | exactlyExtractedReference
       | exactlyTypeDeclaration
@@ -121,6 +109,8 @@ and Node: {
       | exactlyTuple
       | exactlyFunction
       | exactlyParameter
+      | exactlyTypeParameter
+      | exactlyRecord
     ];
 
     type assignable = [
@@ -133,6 +123,7 @@ and Node: {
       | exactlyVariant
       | exactlyTuple
       | exactlyFunction
+      | exactlyRecord
     ];
 
     type moduleLevel = [ exactlyTypeDeclaration | exactlyFixture];
@@ -195,6 +186,7 @@ and Node: {
   };
 
   type node('tag) =
+    | TypeParameter: node(Constraint.atLeastTypeParameter('poly))
     | Parameter({
         name: Identifier.t(Identifier.Constraint.exactlyPropertyName),
         is_optional: bool,
@@ -207,6 +199,8 @@ and Node: {
         return_type: node(Constraint.assignable),
       })
       : node(Constraint.atLeastFunction('poly))
+    | Record(array(node(Constraint.exactlyParameter)))
+      : node(Constraint.atLeastRecord('poly))
     | Variant(array(VariantConstructor.t))
       : node(Constraint.atLeastVariant('poly))
     | Tuple(array(node(Constraint.assignable)))
@@ -221,14 +215,18 @@ and Node: {
       : node(Constraint.atLeastOptional('poly))
     | Nullable(Node.node(Constraint.assignable))
       : node(Constraint.atLeastNullable('poly))
-    | SourceFile({
-        // TODO: Replace SourceFile with Module
+    | Module({
+        // TODO: Replace Module with Module
         name: string,
         path: string,
         types: array(Node.node(Constraint.moduleLevel)),
       })
-      : node(Constraint.atLeastSourceFile('poly))
-    | Reference: node(Constraint.atLeastReference('poly))
+      : node(Constraint.atLeastModule('poly))
+    | Reference({
+        target: Identifier.path,
+        params: array(Node.node(Node.Constraint.exactlyTypeParameter)),
+      })
+      : node(Constraint.atLeastReference('poly))
     | ExtractedReference: node(Constraint.atLeastExtractedReference('poly))
     | TypeDeclaration(TypeDeclaration.t)
       : node(Constraint.atLeastTypeDeclaration('poly))
@@ -259,6 +257,3 @@ and Node: {
     external toAny: node('a) => node(Constraint.any) = "%identity";
   };
 } = Node;
-
-type node_order = array(Identifier.path);
-type node_references = Hashtbl.t(Identifier.path, array(Identifier.path));

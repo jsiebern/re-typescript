@@ -138,6 +138,34 @@ module Tuple: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module TypeLiteral: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ts_morph.Node.t;
+      pub getMembers: unit => array(Generic.t);
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module PropertySignature: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ts_morph.Node.t;
+      pub getName: unit => string;
+      pub isReadonly: unit => bool;
+      pub getTypeNode: unit => option(Generic.t);
+      pub getQuestionTokenNode: unit => option(Generic.t);
+      pub getInitializer: unit => option(Generic.t);
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 
 module Identify: {
   [@js.sum "kindName"]
@@ -166,9 +194,11 @@ module Identify: {
     | [@js.arg "node"] [@js "VariableDeclaration"] VariableDeclaration(
         Generic.t,
       )
-    | [@js.arg "node"] [@js "TypeLiteral"] TypeLiteral(Generic.t)
+    | [@js.arg "node"] [@js "TypeLiteral"] TypeLiteral(TypeLiteral.t)
     | [@js.arg "node"] [@js "LiteralType"] LiteralType(Generic.t)
-    | [@js.arg "node"] [@js "PropertySignature"] PropertySignature(Generic.t)
+    | [@js.arg "node"] [@js "PropertySignature"] PropertySignature(
+        PropertySignature.t,
+      )
     | [@js.arg "node"] [@js "TypeOperator"] TypeOperator(Generic.t)
     | [@js.arg "node"] [@js "NodeWithTypeArguments"] NodeWithTypeArguments(
         Generic.t,
@@ -184,6 +214,18 @@ module Identify: {
     | [@js.arg "node"] [@js "NamedTupleMember"] NamedTupleMember(Generic.t)
     | [@js.arg "node"] [@js "RestType"] RestType(Generic.t)
     | [@js.arg "node"] [@js "OptionalType"] OptionalType(Generic.t)
+    | [@js.arg "node"] [@js "CallSignatureDeclaration"]
+      CallSignatureDeclaration(
+        Generic.t,
+      )
+    | [@js.arg "node"] [@js "IndexSignatureDeclaration"]
+      IndexSignatureDeclaration(
+        Generic.t,
+      )
+    | [@js.arg "node"] [@js "ConstructSignatureDeclaration"]
+      ConstructSignatureDeclaration(
+        Generic.t,
+      )
     | [@js.arg "node"] [@js "SignatureDeclarationBase"]
       SignatureDeclarationBase(
         Generic.t,
