@@ -3,8 +3,11 @@ let test = (
   {|
 
 
-export function someFunction(a: number, b: [ number, { field: string } ]): [string, boolean];
-
+interface iTest {
+    field: string;
+    action: (a: string, b?: number) => void;
+}
+type access = iTest['action'];
 
 |},
 );

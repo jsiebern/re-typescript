@@ -74,9 +74,10 @@ const recurse = (node: Node, level = 0) => {
     node.getTypeNode();
     node.getTypeParameters
   }
-  if (Node.isEnumDeclaration(node)) {
-    const member = node.getMembers()[0];
-    member.getName;
+  if (Node.isFunctionTypeNode(node)) {
+    node.getParameters
+    node.getReturnTypeNode
+    node.getTypeParameters
     // const x = member.getInitializer()
   }
   if (Node.isUnionTypeNode(node)) {

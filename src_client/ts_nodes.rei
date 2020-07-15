@@ -110,6 +110,29 @@ module FunctionDeclaration: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module FunctionType: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit FunctionDeclaration.t;
+    };
+};
+module InterfaceDeclaration: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit TypeParametered.t;
+      pub getMembers: unit => array(Generic.t);
+      pub getName: unit => option(string);
+      pub isDefaultExport: unit => bool;
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  [@js.cast]
+  let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 module EnumMember: {
   class t:
     (Ojs.t) =>
@@ -311,7 +334,7 @@ module Identify: {
       SignatureDeclarationBase(
         Generic.t,
       )
-    | [@js.arg "node"] [@js "FunctionType"] FunctionType(Generic.t)
+    | [@js.arg "node"] [@js "FunctionType"] FunctionType(FunctionType.t)
     | [@js.arg "node"] [@js "FunctionLikeDeclarationBase"]
       FunctionLikeDeclarationBase(
         Generic.t,
@@ -333,7 +356,7 @@ module Identify: {
     | [@js.arg "node"] [@js "ParenthesizedType"] ParenthesizedType(Generic.t)
     | [@js.arg "node"] [@js "LiteralLikeNode"] LiteralLikeNode(Generic.t)
     | [@js.arg "node"] [@js "InterfaceDeclaration"] InterfaceDeclaration(
-        Generic.t,
+        InterfaceDeclaration.t,
       )
     | [@js.default] Other(Ojs.t);
 

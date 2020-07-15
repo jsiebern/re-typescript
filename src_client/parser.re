@@ -83,6 +83,8 @@ and parse__Node__Generic =
   | TypeLiteral(typeLiteral) =>
     parse__Node__TypeLiteral(~runtime, ~scope, typeLiteral)
   | UnionType(union) => parse__Node__UnionType(~runtime, ~scope, union)
+  | FunctionType(func_type) =>
+    parse__Node__FunctionType(~runtime, ~scope, func_type)
   | _ =>
     raise(
       Exceptions.UnexpectedAtThisPoint(
@@ -168,7 +170,8 @@ and parse__Node__Declaration:
     let identified_node = Ts_nodes_util.identifyNode(node);
     switch (identified_node) {
     // | ClassDeclaration
-    // | InterfaceDeclaration
+    | InterfaceDeclaration(if_declaration) =>
+      parse__Node__InterfaceDeclaration(~runtime, ~scope, if_declaration)
     | EnumDeclaration(enum) =>
       parse__Node__EnumDeclaration(~runtime, ~scope, enum)
     | FunctionDeclaration(fn_declaration) =>
@@ -248,6 +251,86 @@ and parse__AssignAny = (~runtime, ~scope) => {
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
+// --- InterfaceDeclaration
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__InterfaceDeclaration =
+    (~runtime, ~scope, node: Ts_nodes.InterfaceDeclaration.t) => {
+  let name =
+    switch (node#getName()) {
+    | Some(name) => name
+    | None when node#isDefaultExport() => "default"
+    | None => raise(Failure("Expected a name for this function"))
+    };
+  let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
+    Identifier.TypeName(name);
+
+  let nodes_to_parse =
+    node#getMembers() |> CCArray.map(Ts_nodes_util.identifyGenericNode);
+  let (runtime, signatures) =
+    nodes_to_parse
+    |> CCArray.fold_left(
+         ((runtime, nodes), node) => {
+           let (runtime, _, signature) =
+             parse__Node__SignatureLike(~runtime, ~scope, node);
+           (
+             runtime,
+             switch (signature) {
+             | (None, _, _) =>
+               raise(
+                 Failure("Type literal property should probably have a name"),
+               )
+             | (Some(name), is_optional, t) =>
+               CCArray.append(
+                 nodes,
+                 [|
+                   Parameter({
+                     name: Identifier.PropertyName(name),
+                     is_optional,
+                     type_: t,
+                     named: true,
+                   }),
+                 |],
+               )
+             },
+           );
+         },
+         (runtime, [||]),
+       );
+
+  let params =
+    node#getTypeParameters()
+    |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
+
+  (
+    runtime,
+    scope,
+    TypeDeclaration({
+      path: scope.path,
+      name: type_name,
+      annot: Record(signatures),
+      params,
+    }),
+  );
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- FunctionType
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__FunctionType =
+    (~runtime, ~scope, node: Ts_nodes.FunctionType.t) => {
+  let (runtime, scope, t) =
+    parse__Node__FunctionLikeNode(
+      ~runtime,
+      ~scope,
+      node#getReturnTypeNode(),
+      node#getParameters(),
+    );
+  (runtime, scope, t |> Node.Escape.toAny);
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
 // --- FunctionDeclaration
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -261,48 +344,16 @@ and parse__Node__FunctionDeclaration =
     };
   let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
     Identifier.TypeName(name);
-  let type_path = scope.path |> Path.add(Identifier.TypeName(name));
   let scope = {...scope, parent: Some(FunctionDeclaration(node))};
 
-  let (runtime, scope, return_type) =
-    switch (node#getReturnTypeNode()) {
-    | Some(return_node) =>
-      let scope =
-        scope
-        |> Scope.replace_path_arr(
-             type_path |> Path.add(Identifier.SubName("return")),
-           );
-      parse__Node__Generic_assignable(~runtime, ~scope, return_node);
-    | None => parse__AssignAny(~runtime, ~scope)
-    };
-  let scope = scope |> Scope.replace_path_arr(type_path);
+  let (runtime, scope, annot) =
+    parse__Node__FunctionLikeNode(
+      ~runtime,
+      ~scope,
+      node#getReturnTypeNode(),
+      node#getParameters(),
+    );
 
-  let (runtime, scope, parameters) =
-    node#getParameters()
-    |> CCArray.foldi(
-         ((runtime, scope, params), i, param) => {
-           let name = Identifier.PropertyName(param#getName());
-           let is_optional = param#isOptional();
-           let current_path =
-             type_path |> Path.add(Identifier.SubName(Path.unwrap(name)));
-           let scope = scope |> Scope.replace_path_arr(current_path);
-           // TODO: isRestParameter
-           let (runtime, scope, type_) =
-             switch (param#getTypeNode()) {
-             | None => parse__AssignAny(~runtime, ~scope)
-             | Some(t) => parse__Node__Generic_assignable(~runtime, ~scope, t)
-             };
-           (
-             runtime,
-             scope,
-             CCArray.append(
-               params,
-               [|Parameter({name, is_optional, type_, named: is_optional})|],
-             ),
-           );
-         },
-         (runtime, scope, [||]),
-       );
   let params =
     node#getTypeParameters()
     |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
@@ -310,14 +361,71 @@ and parse__Node__FunctionDeclaration =
   (
     runtime,
     scope,
-    TypeDeclaration({
-      path: scope.path,
-      name: type_name,
-      annot: Function({return_type, parameters}),
-      params,
-    }),
+    TypeDeclaration({path: scope.path, name: type_name, annot, params}),
   );
 }
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- FunctionLikeNode
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__FunctionLikeNode:
+  (
+    ~runtime: runtime,
+    ~scope: scope,
+    option(Ts_nodes.Generic.t),
+    array(Ts_nodes.Parameter.t)
+  ) =>
+  (runtime, scope, Node.node(Node.Constraint.assignable)) =
+  (~runtime, ~scope, return, parameters) => {
+    let base_path = scope.path;
+
+    let (runtime, scope, return_type) =
+      switch (return) {
+      | Some(return_node) =>
+        let scope =
+          scope
+          |> Scope.replace_path_arr(
+               base_path |> Path.add(Identifier.SubName("return")),
+             );
+        parse__Node__Generic_assignable(~runtime, ~scope, return_node);
+      | None => parse__AssignAny(~runtime, ~scope)
+      };
+    let scope = scope |> Scope.replace_path_arr(base_path);
+
+    let (runtime, scope, parameters) =
+      parameters
+      |> CCArray.foldi(
+           ((runtime, scope, params), i, param) => {
+             let name = Identifier.PropertyName(param#getName());
+             let is_optional = param#isOptional();
+             let current_path =
+               base_path |> Path.add(Identifier.SubName(Path.unwrap(name)));
+             let scope = scope |> Scope.replace_path_arr(current_path);
+             // TODO: isRestParameter
+             let (runtime, scope, type_) =
+               switch (param#getTypeNode()) {
+               | None => parse__AssignAny(~runtime, ~scope)
+               | Some(t) =>
+                 parse__Node__Generic_assignable(~runtime, ~scope, t)
+               };
+             (
+               runtime,
+               scope,
+               CCArray.append(
+                 params,
+                 [|
+                   Parameter({name, is_optional, type_, named: is_optional}),
+                 |],
+               ),
+             );
+           },
+           (runtime, scope, [||]),
+         );
+    let scope = scope |> Scope.replace_path_arr(base_path);
+
+    (runtime, scope, Function({return_type, parameters}));
+  }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 // --- Type Literal
