@@ -7,7 +7,7 @@ module Exceptions = {
   exception UnexpectedAtThisPoint(string);
 };
 
-// ------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------- ´--------------------------
 // ------------------------------------------------------------------------------------------
 // --- Utility types
 // ------------------------------------------------------------------------------------------
@@ -75,6 +75,8 @@ and parse__Node__Generic =
   | AnyKeyword(_) => parse__Node__Basic(~runtime, ~scope, identifiedNode)
   | ArrayType(_) => parse__Node__Array(~runtime, ~scope, identifiedNode)
   | TupleType(_) => parse__Node__Tuple(~runtime, ~scope, identifiedNode)
+  | TypeReference(_) =>
+    parse__Node_TypeReference(~runtime, ~scope, identifiedNode)
   | TypeLiteral(_)
   | UnionType(_) when is_sub =>
     parse__Node__Generic__WrapSubNode(~runtime, ~scope, node)
@@ -160,9 +162,9 @@ and parse__Node__SourceFile =
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 and parse__Node__Declaration:
-  (~runtime: runtime, ~scope: scope, Ts_morph.Node.t) =>
+  (~runtime: runtime, ~scope: scope, Ts_nodes.Generic.t) =>
   (runtime, scope, Node.node(Node.Constraint.moduleLevel)) =
-  (~runtime, ~scope, node: Ts_morph.Node.t) => {
+  (~runtime, ~scope, node: Ts_nodes.Generic.t) => {
     let identified_node = Ts_nodes_util.identifyNode(node);
     switch (identified_node) {
     // | ClassDeclaration
@@ -240,6 +242,10 @@ and parse__Node__UnionType = (~runtime, ~scope, node: Ts_nodes.UnionType.t) => {
     parse__Node__UnionType__Nodes(~runtime, ~scope, parsed_nodes);
   (runtime, scope, t |> Node.Escape.toAny);
 }
+// --- Any Helper
+and parse__AssignAny = (~runtime, ~scope) => {
+  (runtime, {...scope, has_any: true}, Basic(Any));
+}
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 // --- FunctionDeclaration
@@ -255,16 +261,21 @@ and parse__Node__FunctionDeclaration =
     };
   let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
     Identifier.TypeName(name);
-  let type_path = CCArray.append(scope.path, [|Identifier.TypeName(name)|]);
+  let type_path = scope.path |> Path.add(Identifier.TypeName(name));
   let scope = {...scope, parent: Some(FunctionDeclaration(node))};
 
   let (runtime, scope, return_type) =
     switch (node#getReturnTypeNode()) {
     | Some(return_node) =>
-      let scope = scope |> Scope.add_to_path(Identifier.SubName("return"));
+      let scope =
+        scope
+        |> Scope.replace_path_arr(
+             type_path |> Path.add(Identifier.SubName("return")),
+           );
       parse__Node__Generic_assignable(~runtime, ~scope, return_node);
-    | None => (runtime, scope, Basic(Any))
+    | None => parse__AssignAny(~runtime, ~scope)
     };
+  let scope = scope |> Scope.replace_path_arr(type_path);
 
   let (runtime, scope, parameters) =
     node#getParameters()
@@ -278,7 +289,7 @@ and parse__Node__FunctionDeclaration =
            // TODO: isRestParameter
            let (runtime, scope, type_) =
              switch (param#getTypeNode()) {
-             | None => (runtime, scope, Basic(Any))
+             | None => parse__AssignAny(~runtime, ~scope)
              | Some(t) => parse__Node__Generic_assignable(~runtime, ~scope, t)
              };
            (
@@ -365,7 +376,7 @@ and parse__Node__SignatureLike:
       let type_node = node#getTypeNode();
       let (runtime, _, t) =
         switch (type_node) {
-        | None => (runtime, scope, Basic(Any))
+        | None => parse__AssignAny(~runtime, ~scope)
         | Some(type_node) =>
           parse__Node__Generic_assignable(
             ~runtime,
@@ -503,6 +514,27 @@ and parse__Node__Tuple = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
 
     (runtime, scope, Tuple(inner));
   | _ => raise(Exceptions.UnexpectedAtThisPoint("Not a tuple"))
+  };
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- TypeReference
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
+  switch (node) {
+  | TypeReference(node) =>
+    node#getTypeArguments() |> CCArray.iter(n => Console.log(n#getKindName()));
+
+    (
+      runtime,
+      scope,
+      Reference({
+        target: [|Identifier.TypeName(node#getTypeName()#getText())|],
+        params: [||],
+      }),
+    );
+  | _ => raise(Exceptions.UnexpectedAtThisPoint("Not a type reference"))
   };
 }
 // ------------------------------------------------------------------------------------------

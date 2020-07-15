@@ -10,7 +10,7 @@ import {
 } from 'ts-morph';
 import * as common from '@ts-morph/common';
 import { walkNodes } from './ast';
-import { strict } from 'assert';
+import { strict, notEqual } from 'assert';
 import { SCHED_RR } from 'cluster';
 
 const project = new Project({
@@ -19,7 +19,7 @@ const project = new Project({
     noEmitOnError: false,
   },
 });
-project.createSourceFile
+project.createSourceFile;
 project.saveSync;
 // const created = project.createSourceFile(
 //   'foo.d.ts',
@@ -69,18 +69,22 @@ const recurseType = (type: Type | undefined, level = 0) => {
   type.getTupleElements().forEach((t) => recurseType(t, level + 1));
 };
 const recurse = (node: Node, level = 0) => {
-
   if (Node.isTypeAliasDeclaration(node)) {
     node.getName();
-    node.getTypeNode()
+    node.getTypeNode();
   }
   if (Node.isEnumDeclaration(node)) {
     const member = node.getMembers()[0];
-    member.getName
+    member.getName;
     // const x = member.getInitializer()
   }
   if (Node.isUnionTypeNode(node)) {
-    node.getTypeNodes
+    node.getTypeNodes;
+  }
+  if (Node.isTypeReferenceNode(node)) {
+    node.getTypeArguments;
+    const name = node.getTypeName();
+    const typ = node.getType();
   }
 
   if (node.getKindName() === 'ParenthesizedType') {

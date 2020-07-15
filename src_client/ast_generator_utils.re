@@ -128,8 +128,12 @@ let make_list_of = wrap_type => {
   make_type_constraint(~inner=[wrap_type], "list");
 };
 
-let make_option_of = wrap_type => {
+let make_optional_of = wrap_type => {
   make_type_constraint(~inner=[wrap_type], "option");
+};
+
+let make_nullable_of = wrap_type => {
+  make_type_constraint(~inner=[wrap_type], "Js.Null.t");
 };
 
 let make_tuple_of = types => {

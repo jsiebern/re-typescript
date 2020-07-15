@@ -2,7 +2,29 @@ module Generic: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Ojs.obj;
+      // Type checks
+      pub isSourceFile: unit => bool;
+      // Tree Traversal
+      pub forEachDescendant: (t => unit) => unit;
+      pub forEachChild: (t => unit) => unit;
+      pub getChildren: unit => array(t);
+      pub getDescendants: unit => array(t);
+      pub getExportedDeclarations: unit => array(t);
+      // Type Information
+      pub getTypeParameters: unit => array(t);
+      pub getText: unit => string;
+      pub getKind: unit => int;
+      pub getPos: unit => int;
+      pub getEnd: unit => int;
+      pub getStartLineNumber: unit => int;
+      pub getEndLineNumber: unit => int;
+      pub getKindName: unit => string;
+      pub getSymbol: unit => option(Ts_morph.Symbol.t);
+      pub getType: unit => option(Ts_morph.Type.t);
+      // Raw
+      pub compilerNode: Ts_raw.Node.t;
+      pub getProject: unit => Ts_morph.Project.t;
     };
   [@js.cast]
   let fromMorphNode: Ts_morph.Node.t => t;
@@ -13,7 +35,7 @@ module TypeAliasDeclaration: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getName: unit => string;
       pub getTypeNode: unit => Generic.t;
     };
@@ -28,7 +50,7 @@ module Parameter: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getName: unit => string;
       pub getTypeNode: unit => option(Generic.t);
       pub getQuestionTokenNode: unit => option(Generic.t);
@@ -46,11 +68,10 @@ module FunctionDeclaration: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getName: unit => option(string);
       pub isDefaultExport: unit => bool;
       pub getReturnTypeNode: unit => option(Generic.t);
-      pub getTypeParameters: unit => array(Generic.t);
       pub getParameters: unit => array(Parameter.t);
     };
   [@js.cast]
@@ -64,7 +85,7 @@ module EnumMember: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getName: unit => string;
       pub getInitializer: unit => Generic.t;
     };
@@ -79,7 +100,7 @@ module EnumDeclaration: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getName: unit => string;
       pub getMembers: unit => array(EnumMember.t);
     };
@@ -94,8 +115,14 @@ module SourceFile: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.SourceFile.t;
+      inherit Generic.t;
       pub getStatements: unit => array(Generic.t);
+      pub saveSync: unit => unit;
+      pub refreshFromFileSystemSync: unit => unit;
+      pub getFilePath: unit => string;
+      pub compilerNode: Ts_raw.Node.t;
+      pub getBaseName: unit => string;
+      pub getBaseNameWithoutExtension: unit => string;
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;
@@ -106,7 +133,7 @@ module Identifier: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getImplementations: unit => Generic.t;
     };
   [@js.cast]
@@ -118,7 +145,7 @@ module Array: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getElementTypeNode: unit => Generic.t;
     };
   [@js.cast]
@@ -130,7 +157,7 @@ module Tuple: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getElementTypeNodes: unit => array(Generic.t);
     };
   [@js.cast]
@@ -142,7 +169,7 @@ module TypeLiteral: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getMembers: unit => array(Generic.t);
     };
   [@js.cast]
@@ -154,7 +181,7 @@ module PropertySignature: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getName: unit => string;
       pub isReadonly: unit => bool;
       pub getTypeNode: unit => option(Generic.t);
@@ -170,8 +197,21 @@ module UnionType: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ts_morph.Node.t;
+      inherit Generic.t;
       pub getTypeNodes: unit => array(Generic.t);
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module TypeReference: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getTypeName: unit => Identifier.t;
+      pub getTypeArguments: unit => array(Generic.t);
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;
@@ -215,7 +255,7 @@ module Identify: {
     | [@js.arg "node"] [@js "NodeWithTypeArguments"] NodeWithTypeArguments(
         Generic.t,
       )
-    | [@js.arg "node"] [@js "TypeReference"] TypeReference(Generic.t)
+    | [@js.arg "node"] [@js "TypeReference"] TypeReference(TypeReference.t)
     | [@js.arg "node"] [@js "QualifiedName"] QualifiedName(Generic.t)
     | [@js.arg "node"] [@js "EnumDeclaration"] EnumDeclaration(
         EnumDeclaration.t,

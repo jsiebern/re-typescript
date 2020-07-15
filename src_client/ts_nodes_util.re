@@ -1,7 +1,5 @@
-let rec identifyNode = (node: Ts_morph.Node.t) => {
-  open Ts_nodes.Identify;
-  let node = node |> Ts_nodes.Generic.fromMorphNode;
-  identifyGenericNode(node);
+let rec identifyNode = (node: Ts_nodes.Generic.t) => {
+  Ts_nodes.Identify.(identifyGenericNode(node));
 }
 and identifyGenericNode = (node: Ts_nodes.Generic.t) => {
   open Ts_nodes.Identify;

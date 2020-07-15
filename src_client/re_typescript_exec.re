@@ -3,7 +3,9 @@ let test = (
   {|
 
 
-export function someOtherFunction(): null | { inline: string };
+// export function someFunction<A,B,C>(a: A, b: B): C;
+type x<A> = A;
+type y = x<string>;
 
 
 |},

@@ -268,9 +268,15 @@ and generate__Node__Assignable_CoreType =
     | This
     | Never => raise(Failure("This case should not be reached"))
     }
+  | Nullable(inner) =>
+    let (scope, inner) = generate__Node__Assignable_CoreType(~scope, inner);
+    (scope, inner |> CCOpt.map(Util.make_nullable_of));
+  | Optional(inner) =>
+    let (scope, inner) = generate__Node__Assignable_CoreType(~scope, inner);
+    (scope, inner |> CCOpt.map(Util.make_optional_of));
   | Array(inner) =>
     let (scope, inner) = generate__Node__Assignable_CoreType(~scope, inner);
-    (scope, inner |> CCOpt.map(inner => Util.make_array_of(inner)));
+    (scope, inner |> CCOpt.map(Util.make_array_of));
   | Tuple(inner) =>
     let (scope, types) =
       inner
