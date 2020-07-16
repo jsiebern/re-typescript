@@ -2,22 +2,8 @@ let test = (
   "/test.d.ts",
   {|
 
-type f =  number;
-
-namespace Package {
-  type x = string;
-  type y = x;
-  type ff = f;
-
-  type ssad<B> = {
-    field: {
-      second: string,
-    },
-    B:B,
-    inner: A
-  }
-  type yyy = ssad<string>['field']['second'];
-}
+interface I_b { field: string }
+interface I_a extends I_b {}
 
 
 |},

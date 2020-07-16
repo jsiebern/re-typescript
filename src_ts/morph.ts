@@ -13,7 +13,6 @@ import { walkNodes } from './ast';
 import { strict, notEqual } from 'assert';
 import { SCHED_RR } from 'cluster';
 
-
 const project = new Project({
   useInMemoryFileSystem: true,
   compilerOptions: {
@@ -71,20 +70,25 @@ const recurseType = (type: Type | undefined, level = 0) => {
 };
 const recurse = (node: Node, level = 0) => {
   if (Node.isIndexedAccessTypeNode(node)) {
-    node.getProject().getTypeChecker()
-    node.getObjectTypeNode().getType()
-    node.getIndexTypeNode
-    node.getType
-    node.getType().getSymbol
+    node.getProject().getTypeChecker();
+    node.getObjectTypeNode().getType();
+    node.getIndexTypeNode;
+    node.getType;
+    node.getType().getSymbol;
   }
   if (Node.isMethodSignature(node)) {
-    node.getReturnTypeNode
-    node.getParameters
-    node.getName
-    node.getQuestionTokenNode
+    node.getReturnTypeNode;
+    node.getParameters;
+    node.getName;
+    node.getQuestionTokenNode;
+  }
+  if (Node.isNamespaceDeclaration(node)) {
+    node.getExportDeclarations;
+    node.getName;
+    node.getStatements;
   }
   if (Node.isLiteralTypeNode(node)) {
-    node.getChildCount
+    node.getChildCount;
     // node
     // node.getTypeNodes;
   }
@@ -93,12 +97,10 @@ const recurse = (node: Node, level = 0) => {
     const name = node.getTypeName();
     const symbol = name.getSymbol();
     if (symbol) {
-      symbol.getDeclarations()
+      symbol.getDeclarations();
     }
 
-
     const typ = node.getType();
-
   }
 
   // console.log(tc.compilerObject.typeToTypeNode(node.getType().compilerType));

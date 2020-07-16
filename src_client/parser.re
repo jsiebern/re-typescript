@@ -195,13 +195,52 @@ and parse__Node__Declaration:
     // | VariableDeclaration
     | TypeAliasDeclaration(typeAlias) =>
       parse__Node__TypeAliasDeclaration(~runtime, ~scope, typeAlias)
-    // | NamespaceDeclaration
+    | ModuleDeclaration(nsDeclaration)
+    | NamespaceDeclaration(nsDeclaration) =>
+      parse__Node__NamespaceDeclaration(~runtime, ~scope, nsDeclaration)
     // | Expression
     | _ =>
       Console.error("> " ++ node#getKindName());
       raise(Failure("Only declarations allowed here"));
     };
   }
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- NamespaceDeclaration
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__NamespaceDeclaration =
+    (~runtime, ~scope, node: Ts_nodes.NamespaceDeclaration.t) => {
+  let children_to_traverse: array(Ts_nodes.Generic.t) =
+    runtime.parse_config.exports_only
+      ? node#getExportedDeclarations() : node#getStatements();
+
+  let scope = scope |> Scope.add_to_path(Identifier.Module(node#getName()));
+
+  let base_path = scope.path;
+  let (runtime, scope, types) =
+    children_to_traverse
+    |> CCArray.fold_left(
+         ((runtime, scope, types), node) => {
+           let scope = scope |> Scope.replace_path_arr(base_path);
+           let (runtime, scope, t) =
+             parse__Node__Declaration(~runtime, ~scope, node);
+           (runtime, scope, CCArray.append(types, [|t|]));
+         },
+         (runtime, scope, [||]),
+       );
+  let scope = scope |> Scope.replace_path_arr(base_path);
+
+  (
+    runtime,
+    scope,
+    Module({
+      name: node#getName(),
+      path: Ast_generator_utils.Naming.full_identifier_of_path(scope.path),
+      types,
+    }),
+  );
+}
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 // --- UnionType
@@ -286,34 +325,65 @@ and parse__Node__IndexedAccessType =
 
   // TODO: Make reosolving this type more robust
   // Also TODO: Create something that can request a type reference and moves referenced types into their own type declaration
-  let resolved_type =
+  let base_path = scope.path;
+  let (runtime, scope, result) =
     switch (
       get__TypeNodeByTypeChecker(node |> Ts_nodes.IndexedAccessType.toGeneric)
     ) {
     | None =>
-      raise(
-        Exceptions.UnexpectedAtThisPoint(
-          "Could not resolve type for indexded access",
-        ),
-      )
-    | Some(node) => node
+      switch (
+        node#getType()
+        |> CCOpt.flat_map(get__DerivedTypeFromTypeObj(~runtime, ~scope))
+      ) {
+      | None =>
+        raise(
+          Exceptions.UnexpectedAtThisPoint(
+            "Could not resolve type for IndexedAccess",
+          ),
+        )
+      | Some(r) => r
+      }
+    | Some(resolved_type) =>
+      let current_path =
+        base_path |> Path.add(Identifier.SubName(index_stringified));
+      let scope = scope |> Scope.replace_path_arr(current_path);
+      let (runtime, scope, result) =
+        parse__Node__Generic_assignable(~runtime, ~scope, resolved_type);
+      (runtime, scope, result);
     };
-
-  let base_path = scope.path;
-  let current_path =
-    base_path |> Path.add(Identifier.SubName(index_stringified));
-  let scope = scope |> Scope.replace_path_arr(current_path);
-  let (runtime, scope, result) =
-    parse__Node__Generic_assignable(~runtime, ~scope, resolved_type);
-
   let scope = scope |> Scope.replace_path_arr(base_path);
+
   (runtime, scope, result |> Node.Escape.toAny);
 }
+// TODO: This is only an escape hatch.
+// A complex type result might still fail
+// in deep access fields like ['one']['two']
+and get__DerivedTypeFromTypeObj:
+  (~runtime: runtime, ~scope: scope, Ts_morph.Type.t) =>
+  option((runtime, scope, Node.node(Node.Constraint.assignable))) =
+  (~runtime, ~scope, t) =>
+    if (t#isAny()) {
+      let (runtime, scope, t) = parse__AssignAny(~runtime, ~scope);
+      Some((runtime, scope, t));
+    } else if (t#isBoolean()) {
+      Some((runtime, scope, Basic(Boolean)));
+    } else if (t#isNull()) {
+      Some((runtime, scope, Basic(Null)));
+    } else if (t#isNumber()) {
+      Some((runtime, scope, Basic(Number)));
+    } else if (t#isString()) {
+      Some((runtime, scope, Basic(String)));
+    } else if (t#isUndefined()) {
+      Some((runtime, scope, Basic(Undefined)));
+    } else {
+      raise(Not_found);
+    }
 and get__TypeNodeByTypeChecker:
   Ts_nodes.Generic.t => option(Ts_nodes.Generic.t) =
   node => {
     (node |> Ts_nodes.WithGetType.fromGeneric)#getType()
-    |> CCOpt.map(t => t#getSymbol()#getDeclarations())
+    |> CCOpt.flat_map(t => t#getSymbol())
+    |> CCOpt.map(s => s#getDeclarations())
     |> CCOpt.flat_map(CCArray.get_safe(_, 0));
   }
 // ------------------------------------------------------------------------------------------

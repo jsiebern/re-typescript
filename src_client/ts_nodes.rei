@@ -51,7 +51,7 @@ module Type: {
     (Ojs.t) =>
     {
       inherit Ojs.obj;
-      pub getSymbol: unit => Symbol.t;
+      pub getSymbol: unit => option(Symbol.t);
     };
 
   let t_of_js: Ojs.t => t;
@@ -326,6 +326,7 @@ module IndexedAccessType: {
       inherit Generic.t;
       pub getObjectTypeNode: unit => Generic.t;
       pub getIndexTypeNode: unit => Generic.t;
+      pub getType: unit => option(Ts_morph.Type.t);
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;
@@ -355,6 +356,23 @@ module LiteralLike: {
       pub getLiteralValue: unit => string;
     };
 };
+module NamespaceDeclaration: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getExportDeclarations: unit => array(Generic.t);
+      pub getName: unit => string;
+      pub getStatements: unit => array(Generic.t);
+    };
+};
+module ModuleDeclaration: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit NamespaceDeclaration.t;
+    };
+};
 module StringLiteral: {
   class t:
     (Ojs.t) =>
@@ -375,6 +393,12 @@ module Identify: {
   type nodeKind =
     | [@js.arg "node"] [@js "TypeAliasDeclaration"] TypeAliasDeclaration(
         TypeAliasDeclaration.t,
+      )
+    | [@js.arg "node"] [@js "NamespaceDeclaration"] NamespaceDeclaration(
+        NamespaceDeclaration.t,
+      )
+    | [@js.arg "node"] [@js "ModuleDeclaration"] ModuleDeclaration(
+        ModuleDeclaration.t,
       )
     | [@js.arg "node"] [@js "Identifier"] Identifier(Identifier.t)
     | [@js.arg "node"] [@js "SourceFile"] SourceFile(SourceFile.t)
