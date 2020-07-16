@@ -391,6 +391,31 @@ and get__TypeNodeByTypeChecker:
 // --- InterfaceDeclaration
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
+and parse__Node__InterfaceDeclaration__CollectExtension =
+    (~runtime, ~scope, node: Ts_nodes.InterfaceDeclaration.t) => {
+  let symbols =
+    node#getExtends()
+    |> CCArray.map(en => en#getType())
+    |> CCArray.filter_map(t => t#getSymbol())
+    |> CCArray.map(s => (s#getDeclarations, s#getMembers()));
+
+  members
+  |> CCArray.fold_left((acc, arr) => CCArray.append(acc, arr), [||])
+  |> CCArray.filter_map(s => s#getValueDeclaration())
+  |> CCArray.map(n => Ts_nodes_util.identifyGenericNode(n))
+  |> CCArray.map(node =>
+       switch (node) {
+       | Ts_nodes.Identify.MethodSignature(_) as m
+       | PropertySignature(_) as m => m
+       | _ =>
+         raise(
+           Exceptions.UnexpectedAtThisPoint(
+             "Expects a signature type when looking up interface extensions",
+           ),
+         )
+       }
+     );
+}
 and parse__Node__InterfaceDeclaration =
     (~runtime, ~scope, node: Ts_nodes.InterfaceDeclaration.t) => {
   let name =
@@ -404,8 +429,24 @@ and parse__Node__InterfaceDeclaration =
   let scope = scope |> Scope.add_to_path(Identifier.TypeName(name));
   let base_path = scope.path;
 
+  // Try to follow the extension nodes
+  // TODO: Think about if inline types should be referenced rather than re-created
+
+  // TODO: Type parameter need to be resolved
+  // interface I_b<A> { field: A, field3: number }
+  // interface I_a extends I_b<string> { field2: boolean }
+  let extended_nodes =
+    parse__Node__InterfaceDeclaration__CollectExtension(
+      ~runtime,
+      ~scope,
+      node,
+    );
+
   let nodes_to_parse =
-    node#getMembers() |> CCArray.map(Ts_nodes_util.identifyGenericNode);
+    CCArray.append(
+      extended_nodes,
+      node#getMembers() |> CCArray.map(Ts_nodes_util.identifyGenericNode),
+    );
   let (runtime, scope, signatures) =
     nodes_to_parse
     |> CCArray.fold_left(

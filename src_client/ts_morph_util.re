@@ -22,6 +22,7 @@ let require = (s: t(js_string)): 'a =>
 
 let tsMorph = require("ts-morph" |> string);
 let createWrappedNode = tsMorph##.createWrappedNode;
+let nodeStatic = tsMorph##._Node;
 
 let tsMorphCommon = require("@ts-morph/common" |> string);
 let getSyntaxKindName = tsMorphCommon##.getSyntaxKindName;

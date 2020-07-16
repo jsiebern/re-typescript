@@ -2,8 +2,9 @@ let test = (
   "/test.d.ts",
   {|
 
-interface I_b { field: string }
-interface I_a extends I_b {}
+interface I_c { field_4: boolean }
+interface I_b extends I_c { field: string, field3: number }
+interface I_a extends I_b { field2: string }
 
 
 |},

@@ -21,6 +21,7 @@ module Generic: {
       pub getEndLineNumber: unit => int;
       pub getKindName: unit => string;
       pub getSymbol: unit => option(Ts_morph.Symbol.t);
+      pub getParent: unit => option(t);
       // Raw
       pub compilerNode: Ts_raw.Node.t;
       pub getProject: unit => Ts_morph.Project.t;
@@ -38,6 +39,9 @@ module Symbol: {
       // Type Information
       pub getName: unit => string;
       pub getFullyQualifiedName: unit => string;
+      pub getDeclarations: unit => array(Generic.t);
+      pub getMembers: unit => array(t);
+      pub getValueDeclaration: unit => option(Generic.t);
       pub getDeclarations: unit => array(Generic.t);
       // Raw
       pub compilerSymbol: Ts_raw.Symbol.t;
@@ -165,6 +169,22 @@ module MethodSignature: {
       pub getQuestionTokenNode: unit => option(Generic.t);
     };
 };
+module Abstr_TypeWithSymbol: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ojs.obj;
+      pub getSymbol: unit => option(Symbol.t);
+    };
+};
+module Abstr_ExtendsNode: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ojs.obj;
+      pub getType: unit => Abstr_TypeWithSymbol.t;
+    };
+};
 module InterfaceDeclaration: {
   class t:
     (Ojs.t) =>
@@ -173,6 +193,7 @@ module InterfaceDeclaration: {
       pub getMembers: unit => array(Generic.t);
       pub getName: unit => option(string);
       pub isDefaultExport: unit => bool;
+      pub getExtends: unit => array(Abstr_ExtendsNode.t);
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;
@@ -500,3 +521,12 @@ module Identify: {
   let genericWithKindName_to_js: genericWithKindName => Ojs.t;
 };
 type nodeKind = Identify.nodeKind;
+
+module NodeStatic: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ojs.obj;
+      pub isSignaturedDeclaration: Generic.t => bool;
+    };
+};

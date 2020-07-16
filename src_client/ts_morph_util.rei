@@ -12,3 +12,4 @@ module Config: {
 
 let createWrappedNode: (Ts_raw.Node.t, Config.t) => Ts_morph.Node.t;
 let getSyntaxKindName: int => string;
+let nodeStatic: Ts_nodes.NodeStatic.t;

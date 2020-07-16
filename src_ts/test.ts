@@ -1,15 +1,15 @@
 import { Project, Node } from 'ts-morph';
 
 const project = new Project({
-  useInMemoryFileSystem: true,
-  compilerOptions: {
-    noEmitOnError: false,
-  },
+    useInMemoryFileSystem: true,
+    compilerOptions: {
+        noEmitOnError: false,
+    },
 });
 
 const file = project.createSourceFile(
-  'test.d.ts',
-  `
+    'test.d.ts',
+    `
 
 interface I_b { field: string }
 interface I_a extends I_b {}
@@ -17,27 +17,26 @@ interface I_a extends I_b {}
 `
 );
 
-const walk = (node: Node) => {
-  if (Node.isInterfaceDeclaration(node)) {
-    //   node.getProject().getTypeChecker().
-    console.log(
-      node.getName(),
-      node
-        .getExtends()?.[0]
-        ?.getType()
-        .getSymbol()
-        ?.getMembers()[0]
-        .getValueDeclaration()
-        ?.getKindName()
+file.forEachDescendant(node => {
+    if (Node.isInterfaceDeclaration(node)) {
+        node.getExtends().forEach(ext => {
+            const t = ext.getType();
+            const s = t.getSymbol();
+            if (s) {
+                console.log('>> ', s.getDeclarations()[0].getText());
+                const members = s.getMembers();
+                members.forEach(memberSymbol => {
+                    const decl = memberSymbol.getValueDeclaration();
+                    if (decl) {
+                        const p = decl.getParent();
+                        if (p) {
+                            console.log(p.getKindName())
+                        }
+                        console.log(decl.getKindName())
+                    }
+                })
+            }
+        })
+    }
 
-      //   console.log(node.getType()?.getSymbol()?.getDeclaredType().),
-      //   node.getExtends()?.[0]?.getTypeArguments()
-    );
-    // console.log(node.getIndexTypeNode().getKindName());
-    // console.log(node.getType().getSymbol()?.getDeclarations()[0].getKindName());
-  } else {
-    node.getChildren().forEach((n) => walk(n));
-  }
-};
-
-walk(file);
+});
