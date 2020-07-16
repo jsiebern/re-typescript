@@ -1,5 +1,6 @@
 open Ast;
 
+type iPath = Identifier.path;
 type parse_config = {exports_only: bool};
 type runtime = {
   root_modules: array(Node.node(Node.Constraint.exactlyModule)),
@@ -10,8 +11,9 @@ type scope = {
   source_file: option(Ts_nodes.SourceFile.t),
   root_declarations: array(Node.node(Node.Constraint.moduleLevel)),
   parent: option(Ts_nodes.nodeKind),
-  path: Identifier.path,
+  path: iPath,
   has_any: bool,
+  refs: Hashtbl.t(iPath, array(iPath)),
 };
 module Runtime = {
   let add_root_module =
@@ -35,6 +37,17 @@ module Scope = {
       root_declarations:
         CCArray.append(scope.root_declarations, [|root_declaration|]),
     };
+  };
+  let add_ref = (to_: iPath, from: iPath, scope: scope) => {
+    Hashtbl.replace(
+      scope.refs,
+      to_,
+      CCArray.append(
+        CCHashtbl.get_or(scope.refs, to_, ~default=[||]),
+        [|from|],
+      ),
+    );
+    scope;
   };
 };
 module Path = {
@@ -85,5 +98,40 @@ module Path = {
     Array.fold_right(fold_fun, p, ([||], false))
     |> fst
     |> CCArray.to_string(~sep="_", a => a);
+  };
+
+  let make_current_scope = (p: t) => {
+    CCArray.filter(
+      ident =>
+        switch (ident) {
+        | Identifier.Module(_) => true
+        | _ => false
+        },
+      p,
+    );
+  };
+};
+
+let build_path_from_ref_string = (~scope, ref_string: string) => {
+  let path_parts = CCString.split_on_char('.', ref_string);
+  let parts_count = CCList.length(path_parts);
+
+  let rec parse_parts = parts =>
+    switch (parts) {
+    | [] => []
+    | [one] => [Identifier.TypeName(one)]
+    | [first, ...rest] when CCString.contains(first, '/') =>
+      let first = CCString.replace(~sub="\"", ~by="", first);
+      switch (CCString.Split.right(~by="/", first) |> CCOpt.map(snd)) {
+      | None => parse_parts(rest)
+      | Some(first) => parse_parts([first, ...rest])
+      };
+    | [first, ..._] => [Identifier.Module(first)]
+    };
+  let result = parse_parts(path_parts) |> CCArray.of_list;
+  if (parts_count == 1) {
+    CCArray.append(Path.make_current_scope(scope.path), result);
+  } else {
+    result;
   };
 };

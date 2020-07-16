@@ -2,12 +2,23 @@ let test = (
   "/test.d.ts",
   {|
 
+type f =  number;
 
-interface iTest {
-    field: string;
-    action: (a: string, b?: number) => void;
+namespace Package {
+  type x = string;
+  type y = x;
+  type ff = f;
+
+  type ssad<B> = {
+    field: {
+      second: string,
+    },
+    B:B,
+    inner: A
+  }
+  type yyy = ssad<string>['field']['second'];
 }
-type access = iTest['action'];
+
 
 |},
 );

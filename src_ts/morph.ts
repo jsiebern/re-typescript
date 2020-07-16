@@ -77,20 +77,16 @@ const recurse = (node: Node, level = 0) => {
     node.getType
     node.getType().getSymbol
   }
-  if (Node.isLiteralTypeNode(node)) {
-    const l = node.getLiteral()
-    if (Node.isNumericLiteral(l)) {
-
-    }
-    if (Node.isStringLiteral(l)) {
-      l.getLiteralText()
-      l.getLiteralValue()
-    }
-
-    // const x = member.getInitializer()
+  if (Node.isMethodSignature(node)) {
+    node.getReturnTypeNode
+    node.getParameters
+    node.getName
+    node.getQuestionTokenNode
   }
-  if (Node.isUnionTypeNode(node)) {
-    node.getTypeNodes;
+  if (Node.isLiteralTypeNode(node)) {
+    node.getChildCount
+    // node
+    // node.getTypeNodes;
   }
   if (Node.isTypeReferenceNode(node)) {
     node.getTypeArguments;

@@ -11,6 +11,7 @@ module Generic: {
       pub getChildren: unit => array(t);
       pub getDescendants: unit => array(t);
       pub getExportedDeclarations: unit => array(t);
+      pub getChildCount: unit => int;
       // Type Information
       pub getText: unit => string;
       pub getKind: unit => int;
@@ -154,6 +155,14 @@ module FunctionType: {
     (Ojs.t) =>
     {
       inherit FunctionDeclaration.t;
+    };
+};
+module MethodSignature: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit FunctionDeclaration.t;
+      pub getQuestionTokenNode: unit => option(Generic.t);
     };
 };
 module InterfaceDeclaration: {
@@ -435,7 +444,9 @@ module Identify: {
     | [@js.arg "node"] [@js "FunctionDeclaration"] FunctionDeclaration(
         FunctionDeclaration.t,
       )
-    | [@js.arg "node"] [@js "MethodSignature"] MethodSignature(Generic.t)
+    | [@js.arg "node"] [@js "MethodSignature"] MethodSignature(
+        MethodSignature.t,
+      )
     | [@js.arg "node"] [@js "IndexSignature"] IndexSignature(Generic.t)
     | [@js.arg "node"] [@js "CallSignature"] CallSignature(Generic.t)
     | [@js.arg "node"] [@js "Parameter"] Parameter(Parameter.t)

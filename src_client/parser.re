@@ -1,5 +1,7 @@
 // TODO: Eventually define an interface so that multiple backends can be built
 // ALso: Plugin system should be solved here as well, before the AST is built
+// TODO: Add more ways in which elements can obtain references (like type extraction)
+
 // Could use a similar system to graphql-ppx (see https://github.com/reasonml-community/graphql-ppx/blob/master/src/base/validations.re for reference)
 open Ast;
 open Node;
@@ -37,6 +39,7 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
              parent: None,
              path: [||],
              has_any: false,
+             refs: Hashtbl.create(10),
            };
 
            let source_file =
@@ -44,8 +47,10 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
              |> Ts_morph.SourceFile.castToNode
              |> Ts_nodes.Generic.fromMorphNode
              |> Ts_nodes.SourceFile.fromGeneric;
-           let (runtime, _, t) =
+           let (runtime, scope, t) =
              parse__Node__SourceFile(~runtime, ~scope, source_file);
+           let (runtime, scope, t) =
+             Parser_rules_post.run(~runtime, ~scope, t);
            runtime |> Runtime.add_root_module(t);
          },
          runtime,
@@ -63,6 +68,7 @@ and parse__Node__Generic =
   let is_sub =
     Path.hd(scope.path) |> CCOpt.map_or(~default=false, Path.is_sub);
   let identifiedNode = Ts_nodes_util.identifyGenericNode(node);
+
   switch (identifiedNode) {
   | StringKeyword(_)
   | NumberKeyword(_)
@@ -87,7 +93,14 @@ and parse__Node__Generic =
     parse__Node__FunctionType(~runtime, ~scope, func_type)
   | IndexedAccessType(ind_acc_type) =>
     parse__Node__IndexedAccessType(~runtime, ~scope, ind_acc_type)
+  | MethodSignature(_) =>
+    let (runtime, scope, (_, _, t)) =
+      parse__Node__SignatureLike(~runtime, ~scope, identifiedNode);
+    (runtime, scope, t |> Node.Escape.toAny);
   | _ =>
+    Console.log(
+      Ast_generator_utils.Naming.full_identifier_of_path(scope.path),
+    );
     raise(
       Exceptions.UnexpectedAtThisPoint(
         Printf.sprintf(
@@ -95,7 +108,7 @@ and parse__Node__Generic =
           node#getKindName(),
         ),
       ),
-    )
+    );
   };
 }
 and parse__Node__Generic_assignable =
@@ -119,6 +132,7 @@ and parse__Node__Generic__WrapSubNode =
       params: [||],
     });
   let scope = scope |> Scope.add_root_declaration(wrapped_type_declaration);
+
   (runtime, scope, Reference({target: [|type_name|], params: [||]}));
 }
 // ------------------------------------------------------------------------------------------
@@ -317,17 +331,21 @@ and parse__Node__InterfaceDeclaration =
     };
   let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
     Identifier.TypeName(name);
+  let scope = scope |> Scope.add_to_path(Identifier.TypeName(name));
+  let base_path = scope.path;
 
   let nodes_to_parse =
     node#getMembers() |> CCArray.map(Ts_nodes_util.identifyGenericNode);
-  let (runtime, signatures) =
+  let (runtime, scope, signatures) =
     nodes_to_parse
     |> CCArray.fold_left(
-         ((runtime, nodes), node) => {
-           let (runtime, _, signature) =
+         ((runtime, scope, nodes), node) => {
+           let scope = scope |> Scope.replace_path_arr(base_path);
+           let (runtime, scope, signature) =
              parse__Node__SignatureLike(~runtime, ~scope, node);
            (
              runtime,
+             scope,
              switch (signature) {
              | (None, _, _) =>
                raise(
@@ -348,8 +366,9 @@ and parse__Node__InterfaceDeclaration =
              },
            );
          },
-         (runtime, [||]),
+         (runtime, scope, [||]),
        );
+  let scope = scope |> Scope.replace_path_arr(base_path);
 
   let params =
     node#getTypeParameters()
@@ -488,14 +507,17 @@ and parse__Node__TypeLiteral =
     (~runtime, ~scope, node: Ts_nodes.TypeLiteral.t) => {
   let nodes_to_parse =
     node#getMembers() |> CCArray.map(Ts_nodes_util.identifyGenericNode);
-  let (runtime, signatures) =
+  let base_path = scope.path;
+  let (runtime, scope, signatures) =
     nodes_to_parse
     |> CCArray.fold_left(
-         ((runtime, nodes), node) => {
-           let (runtime, _, signature) =
+         ((runtime, scope, nodes), node) => {
+           let scope = scope |> Scope.replace_path_arr(base_path);
+           let (runtime, scope, signature) =
              parse__Node__SignatureLike(~runtime, ~scope, node);
            (
              runtime,
+             scope,
              switch (signature) {
              | (None, _, _) =>
                raise(
@@ -516,8 +538,9 @@ and parse__Node__TypeLiteral =
              },
            );
          },
-         (runtime, [||]),
+         (runtime, scope, [||]),
        );
+  let scope = scope |> Scope.replace_path_arr(base_path);
 
   (runtime, scope, Record(signatures));
 }
@@ -538,20 +561,43 @@ and parse__Node__SignatureLike:
     | PropertySignature(node) =>
       let name = Some(node#getName());
       let type_node = node#getTypeNode();
-      let (runtime, _, t) =
+      let base_path = scope.path;
+      let (runtime, scope, t) =
         switch (type_node) {
         | None => parse__AssignAny(~runtime, ~scope)
         | Some(type_node) =>
-          parse__Node__Generic_assignable(
-            ~runtime,
-            ~scope=
-              scope |> Scope.add_to_path(Identifier.SubName(node#getName())),
-            type_node,
-          )
+          let current_path =
+            base_path |> Path.add(Identifier.SubName(node#getName()));
+          let scope = scope |> Scope.replace_path_arr(current_path);
+          parse__Node__Generic_assignable(~runtime, ~scope, type_node);
         };
+      let scope = scope |> Scope.replace_path_arr(base_path);
       let is_optional = node#getQuestionTokenNode() |> CCOpt.is_some;
       (runtime, scope, (name, is_optional, t));
-    | MethodSignature(_)
+    | MethodSignature(node) =>
+      let name = node#getName();
+      let return_type = node#getReturnTypeNode();
+      let parameters = node#getParameters();
+      let is_optional = node#getQuestionTokenNode() |> CCOpt.is_some;
+
+      let base_path = scope.path;
+      let scope =
+        scope
+        |> Scope.replace_path_arr(
+             base_path |> Path.add(Identifier.SubName(name |> CCOpt.get_exn)),
+           );
+
+      let (runtime, scope, fn) =
+        parse__Node__FunctionLikeNode(
+          ~runtime,
+          ~scope,
+          return_type,
+          parameters,
+        );
+
+      let scope = scope |> Scope.replace_path_arr(base_path);
+
+      (runtime, scope, (name, is_optional, fn));
     | ConstructSignatureDeclaration(_)
     | CallSignatureDeclaration(_)
     | IndexSignatureDeclaration(_) => raise(Not_found)
@@ -708,8 +754,9 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
     // We can get the referenced type naively by symbol.declaration for now
     // This might need to change in a more complex setting later
     let type_arguments = node#getTypeArguments();
+    let symbol = type_name#getSymbol();
     let declaration =
-      type_name#getSymbol()
+      symbol
       |> CCOpt.map(symbol => symbol#getDeclarations())
       |> CCOpt.flat_map(CCArray.get_safe(_, 0))
       |> CCOpt.map(Ts_nodes.Generic.fromMorphNode);
@@ -756,6 +803,17 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
           nodes,
         );
       };
+
+    // Parse the reference information to make a note
+    // that it was referenced
+    let ref_to =
+      symbol
+      |> CCOpt.map_or(~default=type_name#getText(), s =>
+           s#getFullyQualifiedName()
+         );
+    let ref_path = build_path_from_ref_string(~scope, ref_to);
+    let scope = scope |> Scope.add_ref(ref_path, scope.path);
+
     (
       runtime,
       scope,

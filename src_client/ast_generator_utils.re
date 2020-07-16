@@ -38,6 +38,7 @@ module Naming = {
     p
     |> CCArray.mapi((i, ident) =>
          switch (ident, CCArray.get_safe(p, i + 1)) {
+         | _ when i === 0 => fromIdentifier(ident)
          | (_, None) => unwrap(ident)
          | (Ast.Identifier.Module(str), Some(_)) =>
            Printf.sprintf("%s.", str)
