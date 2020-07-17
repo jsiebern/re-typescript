@@ -42,7 +42,6 @@ module Symbol: {
       pub getDeclarations: unit => array(Generic.t);
       pub getMembers: unit => array(t);
       pub getValueDeclaration: unit => option(Generic.t);
-      pub getDeclarations: unit => array(Generic.t);
       // Raw
       pub compilerSymbol: Ts_raw.Symbol.t;
     };

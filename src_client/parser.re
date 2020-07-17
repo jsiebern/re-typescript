@@ -393,14 +393,37 @@ and get__TypeNodeByTypeChecker:
 // ------------------------------------------------------------------------------------------
 and parse__Node__InterfaceDeclaration__CollectExtension =
     (~runtime, ~scope, node: Ts_nodes.InterfaceDeclaration.t) => {
-  let symbols =
+  let (declarations, members) =
     node#getExtends()
     |> CCArray.map(en => en#getType())
     |> CCArray.filter_map(t => t#getSymbol())
-    |> CCArray.map(s => (s#getDeclarations, s#getMembers()));
+    |> CCArray.fold_left(
+         ((declarations, members), s) =>
+           (
+             CCArray.append(declarations, s#getDeclarations()),
+             CCArray.append(members, s#getMembers()),
+           ),
+         ([||], [||]),
+       );
+
+  let recursive_members =
+    declarations
+    |> CCArray.filter_map(declaration =>
+         switch (declaration |> Ts_nodes_util.identifyGenericNode) {
+         | InterfaceDeclaration(i_node) =>
+           Some(
+             parse__Node__InterfaceDeclaration__CollectExtension(
+               ~runtime,
+               ~scope,
+               i_node,
+             ),
+           )
+         | _ => None
+         }
+       )
+    |> CCArray.fold_left((acc, arr) => CCArray.append(acc, arr), [||]);
 
   members
-  |> CCArray.fold_left((acc, arr) => CCArray.append(acc, arr), [||])
   |> CCArray.filter_map(s => s#getValueDeclaration())
   |> CCArray.map(n => Ts_nodes_util.identifyGenericNode(n))
   |> CCArray.map(node =>
@@ -414,7 +437,8 @@ and parse__Node__InterfaceDeclaration__CollectExtension =
            ),
          )
        }
-     );
+     )
+  |> CCArray.append(recursive_members);
 }
 and parse__Node__InterfaceDeclaration =
     (~runtime, ~scope, node: Ts_nodes.InterfaceDeclaration.t) => {
