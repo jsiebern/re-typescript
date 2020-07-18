@@ -103,6 +103,20 @@ module TypeParametered: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module TypeArgumented: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getTypeArguments: unit => array(Generic.t);
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  [@js.cast]
+  let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 module TypeAliasDeclaration: {
   class t:
     (Ojs.t) =>
@@ -180,7 +194,7 @@ module Abstr_ExtendsNode: {
   class t:
     (Ojs.t) =>
     {
-      inherit Ojs.obj;
+      inherit TypeArgumented.t;
       pub getType: unit => Abstr_TypeWithSymbol.t;
     };
 };

@@ -14,6 +14,36 @@ type scope = {
   path: iPath,
   has_any: bool,
   refs: Hashtbl.t(iPath, array(iPath)),
+  context_params:
+    list((string, option(Node.node(Node.Constraint.assignable)))),
+  context_args: list((string, Node.node(Node.Constraint.assignable))),
+};
+module Context = {
+  let get_param = (key, scope) =>
+    scope.context_params
+    |> CCList.Assoc.get(~eq=CCString.equal, key)
+    |> CCOpt.flatten;
+  let has_param = (key, scope) =>
+    scope.context_params |> CCList.Assoc.mem(~eq=CCString.equal, key);
+  let get_param_key = (i, scope) =>
+    scope.context_params |> CCList.get_at_idx(i) |> CCOpt.map(fst);
+  let add_param = (key, ty, scope) => {
+    ...scope,
+    context_params:
+      scope.context_params |> CCList.Assoc.set(~eq=CCString.equal, key, ty),
+  };
+  let clear_params = scope => {...scope, context_params: []};
+
+  let clear_args = scope => {...scope, context_args: []};
+  let has_arg = (key, scope) =>
+    scope.context_args |> CCList.Assoc.mem(~eq=CCString.equal, key);
+  let add_arg = (key, ty, scope) => {
+    ...scope,
+    context_args:
+      scope.context_args |> CCList.Assoc.set(~eq=CCString.equal, key, ty),
+  };
+  let get_arg = (key, scope) =>
+    scope.context_args |> CCList.Assoc.get(~eq=CCString.equal, key);
 };
 module Runtime = {
   let add_root_module =

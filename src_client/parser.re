@@ -40,6 +40,8 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
              path: [||],
              has_any: false,
              refs: Hashtbl.create(10),
+             context_params: [],
+             context_args: [],
            };
 
            let source_file =
@@ -179,10 +181,95 @@ and parse__Node__SourceFile =
 // --- TypeDeclaration
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
+
+and create__ContextFromNode =
+    (
+      ~clear=true,
+      ~runtime,
+      ~type_arguments=[||],
+      ~node: Ts_nodes.Generic.t,
+      scope: scope,
+    ) => {
+  let scope =
+    clear ? scope |> Context.clear_params |> Context.clear_args : scope;
+  let base_path = scope.path;
+  let (runtime, scope, params) =
+    Ts_morph_util.typeGuards##isParameteredNode(
+      Ts_nodes.Generic.t_to_js(node),
+    )
+      ? {
+        let parameters =
+          Ts_nodes.TypeParametered.fromGeneric(node)#getTypeParameters();
+        let (runtime, scope, params) =
+          parameters
+          |> CCArray.fold_left(
+               ((runtime, scope, params), param) => {
+                 let scope = scope |> Scope.replace_path_arr(base_path);
+                 let name = param#getName();
+                 let (runtime, scope, default) =
+                   param#getDefault()
+                   |> CCOpt.map(paramNode => {
+                        let (runtime, scope, res) =
+                          parse__Node__Generic_assignable(
+                            ~runtime,
+                            ~scope,
+                            paramNode,
+                          );
+                        (runtime, scope, Some(res));
+                      })
+                   |> CCOpt.value(~default=(runtime, scope, None));
+                 let scope = scope |> Context.add_param(name, default);
+
+                 (
+                   runtime,
+                   scope,
+                   CCArray.append(params, [|(name, default)|]),
+                 );
+               },
+               (runtime, scope, [||]),
+             );
+        (runtime, scope, params);
+      }
+      : (runtime, scope, [||]);
+  let scope = scope |> Scope.replace_path_arr(base_path);
+
+  let (runtime, scope) =
+    params
+    |> CCArray.foldi(
+         ((runtime, scope), i, (key, default)) => {
+           let scope = scope |> Scope.replace_path_arr(base_path);
+           let (runtime, scope, arg) =
+             CCArray.get_safe(type_arguments, i)
+             |> CCOpt.map(arg => {
+                  let (runtime, scope, res) =
+                    parse__Node__Generic_assignable(~runtime, ~scope, arg);
+                  (runtime, scope, Some(res));
+                })
+             |> CCOpt.value(~default=(runtime, scope, None));
+           let scope =
+             switch (arg, default) {
+             | (Some(arg), _) => scope |> Context.add_arg(key, arg)
+             | (None, Some(default)) =>
+               scope |> Context.add_arg(key, default)
+             | (None, None) => scope
+             };
+
+           (runtime, scope);
+         },
+         (runtime, scope),
+       );
+  (runtime, scope);
+}
 and parse__Node__Declaration:
   (~runtime: runtime, ~scope: scope, Ts_nodes.Generic.t) =>
   (runtime, scope, Node.node(Node.Constraint.moduleLevel)) =
   (~runtime, ~scope, node: Ts_nodes.Generic.t) => {
+    // Populate scope with parameters
+    // TODO: Possibly remove
+    // let curry_context = create__ContextFromNode(~runtime, ~node);
+    // let set_context = lazy(scope => curry_context(scope));
+    let scope = scope |> Context.clear_args |> Context.clear_params;
+
     let identified_node = Ts_nodes_util.identifyNode(node);
     switch (identified_node) {
     // | ClassDeclaration
@@ -391,55 +478,86 @@ and get__TypeNodeByTypeChecker:
 // --- InterfaceDeclaration
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
-and parse__Node__InterfaceDeclaration__CollectExtension =
-    (~runtime, ~scope, node: Ts_nodes.InterfaceDeclaration.t) => {
-  let (declarations, members) =
+and parse__Node__InterfaceDeclaration__CollectExtension:
+  (~runtime: runtime, ~scope: scope, Ts_nodes.InterfaceDeclaration.t) =>
+  (
+    runtime,
+    scope,
+    array((option(string), bool, Node.node(Node.Constraint.assignable))),
+  ) =
+  (~runtime, ~scope, node: Ts_nodes.InterfaceDeclaration.t) => {
     node#getExtends()
-    |> CCArray.map(en => en#getType())
-    |> CCArray.filter_map(t => t#getSymbol())
-    |> CCArray.fold_left(
-         ((declarations, members), s) =>
-           (
-             CCArray.append(declarations, s#getDeclarations()),
-             CCArray.append(members, s#getMembers()),
-           ),
-         ([||], [||]),
-       );
-
-  let recursive_members =
-    declarations
-    |> CCArray.filter_map(declaration =>
-         switch (declaration |> Ts_nodes_util.identifyGenericNode) {
-         | InterfaceDeclaration(i_node) =>
-           Some(
-             parse__Node__InterfaceDeclaration__CollectExtension(
-               ~runtime,
-               ~scope,
-               i_node,
-             ),
-           )
-         | _ => None
-         }
+    |> CCArray.map(en => (en#getType(), en#getTypeArguments()))
+    |> CCArray.filter_map(((t, args)) =>
+         t#getSymbol() |> CCOpt.map(s => (s, args))
        )
-    |> CCArray.fold_left((acc, arr) => CCArray.append(acc, arr), [||]);
-
-  members
-  |> CCArray.filter_map(s => s#getValueDeclaration())
-  |> CCArray.map(n => Ts_nodes_util.identifyGenericNode(n))
-  |> CCArray.map(node =>
-       switch (node) {
-       | Ts_nodes.Identify.MethodSignature(_) as m
-       | PropertySignature(_) as m => m
-       | _ =>
-         raise(
-           Exceptions.UnexpectedAtThisPoint(
-             "Expects a signature type when looking up interface extensions",
+    |> CCArray.fold_left(
+         (declarations, (s, args)) =>
+           CCArray.append(
+             declarations,
+             [|
+               (CCArray.get(s#getDeclarations(), 0), args, s#getMembers()),
+             |],
            ),
-         )
-       }
-     )
-  |> CCArray.append(recursive_members);
-}
+         [||],
+       )
+    |> CCArray.fold_left(
+         ((runtime, scope, rendered), (declaration, args, members)) => {
+           let (runtime, scope, additional) =
+             switch (declaration |> Ts_nodes_util.identifyGenericNode) {
+             | InterfaceDeclaration(i_node) =>
+               // First: Create Context
+               let (runtime, scope, res) =
+                 parse__Node__InterfaceDeclaration__CollectExtension(
+                   ~runtime,
+                   ~scope,
+                   i_node,
+                 );
+               (runtime, scope, res);
+
+             | _ => (runtime, scope, [||])
+             };
+           let (runtime, scope) =
+             create__ContextFromNode(
+               ~runtime,
+               ~type_arguments=args,
+               ~node=declaration,
+               scope,
+             );
+           // Second: Render Members
+
+           let (runtime, scope, members): (
+             runtime,
+             scope,
+             array(
+               (
+                 option(string),
+                 bool,
+                 Node.node(Node.Constraint.assignable),
+               ),
+             ),
+           ) =
+             members
+             |> CCArray.filter_map(s => s#getValueDeclaration())
+             |> CCArray.map(n => Ts_nodes_util.identifyGenericNode(n))
+             |> CCArray.fold_left(
+                  ((runtime, scope, nodes), node) => {
+                    let (runtime, scope, rn) =
+                      parse__Node__SignatureLike(~runtime, ~scope, node);
+                    (runtime, scope, CCArray.append(nodes, [|rn|]));
+                  },
+                  (runtime, scope, [||]),
+                );
+
+           (
+             runtime,
+             scope,
+             CCArray.append(rendered, CCArray.append(additional, members)),
+           );
+         },
+         (runtime, scope, [||]),
+       );
+  }
 and parse__Node__InterfaceDeclaration =
     (~runtime, ~scope, node: Ts_nodes.InterfaceDeclaration.t) => {
   let name =
@@ -456,10 +574,7 @@ and parse__Node__InterfaceDeclaration =
   // Try to follow the extension nodes
   // TODO: Think about if inline types should be referenced rather than re-created
 
-  // TODO: Type parameter need to be resolved
-  // interface I_b<A> { field: A, field3: number }
-  // interface I_a extends I_b<string> { field2: boolean }
-  let extended_nodes =
+  let (runtime, scope, extended_nodes) =
     parse__Node__InterfaceDeclaration__CollectExtension(
       ~runtime,
       ~scope,
@@ -467,10 +582,7 @@ and parse__Node__InterfaceDeclaration =
     );
 
   let nodes_to_parse =
-    CCArray.append(
-      extended_nodes,
-      node#getMembers() |> CCArray.map(Ts_nodes_util.identifyGenericNode),
-    );
+    node#getMembers() |> CCArray.map(Ts_nodes_util.identifyGenericNode);
   let (runtime, scope, signatures) =
     nodes_to_parse
     |> CCArray.fold_left(
@@ -478,31 +590,27 @@ and parse__Node__InterfaceDeclaration =
            let scope = scope |> Scope.replace_path_arr(base_path);
            let (runtime, scope, signature) =
              parse__Node__SignatureLike(~runtime, ~scope, node);
-           (
-             runtime,
-             scope,
-             switch (signature) {
-             | (None, _, _) =>
-               raise(
-                 Failure("Type literal property should probably have a name"),
-               )
-             | (Some(name), is_optional, t) =>
-               CCArray.append(
-                 nodes,
-                 [|
-                   Parameter({
-                     name: Identifier.PropertyName(name),
-                     is_optional,
-                     type_: t,
-                     named: true,
-                   }),
-                 |],
-               )
-             },
-           );
+           (runtime, scope, CCArray.append(nodes, [|signature|]));
          },
          (runtime, scope, [||]),
        );
+  let signatures =
+    CCArray.append(extended_nodes, signatures)
+    |> CCArray.map(signature => {
+         switch (signature) {
+         | (None, _, _) =>
+           raise(
+             Failure("Type literal property should probably have a name"),
+           )
+         | (Some(name), is_optional, t) =>
+           Parameter({
+             name: Identifier.PropertyName(name),
+             is_optional,
+             type_: t,
+             named: true,
+           })
+         }
+       });
   let scope = scope |> Scope.replace_path_arr(base_path);
 
   let params =
@@ -875,13 +983,16 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   | TypeReference(node)
       when
         node#getType()
-        |> CCOpt.map_or(~default=false, t => t#isTypeParameter()) => (
+        |> CCOpt.map_or(~default=false, t => t#isTypeParameter()) =>
+    let tpName = node#getTypeName()#getText();
+    (
       runtime,
       scope,
-      GenericReference(
-        Identifier.TypeParameter(node#getTypeName()#getText()),
-      ),
-    )
+      switch (Context.get_arg(tpName, scope)) {
+      | None => GenericReference(Identifier.TypeParameter(tpName))
+      | Some(argType) => Node.Escape.toAny(argType)
+      },
+    );
   // "Normal" reference
   | TypeReference(node) =>
     let type_name = node#getTypeName();

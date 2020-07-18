@@ -79,7 +79,7 @@ describe("interface extension", ({test, _}) => {
   });
 
   test("fields from current interface take priority", ({expect, _}) => {
-    expect.string(
+    expect.fn(() =>
       print(
         {|
       interface I_a {
@@ -91,9 +91,9 @@ describe("interface extension", ({test, _}) => {
         field_3: number
       }
     |},
-      ),
+      )
     ).
-      toMatchSnapshot()
+      toThrow()
   });
 
   test("incomplete type args throw on extension", ({expect, _}) => {
