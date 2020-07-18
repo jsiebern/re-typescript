@@ -7,6 +7,7 @@ open Ast;
 open Node;
 module Exceptions = {
   exception UnexpectedAtThisPoint(string);
+  exception FeatureMissing(string, string);
 };
 
 // ---------------------------------------------------------------- ´--------------------------
@@ -15,6 +16,9 @@ module Exceptions = {
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 open Parser_utils;
+module PlannedExceptions = {
+  exception LoneFunctionSignature(Ts_nodes.FunctionDeclaration.t);
+};
 
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -306,7 +310,35 @@ and parse__Node__Declaration:
     switch (identified_node) {
     // | ClassDeclaration
     | InterfaceDeclaration(if_declaration) =>
-      parse__Node__InterfaceDeclaration(~runtime, ~scope, if_declaration)
+      try(parse__Node__InterfaceDeclaration(~runtime, ~scope, if_declaration)) {
+      // ------------
+      // TODO
+      // Defeinitely move this from here, also not sure if exception is the way to go
+      // ------------
+      | PlannedExceptions.LoneFunctionSignature(fn_declaration) =>
+        let name =
+          if_declaration#getName()
+          |> CCOpt.value(~default=if_declaration#getNameNode()#getText());
+        let type_name = Identifier.TypeName(name);
+        let (scope, retain) =
+          scope |> Scope.retain_path(scope.path |> Path.add(type_name));
+        let (runtime, scope, wrapped_type) =
+          parse__Node__FunctionType(~runtime, ~scope, fn_declaration);
+
+        let params =
+          fn_declaration#getTypeParameters()
+          |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
+        let wrapped_type_declaration =
+          TypeDeclaration({
+            path: scope.path,
+            name: type_name,
+            annot: wrapped_type |> Node.Escape.toAssignable,
+            params,
+          });
+        let scope = scope |> retain;
+        (runtime, scope, wrapped_type_declaration);
+      | other => raise(other)
+      }
     | EnumDeclaration(enum) =>
       parse__Node__EnumDeclaration(~runtime, ~scope, enum)
     | FunctionDeclaration(fn_declaration) =>
@@ -886,10 +918,46 @@ and parse__Node__SignatureLike:
       let scope = scope |> Scope.replace_path_arr(base_path);
 
       (runtime, scope, (name, is_optional, fn));
-    | ConstructSignatureDeclaration(_)
-    | CallSignatureDeclaration(_)
-    | IndexSignatureDeclaration(_) => raise(Not_found)
-    | _ => raise(Failure("Not an signature"))
+    | CallSignature(node)
+        when Ts_morph_util.isNamedNode(node |> Ts_nodes.CallSignature.t_to_js) =>
+      let name = node#getName();
+      let return_type = node#getReturnTypeNode();
+      let parameters = node#getParameters();
+      // let type_parameters = node#getTypeParameters();
+
+      let base_path = scope.path;
+      let scope =
+        scope
+        |> Scope.replace_path_arr(
+             base_path |> Path.add(Identifier.SubName(name |> CCOpt.get_exn)),
+           );
+
+      let (runtime, scope, fn) =
+        parse__Node__FunctionLikeNode(
+          ~runtime,
+          ~scope,
+          return_type,
+          parameters,
+        );
+
+      let scope = scope |> Scope.replace_path_arr(base_path);
+
+      (runtime, scope, (name, false, fn));
+    | CallSignature(node)
+        when
+          !Ts_morph_util.isNamedNode(node |> Ts_nodes.CallSignature.t_to_js)
+          && (
+            switch (
+              node#getParent() |> CCOpt.map(Ts_nodes_util.identifyGenericNode)
+            ) {
+            | Some(InterfaceDeclaration(_)) => true
+            | _ => false
+            }
+          ) =>
+      raise(PlannedExceptions.LoneFunctionSignature(node))
+    | node =>
+      let node = Ts_nodes_util.unwrap_identified(node);
+      raise(Exceptions.FeatureMissing(node#getKindName(), node#getText()));
     };
   }
 // ------------------------------------------------------------------------------------------
@@ -899,7 +967,7 @@ and parse__Node__SignatureLike:
 // ------------------------------------------------------------------------------------------
 and parse__Node__EnumDeclaration =
     (~runtime, ~scope, node: Ts_nodes.EnumDeclaration.t) => {
-  // TODO: Solving this simply for now, we need to look at the propertyName eventuall though!!
+  // TODO: Solving this simply for now, we need to look at the propertyName eventually‚ though!!
   let members = node#getMembers();
   let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
     Identifier.TypeName(node#getName());

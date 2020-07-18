@@ -24,6 +24,8 @@ let tsMorph = require("ts-morph" |> string);
 let createWrappedNode = tsMorph##.createWrappedNode;
 let nodeStatic = tsMorph##._Node;
 let typeGuards = tsMorph##._TypeGuards;
+let isNamedNode = (t: Ojs.t) =>
+  Unsafe.fun_call(nodeStatic##.isNamedNode, [|Unsafe.inject(t)|]);
 
 let tsMorphCommon = require("@ts-morph/common" |> string);
 let getSyntaxKindName = tsMorphCommon##.getSyntaxKindName;

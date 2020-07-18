@@ -69,6 +69,13 @@ module Scope = {
         CCArray.append(scope.root_declarations, [|root_declaration|]),
     };
   };
+  let retain_path = (replace_path, scope) => {
+    let base_path = scope.path;
+    (
+      scope |> replace_path_arr(replace_path),
+      scope => scope |> replace_path_arr(base_path),
+    );
+  };
   let add_ref = (to_: iPath, from: iPath, scope: scope) => {
     Hashtbl.replace(
       scope.refs,

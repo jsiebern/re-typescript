@@ -150,7 +150,7 @@ describe("interface extension", ({test, _}) => {
         {|
       interface KeyValueProcessor {
           (key: number, value: string): boolean;
-      };
+      }
     |},
       ),
     ).

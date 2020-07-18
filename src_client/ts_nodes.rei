@@ -182,6 +182,15 @@ module MethodSignature: {
       pub getQuestionTokenNode: unit => option(Generic.t);
     };
 };
+module CallSignature: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit FunctionType.t;
+    };
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 module Abstr_TypeWithSymbol: {
   class t:
     (Ojs.t) =>
@@ -205,6 +214,7 @@ module InterfaceDeclaration: {
       inherit TypeParametered.t;
       pub getMembers: unit => array(Generic.t);
       pub getName: unit => option(string);
+      pub getNameNode: unit => Generic.t;
       pub isDefaultExport: unit => bool;
       pub getExtends: unit => array(Abstr_ExtendsNode.t);
     };
@@ -506,7 +516,7 @@ module Identify: {
         MethodSignature.t,
       )
     | [@js.arg "node"] [@js "IndexSignature"] IndexSignature(Generic.t)
-    | [@js.arg "node"] [@js "CallSignature"] CallSignature(Generic.t)
+    | [@js.arg "node"] [@js "CallSignature"] CallSignature(CallSignature.t)
     | [@js.arg "node"] [@js "Parameter"] Parameter(Parameter.t)
     | [@js.arg "node"] [@js "BindingElement"] BindingElement(Generic.t)
     | [@js.arg "node"] [@js "PropertyDeclaration"] PropertyDeclaration(
