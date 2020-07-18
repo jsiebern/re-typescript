@@ -28,6 +28,7 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
     parse_config: {
       exports_only: false,
     },
+    fully_qualified_added: [],
   };
   let runtime =
     source_files
@@ -124,16 +125,45 @@ and parse__Node__Generic__WrapSubNode =
   let name = Path.make_sub_type_name(scope.path);
   let type_name = Identifier.TypeName(name);
   let scope = scope |> Scope.add_to_path(type_name);
-  let (runtime, scope, wrapped_type) =
-    parse__Node__Generic_assignable(~runtime, ~scope, node);
-  let wrapped_type_declaration =
-    TypeDeclaration({
-      path: scope.path,
-      name: type_name,
-      annot: wrapped_type,
-      params: [||],
-    });
-  let scope = scope |> Scope.add_root_declaration(wrapped_type_declaration);
+
+  // TODO:
+  // Even though we're looking for a normalized scoped path here to
+  // avoid duplicates, this isn't ideal. Typescript declarations could
+  // be all over the place, we need to pre-render dependencies in the tree if possible
+  // When that is done, there needs to be a check like this for main types as well
+  let scoped_path =
+    Pp.path(Path.make_current_scope(scope.path) |> Path.add(type_name));
+
+  let (runtime, scope) =
+    !
+      CCList.mem(
+        ~eq=CCString.equal,
+        scoped_path,
+        runtime.fully_qualified_added,
+      )
+      ? {
+        let (runtime, scope, wrapped_type) =
+          parse__Node__Generic_assignable(~runtime, ~scope, node);
+        let wrapped_type_declaration =
+          TypeDeclaration({
+            path: scope.path,
+            name: type_name,
+            annot: wrapped_type,
+            params: [||],
+          });
+        let runtime = {
+          ...runtime,
+          fully_qualified_added: [
+            scoped_path,
+            ...runtime.fully_qualified_added,
+          ],
+        };
+        (
+          runtime,
+          scope |> Scope.add_root_declaration(wrapped_type_declaration),
+        );
+      }
+      : (runtime, scope);
 
   (runtime, scope, Reference({target: [|type_name|], params: [||]}));
 }
@@ -241,6 +271,8 @@ and create__ContextFromNode =
            let (runtime, scope, arg) =
              CCArray.get_safe(type_arguments, i)
              |> CCOpt.map(arg => {
+                  let scope =
+                    scope |> Scope.add_to_path(Identifier.SubName(key));
                   let (runtime, scope, res) =
                     parse__Node__Generic_assignable(~runtime, ~scope, arg);
                   (runtime, scope, Some(res));
@@ -486,6 +518,7 @@ and parse__Node__InterfaceDeclaration__CollectExtension:
     array((option(string), bool, Node.node(Node.Constraint.assignable))),
   ) =
   (~runtime, ~scope, node: Ts_nodes.InterfaceDeclaration.t) => {
+    let base_path = scope.path;
     node#getExtends()
     |> CCArray.map(en => (en#getType(), en#getTypeArguments()))
     |> CCArray.filter_map(((t, args)) =>
@@ -513,10 +546,21 @@ and parse__Node__InterfaceDeclaration__CollectExtension:
                    ~scope,
                    i_node,
                  );
+               let scope =
+                 switch (i_node#getName()) {
+                 | Some(name) =>
+                   scope
+                   |> Scope.replace_path_arr(
+                        base_path |> Path.add(Identifier.TypeName(name)),
+                      )
+                 | None => scope
+                 };
                (runtime, scope, res);
 
              | _ => (runtime, scope, [||])
              };
+           let scoped_path = scope.path;
+           let scope = scope |> Scope.replace_path_arr(base_path);
            let (runtime, scope) =
              create__ContextFromNode(
                ~runtime,
@@ -524,6 +568,7 @@ and parse__Node__InterfaceDeclaration__CollectExtension:
                ~node=declaration,
                scope,
              );
+           let scope = scope |> Scope.replace_path_arr(scoped_path);
            // Second: Render Members
 
            let (runtime, scope, members): (
