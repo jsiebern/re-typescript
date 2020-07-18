@@ -827,42 +827,65 @@ and parse__Node__TypeLiteral =
     (~runtime, ~scope, node: Ts_nodes.TypeLiteral.t) => {
   let nodes_to_parse =
     node#getMembers() |> CCArray.map(Ts_nodes_util.identifyGenericNode);
-  let base_path = scope.path;
-  let (runtime, scope, signatures) =
-    nodes_to_parse
-    |> CCArray.fold_left(
-         ((runtime, scope, nodes), node) => {
-           let scope = scope |> Scope.replace_path_arr(base_path);
-           let (runtime, scope, signature) =
-             parse__Node__SignatureLike(~runtime, ~scope, node);
-           (
-             runtime,
-             scope,
-             switch (signature) {
-             | (None, _, _) =>
-               raise(
-                 Failure("Type literal property should probably have a name"),
-               )
-             | (Some(name), is_optional, t) =>
-               CCArray.append(
-                 nodes,
-                 [|
-                   Parameter({
-                     name: Identifier.PropertyName(name),
-                     is_optional,
-                     type_: t,
-                     named: true,
-                   }),
-                 |],
-               )
+  let (scope, restore) = scope |> Scope.retain_path(scope.path);
+  let (runtime, scope, t) =
+    try({
+      let (runtime, scope, signatures) =
+        nodes_to_parse
+        |> CCArray.fold_left(
+             ((runtime, scope, nodes), node) => {
+               let scope = restore(scope);
+               let (runtime, scope, signature) =
+                 parse__Node__SignatureLike(~runtime, ~scope, node);
+               (
+                 runtime,
+                 scope,
+                 switch (signature) {
+                 | (None, _, _) =>
+                   raise(
+                     Failure(
+                       "Type literal property should probably have a name",
+                     ),
+                   )
+                 | (Some(name), is_optional, t) =>
+                   CCArray.append(
+                     nodes,
+                     [|
+                       Parameter({
+                         name: Identifier.PropertyName(name),
+                         is_optional,
+                         type_: t,
+                         named: true,
+                       }),
+                     |],
+                   )
+                 },
+               );
              },
+             (runtime, scope, [||]),
            );
-         },
-         (runtime, scope, [||]),
-       );
-  let scope = scope |> Scope.replace_path_arr(base_path);
+      (runtime, scope, Record(signatures));
+    }) {
+    // ------------
+    // TODO
+    // Defeinitely move this from here, also not sure if exception is the way to go
+    // ------------
+    | PlannedExceptions.LoneFunctionSignature(fn_declaration) =>
+      let scope = restore(scope);
 
-  (runtime, scope, Record(signatures));
+      // TODO:
+      // Somehow report these type parameters to the parent
+      // let params =
+      //       fn_declaration#getTypeParameters()
+      //       |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
+
+      parse__Node__FunctionType(~runtime, ~scope, fn_declaration);
+
+    | other => raise(other)
+    };
+  let scope = restore(scope);
+
+  (runtime, scope, t);
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -951,11 +974,14 @@ and parse__Node__SignatureLike:
               node#getParent() |> CCOpt.map(Ts_nodes_util.identifyGenericNode)
             ) {
             | Some(InterfaceDeclaration(_)) => true
+            | Some(TypeLiteral(_)) => true
             | _ => false
             }
           ) =>
       raise(PlannedExceptions.LoneFunctionSignature(node))
     | node =>
+      Debug.nodeKind_to_json(node);
+      Console.log(Pp.path(scope.path));
       let node = Ts_nodes_util.unwrap_identified(node);
       raise(Exceptions.FeatureMissing(node#getKindName(), node#getText()));
     };

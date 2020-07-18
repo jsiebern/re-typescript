@@ -3,8 +3,8 @@ let test = (
   {|
 
 interface KeyValueProcessor {
-          (key: number, value: string): boolean;
-      }
+  both: { (key: number, value: string): boolean }
+}
 
 
 |},

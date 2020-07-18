@@ -1,4 +1,6 @@
 import { Project, Node, TypeGuards } from 'ts-morph';
+import * as c from '@ts-morph/common';
+console.log(c.getSyntaxKindName(128));
 
 const project = new Project({
     useInMemoryFileSystem: true,
