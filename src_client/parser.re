@@ -88,6 +88,8 @@ and parse__Node__Generic =
   | AnyKeyword(_) => parse__Node__Basic(~runtime, ~scope, identifiedNode)
   | ArrayType(_) => parse__Node__Array(~runtime, ~scope, identifiedNode)
   | TupleType(_) => parse__Node__Tuple(~runtime, ~scope, identifiedNode)
+  | IntersectionType(_) =>
+    parse__Node__Intersection(~runtime, ~scope, identifiedNode)
   | TypeReference(_) =>
     parse__Node_TypeReference(~runtime, ~scope, identifiedNode)
   | TypeLiteral(_)
@@ -215,7 +217,6 @@ and parse__Node__SourceFile =
 // --- TypeDeclaration
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
-
 and create__ContextFromNode =
     (
       ~clear=true,
@@ -391,6 +392,25 @@ and parse__Node__NamespaceDeclaration =
       types,
     }),
   );
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- UnionType
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__Intersection = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
+  switch (node) {
+  | IntersectionType(is_type) =>
+    let (runtime, scope, sub_nodes) =
+      is_type#getTypeNodes() |> parse__ArrayOfGenerics(~runtime, ~scope);
+    (
+      runtime,
+      scope,
+      Tuple(sub_nodes |> CCArray.map(Node.Escape.toAssignable)),
+    );
+  | _ =>
+    raise(Exceptions.UnexpectedAtThisPoint("Expected intersection type"))
+  };
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -1217,18 +1237,20 @@ and parse__ArrayOfGenerics =
       ~scope,
       nodes: array(Ts_nodes.Generic.t),
     ) => {
-  let base_path = scope.path;
+  let (scope, restore) = scope |> Scope.retain_path(scope.path);
   let (runtime, scope, resolved) =
     nodes
     |> CCArray.foldi(
          ((runtime, scope, resolved), i, node) => {
-           let append_to_path =
-             CCArray.get_safe(scope_additions, i)
-             |> CCOpt.map_or(~default=Identifier.SubIdent(i), v =>
-                  Identifier.SubName(v)
+           let scope = restore(scope);
+           let scope =
+             scope
+             |> Scope.add_to_path(
+                  CCArray.get_safe(scope_additions, i)
+                  |> CCOpt.map_or(~default=Identifier.SubIdent(i), v =>
+                       Identifier.SubName(v)
+                     ),
                 );
-           let current_path = base_path |> Path.add(append_to_path);
-           let scope = scope |> Scope.replace_path_arr(current_path);
 
            let (runtime, scope, t) =
              parse__Node__Generic_assignable(~runtime, ~scope, node);
@@ -1236,7 +1258,7 @@ and parse__ArrayOfGenerics =
          },
          (runtime, scope, [||]),
        );
-  let scope = scope |> Scope.replace_path_arr(base_path);
+  let scope = restore(scope);
   (runtime, scope, resolved);
 }
 // ------------------------------------------------------------------------------------------

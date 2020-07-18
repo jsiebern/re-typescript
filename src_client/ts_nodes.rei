@@ -431,6 +431,14 @@ module NumericLiteral: {
       inherit LiteralLike.t;
     };
 };
+module IntersectionType: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getTypeNodes: unit => array(Generic.t);
+    };
+};
 
 module Identify: {
   [@js.sum "kindName"]
@@ -522,7 +530,9 @@ module Identify: {
     | [@js.arg "node"] [@js "PropertyDeclaration"] PropertyDeclaration(
         Generic.t,
       )
-    | [@js.arg "node"] [@js "IntersectionType"] IntersectionType(Generic.t)
+    | [@js.arg "node"] [@js "IntersectionType"] IntersectionType(
+        IntersectionType.t,
+      )
     | [@js.arg "node"] [@js "IndexedAccessType"] IndexedAccessType(
         IndexedAccessType.t,
       )

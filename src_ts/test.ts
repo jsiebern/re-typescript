@@ -1,6 +1,5 @@
 import { Project, Node, TypeGuards } from 'ts-morph';
 import * as c from '@ts-morph/common';
-console.log(c.getSyntaxKindName(128));
 
 const project = new Project({
     useInMemoryFileSystem: true,
@@ -21,15 +20,7 @@ interface KeyValueProcessor {
 );
 
 file.forEachDescendant(node => {
-    if (Node.isCallSignatureDeclaration(node) && Node.isNamedNode(node)) {
-
-        console.log(node.getName());
-        // node.getReturnTypeNode
-        // node.getParameters
-        // node.getChildrenOfKind
-        // node.getType
-    }
-    if (Node.isInterfaceDeclaration(node)) {
+    if (Node.isIntersectionTypeNode(node)) {
 
     }
     //     node.getExtends().forEach(ext => {
