@@ -54,7 +54,37 @@ module Type: {
     (Ojs.t) =>
     {
       inherit Ojs.obj;
+      // Info
+      pub getUnionTypes: unit => array(t);
+      // Type Checks
+      pub isAny: unit => bool;
+      pub isArray: unit => bool;
+      pub isBoolean: unit => bool;
+      pub isString: unit => bool;
+      pub isNumber: unit => bool;
+      pub isLiteral: unit => bool;
+      pub isBooleanLiteral: unit => bool;
+      pub isUnion: unit => bool;
+      pub isEnumLiteral: unit => bool;
+      pub isNumberLiteral: unit => bool;
+      pub isStringLiteral: unit => bool;
+      pub isClass: unit => bool;
+      pub isClassOrInterface: unit => bool;
+      pub isInterface: unit => bool;
+      pub isObject: unit => bool;
+      pub isEnum: unit => bool;
+      pub isTypeParameter: unit => bool;
+      pub isTuple: unit => bool;
+      pub isIntersection: unit => bool;
+      pub isUnionOrIntersection: unit => bool;
+      pub isUnknown: unit => bool;
+      pub isNull: unit => bool;
+      pub isUndefined: unit => bool;
+      pub isAnonymous: unit => bool;
+      // Raw
       pub getSymbol: unit => option(Symbol.t);
+      pub getText: unit => string;
+      pub compilerType: Ts_raw.Type.t;
     };
 
   let t_of_js: Ojs.t => t;
@@ -69,6 +99,7 @@ module WithGetType: {
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;
+  [@js.cast]
   let toGeneric: t => Generic.t;
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
@@ -356,7 +387,7 @@ module TypeReference: {
       inherit Generic.t;
       pub getTypeName: unit => Identifier.t;
       pub getTypeArguments: unit => array(Generic.t);
-      pub getType: unit => option(Ts_morph.Type.t);
+      pub getType: unit => option(Type.t);
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;
@@ -379,6 +410,47 @@ module IndexedAccessType: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module LiteralLike: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getLiteralText: unit => string;
+      pub getLiteralValue: unit => string;
+    };
+};
+module StringLiteral: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getLiteralValue: unit => string;
+    };
+};
+module NumericLiteral: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getLiteralValue: unit => float;
+    };
+};
+module BooleanLiteral: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getLiteralValue: unit => bool;
+    };
+};
+module RegularExpressionLiteral: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getLiteralValue: unit => string;
+    };
+};
 module LiteralType: {
   class t:
     (Ojs.t) =>
@@ -390,15 +462,6 @@ module LiteralType: {
   let fromGeneric: Generic.t => t;
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
-};
-module LiteralLike: {
-  class t:
-    (Ojs.t) =>
-    {
-      inherit Generic.t;
-      pub getLiteralText: unit => string;
-      pub getLiteralValue: unit => string;
-    };
 };
 module NamespaceDeclaration: {
   class t:
@@ -417,20 +480,6 @@ module ModuleDeclaration: {
       inherit NamespaceDeclaration.t;
     };
 };
-module StringLiteral: {
-  class t:
-    (Ojs.t) =>
-    {
-      inherit LiteralLike.t;
-    };
-};
-module NumericLiteral: {
-  class t:
-    (Ojs.t) =>
-    {
-      inherit LiteralLike.t;
-    };
-};
 module IntersectionType: {
   class t:
     (Ojs.t) =>
@@ -438,6 +487,15 @@ module IntersectionType: {
       inherit Generic.t;
       pub getTypeNodes: unit => array(Generic.t);
     };
+};
+module MappedType: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+    };
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
 };
 
 module Identify: {
@@ -478,6 +536,7 @@ module Identify: {
     | [@js.arg "node"] [@js "PropertySignature"] PropertySignature(
         PropertySignature.t,
       )
+    | [@js.arg "node"] [@js "MappedType"] MappedType(MappedType.t)
     | [@js.arg "node"] [@js "TypeOperator"] TypeOperator(Generic.t)
     | [@js.arg "node"] [@js "NodeWithTypeArguments"] NodeWithTypeArguments(
         Generic.t,
@@ -495,6 +554,13 @@ module Identify: {
     | [@js.arg "node"] [@js "OptionalType"] OptionalType(Generic.t)
     | [@js.arg "node"] [@js "StringLiteral"] StringLiteral(StringLiteral.t)
     | [@js.arg "node"] [@js "NumericLiteral"] NumericLiteral(NumericLiteral.t)
+    | [@js.arg "node"] [@js "BooleanLiteral"] BooleanLiteral(BooleanLiteral.t)
+    | [@js.arg "node"] [@js "BigIntLiteral"] BigIntLiteral(Generic.t)
+    | [@js.arg "node"] [@js "RegularExpressionLiteral"]
+      RegularExpressionLiteral(
+        RegularExpressionLiteral.t,
+      )
+    | [@js.arg "node"] [@js "NullLiteral"] NullLiteral(Generic.t)
     | [@js.arg "node"] [@js "CallSignatureDeclaration"]
       CallSignatureDeclaration(
         Generic.t,

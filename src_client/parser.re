@@ -106,6 +106,149 @@ and parse__Node__Generic =
     let (runtime, scope, (_, _, t)) =
       parse__Node__SignatureLike(~runtime, ~scope, identifiedNode);
     (runtime, scope, t |> Node.Escape.toAny);
+  | LiteralType(_) =>
+    parse__Node__LiteralType(~runtime, ~scope, identifiedNode)
+  | MappedType(mapped_type) =>
+    // We need to structurally analyse this type as ts-morph does not have a proper wrapper for the MappedType
+    let children = mapped_type#getChildren();
+    let type_parameter =
+      children
+      |> CCArray.find_map(node =>
+           node#getKindName() == "TypeParameter"
+             ? switch (Ts_nodes_util.identifyGenericNode(node)) {
+               | TypeParameter(tp) => Some(tp)
+               | _ => None
+               }
+             : None
+         )
+      |> CCOpt.get_exn;
+    let value_node =
+      children
+      |> CCArray.find_map_i((i, node) =>
+           node#getKindName() == "ColonToken"
+             ? CCArray.get_safe(children, i + 1) : None
+         )
+      |> CCOpt.get_exn;
+
+    let type_constraint = type_parameter#getConstraint() |> CCOpt.get_exn;
+    let key_list_type =
+      (
+        switch (type_constraint |> Ts_nodes_util.identifyGenericNode) {
+        | TypeReference(tr) => tr#getType()
+        | _ => Ts_nodes.WithGetType.fromGeneric(type_constraint)#getType()
+        }
+      )
+      |> CCOpt.get_exn;
+
+    let parse__Value = (~runtime, ~scope, ~subname=?, key_type) => {
+      let (scope, restore) =
+        Scope.retain_path(
+          scope.path
+          |> Path.add(
+               Identifier.SubName(CCOpt.value(~default="t", subname)),
+             ),
+          scope,
+        );
+      let parameter_name = type_parameter#getName();
+      let scope =
+        scope
+        |> Context.add_param(parameter_name, None)
+        |> Context.add_arg(parameter_name, key_type);
+      let (runtime, scope, value_resolved) =
+        parse__Node__Generic_assignable(~runtime, ~scope, value_node);
+      let scope = restore(scope);
+      (runtime, scope, value_resolved);
+    };
+
+    // Extract Properties from union
+    if (key_list_type#isUnion()) {
+      let keys =
+        key_list_type#getUnionTypes()
+        |> CCArray.filter(t => t#isLiteral())
+        |> CCArray.map(t => t#getText());
+
+      let (runtime, scope, fields) =
+        keys
+        |> CCArray.fold_left(
+             ((runtime, scope, fields), key) => {
+               let (runtime, scope, value_resolved) =
+                 parse__Value(
+                   ~runtime,
+                   ~scope,
+                   ~subname=key,
+                   Literal(String(key)),
+                 );
+
+               (
+                 runtime,
+                 scope,
+                 CCArray.append(
+                   fields,
+                   [|
+                     Parameter({
+                       name: Identifier.PropertyName(key),
+                       is_optional: false,
+                       type_: value_resolved,
+                       named: true,
+                     }),
+                   |],
+                 ),
+               );
+             },
+             (runtime, scope, [||]),
+           );
+
+      parse__Node__Resolved__WrapSubNode(~runtime, ~scope, Record(fields));
+    } else if (key_list_type#isString()) {
+      let (runtime, scope, resolved_value) =
+        parse__Value(~runtime, ~scope, ~subname="t", Basic(String));
+      (runtime, scope, SafeDict(resolved_value));
+    } else if (key_list_type#isNumber()) {
+      let (runtime, scope, resolved_value) =
+        parse__Value(~runtime, ~scope, ~subname="t", Basic(String));
+      (runtime, scope, Array(resolved_value));
+    } else if (key_list_type#isEnum()) {
+      let symbol = key_list_type#getSymbol() |> CCOpt.get_exn;
+      let value_declaration = symbol#getValueDeclaration() |> CCOpt.get_exn;
+      let members =
+        Ts_nodes.EnumDeclaration.fromGeneric(value_declaration)#getMembers();
+      let keys = members |> CCArray.map(member => member#getName());
+
+      let (runtime, scope, fields) =
+        keys
+        |> CCArray.fold_left(
+             ((runtime, scope, fields), key) => {
+               let (runtime, scope, value_resolved) =
+                 parse__Value(
+                   ~runtime,
+                   ~scope,
+                   ~subname=key,
+                   Literal(String(key)),
+                 );
+
+               (
+                 runtime,
+                 scope,
+                 CCArray.append(
+                   fields,
+                   [|
+                     Parameter({
+                       name: Identifier.PropertyName(key),
+                       is_optional: false,
+                       type_: value_resolved,
+                       named: true,
+                     }),
+                   |],
+                 ),
+               );
+             },
+             (runtime, scope, [||]),
+           );
+
+      parse__Node__Resolved__WrapSubNode(~runtime, ~scope, Record(fields));
+    } else {
+      raise(Not_found);
+    };
   | _ =>
     Console.log(
       Ast_generator_utils.Naming.full_identifier_of_path(scope.path),
@@ -125,6 +268,45 @@ and parse__Node__Generic_assignable =
     : (runtime, scope, Node.node(Node.Constraint.assignable)) => {
   let (runtime, scope, node) = parse__Node__Generic(~runtime, ~scope, node);
   (runtime, scope, node |> Node.Escape.toAssignable);
+}
+and parse__Node__Resolved__WrapSubNode =
+    (~runtime, ~scope, node: Node.node(Node.Constraint.assignable)) => {
+  let name = Path.make_sub_type_name(scope.path);
+  let type_name = Identifier.TypeName(name);
+  let scope = scope |> Scope.add_to_path(type_name);
+  let scoped_path =
+    Pp.path(Path.make_current_scope(scope.path) |> Path.add(type_name));
+
+  let (runtime, scope) =
+    !
+      CCList.mem(
+        ~eq=CCString.equal,
+        scoped_path,
+        runtime.fully_qualified_added,
+      )
+      ? {
+        let wrapped_type_declaration =
+          TypeDeclaration({
+            path: scope.path,
+            name: type_name,
+            annot: node,
+            params: [||],
+          });
+        let runtime = {
+          ...runtime,
+          fully_qualified_added: [
+            scoped_path,
+            ...runtime.fully_qualified_added,
+          ],
+        };
+        (
+          runtime,
+          scope |> Scope.add_root_declaration(wrapped_type_declaration),
+        );
+      }
+      : (runtime, scope);
+
+  (runtime, scope, Reference({target: [|type_name|], params: [||]}));
 }
 and parse__Node__Generic__WrapSubNode =
     (~runtime, ~scope, node: Ts_nodes.Generic.t) => {
@@ -395,7 +577,33 @@ and parse__Node__NamespaceDeclaration =
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
-// --- UnionType
+// --- LiteralType
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__LiteralType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
+  switch (node) {
+  | LiteralType(literal) =>
+    let inner = literal#getLiteral();
+    (
+      runtime,
+      scope,
+      switch (inner |> Ts_nodes_util.identifyGenericNode) {
+      | BooleanLiteral(b) => Literal(Boolean(b#getLiteralValue()))
+      | StringLiteral(s) => Literal(String(s#getLiteralValue()))
+      | NumericLiteral(n) => Literal(Number(n#getLiteralValue()))
+      | NullLiteral(_) => Basic(Null)
+      | _ =>
+        raise(
+          Exceptions.FeatureMissing(inner#getKindName(), inner#getText()),
+        )
+      },
+    );
+  | _ => raise(Exceptions.UnexpectedAtThisPoint("Expected LiteralType"))
+  };
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+// --- IntersectionType
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 and parse__Node__Intersection = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
@@ -446,7 +654,25 @@ and parse__Node__UnionType__Nodes:
         Parser_union.generate_ast_for_union(~runtime, ~scope, members);
 
       (runtime, scope, reference);
-    | _ => raise(Not_found)
+    // TODO: !!!!! Numeric / Mixed Literal
+    | Some(StringLiteral(literals)) =>
+      // TODO: React to different literal output options (like inline / variant, etc.)
+      (
+        runtime,
+        scope,
+        Variant(
+          literals
+          |> CCArray.map(name =>
+               {
+                 VariantConstructor.name: Identifier.VariantIdentifier(name),
+                 arguments: [||],
+               }
+             ),
+        ),
+      )
+    | None =>
+      raise(Exceptions.UnexpectedAtThisPoint("Could not detect union type"))
+    | _ => raise(Failure("Union nodes result not recognized"))
     };
   }
 and parse__Node__UnionType = (~runtime, ~scope, node: Ts_nodes.UnionType.t) => {
@@ -488,7 +714,7 @@ and parse__Node__IndexedAccessType =
     | LiteralType(lt) =>
       switch (Ts_nodes_util.identifyGenericNode(lt#getLiteral())) {
       | StringLiteral(sl) => sl#getLiteralValue()
-      | NumericLiteral(nl) => nl#getLiteralValue()
+      | NumericLiteral(nl) => Printf.sprintf("%.0f", nl#getLiteralValue())
       | _ => "t"
       }
     | _ => "t"

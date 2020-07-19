@@ -1,5 +1,6 @@
-import { Project, Node, TypeGuards } from 'ts-morph';
+import { Project, Node, TypeGuards, ts } from 'ts-morph';
 import * as c from '@ts-morph/common';
+import { isEnumDeclaration } from 'typescript';
 
 const project = new Project({
     useInMemoryFileSystem: true,
@@ -12,16 +13,28 @@ const file = project.createSourceFile(
     'test.d.ts',
     `
 
-interface KeyValueProcessor {
-    (key: number, value: string): boolean;
-}
+export enum Keys = {
+    A;
+    B;
+    C;
+};
+type Flags = { [K in Keys]: { x: K } };
 
 `
 );
 
 file.forEachDescendant(node => {
-    if (Node.isIntersectionTypeNode(node)) {
-
+    if (node.getKind() === ts.SyntaxKind.MappedType) {
+        const tp = node.getLastChildByKindOrThrow(ts.SyntaxKind.TypeParameter);
+        const c = tp.getConstraintOrThrow();
+        const t = tp.getConstraintOrThrow().getType();
+        if (Node.isEnumDeclaration((c))) {
+            console.log(c.getMembers());
+        }
+        if (t && t.isEnum()) {
+            console.log(t.getSymbol()?.getValueDeclarationOrThrow())
+            console.log(t.getText())
+        }
     }
     //     node.getExtends().forEach(ext => {
     //         ext.getTypeArguments

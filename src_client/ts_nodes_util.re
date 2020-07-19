@@ -16,11 +16,16 @@ let unwrap_identified = (node: Ts_nodes.nodeKind) =>
   | ModuleDeclaration(node) => node |> from_node_kind_child
   | Identifier(node) => node |> from_node_kind_child
   | SourceFile(node) => node |> from_node_kind_child
+  | MappedType(node) => node |> from_node_kind_child
   | TypeParameter(node) => node |> from_node_kind_child
   | NamedDeclaration(node) => node |> from_node_kind_child
   | HeritageClause(node) => node |> from_node_kind_child
   | TypeElement(node) => node |> from_node_kind_child
   | StringKeyword(node) => node |> from_node_kind_child
+  | BooleanLiteral(node) => node |> from_node_kind_child
+  | BigIntLiteral(node) => node |> from_node_kind_child
+  | RegularExpressionLiteral(node) => node |> from_node_kind_child
+  | NullLiteral(node) => node |> from_node_kind_child
   | NumberKeyword(node) => node |> from_node_kind_child
   | NeverKeyword(node) => node |> from_node_kind_child
   | ObjectKeyword(node) => node |> from_node_kind_child

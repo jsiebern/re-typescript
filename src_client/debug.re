@@ -162,6 +162,24 @@ if (typeof JSON.retrocycle !== "function") {
 )
 |> ignore;
 
+let type_to_json = (t: Ts_nodes.Type.t) => {
+  Console.log(
+    Js_of_ocaml.Js.(
+      Unsafe.fun_call(
+        Unsafe.js_expr("JSON.stringify"),
+        [|
+          Unsafe.fun_call(
+            Unsafe.js_expr("JSON.decycle"),
+            [|Unsafe.inject(t |> Ts_nodes.Type.t_to_js)|],
+          ),
+          Unsafe.inject(null),
+          Unsafe.inject(2),
+        |],
+      )
+    ),
+  );
+};
+
 let node_to_json = (node: Ts_nodes.Generic.t) => {
   Console.log(
     Js_of_ocaml.Js.(
@@ -181,3 +199,55 @@ let node_to_json = (node: Ts_nodes.Generic.t) => {
 };
 let nodeKind_to_json = (node: Ts_nodes.nodeKind) =>
   node_to_json(Ts_nodes_util.unwrap_identified(node));
+
+let obj_keys = v =>
+  Js_of_ocaml.Js.(
+    Unsafe.fun_call(
+      Unsafe.js_expr("JSON.stringify"),
+      [|
+        Unsafe.fun_call(
+          Unsafe.js_expr("Object.keys"),
+          [|Unsafe.inject(v)|],
+        ),
+      |],
+    )
+  );
+
+let obj_prop_names = v =>
+  Js_of_ocaml.Js.(
+    Unsafe.fun_call(
+      Unsafe.js_expr("JSON.stringify"),
+      [|
+        Unsafe.fun_call(
+          Unsafe.js_expr("Object.getOwnPropertyNames"),
+          [|
+            Unsafe.inject(
+              Unsafe.fun_call(
+                Unsafe.js_expr("Object.getPrototypeOf"),
+                [|Unsafe.inject(v)|],
+              ),
+            ),
+          |],
+        ),
+        Unsafe.inject(null),
+        Unsafe.inject(2),
+      |],
+    )
+  );
+
+let log = v =>
+  Console.log(
+    Js_of_ocaml.Js.(
+      Unsafe.fun_call(
+        Unsafe.js_expr("JSON.stringify"),
+        [|
+          Unsafe.fun_call(
+            Unsafe.js_expr("JSON.decycle"),
+            [|Unsafe.inject(v)|],
+          ),
+          Unsafe.inject(null),
+          Unsafe.inject(2),
+        |],
+      )
+    ),
+  );

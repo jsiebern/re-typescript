@@ -14,11 +14,12 @@ let identifier: type t. Identifier.t(t) => string =
 let path = (p: Identifier.path) =>
   CCArray.to_string(~sep=" -> ", i => identifier(i), p);
 
-let ast_node: type t. Node.node(t) => string =
+let rec ast_node: type t. Node.node(t) => string =
   n =>
     switch (n) {
     | Module(_) => "Module"
     | Literal(_) => "Literal"
+    | SafeDict(t) => Printf.sprintf("SafeDict(%s)", ast_node(t))
     | GenericReference(i) =>
       Printf.sprintf(
         "GenericReference(%s)",
@@ -27,9 +28,9 @@ let ast_node: type t. Node.node(t) => string =
     | Basic(_) => "Basic"
     | TypeDeclaration({name, _}) =>
       Printf.sprintf("TypeDeclaration(%s)", identifier(name))
-    | Array(_) => "Array"
-    | Optional(_) => "Optional"
-    | Nullable(_) => "Nullable"
+    | Array(t) => Printf.sprintf("Array(%s)", ast_node(t))
+    | Optional(t) => Printf.sprintf("Optional(%s)", ast_node(t))
+    | Nullable(t) => Printf.sprintf("Nullable(%s)", ast_node(t))
     | Reference({target, _}) =>
       Printf.sprintf(
         "Reference(%s)",

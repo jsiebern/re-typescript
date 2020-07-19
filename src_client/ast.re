@@ -93,6 +93,8 @@ and Node: {
     type atLeastRecord('a) = [> | `Record] as 'a;
     type exactlyGenericReference = [ | `GenericReference];
     type atLeastGenericReference('a) = [> | `GenericReference] as 'a;
+    type exactlySafeDict = [ | `SafeDict];
+    type atLeastSafeDict('a) = [> | `SafeDict] as 'a;
 
     type any = [
       exactlyLiteral
@@ -110,6 +112,7 @@ and Node: {
       | exactlyParameter
       | exactlyRecord
       | exactlyGenericReference
+      | exactlySafeDict
     ];
 
     type assignable = [
@@ -124,6 +127,7 @@ and Node: {
       | exactlyFunction
       | exactlyRecord
       | exactlyGenericReference
+      | exactlySafeDict
     ];
 
     type moduleLevel = [
@@ -204,6 +208,8 @@ and Node: {
         return_type: node(Constraint.assignable),
       })
       : node(Constraint.atLeastFunction('poly))
+    | SafeDict(node(Constraint.assignable))
+      : node(Constraint.atLeastSafeDict('poly))
     | Record(array(node(Constraint.exactlyParameter)))
       : node(Constraint.atLeastRecord('poly))
     | Variant(array(VariantConstructor.t))
