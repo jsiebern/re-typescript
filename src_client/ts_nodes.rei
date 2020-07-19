@@ -33,43 +33,16 @@ module Generic: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
-module Symbol: {
-  [@js.enum]
-  type flags =
-    | TypeParameter;
-  let flags_of_js: Ojs.t => flags;
-  let flags_to_js: flags => Ojs.t;
-
-  class t:
-    (Ojs.t) =>
-    {
-      inherit Ojs.obj;
-      // Type Information
-      pub getName: unit => string;
-      pub getFullyQualifiedName: unit => string;
-      pub getMembers: unit => array(t);
-      pub getValueDeclaration: unit => option(Generic.t);
-      pub getDeclarations: unit => array(Generic.t);
-      // Type checking
-      pub isAlias: unit => bool;
-      pub hasFlags: flags => bool;
-      // Raw
-      pub compilerSymbol: Ts_raw.Symbol.t;
-    };
-  [@js.cast]
-  let fromMorphSymbol: Ts_morph.Symbol.t => t;
-  [@js.cast]
-  let toMorphSymbol: t => Ts_morph.Symbol.t;
-  let t_of_js: Ojs.t => t;
-  let t_to_js: t => Ojs.t;
-};
-module Type: {
+module RootType: {
   class t:
     (Ojs.t) =>
     {
       inherit Ojs.obj;
       // Info
       pub getUnionTypes: unit => array(t);
+      pub getArrayElementType: unit => option(t);
+      pub getTupleElements: unit => array(t);
+      pub getIntersectionTypes: unit => array(t);
       // Type Checks
       pub isAny: unit => bool;
       pub isArray: unit => bool;
@@ -96,11 +69,59 @@ module Type: {
       pub isUndefined: unit => bool;
       pub isAnonymous: unit => bool;
       // Raw
-      pub getSymbol: unit => option(Symbol.t);
       pub getText: unit => string;
       pub compilerType: Ts_raw.Type.t;
     };
 
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module Symbol: {
+  [@js.enum]
+  type flags =
+    | TypeParameter
+    | Optional;
+  let flags_of_js: Ojs.t => flags;
+  let flags_to_js: flags => Ojs.t;
+
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ojs.obj;
+      // Type Information
+      pub getName: unit => string;
+      pub getFullyQualifiedName: unit => string;
+      pub getMembers: unit => array(t);
+      pub getValueDeclaration: unit => option(Generic.t);
+      pub getDeclarations: unit => array(Generic.t);
+      pub getTypeAtLocation: Generic.t => RootType.t;
+      // Type checking
+      pub isAlias: unit => bool;
+      pub hasFlags: flags => bool;
+      // Raw
+      pub compilerSymbol: Ts_raw.Symbol.t;
+    };
+  [@js.cast]
+  let fromMorphSymbol: Ts_morph.Symbol.t => t;
+  [@js.cast]
+  let toMorphSymbol: t => Ts_morph.Symbol.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module Type: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit RootType.t;
+      // Symbol based
+      pub getSymbol: unit => option(Symbol.t);
+      pub getProperties: unit => array(Symbol.t);
+    };
+
+  [@js.cast]
+  let toRootType: t => RootType.t;
+  [@js.cast]
+  let fromRootType: RootType.t => t;
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
@@ -236,20 +257,12 @@ module CallSignature: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
-module Abstr_TypeWithSymbol: {
-  class t:
-    (Ojs.t) =>
-    {
-      inherit Ojs.obj;
-      pub getSymbol: unit => option(Symbol.t);
-    };
-};
 module Abstr_ExtendsNode: {
   class t:
     (Ojs.t) =>
     {
       inherit TypeArgumented.t;
-      pub getType: unit => Abstr_TypeWithSymbol.t;
+      pub getType: unit => Type.t;
     };
 };
 module InterfaceDeclaration: {
@@ -417,7 +430,7 @@ module IndexedAccessType: {
       inherit Generic.t;
       pub getObjectTypeNode: unit => Generic.t;
       pub getIndexTypeNode: unit => Generic.t;
-      pub getType: unit => option(Ts_morph.Type.t);
+      pub getType: unit => option(Type.t);
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;
@@ -513,6 +526,17 @@ module MappedType: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module TypeOperator: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit WithGetType.t;
+    };
+  [@js.cast]
+  let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 
 module Identify: {
   [@js.sum "kindName"]
@@ -553,7 +577,7 @@ module Identify: {
         PropertySignature.t,
       )
     | [@js.arg "node"] [@js "MappedType"] MappedType(MappedType.t)
-    | [@js.arg "node"] [@js "TypeOperator"] TypeOperator(Generic.t)
+    | [@js.arg "node"] [@js "TypeOperator"] TypeOperator(TypeOperator.t)
     | [@js.arg "node"] [@js "NodeWithTypeArguments"] NodeWithTypeArguments(
         Generic.t,
       )

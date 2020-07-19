@@ -1,5 +1,10 @@
 open Ast;
 
+module Exceptions = {
+  exception UnexpectedAtThisPoint(string);
+  exception FeatureMissing(string, string);
+};
+
 type iPath = Identifier.path;
 type parse_config = {exports_only: bool};
 type runtime = {
@@ -173,4 +178,8 @@ let build_path_from_ref_string = (~scope, ref_string: string) => {
   } else {
     result;
   };
+};
+
+let parse__AssignAny = (~runtime, ~scope) => {
+  (runtime, {...scope, has_any: true}, Node.Basic(Any));
 };

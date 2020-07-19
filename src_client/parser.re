@@ -5,10 +5,6 @@
 // Could use a similar system to graphql-ppx (see https://github.com/reasonml-community/graphql-ppx/blob/master/src/base/validations.re for reference)
 open Ast;
 open Node;
-module Exceptions = {
-  exception UnexpectedAtThisPoint(string);
-  exception FeatureMissing(string, string);
-};
 
 // ---------------------------------------------------------------- ´--------------------------
 // ------------------------------------------------------------------------------------------
@@ -255,6 +251,8 @@ and parse__Node__Generic =
         Failure("Could not determine mapped obj fields"),
       );
     };
+  | TypeOperator(_) =>
+    parse__Node__TypeOperator(~runtime, ~scope, identifiedNode)
   | _ =>
     Console.log(
       Ast_generator_utils.Naming.full_identifier_of_path(scope.path),
@@ -583,6 +581,35 @@ and parse__Node__NamespaceDeclaration =
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
+// --- TypeOperator
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node__TypeOperator = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
+  switch (node) {
+  | TypeOperator(type_operator) =>
+    switch (
+      type_operator#getType()
+      |> CCOpt.flat_map(
+           Parser_resolvers.try_to_resolve_type(~runtime, ~scope),
+         )
+    ) {
+    | Some((runtime, scope, res)) => (
+        runtime,
+        scope,
+        res |> Node.Escape.toAny,
+      )
+    | None =>
+      raise(
+        Exceptions.UnexpectedAtThisPoint(
+          "Could not resolve type of TypeOperator",
+        ),
+      )
+    }
+  | _ => raise(Exceptions.UnexpectedAtThisPoint("Expected TypeOperator"))
+  };
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
 // --- LiteralType
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -666,15 +693,7 @@ and parse__Node__UnionType__Nodes:
       (
         runtime,
         scope,
-        Variant(
-          literals
-          |> CCArray.map(name =>
-               {
-                 VariantConstructor.name: Identifier.VariantIdentifier(name),
-                 arguments: [||],
-               }
-             ),
-        ),
+        Parser_generators.generate_string_literal_list(literals),
       )
     | None =>
       raise(Exceptions.UnexpectedAtThisPoint("Could not detect union type"))
@@ -702,10 +721,6 @@ and parse__Node__UnionType = (~runtime, ~scope, node: Ts_nodes.UnionType.t) => {
   let (runtime, scope, t) =
     parse__Node__UnionType__Nodes(~runtime, ~scope, parsed_nodes);
   (runtime, scope, t |> Node.Escape.toAny);
-}
-// --- Any Helper
-and parse__AssignAny = (~runtime, ~scope) => {
-  (runtime, {...scope, has_any: true}, Basic(Any));
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -762,30 +777,18 @@ and parse__Node__IndexedAccessType =
 // A complex type result might still fail
 // in deep access fields like ['one']['two']
 and get__DerivedTypeFromTypeObj:
-  (~runtime: runtime, ~scope: scope, Ts_morph.Type.t) =>
+  (~runtime: runtime, ~scope: scope, Ts_nodes.Type.t) =>
   option((runtime, scope, Node.node(Node.Constraint.assignable))) =
   (~runtime, ~scope, t) =>
-    if (t#isAny()) {
-      let (runtime, scope, t) = parse__AssignAny(~runtime, ~scope);
-      Some((runtime, scope, t));
-    } else if (t#isBoolean()) {
-      Some((runtime, scope, Basic(Boolean)));
-    } else if (t#isNull()) {
-      Some((runtime, scope, Basic(Null)));
-    } else if (t#isNumber()) {
-      Some((runtime, scope, Basic(Number)));
-    } else if (t#isString()) {
-      Some((runtime, scope, Basic(String)));
-    } else if (t#isUndefined()) {
-      Some((runtime, scope, Basic(Undefined)));
-    } else {
-      raise(Not_found);
-    }
+    Parser_resolvers.try_to_resolve_type(~runtime, ~scope, t)
 and get__TypeNodeByTypeChecker:
   Ts_nodes.Generic.t => option(Ts_nodes.Generic.t) =
   node => {
     (node |> Ts_nodes.WithGetType.fromGeneric)#getType()
-    |> CCOpt.flat_map(t => t#getSymbol())
+    |> CCOpt.flat_map(t => {
+         Debug.type_to_json(t);
+         t#getSymbol();
+       })
     |> CCOpt.map(s => s#getDeclarations())
     |> CCOpt.flat_map(CCArray.get_safe(_, 0));
   }

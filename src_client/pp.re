@@ -36,7 +36,14 @@ let rec ast_node: type t. Node.node(t) => string =
         "Reference(%s)",
         Ast_generator_utils.Naming.full_identifier_of_path(target),
       )
-    | Variant(_) => "Variant"
+    | Variant(variants) =>
+      Printf.sprintf(
+        "Variant(%s)",
+        variants
+        |> CCArray.to_string(~sep=", ", (v: VariantConstructor.t) =>
+             identifier(v.name)
+           ),
+      )
     | Fixture(_) => "Fixture"
     | Tuple(_) => "Tuple"
     | Function(_) => "Function"
