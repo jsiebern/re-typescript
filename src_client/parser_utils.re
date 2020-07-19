@@ -18,6 +18,7 @@ type scope = {
   context_params:
     list((string, option(Node.node(Node.Constraint.assignable)))),
   context_args: list((string, Node.node(Node.Constraint.assignable))),
+  context_args_raw: list((string, Ts_nodes.Generic.t)),
 };
 module Context = {
   let get_param = (key, scope) =>

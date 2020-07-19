@@ -139,6 +139,8 @@ module TypeChecker: {
     (Ojs.t) =>
     {
       inherit Ojs.obj;
+      pub getSymbolAtLocation: Node.t => option(Symbol.t);
+      pub getAliasedSymbol: Symbol.t => option(Symbol.t);
       // Raw
       pub compilerObject: Ts_raw.TypeChecker.t;
     };

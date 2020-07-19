@@ -28,10 +28,18 @@ module Generic: {
     };
   [@js.cast]
   let fromMorphNode: Ts_morph.Node.t => t;
+  [@js.cast]
+  let toMorphNode: t => Ts_morph.Node.t;
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
 module Symbol: {
+  [@js.enum]
+  type flags =
+    | TypeParameter;
+  let flags_of_js: Ojs.t => flags;
+  let flags_to_js: flags => Ojs.t;
+
   class t:
     (Ojs.t) =>
     {
@@ -39,13 +47,19 @@ module Symbol: {
       // Type Information
       pub getName: unit => string;
       pub getFullyQualifiedName: unit => string;
-      pub getDeclarations: unit => array(Generic.t);
       pub getMembers: unit => array(t);
       pub getValueDeclaration: unit => option(Generic.t);
+      pub getDeclarations: unit => array(Generic.t);
+      // Type checking
+      pub isAlias: unit => bool;
+      pub hasFlags: flags => bool;
       // Raw
       pub compilerSymbol: Ts_raw.Symbol.t;
     };
-
+  [@js.cast]
+  let fromMorphSymbol: Ts_morph.Symbol.t => t;
+  [@js.cast]
+  let toMorphSymbol: t => Ts_morph.Symbol.t;
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
@@ -313,6 +327,8 @@ module Identifier: {
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;
+  [@js.cast]
+  let toGeneric: t => Generic.t;
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };

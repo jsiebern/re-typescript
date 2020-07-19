@@ -2,12 +2,17 @@ let test = (
   "/test.d.ts",
   {|
 
-export enum Keys {
-    A,
-    B,
-    C
+type PickX<T, K extends keyof T> = {
+    [P in K]: T[P];
+};
+interface A {
+  x: string;
+  y: number;
+  z: boolean;
 }
-type Flags = { [K in Keys]: { x: K } }
+
+type keys = 'x' | 'y';
+type stripped = PickX<A, keys>;
 
 // type kof = keyof string;
 

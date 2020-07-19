@@ -47,6 +47,7 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
              refs: Hashtbl.create(10),
              context_params: [],
              context_args: [],
+             context_args_raw: [],
            };
 
            let source_file =
@@ -133,12 +134,14 @@ and parse__Node__Generic =
     let type_constraint = type_parameter#getConstraint() |> CCOpt.get_exn;
     let key_list_type =
       (
-        switch (type_constraint |> Ts_nodes_util.identifyGenericNode) {
-        | TypeReference(tr) => tr#getType()
-        | _ => Ts_nodes.WithGetType.fromGeneric(type_constraint)#getType()
-        }
-      )
+        type_constraint
+        |> Parser_resolvers.raw_remove_references
+        |> CCOpt.get_exn
+        |> Ts_nodes.WithGetType.fromGeneric
+      )#
+        getType()
       |> CCOpt.get_exn;
+    Console.log(key_list_type);
 
     let parse__Value = (~runtime, ~scope, ~subname=?, key_type) => {
       let (scope, restore) =
@@ -247,7 +250,10 @@ and parse__Node__Generic =
 
       parse__Node__Resolved__WrapSubNode(~runtime, ~scope, Record(fields));
     } else {
-      raise(Not_found);
+      // Debug.type_to_json(key_list_type);
+      raise(
+        Failure("Could not determine mapped obj fields"),
+      );
     };
   | _ =>
     Console.log(

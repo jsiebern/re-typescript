@@ -1,4 +1,4 @@
-import { Project, Node, TypeGuards, ts } from 'ts-morph';
+import { Project, Node, ts } from 'ts-morph';
 import * as c from '@ts-morph/common';
 import { isEnumDeclaration } from 'typescript';
 
@@ -13,17 +13,31 @@ const file = project.createSourceFile(
     'test.d.ts',
     `
 
-export enum Keys = {
-    A;
-    B;
-    C;
-};
-type Flags = { [K in Keys]: { x: K } };
+    type PickX<T, K extends keyof T> = {
+        [P in K]: T[P];
+    };
+    interface A {
+      x: string;
+      y: number;
+      z: boolean;
+    }
+
+    type keys = 'x' | 'y';
+    type stripped = PickX<A, keys>;
 
 `
 );
 
 file.forEachDescendant(node => {
+    if (Node.isTypeReferenceNode(node)) {
+        const checker = node.getProject().getTypeChecker();
+        const xxx = checker.getSymbolAtLocation(node.getTypeName());
+        console.log(xxx?.isAlias())
+        console.log(xxx?.hasFlags(ts.SymbolFlags.TypeParameter))
+
+        console.log(node.getTypeName().getText());
+    }
+
     if (node.getKind() === ts.SyntaxKind.MappedType) {
         const tp = node.getLastChildByKindOrThrow(ts.SyntaxKind.TypeParameter);
         const c = tp.getConstraintOrThrow();
@@ -32,6 +46,7 @@ file.forEachDescendant(node => {
             console.log(c.getMembers());
         }
         if (t && t.isEnum()) {
+
             console.log(t.getSymbol()?.getValueDeclarationOrThrow())
             console.log(t.getText())
         }
