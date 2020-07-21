@@ -1201,7 +1201,7 @@ and parse__type = (~inline=false, ~path, type_: Ts.type_) => {
   | MappedObject({item, _}) as t =>
     inline ? parse__inline(~path, t) : parse__mapped_object(~path, item)
   | Conditional({item, _}) as t =>
-    inline ? parse__inline(~path, t) : parse__conditonal(~path, item)
+    inline ? parse__inline(~path, t) : parse__conditional(~path, item)
   | Symbol(pi) =>
     raise(Exceptions.Parser_unsupported("Symbol type not yet supported", pi))
   | This(pi) =>
@@ -1293,7 +1293,7 @@ and parse__inline = (~path, ~parameters=?, type_) => {
 /**
     Conditional
 */
-and parse__conditonal = (~path, conditional: Ts.conditional) => {
+and parse__conditional = (~path, conditional: Ts.conditional) => {
   let rewrapped = Ts.Conditional({pi: current_position^, item: conditional});
   switch (Parameters.get_root_fixed(~path)) {
   | [] =>
