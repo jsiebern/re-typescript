@@ -48,7 +48,6 @@ interface method_signature {
 type extracted_method_signature = method_signature['func3' | 'func2'];
 
 
-
 // ------------------------------------------------------
 
 |},

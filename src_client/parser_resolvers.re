@@ -89,6 +89,7 @@ let rec raw_remove_references = (t: Ts_nodes.Generic.t) => {
 let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
   // Todo: Eventually maybe 'isEnumLiteral'
   // Todo: Eventually 'isClass'
+  // Todo: Eventually 'Ts_nodes_util.Type.has_flag(t, ESSymbol)'
   if (t#isAny()) {
     let (runtime, scope, t) = parse__AssignAny(~runtime, ~scope);
     Some((runtime, scope, t));
@@ -106,6 +107,12 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
     t#getArrayElementType()
     |> CCOpt.map(Ts_nodes.Type.fromRootType)
     |> CCOpt.flat_map(inner => try_to_resolve_type(~runtime, ~scope, inner));
+  } else if (Ts_nodes_util.Type.has_flag(t, Void)) {
+    Some((runtime, scope, Basic(Void)));
+  } else if (Ts_nodes_util.Type.has_flag(t, BigInt)) {
+    Some((runtime, scope, Basic(Number)));
+  } else if (Ts_nodes_util.Type.has_flag(t, Never)) {
+    None;
   } else if (t#isBooleanLiteral()) {
     Some((
       runtime,
@@ -277,6 +284,53 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
       runtime,
       scope,
       Parser_generators.generate_intersection_body(types),
+    ));
+  } else if (CCArray.length(t#getCallSignatures()) > 0) {
+    let signature =
+      CCArray.get(t#getCallSignatures(), 0)
+      |> Ts_nodes.Signature.fromRootSignature;
+
+    let root_node = signature#getDeclaration();
+    let (runtime, scope, resolved_parameters) =
+      signature#getParameters()
+      |> CCArray.map(param_symbol => {
+           let is_optional = param_symbol#hasFlags(Ts_nodes.Symbol.Optional);
+           (
+             param_symbol#getName(),
+             is_optional,
+             param_symbol#getTypeAtLocation(root_node)
+             |> Ts_nodes.Type.fromRootType,
+           );
+         })
+      |> CCArray.fold_left(
+           ((runtime, scope, types), (name, is_optional, t)) => {
+             switch (try_to_resolve_type(~runtime, ~scope, t)) {
+             | None => (runtime, scope, types)
+             | Some((runtime, scope, res)) =>
+               let res_param =
+                 Parameter({
+                   name: Identifier.PropertyName(name),
+                   is_optional,
+                   type_: res,
+                   named: is_optional,
+                 });
+               (runtime, scope, CCArray.append(types, [|res_param|]));
+             }
+           },
+           (runtime, scope, [||]),
+         );
+
+    let (runtime, scope, resolved_return_type) =
+      try_to_resolve_type(~runtime, ~scope, signature#getReturnType())
+      |> CCOpt.value(~default=(runtime, scope, Basic(Any)));
+
+    Some((
+      runtime,
+      scope,
+      Function({
+        return_type: resolved_return_type,
+        parameters: resolved_parameters,
+      }),
     ));
   } else {
     Console.error(

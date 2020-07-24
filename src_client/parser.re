@@ -137,7 +137,6 @@ and parse__Node__Generic =
       )#
         getType()
       |> CCOpt.get_exn;
-    Console.log(key_list_type);
 
     let parse__Value = (~runtime, ~scope, ~subname=?, key_type) => {
       let (scope, restore) =
@@ -786,8 +785,8 @@ and get__TypeNodeByTypeChecker:
   node => {
     (node |> Ts_nodes.WithGetType.fromGeneric)#getType()
     |> CCOpt.flat_map(t => {
-         Debug.type_to_json(t);
-         t#getSymbol();
+         //  Debug.type_to_json(t);
+         t#getSymbol()
        })
     |> CCOpt.map(s => s#getDeclarations())
     |> CCOpt.flat_map(CCArray.get_safe(_, 0));
@@ -1387,6 +1386,12 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
       | Some(argType) => Node.Escape.toAny(argType)
       },
     );
+  // Fixed keyword reference
+  | TypeReference(node) when node#getText() == "Error" => (
+      runtime,
+      scope,
+      Basic(RelevantKeyword("Js.Exn.t")),
+    )
   // "Normal" reference
   | TypeReference(node) =>
     let type_name = node#getTypeName();

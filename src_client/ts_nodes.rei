@@ -79,8 +79,59 @@ module RootType: {
 module Symbol: {
   [@js.enum]
   type flags =
-    | TypeParameter
-    | Optional;
+    | [@js 0] None
+    | [@js 1] FunctionScopedVariable
+    | [@js 2] BlockScopedVariable
+    | [@js 3] Variable
+    | [@js 4] Property
+    | [@js 8] EnumMember
+    | [@js 16] Function
+    | [@js 32] Class
+    | [@js 64] Interface
+    | [@js 128] ConstEnum
+    | [@js 256] RegularEnum
+    | [@js 512] ValueModule
+    | [@js 1024] NamespaceModule
+    | [@js 2048] TypeLiteral
+    | [@js 4096] ObjectLiteral
+    | [@js 8192] Method
+    | [@js 16384] Constructor
+    | [@js 32768] GetAccessor
+    | [@js 65536] SetAccessor
+    | [@js 131072] Signature
+    | [@js 262144] TypeParameter
+    | [@js 524288] TypeAlias
+    | [@js 1048576] ExportValue
+    | [@js 2097152] Alias
+    | [@js 4194304] Prototype
+    | [@js 8388608] ExportStar
+    | [@js 16777216] Optional
+    | [@js 33554432] Transient
+    | [@js 67108864] Assignment
+    | [@js 134217728] ModuleExports
+    | [@js 384] Enum
+    | [@js 111551] Value
+    | [@js 788968] Type
+    | [@js 1920] Namespace
+    | [@js 1536] Module
+    | [@js 98304] Accessor
+    | [@js 111550] FunctionScopedVariableExcludes
+    | [@js 900095] EnumMemberExcludes
+    | [@js 110991] FunctionExcludes
+    | [@js 899503] ClassExcludes
+    | [@js 788872] InterfaceExcludes
+    | [@js 899327] RegularEnumExcludes
+    | [@js 899967] ConstEnumExcludes
+    | [@js 110735] ValueModuleExcludes
+    | [@js 103359] MethodExcludes
+    | [@js 46015] GetAccessorExcludes
+    | [@js 78783] SetAccessorExcludes
+    | [@js 526824] TypeParameterExcludes
+    | [@js 2623475] ModuleMember
+    | [@js 944] ExportHasLocal
+    | [@js 418] BlockScoped
+    | [@js 98308] PropertyOrAccessor
+    | [@js 106500] ClassMember;
   let flags_of_js: Ojs.t => flags;
   let flags_to_js: flags => Ojs.t;
 
@@ -108,7 +159,65 @@ module Symbol: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module RootSignature: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Ojs.obj;
+    };
+};
 module Type: {
+  [@js.enum]
+  type flags =
+    | [@js 1] Any
+    | [@js 2] Unknown
+    | [@js 4] String
+    | [@js 8] Number
+    | [@js 16] Boolean
+    | [@js 32] Enum
+    | [@js 64] BigInt
+    | [@js 128] StringLiteral
+    | [@js 256] NumberLiteral
+    | [@js 512] BooleanLiteral
+    | [@js 1024] EnumLiteral
+    | [@js 2048] BigIntLiteral
+    | [@js 4096] ESSymbol
+    | [@js 8192] UniqueESSymbol
+    | [@js 16384] Void
+    | [@js 32768] Undefined
+    | [@js 65536] Null
+    | [@js 131072] Never
+    | [@js 262144] TypeParameter
+    | [@js 524288] Object
+    | [@js 1048576] Union
+    | [@js 2097152] Intersection
+    | [@js 4194304] Index
+    | [@js 8388608] IndexedAccess
+    | [@js 16777216] Conditional
+    | [@js 33554432] Substitution
+    | [@js 67108864] NonPrimitive
+    | [@js 2944] Literal
+    | [@js 109440] Unit
+    | [@js 384] StringOrNumberLiteral
+    | [@js 117724] PossiblyFalsy
+    | [@js 132] StringLike
+    | [@js 296] NumberLike
+    | [@js 2112] BigIntLike
+    | [@js 528] BooleanLike
+    | [@js 1056] EnumLike
+    | [@js 12288] ESSymbolLike
+    | [@js 49152] VoidLike
+    | [@js 3145728] UnionOrIntersection
+    | [@js 3670016] StructuredType
+    | [@js 8650752] TypeVariable
+    | [@js 58982400] InstantiableNonPrimitive
+    | [@js 63176704] Instantiable
+    | [@js 66846720] StructuredOrInstantiable
+    | [@js 133970943] Narrowable
+    | [@js 67637251] NotUnionOrUnit;
+  let flags_of_js: Ojs.t => flags;
+  let flags_to_js: flags => Ojs.t;
+
   class t:
     (Ojs.t) =>
     {
@@ -116,6 +225,8 @@ module Type: {
       // Symbol based
       pub getSymbol: unit => option(Symbol.t);
       pub getProperties: unit => array(Symbol.t);
+      pub getCallSignatures: unit => array(RootSignature.t);
+      pub getFlags: unit => int;
     };
 
   [@js.cast]
@@ -166,6 +277,24 @@ module TypeParametered: {
   let fromGeneric: Generic.t => t;
   [@js.cast]
   let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module Signature: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit RootSignature.t;
+      pub getReturnType: unit => Type.t;
+      pub getParameters: unit => array(Symbol.t);
+      pub getTypeParameters: unit => array(TypeParameter.t);
+      pub getDeclaration: unit => Generic.t;
+    };
+
+  [@js.cast]
+  let toRootSignature: t => RootSignature.t;
+  [@js.cast]
+  let fromRootSignature: RootSignature.t => t;
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };

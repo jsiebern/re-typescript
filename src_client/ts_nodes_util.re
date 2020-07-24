@@ -73,3 +73,9 @@ let unwrap_identified = (node: Ts_nodes.nodeKind) =>
   | InterfaceDeclaration(node) => node |> from_node_kind_child
   | Other(node) => node |> from_node_kind_child
   };
+
+module Type = {
+  let has_flag = (t: Ts_nodes.Type.t, f: Ts_nodes.Type.flags) =>
+    Int.logand(t#getFlags(), Ojs.int_of_js(Ts_nodes.Type.flags_to_js(f)))
+    > 0;
+};
