@@ -245,10 +245,7 @@ and parse__Node__Generic =
 
       parse__Node__Resolved__WrapSubNode(~runtime, ~scope, Record(fields));
     } else {
-      // Debug.type_to_json(key_list_type);
-      raise(
-        Failure("Could not determine mapped obj fields"),
-      );
+      (runtime, scope, Basic(Never));
     };
   | TypeOperator(_) =>
     parse__Node__TypeOperator(~runtime, ~scope, identifiedNode)
@@ -1559,6 +1556,26 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
          );
     let ref_path = build_path_from_ref_string(~scope, ref_to);
     let scope = scope |> Scope.add_ref(ref_path, scope.path);
+
+    switch (
+      (
+        Ts_nodes.Identifier.toGeneric(node#getTypeName())
+        |> Ts_nodes.WithGetType.fromGeneric
+      )#
+        getType()
+      |> CCOpt.flat_map(t => t#getSymbol())
+    ) {
+    | None => ()
+    | Some(symbol) =>
+      switch (CCArray.get_safe(symbol#getDeclarations(), 0)) {
+      | None => ()
+      | Some(dec) =>
+        // TODO: Try inserting arguments into context here and resolve the mapped type
+        // This will get more complex because it could not be finally resolved through many references
+        // and even then there might be args missing
+        Console.log(dec#getKindName())
+      }
+    };
 
     (
       runtime,

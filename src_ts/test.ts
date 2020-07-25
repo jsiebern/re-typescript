@@ -1,6 +1,7 @@
 import { Project, Node, ts } from 'ts-morph';
 import * as c from '@ts-morph/common';
 import { isEnumDeclaration } from 'typescript';
+import { notEqual } from 'assert';
 
 const project = new Project({
     useInMemoryFileSystem: true,
@@ -21,13 +22,17 @@ const file = project.createSourceFile(
 // type extracted_method_signature = method_signature['func3' | 'func2'];
 
 
-type obj = {
-    field_1: number,
-    field_2: {
-        field_3: boolean
-    }
+type PickX<T, K extends keyof T> = {
+    [P in K]: T[P];
 };
-type field_1 = obj['field_2']['field_3'];
+interface A {
+  x: string;
+  y: number;
+  z: boolean;
+}
+
+type keys = 'x' | 'y';
+type stripped = PickX<A, keys>;
 
 `
 );
@@ -45,18 +50,16 @@ file.forEachDescendant(node => {
         // })
         const parent = node.getParent();
         parent.getChildren().forEach(child => {
-            console.log(child.getKindName())
+            // console.log(child.getKindName())
         })
         // console.log('------')
     }
+    if (Node.isTypeReferenceNode(node)) {
+        if (node.getText().includes('PickX')) {
 
-    // console.log(node.getType().getFlags())
-    node.getType().getCallSignatures().forEach((cs) => {
-        const t = cs.getReturnType();
-        if (t.getText() === 'void') {
+            console.log(node.getTypeName().getType().getObjectFlags())
         }
-
-    });
+    }
     // Node.isFunctionTypeNode
     // node.getSourceFile().getExportSymbols()
     // if (Node.isTypeReferenceNode(node)) {

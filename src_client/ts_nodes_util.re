@@ -78,4 +78,10 @@ module Type = {
   let has_flag = (t: Ts_nodes.Type.t, f: Ts_nodes.Type.flags) =>
     Int.logand(t#getFlags(), Ojs.int_of_js(Ts_nodes.Type.flags_to_js(f)))
     > 0;
+  let has_object_flag = (t: Ts_nodes.Type.t, f: Ts_nodes.Type.object_flags) =>
+    Int.logand(
+      t#getObjectFlags(),
+      Ojs.int_of_js(Ts_nodes.Type.object_flags_to_js(f)),
+    )
+    > 0;
 };

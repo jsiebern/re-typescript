@@ -218,6 +218,30 @@ module Type: {
   let flags_of_js: Ojs.t => flags;
   let flags_to_js: flags => Ojs.t;
 
+  [@js.enum]
+  type object_flags =
+    | [@js 1] Class
+    | [@js 2] Interface
+    | [@js 3] ClassOrInterface
+    | [@js 4] Reference
+    | [@js 8] Tuple
+    | [@js 16] Anonymous
+    | [@js 32] Mapped
+    | [@js 64] Instantiated
+    | [@js 128] ObjectLiteral
+    | [@js 256] EvolvingArray
+    | [@js 512] ObjectLiteralPatternWithComputedProperties
+    | [@js 1024] ContainsSpread
+    | [@js 2048] ReverseMapped
+    | [@js 4096] JsxAttributes
+    | [@js 8192] MarkerType
+    | [@js 16384] JSLiteral
+    | [@js 32768] FreshLiteral
+    | [@js 65536] ArrayLiteral
+    | [@js 131072] ObjectRestType;
+  let object_flags_of_js: Ojs.t => object_flags;
+  let object_flags_to_js: object_flags => Ojs.t;
+
   class t:
     (Ojs.t) =>
     {
@@ -227,6 +251,7 @@ module Type: {
       pub getProperties: unit => array(Symbol.t);
       pub getCallSignatures: unit => array(RootSignature.t);
       pub getFlags: unit => int;
+      pub getObjectFlags: unit => int;
     };
 
   [@js.cast]

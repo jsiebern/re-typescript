@@ -63,7 +63,6 @@ let type_of_reference =
 };
 
 let rec raw_remove_references = (t: Ts_nodes.Generic.t) => {
-  Console.log(t#getKindName());
   let checker = t#getProject()#getTypeChecker();
   switch (t |> Ts_nodes_util.identifyGenericNode) {
   | TypeReference(tf) =>
@@ -78,10 +77,7 @@ let rec raw_remove_references = (t: Ts_nodes.Generic.t) => {
 
     type_symbol#getDeclarations()
     |> CCArray.get_safe(_, 0)
-    |> CCOpt.flat_map(n => {
-         Console.log(n#getKindName());
-         raw_remove_references(n);
-       });
+    |> CCOpt.flat_map(n => {raw_remove_references(n)});
   | _ => Some(t)
   };
 };
@@ -332,6 +328,8 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
         parameters: resolved_parameters,
       }),
     ));
+  } else if (Ts_nodes_util.Type.has_object_flag(t, Mapped)) {
+    raise(Not_found);
   } else {
     Console.error(
       Printexc.to_string(
