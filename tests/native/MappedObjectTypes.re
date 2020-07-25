@@ -69,6 +69,9 @@ describe("mapped object types", ({test, _}) => {
         {|
             type key = 'just_one_key';
             type Flags = { [K in key]: boolean };
+
+            type key2 = 4;
+            type Flags2 = { [K in key2]: boolean };
           |},
       ),
     ).
@@ -84,7 +87,7 @@ describe("mapped object types", ({test, _}) => {
                 key_1: string;
                 key_2: number;
                 flags: { [K in Keys]: boolean }
-            };
+            }
           |},
       ),
     ).

@@ -252,6 +252,7 @@ module Type: {
       pub getCallSignatures: unit => array(RootSignature.t);
       pub getFlags: unit => int;
       pub getObjectFlags: unit => int;
+      pub getApparentType: unit => t;
     };
 
   [@js.cast]

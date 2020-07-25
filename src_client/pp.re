@@ -25,7 +25,23 @@ let rec ast_node: type t. Node.node(t) => string =
         "GenericReference(%s)",
         Ast_generator_utils.Naming.fromIdentifier(i),
       )
-    | Basic(_) => "Basic"
+    | Basic(b) =>
+      Printf.sprintf(
+        "Basic(%s)",
+        switch (b) {
+        | RelevantKeyword(word) =>
+          Printf.sprintf("RelevantKeyword<%s>", word)
+        | String => "String"
+        | Number => "Number"
+        | Boolean => "Boolean"
+        | Void => "Void"
+        | Any => "Any"
+        | Null => "Null"
+        | Undefined => "Undefined"
+        | Never => "Never"
+        | This => "This"
+        },
+      )
     | TypeDeclaration({name, _}) =>
       Printf.sprintf("TypeDeclaration(%s)", identifier(name))
     | Array(t) => Printf.sprintf("Array(%s)", ast_node(t))
@@ -51,3 +67,6 @@ let rec ast_node: type t. Node.node(t) => string =
       Printf.sprintf("Parameter(%s)", identifier(name))
     | Record(_) => "Record"
     };
+
+let node_kind = (n: Ts_nodes.nodeKind) =>
+  Ts_nodes_util.unwrap_identified(n)#getKindName();

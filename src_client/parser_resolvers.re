@@ -2,14 +2,6 @@ open Ast;
 open Node;
 open Parser_utils;
 
-// TODO:
-// !!!!!!!!!!!!!!!!!!!
-// Mapped types should only be parsed if all type args can be resolved
-// through context!! So if we have a mapped type WITH type params,
-// that stands alone we should ignore it for now and wait for it being
-// called through a reference that passes the necessary arguments
-// !!!!!!!!!!!!!!!!!!!
-
 let should_exclude_for_ref = n =>
   n#getKindName() != "ModuleDeclaration"
   && n#getKindName() != "VariableDeclaration";
@@ -338,6 +330,39 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
     );
     None;
   };
+
+let rec follow_references_from_resolved =
+        (~runtime, ~scope, node: Node.node(Node.Constraint.any)) => {
+  switch (node) {
+  | TypeDeclaration({annot, _}) =>
+    follow_references_from_resolved(
+      ~runtime,
+      ~scope,
+      annot |> Node.Escape.toAny,
+    )
+  | Reference({target, _}) =>
+    switch (
+      scope.root_declarations
+      |> CCArray.find_idx(decl => {
+           switch (decl) {
+           // TODO: Follow modules if obj_path is longer than one
+           | TypeDeclaration({name, _}) =>
+             Path.eq(target, [|name |> Identifier.Escape.toAny|])
+           | _ => false
+           }
+         })
+    ) {
+    | None => None
+    | Some((_, node)) =>
+      follow_references_from_resolved(
+        ~runtime,
+        ~scope,
+        node |> Node.Escape.toAny,
+      )
+    }
+  | other => Some((runtime, scope, other))
+  };
+};
 
 let extract_from_resolved =
     (~wrap_sub_node, ~runtime, ~scope, path, access_fields: array(string)) => {

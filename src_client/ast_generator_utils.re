@@ -6,9 +6,104 @@ open Ast_helper;
 let loc = Location.none;
 
 module Naming = {
-  let moduleName = str => CCString.capitalize_ascii(str);
-  let typeName = str => CCString.uncapitalize_ascii(str);
-  let propertyName = str => CCString.uncapitalize_ascii(str);
+  let to_valid_ident = ident =>
+    (
+      try(
+        if (ident.[0] >= '0' && ident.[0] <= '9') {
+          "_" ++ ident;
+        } else {
+          CCString.uncapitalize_ascii(
+            // from gist of sgrove, source:
+            // https://gist.github.com/sgrove/335bf1759d8d2f685dfea80d4e6afac7
+            [
+              "and",
+              "as",
+              "asr",
+              "assert",
+              "begin",
+              "class",
+              "constraint",
+              "do",
+              "done",
+              "downto",
+              "else",
+              "end",
+              "esfun",
+              "exception",
+              "external",
+              "false",
+              "for",
+              "fun",
+              "function",
+              "functor",
+              "if",
+              "in",
+              "include",
+              "inherit",
+              "initializer",
+              "land",
+              "lazy",
+              "let",
+              "lor",
+              "lsl",
+              "lsr",
+              "lxor",
+              "match",
+              "method",
+              "mod",
+              "module",
+              "mutable",
+              "new",
+              "nonrec",
+              "object",
+              "of",
+              "open",
+              "open!",
+              "or",
+              "pri",
+              "private",
+              "pub",
+              "public",
+              "rec",
+              "sig",
+              "struct",
+              "switch",
+              "then",
+              "to",
+              "true",
+              "try",
+              "type",
+              "val",
+              "virtual",
+              "when",
+              "while",
+              "with",
+            ]
+            |> List.exists(reserved_word => ident == reserved_word)
+              ? ident ++ "_" : ident,
+          );
+        }
+      ) {
+      | Invalid_argument(_) => "_"
+      | e => raise(e)
+      }
+    )
+    |> CCString.replace(~sub="$", ~by="_")
+    |> CCString.replace(~sub=".", ~by="_");
+
+  let to_valid_variant_constructor = ident =>
+    ident
+    |> CCString.capitalize_ascii
+    |> CCString.replace(~sub="$", ~by="_")
+    |> CCString.replace(~sub=".", ~by="_");
+
+  let to_int_variant_constructor = (i: int) => Printf.sprintf("_%#u", i);
+
+  let moduleName = to_valid_variant_constructor;
+  let variantIdentifier = to_valid_variant_constructor;
+  let typeName = to_valid_ident;
+  let propertyName = to_valid_ident;
+  let subIdent = to_int_variant_constructor;
 
   let unwrap: type t. Ast.Identifier.t(t) => string =
     i =>
@@ -26,12 +121,12 @@ module Naming = {
     i =>
       switch (i) {
       | Module(str) => moduleName(str)
-      | VariantIdentifier(str) => moduleName(str)
+      | VariantIdentifier(str) => variantIdentifier(str)
       | TypeName(str) => typeName(str)
       | PropertyName(str) => typeName(str)
       | SubName(str) => typeName(str)
       | TypeParameter(str) => str
-      | SubIdent(num) => Printf.sprintf("_%i", num)
+      | SubIdent(num) => subIdent(num)
       };
 
   let full_identifier_of_path = (p: Ast.Identifier.path) =>
