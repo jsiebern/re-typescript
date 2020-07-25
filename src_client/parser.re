@@ -536,6 +536,8 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
              : None
          )
       |> CCOpt.get_exn;
+    let parameter_name = type_parameter#getName();
+
     let value_node =
       children
       |> CCArray.find_map_i((i, node) =>
@@ -543,6 +545,10 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
              ? CCArray.get_safe(children, i + 1) : None
          )
       |> CCOpt.get_exn;
+    // We analyze the value node for occurences of our type_parameter reference
+    // If it doesn't exist, we don't need to assign separate sub_names
+    let is_value_clean =
+      !Parser_utils.node_contains_type_parameter(parameter_name, value_node);
 
     let type_constraint = type_parameter#getConstraint() |> CCOpt.get_exn;
     let key_list_type =
@@ -555,16 +561,18 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
         getType()
       |> CCOpt.get_exn;
 
-    let parse__Value = (~runtime, ~scope, ~subname=?, key_type) => {
+    let parse__Value =
+        (~value_node, ~is_value_clean, ~runtime, ~scope, ~subname=?, key_type) => {
       let (scope, restore) =
         Scope.retain_path(
           scope.path
           |> Path.add(
-               Identifier.SubName(CCOpt.value(~default="t", subname)),
+               Identifier.SubName(
+                 is_value_clean ? "t" : CCOpt.value(~default="t", subname),
+               ),
              ),
           scope,
         );
-      let parameter_name = type_parameter#getName();
       let scope =
         scope
         |> Context.add_param(parameter_name, None)
@@ -574,6 +582,7 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
       let scope = restore(scope);
       (runtime, scope, value_resolved);
     };
+    let parse__Value = parse__Value(~value_node, ~is_value_clean);
 
     // Extract Properties from union
     if (key_list_type#isTypeParameter()) {

@@ -231,3 +231,21 @@ let build_path_from_ref_string = (~scope, ref_string: string) => {
 let parse__AssignAny = (~runtime, ~scope) => {
   (runtime, {...scope, has_any: true}, Node.Basic(Any));
 };
+
+let node_contains_type_parameter =
+    (param_name: string, node: Ts_nodes.Generic.t) => {
+  let result = ref(false);
+  node#forEachDescendant(des =>
+    result^
+      ? ()
+      : {
+        switch ((des |> Ts_nodes.WithGetType.fromGeneric)#getType()) {
+        | Some(t) when t#isTypeParameter() && t#getText() == param_name =>
+          result := true
+        | Some(_)
+        | None => ()
+        };
+      }
+  );
+  result^;
+};
