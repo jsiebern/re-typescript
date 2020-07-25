@@ -26,6 +26,11 @@ let nodeStatic = tsMorph##._Node;
 let typeGuards = tsMorph##._TypeGuards;
 let isNamedNode = (t: Ojs.t) =>
   Unsafe.fun_call(nodeStatic##.isNamedNode, [|Unsafe.inject(t)|]);
+let isTypeAliasDeclaration = (t: Ojs.t) =>
+  Unsafe.fun_call(
+    nodeStatic##.isTypeAliasDeclaration,
+    [|Unsafe.inject(t)|],
+  );
 let ts = tsMorph##.ts;
 let symbolFlags = ts##._SymbolFlags;
 let getSymbolFlag = (flag: Ts_nodes.Symbol.flags) =>

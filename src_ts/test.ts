@@ -13,22 +13,21 @@ const file = project.createSourceFile(
     'test.d.ts',
     `
 
-interface method_signature {
-    func1: (x: number) => number;
-    func2(x: number): number;
-    func3(x: string, y: boolean): void;
-}
-type extracted_method_signature = method_signature['func3' | 'func2'];
+// interface method_signature {
+//     func1: (x: number) => number;
+//     func2(x: number): number;
+//     func3(x: string, y: boolean): void;
+// }
+// type extracted_method_signature = method_signature['func3' | 'func2'];
 
 
-// type obj = {
-//     field_1: number,
-//     field_2: {
-//         field_3: boolean
-//     }
-// };
-// type field_1 = obj['field_2']['field_3'];
-
+type obj = {
+    field_1: number,
+    field_2: {
+        field_3: boolean
+    }
+};
+type field_1 = obj['field_2']['field_3'];
 
 `
 );

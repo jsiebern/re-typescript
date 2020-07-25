@@ -45,6 +45,8 @@ and Identifier: {
       : t(Constraint.atLeastVariantIdentifier('poly))
     | SubName(string): t(Constraint.atLeastSubName('poly))
     | SubIdent(int): t(Constraint.atLeastSubIdent('poly));
+
+  module Escape: {external toAny: t('a) => t(Constraint.any) = "%identity";};
 } = Identifier
 and Project: {type t = array(Node.node(Node.Constraint.exactlyModule));} = Project
 and TypeDeclaration: {

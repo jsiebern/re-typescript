@@ -340,3 +340,72 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
     );
     None;
   };
+
+let extract_from_resolved =
+    (~wrap_sub_node, ~runtime, ~scope, path, access_fields: array(string)) => {
+  // A few possibilities:
+  let path_no_root = path |> Path.strip_root_module;
+
+  let rec resolve_from_root_fields =
+          (~runtime, ~scope, obj_path, access_fields) => {
+    let access_field = CCArray.get(access_fields, 0);
+    let access_fields =
+      CCArray.sub(access_fields, 1, CCArray.length(access_fields) - 1);
+    let path_eq = Path.eq(obj_path);
+
+    let root_obj =
+      scope.root_declarations
+      |> CCArray.find_idx(decl => {
+           switch (decl) {
+           // TODO: Follow modules if obj_path is longer than one
+           | TypeDeclaration({name, _}) =>
+             path_eq([|name |> Identifier.Escape.toAny|])
+           | _ => false
+           }
+         });
+    switch (root_obj) {
+    | Some((_, TypeDeclaration({annot: Record(fields), path, _}))) =>
+      let field =
+        fields
+        |> CCArray.find_idx(field =>
+             switch (field) {
+             | Parameter({name: PropertyName(pName), _})
+                 when pName == access_field =>
+               true
+             | _ => false
+             }
+           );
+      switch (field, access_fields) {
+      | (Some((_, Parameter({type_: Basic(_) as t, _}))), _) =>
+        Some((runtime, scope, t))
+      | (Some((field_idx, Parameter({type_: t, _} as type_))), [||]) =>
+        let (scope, restore) =
+          scope
+          |> Scope.retain_path(
+               path |> Path.add(Identifier.SubName(access_field)),
+             );
+        let (runtime, scope, new_ref) =
+          wrap_sub_node(
+            ~before=?CCArray.get_safe(obj_path, 0),
+            ~runtime,
+            ~scope,
+            t,
+          );
+        let new_ref = new_ref |> Node.Escape.toAny;
+        let scope = restore(scope);
+        CCArray.set(
+          fields,
+          field_idx,
+          Parameter({...type_, type_: new_ref |> Node.Escape.toAssignable}),
+        );
+        Some((runtime, scope, new_ref));
+      | (Some((_, Parameter({type_: Reference({target, _}), _}))), rest) =>
+        resolve_from_root_fields(~runtime, ~scope, target, rest)
+      | _ => None
+      };
+    | Some(_)
+    | None => None
+    };
+  };
+  resolve_from_root_fields(~runtime, ~scope, path_no_root, access_fields);
+};

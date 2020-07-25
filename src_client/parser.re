@@ -273,7 +273,12 @@ and parse__Node__Generic_assignable =
   (runtime, scope, node |> Node.Escape.toAssignable);
 }
 and parse__Node__Resolved__WrapSubNode =
-    (~runtime, ~scope, node: Node.node(Node.Constraint.assignable)) => {
+    (
+      ~before=?,
+      ~runtime,
+      ~scope,
+      node: Node.node(Node.Constraint.assignable),
+    ) => {
   let name = Path.make_sub_type_name(scope.path);
   let type_name = Identifier.TypeName(name);
   let scope = scope |> Scope.add_to_path(type_name);
@@ -304,7 +309,8 @@ and parse__Node__Resolved__WrapSubNode =
         };
         (
           runtime,
-          scope |> Scope.add_root_declaration(wrapped_type_declaration),
+          scope
+          |> Scope.add_root_declaration(~before?, wrapped_type_declaration),
         );
       }
       : (runtime, scope);
@@ -314,6 +320,7 @@ and parse__Node__Resolved__WrapSubNode =
 and parse__Node__Generic__WrapSubNode =
     (~runtime, ~scope, node: Ts_nodes.Generic.t) => {
   let name = Path.make_sub_type_name(scope.path);
+  let sub_path = scope.path;
   let type_name = Identifier.TypeName(name);
   let scope = scope |> Scope.add_to_path(type_name);
 
@@ -323,13 +330,14 @@ and parse__Node__Generic__WrapSubNode =
   // be all over the place, we need to pre-render dependencies in the tree if possible
   // When that is done, there needs to be a check like this for main types as well
   let scoped_path =
-    Pp.path(Path.make_current_scope(scope.path) |> Path.add(type_name));
+    Path.make_current_scope(scope.path) |> Path.add(type_name);
+  let scoped_path_str = Pp.path(scoped_path);
 
   let (runtime, scope) =
     !
       CCList.mem(
         ~eq=CCString.equal,
-        scoped_path,
+        scoped_path_str,
         runtime.fully_qualified_added,
       )
       ? {
@@ -345,7 +353,7 @@ and parse__Node__Generic__WrapSubNode =
         let runtime = {
           ...runtime,
           fully_qualified_added: [
-            scoped_path,
+            scoped_path_str,
             ...runtime.fully_qualified_added,
           ],
         };
@@ -355,6 +363,8 @@ and parse__Node__Generic__WrapSubNode =
         );
       }
       : (runtime, scope);
+
+  let scope = scope |> Scope.add_ref(sub_path, [||]);
 
   (runtime, scope, Reference({target: [|type_name|], params: [||]}));
 }
@@ -728,49 +738,140 @@ and parse__Node__UnionType = (~runtime, ~scope, node: Ts_nodes.UnionType.t) => {
 // ------------------------------------------------------------------------------------------
 and parse__Node__IndexedAccessType =
     (~runtime, ~scope, node: Ts_nodes.IndexedAccessType.t) => {
-  let index = node#getIndexTypeNode();
-  let index_stringified =
-    switch (Ts_nodes_util.identifyGenericNode(index)) {
-    | LiteralType(lt) =>
-      switch (Ts_nodes_util.identifyGenericNode(lt#getLiteral())) {
-      | StringLiteral(sl) => sl#getLiteralValue()
-      | NumericLiteral(nl) => Printf.sprintf("%.0f", nl#getLiteralValue())
+  let index_of_access_node = node => {
+    let index = node#getIndexTypeNode();
+    let index_stringified =
+      switch (Ts_nodes_util.identifyGenericNode(index)) {
+      | LiteralType(lt) =>
+        switch (Ts_nodes_util.identifyGenericNode(lt#getLiteral())) {
+        | StringLiteral(sl) => sl#getLiteralValue()
+        | NumericLiteral(nl) => Printf.sprintf("%.0f", nl#getLiteralValue())
+        | _ => "t"
+        }
       | _ => "t"
-      }
-    | _ => "t"
+      };
+    (index, index_stringified);
+  };
+
+  // It's easiest to analyse this structurally, if the parent is the declaration
+  switch (node#getParent()) {
+  | Some(parent)
+      when
+        Ts_morph_util.isTypeAliasDeclaration(
+          Ts_nodes.Generic.t_to_js(parent),
+        ) =>
+    let children = parent#getDescendants();
+    let indexedAccessTypes =
+      children
+      |> CCArray.filter_map(child => {
+           child#getKindName() == "IndexedAccessType"
+             ? Some(Ts_nodes.IndexedAccessType.fromGeneric(child)) : None
+         })
+      |> CCArray.rev;
+
+    let first_obj_type =
+      CCArray.get(indexedAccessTypes, 0)#getObjectTypeNode();
+    switch (Ts_nodes_util.identifyGenericNode(first_obj_type)) {
+    | TypeReference(obj_reference) =>
+      let ref_to =
+        obj_reference#getSymbol()
+        |> CCOpt.map_or(~default=obj_reference#getTypeName()#getText(), s =>
+             s#getFullyQualifiedName()
+           );
+      let ref_path = build_path_from_ref_string(~scope, ref_to);
+
+      // Make this easy, if we only have one access & it is listed in refs, just return a reference
+      let (_, index_stringified) = index_of_access_node(node);
+      if (CCArray.length(indexedAccessTypes) == 1
+          && scope
+          |> Scope.get_ref(
+               ref_path |> Path.add(Identifier.SubName(index_stringified)),
+             )
+          |> CCOpt.is_some) {
+        (
+          runtime,
+          scope,
+          // TODO: This ref concept will definitely break down cross module
+          // We need to resolve scopes here
+          Reference({
+            target: [|
+              Identifier.TypeName(
+                Path.make_sub_type_name(
+                  ref_path |> Path.add(Identifier.SubName(index_stringified)),
+                ),
+              ),
+            |],
+            params: [||],
+          }),
+        );
+      } else {
+        switch (
+          Parser_resolvers.extract_from_resolved(
+            ~wrap_sub_node=parse__Node__Resolved__WrapSubNode,
+            ~runtime,
+            ~scope,
+            ref_path,
+            indexedAccessTypes
+            |> CCArray.map(n => snd(index_of_access_node(n))),
+          )
+        ) {
+        | Some((runtime, scope, t)) => (
+            runtime,
+            scope,
+            t |> Node.Escape.toAny,
+          )
+        | None =>
+          // TODO: Should not be any
+          (runtime, scope, Basic(Any))
+        };
+      };
+    | _ =>
+      raise(
+        Exceptions.UnexpectedAtThisPoint(
+          Printf.sprintf(
+            "Expected a type reference, got %s instead",
+            first_obj_type#getKindName(),
+          ),
+        ),
+      )
     };
 
-  // TODO: Make reosolving this type more robust
-  // Also TODO: Create something that can request a type reference and moves referenced types into their own type declaration
-  let base_path = scope.path;
-  let (runtime, scope, result) =
-    switch (
-      get__TypeNodeByTypeChecker(node |> Ts_nodes.IndexedAccessType.toGeneric)
-    ) {
-    | None =>
+  | _ =>
+    let (index, index_stringified) = index_of_access_node(node);
+    // TODO: Make reosolving this type more robust
+    // Also TODO: Create something that can request a type reference and moves referenced types into their own type declaration
+    let base_path = scope.path;
+    let (runtime, scope, result) =
       switch (
-        node#getType()
-        |> CCOpt.flat_map(get__DerivedTypeFromTypeObj(~runtime, ~scope))
+        get__TypeNodeByTypeChecker(
+          node |> Ts_nodes.IndexedAccessType.toGeneric,
+        )
       ) {
       | None =>
-        raise(
-          Exceptions.UnexpectedAtThisPoint(
-            "Could not resolve type for IndexedAccess",
-          ),
-        )
-      | Some(r) => r
-      }
-    | Some(resolved_type) =>
-      let current_path =
-        base_path |> Path.add(Identifier.SubName(index_stringified));
-      let scope = scope |> Scope.replace_path_arr(current_path);
-      let (runtime, scope, result) =
-        parse__Node__Generic_assignable(~runtime, ~scope, resolved_type);
-      (runtime, scope, result);
-    };
-  let scope = scope |> Scope.replace_path_arr(base_path);
+        switch (
+          node#getType()
+          |> CCOpt.flat_map(get__DerivedTypeFromTypeObj(~runtime, ~scope))
+        ) {
+        | None =>
+          raise(
+            Exceptions.UnexpectedAtThisPoint(
+              "Could not resolve type for IndexedAccess",
+            ),
+          )
+        | Some(r) => r
+        }
+      | Some(resolved_type) =>
+        let current_path =
+          base_path |> Path.add(Identifier.SubName(index_stringified));
+        let scope = scope |> Scope.replace_path_arr(current_path);
+        let (runtime, scope, result) =
+          parse__Node__Generic_assignable(~runtime, ~scope, resolved_type);
+        (runtime, scope, result);
+      };
+    let scope = scope |> Scope.replace_path_arr(base_path);
 
-  (runtime, scope, result |> Node.Escape.toAny);
+    (runtime, scope, result |> Node.Escape.toAny);
+  };
 }
 // TODO: This is only an escape hatch.
 // A complex type result might still fail

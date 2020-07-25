@@ -68,11 +68,47 @@ module Scope = {
   let replace_path_arr: (array(Identifier.t(_)), scope) => scope =
     (path, scope) => {...scope, path};
   let add_root_declaration =
-      (root_declaration: Node.node(Node.Constraint.moduleLevel), scope) => {
+      (
+        ~before=?,
+        root_declaration: Node.node(Node.Constraint.moduleLevel),
+        scope,
+      ) => {
     {
       ...scope,
       root_declarations:
-        CCArray.append(scope.root_declarations, [|root_declaration|]),
+        switch (before) {
+        | None =>
+          CCArray.append(scope.root_declarations, [|root_declaration|])
+        | Some(ident) =>
+          let found_idx =
+            scope.root_declarations
+            |> CCArray.find_idx(decl =>
+                 switch (decl) {
+                 | Node.TypeDeclaration({name, _})
+                     when name == Obj.magic(ident) =>
+                   true
+                 | Module({name, _}) when Identifier.Module(name) == ident =>
+                   true
+                 | _ => false
+                 }
+               );
+          switch (found_idx) {
+          | None =>
+            CCArray.append([|root_declaration|], scope.root_declarations)
+          | Some((insert_before, _)) when insert_before == 0 =>
+            CCArray.append([|root_declaration|], scope.root_declarations)
+          | Some((insert_before, _)) =>
+            CCArray.concat([
+              CCArray.sub(scope.root_declarations, 0, insert_before - 1),
+              [|root_declaration|],
+              CCArray.sub(
+                scope.root_declarations,
+                insert_before,
+                CCArray.length(scope.root_declarations) - insert_before - 1,
+              ),
+            ])
+          };
+        },
     };
   };
   let retain_path = (replace_path, scope) => {
@@ -92,6 +128,9 @@ module Scope = {
       ),
     );
     scope;
+  };
+  let get_ref = (to_: iPath, scope: scope) => {
+    Hashtbl.find_opt(scope.refs, to_);
   };
 };
 module Path = {
@@ -154,6 +193,15 @@ module Path = {
       p,
     );
   };
+
+  let strip_root_module = (p: t) =>
+    switch (CCArray.get_safe(p, 0)) {
+    | Some(Module(_)) => CCArray.sub(p, 1, CCArray.length(p) - 1)
+    | Some(_)
+    | None => p
+    };
+
+  let eq = (p1: t, p2: t) => CCArray.equal((a, b) => a == b, p1, p2);
 };
 
 let build_path_from_ref_string = (~scope, ref_string: string) => {
