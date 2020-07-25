@@ -16,15 +16,15 @@ let test = (
 
 // ------------------------------------------------------
 
-// interface IMain {
-//   simple: string,
-//   inline: {
-//     num: number
-//   }
-// }
-// type str = IMain['simple']
-// type obj = IMain['inline'];
-// type num = obj['num'];
+interface IMain {
+  simple: string,
+  inline: {
+    num: number
+  }
+}
+type str = IMain['simple']
+type obj = IMain['inline'];
+type num = obj['num'];
 
 // module Test = {
 //   type iMain_inline = {num: float};
@@ -38,14 +38,6 @@ let test = (
 //   type num = float;
 // };
 
-
-type obj = {
-    field_1: number,
-    field_2: {
-        field_3: boolean
-    }
-};
-type field_1 = obj['field_2']['field_3'];
 
 
 // ------------------------------------------------------

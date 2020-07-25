@@ -348,9 +348,6 @@ let extract_from_resolved =
 
   let rec resolve_from_root_fields =
           (~runtime, ~scope, obj_path, access_fields) => {
-    let access_field = CCArray.get(access_fields, 0);
-    let access_fields =
-      CCArray.sub(access_fields, 1, CCArray.length(access_fields) - 1);
     let path_eq = Path.eq(obj_path);
 
     let root_obj =
@@ -364,7 +361,13 @@ let extract_from_resolved =
            }
          });
     switch (root_obj) {
+    | Some((_, TypeDeclaration({annot: Reference({target, _}), _}))) =>
+      resolve_from_root_fields(~runtime, ~scope, target, access_fields)
     | Some((_, TypeDeclaration({annot: Record(fields), path, _}))) =>
+      let access_field = CCArray.get(access_fields, 0);
+      let access_fields =
+        CCArray.sub(access_fields, 1, CCArray.length(access_fields) - 1);
+
       let field =
         fields
         |> CCArray.find_idx(field =>
