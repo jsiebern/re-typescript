@@ -6,7 +6,7 @@ interface Keys {
   key_1: string;
   key_2: number;
 }
-type with_keys = { [K in keyof Keys]?: 'a' | 'b' };
+type with_keys = { [K in keyof Keys]: 'a' | 'b' };
 
 
 // ------------------------------------------------------

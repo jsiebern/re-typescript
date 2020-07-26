@@ -10,6 +10,22 @@ module Node: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module MappedTypeNode: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Node.t;
+      pub readonlyToken: option(Node.t);
+      pub questionToken: option(Node.t);
+    };
+  [@js.cast]
+  let fromNode: Node.t => t;
+  [@js.cast]
+  let toNode: t => Node.t;
+
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 module Symbol: {
   class t:
     (Ojs.t) =>

@@ -537,6 +537,10 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
          )
       |> CCOpt.get_exn;
     let parameter_name = type_parameter#getName();
+    let is_optional =
+      (mapped_type#compilerNode |> Ts_raw.MappedTypeNode.fromNode)#
+        questionToken
+      |> CCOpt.is_some;
 
     let value_node =
       children
@@ -627,7 +631,7 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
                        [|
                          Parameter({
                            name: Identifier.PropertyName(key),
-                           is_optional: false,
+                           is_optional,
                            type_: value_resolved,
                            named: true,
                          }),
@@ -680,7 +684,7 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
                    [|
                      Parameter({
                        name: Identifier.PropertyName(key),
-                       is_optional: false,
+                       is_optional,
                        type_: value_resolved,
                        named: true,
                      }),
@@ -717,7 +721,7 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
                    [|
                      Parameter({
                        name: Identifier.PropertyName(key),
-                       is_optional: false,
+                       is_optional,
                        type_: value_resolved,
                        named: true,
                      }),
@@ -754,7 +758,7 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
                    [|
                      Parameter({
                        name: Identifier.PropertyName(key),
-                       is_optional: false,
+                       is_optional,
                        type_: value_resolved,
                        named: true,
                      }),
@@ -801,7 +805,7 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
                    [|
                      Parameter({
                        name: Identifier.PropertyName(key),
-                       is_optional: false,
+                       is_optional,
                        type_: value_resolved,
                        named: true,
                      }),

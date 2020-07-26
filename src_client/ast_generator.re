@@ -189,6 +189,7 @@ and generate__Node__TypeDeclaration =
             Node.Parameter({name, is_optional, type_, named}):
               Node.node(Node.Constraint.exactlyParameter),
           ) => {
+            let type_ = is_optional ? Node.Optional(type_) : type_;
             let (scope, t) =
               generate__Node__Assignable_CoreType(~scope, type_);
             let name_original = Util.Naming.unwrap(name);

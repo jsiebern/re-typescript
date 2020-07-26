@@ -54,6 +54,9 @@ file.forEachDescendant(node => {
         })
         // console.log('------')
     }
+    if (Node.isTypeParameterDeclaration(node)) {
+
+    }
     if (Node.isTypeReferenceNode(node)) {
         if (node.getText().includes('PickX')) {
             node.getTypeArguments
