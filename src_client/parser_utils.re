@@ -201,6 +201,24 @@ module Path = {
     | None => p
     };
 
+  let strip_current_sub_path = (p: t) => {
+    CCArray.fold_right(
+      (current, prev) => {
+        CCArray.length(prev) > 0
+          ? CCArray.append([|current|], prev)
+          : (
+            switch (current) {
+            | Identifier.SubName(_)
+            | SubIdent(_) => prev
+            | other => [|other|]
+            }
+          )
+      },
+      p,
+      [||],
+    );
+  };
+
   let eq = (p1: t, p2: t) => CCArray.equal((a, b) => a == b, p1, p2);
 };
 

@@ -2,11 +2,17 @@ let test = (
   "/test.d.ts",
   {|
 
-interface Keys {
-  key_1: string;
-  key_2: number;
-}
-type with_keys = { [K in keyof Keys]: 'a' | 'b' };
+type PickX<T, K extends keyof T> = {
+              [P in K]: T[P];
+          };
+          interface A {
+            x: string;
+            y: number;
+            z: boolean;
+          }
+
+          type keys = 'x' | 'y';
+          type stripped = PickX<A, keys>;
 
 
 // ------------------------------------------------------

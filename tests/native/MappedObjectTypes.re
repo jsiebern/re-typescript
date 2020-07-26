@@ -179,7 +179,7 @@ describe("mapped object types", ({test, _}) => {
       print(
         ~ctx,
         {|
-          type Pick<T, K extends keyof T> = {
+          type PickX<T, K extends keyof T> = {
               [P in K]: T[P];
           };
           interface A {
@@ -189,7 +189,7 @@ describe("mapped object types", ({test, _}) => {
           }
 
           type keys = 'x' | 'y';
-          type stripped = Pick<A, keys>;
+          type stripped = PickX<A, keys>;
         |},
       ),
     ).

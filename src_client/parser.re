@@ -135,62 +135,60 @@ and parse__Node__Resolved__WrapSubNode =
       ~scope,
       node: Node.node(Node.Constraint.assignable),
     ) => {
-  switch (scope.parent) {
-  | Some(TypeAliasDeclaration(td))
-      when
-        switch (td#getTypeNode() |> Ts_nodes_util.identifyGenericNode) {
-        | MappedType(_) => true
-        | _ => false
-        } => (
-      runtime,
-      scope,
-      node |> Node.Escape.toAny,
-    )
-  | _ =>
-    let name = Path.make_sub_type_name(scope.path);
-    let type_name = Identifier.TypeName(name);
-    let scope = scope |> Scope.add_to_path(type_name);
-    let scoped_path =
-      Pp.path(Path.make_current_scope(scope.path) |> Path.add(type_name));
+  let name = Path.make_sub_type_name(scope.path);
+  let base_path = scope.path;
+  let type_name = Identifier.TypeName(name);
+  let scope = scope |> Scope.add_to_path(type_name);
+  let qualified_path_to_type =
+    Path.make_current_scope(scope.path) |> Path.add(type_name);
+  let scoped_path = Pp.path(qualified_path_to_type);
 
-    let (runtime, scope) =
-      !
-        CCList.mem(
-          ~eq=CCString.equal,
-          scoped_path,
-          runtime.fully_qualified_added,
-        )
-        ? {
-          let wrapped_type_declaration =
-            TypeDeclaration({
-              path: scope.path,
-              name: type_name,
-              annot: node,
-              params: [||],
-            });
-          let runtime = {
-            ...runtime,
-            fully_qualified_added: [
-              scoped_path,
-              ...runtime.fully_qualified_added,
-            ],
-          };
-          (
-            runtime,
-            scope
-            |> Scope.add_root_declaration(~before?, wrapped_type_declaration),
-          );
-        }
-        : (runtime, scope);
+  // TODO: Check if type params would apply here
+  let (runtime, scope) =
+    !
+      CCList.mem(
+        ~eq=CCString.equal,
+        scoped_path,
+        runtime.fully_qualified_added,
+      )
+      ? {
+        let wrapped_type_declaration =
+          TypeDeclaration({
+            path: qualified_path_to_type,
+            name: type_name,
+            annot: node,
+            params: [||],
+          });
+        let runtime = {
+          ...runtime,
+          fully_qualified_added: [
+            scoped_path,
+            ...runtime.fully_qualified_added,
+          ],
+        };
+        (
+          runtime,
+          scope
+          |> Scope.add_root_declaration(~before?, wrapped_type_declaration),
+        );
+      }
+      : (runtime, scope);
 
-    (runtime, scope, Reference({target: [|type_name|], params: [||]}));
-  };
+  let scope =
+    scope
+    |> Scope.add_ref(
+         qualified_path_to_type,
+         Path.strip_current_sub_path(base_path),
+       );
+  (runtime, scope, Reference({target: [|type_name|], params: [||]}));
 }
 and parse__Node__Generic__WrapSubNode =
     (~runtime, ~scope, node: Ts_nodes.Generic.t) => {
   let name = Path.make_sub_type_name(scope.path);
-  let sub_path = scope.path;
+  let base_path = scope.path;
   let type_name = Identifier.TypeName(name);
+  let qualified_path_to_type =
+    Path.make_current_scope(scope.path) |> Path.add(type_name);
   let scope = scope |> Scope.add_to_path(type_name);
 
   // TODO:
@@ -214,7 +212,7 @@ and parse__Node__Generic__WrapSubNode =
           parse__Node__Generic_assignable(~runtime, ~scope, node);
         let wrapped_type_declaration =
           TypeDeclaration({
-            path: scope.path,
+            path: qualified_path_to_type,
             name: type_name,
             annot: wrapped_type,
             params: [||],
@@ -233,8 +231,12 @@ and parse__Node__Generic__WrapSubNode =
       }
       : (runtime, scope);
 
-  let scope = scope |> Scope.add_ref(sub_path, [||]);
-
+  let scope =
+    scope
+    |> Scope.add_ref(
+         qualified_path_to_type,
+         Path.strip_current_sub_path(base_path),
+       );
   (runtime, scope, Reference({target: [|type_name|], params: [||]}));
 }
 // ------------------------------------------------------------------------------------------
@@ -1824,8 +1826,7 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
         );
       };
 
-    // Parse the reference information to make a note
-    // that it was referenced
+    // Parse the reference information to make a note that it was referenced
     let ref_to =
       symbol
       |> CCOpt.map_or(~default=type_name#getText(), s =>
@@ -1856,6 +1857,7 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
         CCArray.get_safe(symbol#getDeclarations(), 0)
         |> CCOpt.map(Ts_nodes_util.identifyGenericNode)
       ) {
+      // --- SPECIAL CASE: Mapped Type as target
       | Some(MappedType(mapped_type))
           when mapped_type#getParent() |> CCOpt.is_some =>
         // This path applies (hopefully) all necessary arguments and tries to resolve a mapped type
@@ -1864,6 +1866,12 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
         let parent = parent |> Ts_nodes.TypeParametered.fromGeneric;
         let args = arguments;
         let parameters = parent#getTypeParameters();
+
+        let (scope, reset) =
+          scope
+          |> Scope.retain_path(
+               scope.path |> Path.add(Identifier.SubName("t")),
+             );
         let scope =
           parameters
           |> CCArray.foldi(
@@ -1875,6 +1883,7 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
              );
         let (runtime, scope, t) =
           parse__Node__Generic_assignable(~runtime, ~scope, mapped_type);
+        let scope = reset(scope);
         (runtime, scope, t |> Node.Escape.toAny);
       | Some(_)
       | None => default_return
