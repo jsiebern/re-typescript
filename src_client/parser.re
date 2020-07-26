@@ -1299,25 +1299,6 @@ and parse__Node__IndexedAccessType =
     )
   };
 }
-// TODO: This is only an escape hatch.
-// A complex type result might still fail
-// in deep access fields like ['one']['two']
-and get__DerivedTypeFromTypeObj:
-  (~runtime: runtime, ~scope: scope, Ts_nodes.Type.t) =>
-  option((runtime, scope, Node.node(Node.Constraint.assignable))) =
-  (~runtime, ~scope, t) =>
-    Parser_resolvers.try_to_resolve_type(~runtime, ~scope, t)
-and get__TypeNodeByTypeChecker:
-  Ts_nodes.Generic.t => option(Ts_nodes.Generic.t) =
-  node => {
-    (node |> Ts_nodes.WithGetType.fromGeneric)#getType()
-    |> CCOpt.flat_map(t => {
-         //  Debug.type_to_json(t);
-         t#getSymbol()
-       })
-    |> CCOpt.map(s => s#getDeclarations())
-    |> CCOpt.flat_map(CCArray.get_safe(_, 0));
-  }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 // --- InterfaceDeclaration
