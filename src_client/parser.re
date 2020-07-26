@@ -1288,48 +1288,15 @@ and parse__Node__IndexedAccessType =
       )
     };
   | _ =>
-    let (index, index_stringified) = index_of_access_node(node);
-
-    // TODO: Make reosolving this type more robust
-    // Also TODO: Create something that can request a type reference and moves referenced types into their own type declaration
-    let base_path = scope.path;
-    let (runtime, scope, result) =
-      switch (
-        get__TypeNodeByTypeChecker(
-          node |> Ts_nodes.IndexedAccessType.toGeneric,
-        )
-      ) {
-      | None =>
-        switch (
-          node#getType()
-          |> CCOpt.flat_map(
-               Parser_resolvers.try_to_resolve_type(~runtime, ~scope),
-             )
-        ) {
-        | None =>
-          node#forEachChild(n => Console.log(n#getKindName()));
-          raise(
-            Exceptions.UnexpectedAtThisPoint(
-              Printf.sprintf(
-                "Could not resolve type for IndexedAccess (%s - %s)",
-                node#getKindName(),
-                node#getText(),
-              ),
-            ),
-          );
-        | Some(r) => r
-        }
-      | Some(resolved_type) =>
-        let current_path =
-          base_path |> Path.add(Identifier.SubName(index_stringified));
-        let scope = scope |> Scope.replace_path_arr(current_path);
-        let (runtime, scope, result) =
-          parse__Node__Generic_assignable(~runtime, ~scope, resolved_type);
-        (runtime, scope, result);
-      };
-    let scope = scope |> Scope.replace_path_arr(base_path);
-
-    (runtime, scope, result |> Node.Escape.toAny);
+    raise(
+      Exceptions.UnexpectedAtThisPoint(
+        Printf.sprintf(
+          "Could not resolve type for IndexedAccess (%s - %s)",
+          node#getKindName(),
+          node#getText(),
+        ),
+      ),
+    )
   };
 }
 // TODO: This is only an escape hatch.
