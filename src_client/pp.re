@@ -18,7 +18,15 @@ let rec ast_node: type t. Node.node(t) => string =
   n =>
     switch (n) {
     | Module(_) => "Module"
-    | Literal(_) => "Literal"
+    | Literal(t) =>
+      Printf.sprintf(
+        "Literal(%s)",
+        switch (t) {
+        | String(str) => Printf.sprintf("String<%s>", str)
+        | Number(n) => Printf.sprintf("Number<%.2f>", n)
+        | Boolean(b) => Printf.sprintf("Boolean<%s>", b ? "Y" : "N")
+        },
+      )
     | SafeDict(t) => Printf.sprintf("SafeDict(%s)", ast_node(t))
     | GenericReference(i) =>
       Printf.sprintf(

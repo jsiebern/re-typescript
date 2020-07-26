@@ -43,7 +43,6 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
              refs: Hashtbl.create(10),
              context_params: [],
              context_args: [],
-             context_args_raw: [],
            };
 
            let source_file =
@@ -606,57 +605,55 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
       ) {
       | None => (runtime, scope, Basic(Never))
       | Some((runtime, scope, final_arg)) =>
-        switch (final_arg) {
-        | Variant(idents) =>
-          let keys =
+        let keys =
+          switch (final_arg) {
+          | Variant(idents) =>
             idents
             |> CCArray.map(i => i.VariantConstructor.name)
-            |> CCArray.map(Ast_generator_utils.Naming.unwrap);
+            |> CCArray.map(Ast_generator_utils.Naming.unwrap)
+          | Literal(String(str)) => [|str|]
+          | Literal(Number(n)) => [|Printf.sprintf("%.0f", n)|]
+          | other =>
+            raise(
+              Exceptions.FeatureMissing(
+                Pp.ast_node(other),
+                "Could not resolve mapped type",
+              ),
+            )
+          };
 
-          let (runtime, scope, fields) =
-            keys
-            |> CCArray.fold_left(
-                 ((runtime, scope, fields), key) => {
-                   let (runtime, scope, value_resolved) =
-                     parse__Value(
-                       ~runtime,
-                       ~scope,
-                       ~subname=key,
-                       Literal(String(key)),
-                     );
-
-                   (
-                     runtime,
-                     scope,
-                     CCArray.append(
-                       fields,
-                       [|
-                         Parameter({
-                           name: Identifier.PropertyName(key),
-                           is_optional,
-                           type_: value_resolved,
-                           named: true,
-                         }),
-                       |],
-                     ),
+        let (runtime, scope, fields) =
+          keys
+          |> CCArray.fold_left(
+               ((runtime, scope, fields), key) => {
+                 let (runtime, scope, value_resolved) =
+                   parse__Value(
+                     ~runtime,
+                     ~scope,
+                     ~subname=key,
+                     Literal(String(key)),
                    );
-                 },
-                 (runtime, scope, [||]),
-               );
 
-          parse__Node__Resolved__WrapSubNode(
-            ~runtime,
-            ~scope,
-            Record(fields),
-          );
-        | other =>
-          raise(
-            Exceptions.FeatureMissing(
-              Pp.ast_node(other),
-              "Could not resolve mapped type",
-            ),
-          )
-        }
+                 (
+                   runtime,
+                   scope,
+                   CCArray.append(
+                     fields,
+                     [|
+                       Parameter({
+                         name: Identifier.PropertyName(key),
+                         is_optional,
+                         type_: value_resolved,
+                         named: true,
+                       }),
+                     |],
+                   ),
+                 );
+               },
+               (runtime, scope, [||]),
+             );
+
+        parse__Node__Resolved__WrapSubNode(~runtime, ~scope, Record(fields));
       };
     } else if (key_list_type#isUnion()) {
       let keys =
