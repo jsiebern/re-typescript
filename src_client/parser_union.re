@@ -208,7 +208,7 @@ let generate_ast_for_union:
       scope,
       Reference({
         target: [|Module(wrapper_module_name), TypeName("t")|],
-        params: [||],
+        params: [],
       }),
     );
   };

@@ -340,7 +340,9 @@ let rec follow_references_from_resolved =
       ~scope,
       annot |> Node.Escape.toAny,
     )
-  | Reference({target, _}) =>
+  | Reference({target, params}) =>
+    // Make the parameters available
+    let scope = scope |> Context.add_arg_lst(params);
     switch (
       scope.root_declarations
       |> CCArray.find_idx(decl => {
@@ -359,7 +361,7 @@ let rec follow_references_from_resolved =
         ~scope,
         node |> Node.Escape.toAny,
       )
-    }
+    };
   | other => Some((runtime, scope, other))
   };
 };

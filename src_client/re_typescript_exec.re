@@ -2,15 +2,14 @@ let test = (
   "/test.d.ts",
   {|
 
+interface A<X> {
+  x: string;
+  y: X;
+  z: boolean;
+}
 
-          interface A {
-            x: string;
-            y: number;
-            z: boolean;
-          }
-
-          type keys = 'x';
-          type stripped = Pick<A, keys>;
+type keys = 'x' | 'y';
+type stripped = Pick<A<{obj: number}>, keys>;
 
 
 // ------------------------------------------------------

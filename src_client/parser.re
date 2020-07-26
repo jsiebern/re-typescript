@@ -179,7 +179,7 @@ and parse__Node__Resolved__WrapSubNode =
          qualified_path_to_type,
          Path.strip_current_sub_path(base_path),
        );
-  (runtime, scope, Reference({target: [|type_name|], params: [||]}));
+  (runtime, scope, Reference({target: [|type_name|], params: []}));
 }
 and parse__Node__Generic__WrapSubNode =
     (~runtime, ~scope, node: Ts_nodes.Generic.t) => {
@@ -236,7 +236,7 @@ and parse__Node__Generic__WrapSubNode =
          qualified_path_to_type,
          Path.strip_current_sub_path(base_path),
        );
-  (runtime, scope, Reference({target: [|type_name|], params: [||]}));
+  (runtime, scope, Reference({target: [|type_name|], params: []}));
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -585,7 +585,18 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
       let (runtime, scope, value_resolved) =
         parse__Node__Generic_assignable(~runtime, ~scope, value_node);
       let scope = restore(scope);
-      (runtime, scope, value_resolved);
+      // If the resolved value represents a type parameter, we should try to further resolve that with an argument
+      scope.context_args
+      |> CCList.iter(((name, t)) => {Console.log((name, Pp.ast_node(t)))});
+      Console.log("-----");
+      let (runtime, scope, value_resolved) =
+        Parser_utils.resolved_node_replace_type_parameter(
+          ~runtime,
+          ~scope,
+          value_resolved |> Node.Escape.toAny,
+        );
+
+      (runtime, scope, value_resolved |> Node.Escape.toAssignable);
     };
     let parse__Value = parse__Value(~value_node, ~is_value_clean);
 
@@ -992,8 +1003,8 @@ and parse__Node__IndexedAccessType =
         (
           runtime,
           scope,
-          // TODO: This ref concept will definitely break down cross module
-          // We need to resolve scopes here
+          // TODO: This ref concept will definitely break down cross module - We need to resolve scopes here
+          // But do we? Need to experiment with import declarations to say for sure
           Reference({
             target: [|
               Identifier.TypeName(
@@ -1002,7 +1013,7 @@ and parse__Node__IndexedAccessType =
                 ),
               ),
             |],
-            params: [||],
+            params: [],
           }),
         );
       } else {
@@ -1793,15 +1804,20 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
       | None =>
         // If a declaration cannot be resolved, we'll just use the applied arguments and hope for the best
         parse__ArrayOfGenerics(~runtime, ~scope, type_arguments)
+        |> parse__map(arr =>
+             arr
+             |> CCArray.mapi((i, arg) => (string_of_int(i), arg))
+             |> CCArray.to_list
+           )
       | Some(declaration_node) =>
         // Force cast this into a TypeParametered - this should be fine as we only need the `getTypeParameters` method, which should be present on any declaration type
         let parameters =
           Ts_nodes.TypeParametered.fromGeneric(declaration_node)#
             getTypeParameters();
-        let (names, nodes) =
+        let args =
           parameters
           |> CCArray.foldi(
-               ((names, args), i, param) => {
+               (args, i, param) => {
                  let name = param#getName();
                  let arg_type =
                    switch (CCArray.get_safe(type_arguments, i)) {
@@ -1817,19 +1833,18 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
                        )
                      }
                    };
-                 (
-                   CCArray.append(names, [|name|]),
-                   CCArray.append(args, [|arg_type|]),
-                 );
+                 args @ [(name, arg_type)];
                },
-               ([||], [||]),
+               [],
              );
+        let (names, nodes) = CCList.split(args);
         parse__ArrayOfGenerics(
-          ~scope_additions=names,
+          ~scope_additions=CCArray.of_list(names),
           ~runtime,
           ~scope,
-          nodes,
-        );
+          CCArray.of_list(nodes),
+        )
+        |> parse__map(arr => CCList.combine(names, CCArray.to_list(arr)));
       };
 
     // Parse the reference information to make a note that it was referenced
@@ -1882,8 +1897,7 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
           parameters
           |> CCArray.foldi(
                (scope, i, param) => {
-                 scope
-                 |> Context.add_arg(param#getName(), CCArray.get(args, i))
+                 scope |> Context.add_arg_tpl(CCList.get_at_idx_exn(i, args))
                },
                scope,
              );

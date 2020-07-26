@@ -236,7 +236,7 @@ and Node: {
       : node(Constraint.atLeastModule('poly))
     | Reference({
         target: Identifier.path,
-        params: array(node(Constraint.assignable)),
+        params: list((string, node(Constraint.assignable))),
       })
       : node(Constraint.atLeastReference('poly))
     | GenericReference(

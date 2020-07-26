@@ -372,10 +372,9 @@ and generate__Node__Assignable_CoreType =
   | Reference({target, params}) =>
     let generated_params =
       params
-      |> CCArray.map(param =>
+      |> CCList.map(((_, param)) =>
            generate__Node__Assignable_CoreType(~scope, param)
          )
-      |> CCArray.to_list
       |> CCList.map(snd)
       |> CCList.keep_some;
 

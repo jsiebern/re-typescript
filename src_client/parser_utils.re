@@ -48,6 +48,9 @@ module Context = {
     context_args:
       scope.context_args |> CCList.Assoc.set(~eq=CCString.equal, key, ty),
   };
+  let add_arg_tpl = ((key, ty), scope) => add_arg(key, ty, scope);
+  let add_arg_lst = (lst, scope) =>
+    lst |> CCList.fold_left((scope, tpl) => add_arg_tpl(tpl, scope), scope);
   let get_arg = (key, scope) =>
     scope.context_args |> CCList.Assoc.get(~eq=CCString.equal, key);
 };
@@ -266,3 +269,25 @@ let node_contains_type_parameter =
   );
   result^;
 };
+
+let resolved_node_replace_type_parameter =
+    (~runtime, ~scope, node: Node.node(Node.Constraint.any)) => {
+  (
+    runtime,
+    scope,
+    switch (node) {
+    | Node.GenericReference(TypeParameter(name)) =>
+      switch (scope |> Context.get_arg(name)) {
+      | None => node
+      | Some(arg) => arg |> Node.Escape.toAny
+      }
+    | other => other
+    },
+  );
+};
+
+let parse__map = (map_func, (runtime, scope, payload)) => (
+  runtime,
+  scope,
+  map_func(payload),
+);
