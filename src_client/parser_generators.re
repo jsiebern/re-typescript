@@ -27,6 +27,12 @@ let generate_number_literal_list = (floats: array(float)) => {
   );
 };
 
+let generate_mixed_literal_list =
+    (literals: array(Node.node(Node.Constraint.exactlyLiteral))) => {
+  // TODO: Implement this as inline module
+  Basic(Any);
+};
+
 let generate_intersection_body =
     (types: array(Node.node(Node.Constraint.assignable))) =>
   Tuple(types);

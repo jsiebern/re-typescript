@@ -1,6 +1,18 @@
 open Ast;
 open Parser_utils;
 
+module Helpers = {
+  let find_td = (path, current_type_list) =>
+    CCArray.find_idx(
+      node =>
+        switch (node) {
+        | Node.TypeDeclaration({path: p, _}) when Path.eq(p, path) => true
+        | _ => false
+        },
+      current_type_list,
+    );
+};
+
 let rule_keep_referenced_empty_records_as_any =
     (~runtime, ~scope, root_module: Node.node(Node.Constraint.exactlyModule)) => {
   let scope = ref(scope);
@@ -113,6 +125,47 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
   (runtime, scope, root_module);
 };
 
+let rule_transform_single_literals_into_union_types =
+    (
+      ~runtime,
+      ~scope: scope,
+      root_module: Node.node(Node.Constraint.exactlyModule),
+    ) => {
+  let rec walk:
+    type t.
+      (~current_type_list: array(Node.node('a))=?, Node.node(t)) => unit =
+    (~current_type_list=[||], node) =>
+      switch (node) {
+      | Node.Module({types, _}) =>
+        types |> CCArray.iter(t => walk(~current_type_list=types, t))
+      | TypeDeclaration({annot: Literal(_) as l, path, _} as td) =>
+        let union_type = Parser_union.determine_union_type([|l|]);
+        let replace_annot =
+          switch (union_type) {
+          | Some(StringLiteral(literals)) =>
+            Parser_generators.generate_string_literal_list(literals)
+          | Some(NumericLiteral(literals)) =>
+            Parser_generators.generate_number_literal_list(literals)
+          | Some(_)
+          | None => l
+          };
+        switch (current_type_list |> Helpers.find_td(path)) {
+        | None => ()
+        | Some((i, _)) =>
+          CCArray.set(
+            current_type_list,
+            i,
+            TypeDeclaration({...td, annot: replace_annot}),
+          )
+        };
+      | _ => ()
+      };
+
+  walk(root_module);
+
+  (runtime, scope, root_module);
+};
+
 let run = (~runtime, ~scope, node: Node.node(Node.Constraint.exactlyModule)) => {
   let (runtime, scope, node) =
     rule_keep_referenced_empty_records_as_any(~runtime, ~scope, node);
@@ -122,5 +175,7 @@ let run = (~runtime, ~scope, node: Node.node(Node.Constraint.exactlyModule)) => 
       ~scope,
       node,
     );
+  let (runtime, scope, node) =
+    rule_transform_single_literals_into_union_types(~runtime, ~scope, node);
   (runtime, scope, node);
 };

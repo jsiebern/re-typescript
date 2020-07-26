@@ -148,7 +148,13 @@ let checks = [|
 let determine_union_type =
     (nodes: array(Node.node(Node.Constraint.assignable))) => {
   switch (nodes) {
-  | [|one|] => Some(Single(one))
+  | [|one|]
+      when
+        switch (one) {
+        | Literal(_) => false
+        | _ => true
+        } =>
+    Some(Single(one))
   | nodes =>
     checks
     |> CCArray.fold_left(

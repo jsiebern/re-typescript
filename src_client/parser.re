@@ -875,7 +875,16 @@ and parse__Node__UnionType__Nodes:
         Parser_union.generate_ast_for_union(~runtime, ~scope, members);
 
       (runtime, scope, reference);
-    // TODO: !!!!! Numeric / Mixed Literal
+    | Some(NumericLiteral(literals)) => (
+        runtime,
+        scope,
+        Parser_generators.generate_number_literal_list(literals),
+      )
+    | Some(MixedLiteral(literals)) => (
+        runtime,
+        scope,
+        Parser_generators.generate_mixed_literal_list(literals),
+      )
     | Some(StringLiteral(literals)) =>
       // TODO: React to different literal output options (like inline / variant, etc.)
       (
