@@ -31,11 +31,6 @@ type Nothing<T> = {
 );
 
 file.forEachDescendant(node => {
-    if (node.getKindName() === 'TypeOperator') {
-        let o = node.compilerNode as ts.TypeOperatorNode;
-        console.log(o.operator);
-    }
-
     if (Node.isIndexedAccessTypeNode(node)) {
 
         // const index_node = node.getIndexTypeNode();

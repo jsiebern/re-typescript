@@ -246,11 +246,11 @@ describe("mapped object types", ({test, _}) => {
       print(
         ~ctx,
         {|
-          type Record<K extends keyof any, T> = {
+          type xRecord<K extends keyof any, T> = {
               [P in K]: T;
-          };
+          }
 
-          type record = Record<'a' | 'b', {field:boolean}>;
+          type record = xRecord<'a' | 'b', {field:boolean}>
         |},
       ),
     ).

@@ -1199,13 +1199,56 @@ and parse__Node__IndexedAccessType =
         ),
       )
     };
-  | Some(parent)
-      when
-        switch ((parent |> Ts_nodes.WithGetType.fromGeneric)#getType()) {
-        | None => false
-        | Some(t) => Ts_nodes_util.Type.has_object_flag(t, Mapped)
-        } =>
+  /*| Some(parent)
+    when
+      switch ((parent |> Ts_nodes.WithGetType.fromGeneric)#getType()) {
+      | None => false
+      | Some(t) => Ts_nodes_util.Type.has_object_flag(t, Mapped)
+      } =>*/
+  | Some(_) =>
     let (_, index_stringified) = index_of_access_node(node);
+
+    let maybe_resolve_from_record = maybe_record_with_runtime_and_scope =>
+      switch (maybe_record_with_runtime_and_scope) {
+      | Some((runtime, scope, Record(fields))) =>
+        // TODO: This needs to be potentially extracted into a sub type
+        switch (
+          fields
+          |> CCArray.find_idx(field =>
+               switch (field) {
+               | Parameter({name: Identifier.PropertyName(name), _}) =>
+                 name == index_stringified
+               | _ => false
+               }
+             )
+        ) {
+        | Some((_, Parameter({type_, _}))) => (
+            runtime,
+            scope,
+            type_ |> Node.Escape.toAny,
+          )
+        | None =>
+          raise(
+            Exceptions.UnexpectedAtThisPoint(
+              Printf.sprintf(
+                "Could not extract %s from record",
+                index_stringified,
+              ),
+            ),
+          )
+        }
+      | Some((_, _, other)) =>
+        raise(
+          Exceptions.FeatureMissing(
+            Pp.ast_node(other),
+            "Cannot type extract from this",
+          ),
+        )
+      | None =>
+        // Trying to resolve without all args present
+        (runtime, scope, Basic(Never))
+      };
+
     // TODO: This might be too tightly tailored to a use case
     // Should abstract the whole mapped type at some point, many redundancies
     let obj_type = node#getObjectTypeNode();
@@ -1214,7 +1257,7 @@ and parse__Node__IndexedAccessType =
       switch (obj_reference#getType()) {
       | Some(t) when t#isTypeParameter() =>
         let param_name = t#getText();
-        switch (
+        maybe_resolve_from_record(
           scope
           |> Context.get_arg(param_name)
           |> CCOpt.flat_map(arg =>
@@ -1223,47 +1266,11 @@ and parse__Node__IndexedAccessType =
                  ~scope,
                  arg |> Node.Escape.toAny,
                )
-             )
-        ) {
-        | Some((runtime, scope, Record(fields))) =>
-          // TODO: This needs to be potentially extracted into a sub type
-          switch (
-            fields
-            |> CCArray.find_idx(field =>
-                 switch (field) {
-                 | Parameter({name: Identifier.PropertyName(name), _}) =>
-                   name == index_stringified
-                 | _ => false
-                 }
-               )
-          ) {
-          | Some((_, Parameter({type_, _}))) => (
-              runtime,
-              scope,
-              type_ |> Node.Escape.toAny,
-            )
-          | None =>
-            raise(
-              Exceptions.UnexpectedAtThisPoint(
-                Printf.sprintf(
-                  "Could not extract %s from record",
-                  index_stringified,
-                ),
-              ),
-            )
-          }
-        | Some((_, _, other)) =>
-          raise(
-            Exceptions.FeatureMissing(
-              Pp.ast_node(other),
-              "Cannot type extract from this",
-            ),
-          )
-        | None =>
-          // Trying to resolve without all args present
-          (runtime, scope, Basic(Never))
-        };
-      | Some(_)
+             ),
+        );
+      | Some(t) =>
+        let res = Parser_resolvers.try_to_resolve_type(~runtime, ~scope, t);
+        maybe_resolve_from_record(res);
       | None =>
         raise(
           Exceptions.FeatureMissing(
@@ -1295,14 +1302,21 @@ and parse__Node__IndexedAccessType =
       | None =>
         switch (
           node#getType()
-          |> CCOpt.flat_map(get__DerivedTypeFromTypeObj(~runtime, ~scope))
+          |> CCOpt.flat_map(
+               Parser_resolvers.try_to_resolve_type(~runtime, ~scope),
+             )
         ) {
         | None =>
+          node#forEachChild(n => Console.log(n#getKindName()));
           raise(
             Exceptions.UnexpectedAtThisPoint(
-              "Could not resolve type for IndexedAccess",
+              Printf.sprintf(
+                "Could not resolve type for IndexedAccess (%s - %s)",
+                node#getKindName(),
+                node#getText(),
+              ),
             ),
-          )
+          );
         | Some(r) => r
         }
       | Some(resolved_type) =>

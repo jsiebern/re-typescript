@@ -2,17 +2,20 @@ let test = (
   "/test.d.ts",
   {|
 
-type Nothing<T> = {
-  [P in keyof T]: T[P];
-};
+type Proxy<T> = {
+    get(): T;
+    set(value: T): void;
+}
+type Proxify<T> = {
+    [P in keyof T]: Proxy<T[P]>;
+}
+
 interface A {
   x: string;
-  y?: number;
+  y: number;
   z: boolean;
 }
-type same = Nothing<A>;
-type req = Required<A>;
-type part = Partial<A>;
+type proxied = Proxify<A>;
 
 // ------------------------------------------------------
 
