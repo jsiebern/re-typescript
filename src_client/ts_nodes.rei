@@ -22,6 +22,8 @@ module Generic: {
       pub getKindName: unit => string;
       pub getSymbol: unit => option(Ts_morph.Symbol.t);
       pub getParent: unit => option(t);
+      pub getFirstChild: unit => option(t);
+      pub getLastChild: unit => option(t);
       // Raw
       pub compilerNode: Ts_raw.Node.t;
       pub getProject: unit => Ts_morph.Project.t;

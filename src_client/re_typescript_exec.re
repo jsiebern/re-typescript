@@ -11,8 +11,8 @@ interface A {
   z: boolean;
 }
 type same = Nothing<A>;
-// type req = Required<A>;
-// type part = Partial<A>;
+type req = Required<A>;
+type part = Partial<A>;
 
 // ------------------------------------------------------
 

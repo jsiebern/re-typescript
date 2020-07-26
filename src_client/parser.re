@@ -29,6 +29,7 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
       exports_only: false,
     },
     fully_qualified_added: [],
+    warnings: false,
   };
   let runtime =
     source_files
@@ -516,17 +517,48 @@ and parse__Node__TypeOperator = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
            Parser_resolvers.try_to_resolve_type(~runtime, ~scope),
          )
     ) {
-    | Some((runtime, scope, res)) => (
-        runtime,
-        scope,
-        res |> Node.Escape.toAny,
-      )
+    | Some(res) => res |> parse__map(Node.Escape.toAny)
     | None =>
-      raise(
-        Exceptions.UnexpectedAtThisPoint(
-          "Could not resolve type of TypeOperator",
-        ),
-      )
+      // Resolving the type failed, let's try with the child node as a last resort
+      // First, determine the operator
+      let kind =
+        (type_operator#compilerNode |> Ts_raw.TypeOperatorNode.fromNode)#
+          operator
+        |> Ojs.int_of_js;
+      switch (Ts_morph_util.getSyntaxKindName(kind)) {
+      | "KeyOfKeyword" =>
+        switch (type_operator#getLastChild()) {
+        | Some(child) =>
+          parse__Node__Generic_assignable(~runtime, ~scope, child)
+          |> parse__map(Node.Escape.toAny)
+        | None =>
+          raise(
+            Exceptions.UnexpectedAtThisPoint(
+              "Type operator node resolution expects the TypeOperatorNode to have at least one child",
+            ),
+          )
+        }
+      | "UniqueKeyword" =>
+        raise(
+          Exceptions.FeatureMissing(
+            "UniqueKeyword",
+            "Don't know what to do with this type operator yet",
+          ),
+        )
+      | "ReadonlyKeyword" =>
+        raise(
+          Exceptions.FeatureMissing(
+            "ReadonlyKeyword",
+            "Don't know what to do with this type operator yet",
+          ),
+        )
+      | other =>
+        raise(
+          Exceptions.UnexpectedAtThisPoint(
+            Printf.sprintf("Unexpected type operator: %s", other),
+          ),
+        )
+      };
     }
   | _ => raise(Exceptions.UnexpectedAtThisPoint("Expected TypeOperator"))
   };
@@ -562,8 +594,103 @@ and parse__Node__LiteralType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
 // --- MappedType
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
+and parse__Node__MappedType__FromResolved =
+    (
+      ~modifier: mapped_modifier,
+      ~parse__Value:
+         (
+           ~runtime: runtime,
+           ~scope: scope,
+           ~subname: string=?,
+           Node.node(Node.Constraint.assignable)
+         ) =>
+         (runtime, scope, Node.node(Node.Constraint.assignable)),
+      ~runtime,
+      ~scope,
+      resolved_node: Node.node(Node.Constraint.assignable),
+    ) => {
+  let resolved_node = resolved_node |> Node.Escape.toAny;
+  let (runtime, scope, resolved_node) =
+    Parser_resolvers.follow_references_from_resolved(
+      ~runtime,
+      ~scope,
+      resolved_node,
+    )
+    |> CCOpt.value(~default=(runtime, scope, resolved_node));
+  let optional = modifier == `to_optional;
+  let keys =
+    switch (resolved_node) {
+    | Variant(idents) =>
+      idents
+      |> CCArray.map(i => i.VariantConstructor.name)
+      |> CCArray.map(Ast_generator_utils.Naming.unwrap)
+      |> CCArray.map(i => (i, optional))
+    | Literal(String(str)) => [|(str, optional)|]
+    | Literal(Number(n)) => [|(Printf.sprintf("%.0f", n), optional)|]
+    | Record(fields) =>
+      fields
+      |> CCArray.mapi((i, field) =>
+           switch (field) {
+           | Parameter({name: Identifier.PropertyName(name), is_optional, _}) => (
+               name,
+               switch (modifier) {
+               | `none => is_optional
+               | _ => optional
+               },
+             )
+           | _ => (Printf.sprintf("%i", i), optional)
+           }
+         )
+    | other =>
+      raise(
+        Exceptions.FeatureMissing(
+          Pp.ast_node(other),
+          "Could not resolve mapped type",
+        ),
+      )
+    };
+
+  let (runtime, scope, fields) =
+    keys
+    |> CCArray.fold_left(
+         ((runtime, scope, fields), (key, is_optional)) => {
+           let (runtime, scope, value_resolved) =
+             parse__Value(
+               ~runtime,
+               ~scope,
+               ~subname=key,
+               Literal(String(key)),
+             );
+
+           (
+             runtime,
+             scope,
+             CCArray.append(
+               fields,
+               [|
+                 Parameter({
+                   name: Identifier.PropertyName(key),
+                   is_optional,
+                   type_: value_resolved,
+                   named: true,
+                 }),
+               |],
+             ),
+           );
+         },
+         (runtime, scope, [||]),
+       );
+
+  parse__Node__Resolved__WrapSubNode(~runtime, ~scope, Record(fields));
+}
 and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   switch (node) {
+  // Have this additional check to exclude a mapped type when not all of it's parameters are filled
+  | MappedType(_) when !Context.args_match_params(scope) => (
+      runtime,
+      scope,
+      Basic(Never),
+    )
   | MappedType(mapped_type) =>
     // TODO: This function part needs to be cleaned up a lot
     // Massively repeating sections for the subkeys, should be abstracted into it's own file maybe even
@@ -582,10 +709,22 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
          )
       |> CCOpt.get_exn;
     let parameter_name = type_parameter#getName();
-    let is_optional =
-      (mapped_type#compilerNode |> Ts_raw.MappedTypeNode.fromNode)#
-        questionToken
-      |> CCOpt.is_some;
+
+    let raw_mapped_type_node =
+      mapped_type#compilerNode |> Ts_raw.MappedTypeNode.fromNode;
+    let modifier: mapped_modifier =
+      switch (raw_mapped_type_node#questionToken) {
+      | None => `none
+      | Some(raw_node) =>
+        switch (
+          raw_node#kind |> Ojs.int_of_js |> Ts_morph_util.getSyntaxKindName
+        ) {
+        | "QuestionToken"
+        | "PlusToken" => `to_optional
+        | "MinusToken" => `to_required
+        | _ => `none
+        }
+      };
 
     let value_node =
       children
@@ -630,14 +769,12 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
         parse__Node__Generic_assignable(~runtime, ~scope, value_node);
       let scope = restore(scope);
       // If the resolved value represents a type parameter, we should try to further resolve that with an argument
-      let (runtime, scope, value_resolved) =
-        Parser_utils.resolved_node_replace_type_parameter(
-          ~runtime,
-          ~scope,
-          value_resolved |> Node.Escape.toAny,
-        );
-
-      (runtime, scope, value_resolved |> Node.Escape.toAssignable);
+      Parser_utils.resolved_node_replace_type_parameter(
+        ~runtime,
+        ~scope,
+        value_resolved |> Node.Escape.toAny,
+      )
+      |> parse__map(Node.Escape.toAssignable);
     };
     let parse__Value = parse__Value(~value_node, ~is_value_clean);
 
@@ -655,57 +792,22 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
              )
            )
       ) {
-      | None => (runtime, scope, Basic(Never))
+      | None =>
+        Console.warn(
+          Printf.sprintf(
+            "Could not resolve type parameter %s in resolved type MappedType",
+            paramName,
+          ),
+        );
+        (runtime, scope, Basic(Never));
       | Some((runtime, scope, final_arg)) =>
-        let keys =
-          switch (final_arg) {
-          | Variant(idents) =>
-            idents
-            |> CCArray.map(i => i.VariantConstructor.name)
-            |> CCArray.map(Ast_generator_utils.Naming.unwrap)
-          | Literal(String(str)) => [|str|]
-          | Literal(Number(n)) => [|Printf.sprintf("%.0f", n)|]
-          | other =>
-            raise(
-              Exceptions.FeatureMissing(
-                Pp.ast_node(other),
-                "Could not resolve mapped type",
-              ),
-            )
-          };
-
-        let (runtime, scope, fields) =
-          keys
-          |> CCArray.fold_left(
-               ((runtime, scope, fields), key) => {
-                 let (runtime, scope, value_resolved) =
-                   parse__Value(
-                     ~runtime,
-                     ~scope,
-                     ~subname=key,
-                     Literal(String(key)),
-                   );
-
-                 (
-                   runtime,
-                   scope,
-                   CCArray.append(
-                     fields,
-                     [|
-                       Parameter({
-                         name: Identifier.PropertyName(key),
-                         is_optional,
-                         type_: value_resolved,
-                         named: true,
-                       }),
-                     |],
-                   ),
-                 );
-               },
-               (runtime, scope, [||]),
-             );
-
-        parse__Node__Resolved__WrapSubNode(~runtime, ~scope, Record(fields));
+        parse__Node__MappedType__FromResolved(
+          ~modifier,
+          ~parse__Value,
+          ~runtime,
+          ~scope,
+          final_arg |> Node.Escape.toAssignable,
+        )
       };
     } else if (key_list_type#isUnion()) {
       let keys =
@@ -735,7 +837,7 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
                    [|
                      Parameter({
                        name: Identifier.PropertyName(key),
-                       is_optional,
+                       is_optional: modifier == `to_optional,
                        type_: value_resolved,
                        named: true,
                      }),
@@ -772,7 +874,7 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
                    [|
                      Parameter({
                        name: Identifier.PropertyName(key),
-                       is_optional,
+                       is_optional: modifier == `to_optional,
                        type_: value_resolved,
                        named: true,
                      }),
@@ -809,7 +911,7 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
                    [|
                      Parameter({
                        name: Identifier.PropertyName(key),
-                       is_optional,
+                       is_optional: modifier == `to_optional,
                        type_: value_resolved,
                        named: true,
                      }),
@@ -856,7 +958,7 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
                    [|
                      Parameter({
                        name: Identifier.PropertyName(key),
-                       is_optional,
+                       is_optional: modifier == `to_optional,
                        type_: value_resolved,
                        named: true,
                      }),
@@ -869,7 +971,16 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
 
       parse__Node__Resolved__WrapSubNode(~runtime, ~scope, Record(fields));
     } else {
-      (runtime, scope, Basic(Never));
+      // Analyzing the type has failed, let's try to resolve the type constraint directly via the node
+      let (runtime, scope, maybe_useful_t) =
+        parse__Node__Generic_assignable(~runtime, ~scope, type_constraint);
+      parse__Node__MappedType__FromResolved(
+        ~modifier,
+        ~parse__Value,
+        ~runtime,
+        ~scope,
+        maybe_useful_t,
+      );
     };
   | _ => raise(Exceptions.UnexpectedAtThisPoint("Expected mapped type"))
   };
@@ -1743,6 +1854,13 @@ and parse__Node__TypeAliasDeclaration:
       path:
         CCArray.append(scope.path, [|Identifier.TypeName(node#getName())|]),
     };
+    let (runtime, scope) =
+      create__ContextFromNode(
+        ~runtime,
+        ~type_arguments=[||],
+        ~node=node |> Ts_nodes.TypeAliasDeclaration.toGeneric,
+        scope,
+      );
 
     let (runtime, scope, annotation) =
       parse__Node__Generic_assignable(~runtime, ~scope, node#getTypeNode());

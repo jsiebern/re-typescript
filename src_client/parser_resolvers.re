@@ -320,14 +320,14 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
         parameters: resolved_parameters,
       }),
     ));
-  } else if (Ts_nodes_util.Type.has_object_flag(t, Mapped)) {
-    raise(Not_found);
   } else {
-    Console.error(
-      Printexc.to_string(
-        Exceptions.FeatureMissing("Type not implemented", t#getText()),
-      ),
-    );
+    if (runtime.warnings) {
+      Console.warn(
+        Printexc.to_string(
+          Exceptions.FeatureMissing("Type not implemented", t#getText()),
+        ),
+      );
+    };
     None;
   };
 
@@ -340,6 +340,16 @@ let rec follow_references_from_resolved =
       ~scope,
       annot |> Node.Escape.toAny,
     )
+  | GenericReference(TypeParameter(name)) =>
+    scope
+    |> Context.get_arg(name)
+    |> CCOpt.flat_map(arg =>
+         follow_references_from_resolved(
+           ~runtime,
+           ~scope,
+           arg |> Node.Escape.toAny,
+         )
+       )
   | Reference({target, params}) =>
     // Make the parameters available
     let scope = scope |> Context.add_arg_lst(params);

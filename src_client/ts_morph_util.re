@@ -40,4 +40,9 @@ let getSymbolFlag = (flag: Ts_nodes.Symbol.flags) =>
   );
 
 let tsMorphCommon = require("@ts-morph/common" |> string);
-let getSyntaxKindName = tsMorphCommon##.getSyntaxKindName;
+let getSyntaxKindName = (sKind: int) =>
+  Unsafe.fun_call(
+    tsMorphCommon##.getSyntaxKindName,
+    [|Unsafe.inject(sKind |> Ojs.int_to_js)|],
+  )
+  |> Ojs.string_of_js;

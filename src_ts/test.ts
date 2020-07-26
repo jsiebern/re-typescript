@@ -3,6 +3,7 @@ import * as c from '@ts-morph/common';
 import { isEnumDeclaration } from 'typescript';
 import { notEqual } from 'assert';
 
+
 const project = new Project({
     useInMemoryFileSystem: true,
     compilerOptions: {
@@ -22,22 +23,19 @@ const file = project.createSourceFile(
 // type extracted_method_signature = method_signature['func3' | 'func2'];
 
 
-type PickX<T, K extends keyof T> = {
-    [P in K]: T[P];
+type Nothing<T> = {
+  [P in keyof T]: T[P];
 };
-interface A {
-  x: string;
-  y: number;
-  z: boolean;
-}
-
-type keys = 'x' | 'y';
-type stripped = PickX<A, keys>;
 
 `
 );
 
 file.forEachDescendant(node => {
+    if (node.getKindName() === 'TypeOperator') {
+        let o = node.compilerNode as ts.TypeOperatorNode;
+        console.log(o.operator);
+    }
+
     if (Node.isIndexedAccessTypeNode(node)) {
 
         // const index_node = node.getIndexTypeNode();
@@ -54,15 +52,12 @@ file.forEachDescendant(node => {
         })
         // console.log('------')
     }
-    if (Node.isTypeParameterDeclaration(node)) {
-
-    }
-    if (Node.isTypeReferenceNode(node)) {
-        if (node.getText().includes('PickX')) {
-            node.getTypeArguments
-            console.log(node.getTypeName().getType().getObjectFlags())
-        }
-    }
+    // if (Node.isTypeReferenceNode(node)) {
+    //     if (node.getText().includes('PickX')) {
+    //         node.getTypeArguments
+    //         console.log(node.getTypeName().getType().getObjectFlags())
+    //     }
+    // }
     // Node.isFunctionTypeNode
     // node.getSourceFile().getExportSymbols()
     // if (Node.isTypeReferenceNode(node)) {

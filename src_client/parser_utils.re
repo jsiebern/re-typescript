@@ -12,6 +12,7 @@ type runtime = {
   node_count: int,
   parse_config,
   fully_qualified_added: list(string),
+  warnings: bool,
 };
 type scope = {
   source_file: option(Ts_nodes.SourceFile.t),
@@ -26,6 +27,7 @@ type scope = {
     list((string, option(Node.node(Node.Constraint.assignable)))),
   context_args: list((string, Node.node(Node.Constraint.assignable))),
 };
+type mapped_modifier = [ | `none | `to_optional | `to_required];
 module Context = {
   let get_param = (key, scope) =>
     scope.context_params
@@ -55,6 +57,13 @@ module Context = {
     lst |> CCList.fold_left((scope, tpl) => add_arg_tpl(tpl, scope), scope);
   let get_arg = (key, scope) =>
     scope.context_args |> CCList.Assoc.get(~eq=CCString.equal, key);
+  let args_match_params = scope =>
+    CCList.compare_lengths(
+      scope.context_args,
+      scope.context_params
+      |> CCList.filter(((_, default)) => CCOpt.is_none(default)),
+    )
+    >= 0;
 };
 module Runtime = {
   let add_root_module =

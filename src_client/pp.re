@@ -1,4 +1,5 @@
 open Ast;
+open Parser_utils;
 
 let identifier: type t. Identifier.t(t) => string =
   i =>
@@ -78,3 +79,27 @@ let rec ast_node: type t. Node.node(t) => string =
 
 let node_kind = (n: Ts_nodes.nodeKind) =>
   Ts_nodes_util.unwrap_identified(n)#getKindName();
+
+let scope_args = (scope: scope) =>
+  Printf.sprintf(
+    "-- Args --\n%s-- /Args --\n",
+    CCList.to_string(
+      ~sep="\n",
+      ((key, node)) => Printf.sprintf("%s: %s", key, ast_node(node)),
+      scope.context_args,
+    ),
+  );
+let scope_params = (scope: scope) =>
+  Printf.sprintf(
+    "-- Params --\n%s-- /Params --\n",
+    CCList.to_string(
+      ~sep="\n",
+      ((key, node)) =>
+        Printf.sprintf(
+          "%s: %s",
+          key,
+          node |> CCOpt.map(ast_node) |> CCOpt.value(~default="-"),
+        ),
+      scope.context_params,
+    ),
+  );

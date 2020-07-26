@@ -4,7 +4,7 @@ module Node: {
     {
       inherit Ojs.obj;
       pub isEnumDeclaration: unit => bool;
-      pub kind: int;
+      pub kind: Ojs.t;
     };
 
   let t_of_js: Ojs.t => t;
@@ -17,6 +17,21 @@ module MappedTypeNode: {
       inherit Node.t;
       pub readonlyToken: option(Node.t);
       pub questionToken: option(Node.t);
+    };
+  [@js.cast]
+  let fromNode: Node.t => t;
+  [@js.cast]
+  let toNode: t => Node.t;
+
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
+module TypeOperatorNode: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Node.t;
+      pub operator: Ojs.t;
     };
   [@js.cast]
   let fromNode: Node.t => t;
