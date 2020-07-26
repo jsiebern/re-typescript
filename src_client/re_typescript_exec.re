@@ -2,15 +2,17 @@ let test = (
   "/test.d.ts",
   {|
 
-interface A<X> {
+type Nothing<T> = {
+  [P in keyof T]: T[P];
+};
+interface A {
   x: string;
-  y: X;
+  y?: number;
   z: boolean;
 }
-
-type keys = 'x' | 'y';
-type stripped = Pick<A<{obj: number}>, keys>;
-
+type same = Nothing<A>;
+// type req = Required<A>;
+// type part = Partial<A>;
 
 // ------------------------------------------------------
 

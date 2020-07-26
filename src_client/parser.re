@@ -37,7 +37,8 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
            let scope = {
              root_declarations: [||],
              source_file: None,
-             parent: None,
+             current_declaration: None,
+             current_declared_params: [||],
              path: [||],
              has_any: false,
              refs: Hashtbl.create(10),
@@ -142,7 +143,6 @@ and parse__Node__Resolved__WrapSubNode =
     Path.make_current_scope(scope.path) |> Path.add(type_name);
   let scoped_path = Pp.path(qualified_path_to_type);
 
-  // TODO: Check if type params would apply here
   let (runtime, scope) =
     !
       CCList.mem(
@@ -156,7 +156,7 @@ and parse__Node__Resolved__WrapSubNode =
             path: qualified_path_to_type,
             name: type_name,
             annot: node,
-            params: [||],
+            params: scope.current_declared_params,
           });
         let runtime = {
           ...runtime,
@@ -179,7 +179,29 @@ and parse__Node__Resolved__WrapSubNode =
          qualified_path_to_type,
          Path.strip_current_sub_path(base_path),
        );
-  (runtime, scope, Reference({target: [|type_name|], params: []}));
+  (
+    runtime,
+    scope,
+    Reference({
+      target: [|type_name|],
+      params:
+        scope.current_declared_params
+        |> CCArray.map(
+             fun
+             | Identifier.TypeParameter(n) as i => (n, GenericReference(i))
+             | other =>
+               raise(
+                 Exceptions.UnexpectedAtThisPoint(
+                   Printf.sprintf(
+                     "Not a valid type param ident: %s",
+                     Pp.identifier(other),
+                   ),
+                 ),
+               ),
+           )
+        |> CCArray.to_list,
+    }),
+  );
 }
 and parse__Node__Generic__WrapSubNode =
     (~runtime, ~scope, node: Ts_nodes.Generic.t) => {
@@ -214,7 +236,7 @@ and parse__Node__Generic__WrapSubNode =
             path: qualified_path_to_type,
             name: type_name,
             annot: wrapped_type,
-            params: [||],
+            params: scope.current_declared_params,
           });
         let runtime = {
           ...runtime,
@@ -236,7 +258,29 @@ and parse__Node__Generic__WrapSubNode =
          qualified_path_to_type,
          Path.strip_current_sub_path(base_path),
        );
-  (runtime, scope, Reference({target: [|type_name|], params: []}));
+  (
+    runtime,
+    scope,
+    Reference({
+      target: [|type_name|],
+      params:
+        scope.current_declared_params
+        |> CCArray.map(
+             fun
+             | Identifier.TypeParameter(n) as i => (n, GenericReference(i))
+             | other =>
+               raise(
+                 Exceptions.UnexpectedAtThisPoint(
+                   Printf.sprintf(
+                     "Not a valid type param ident: %s",
+                     Pp.identifier(other),
+                   ),
+                 ),
+               ),
+           )
+        |> CCArray.to_list,
+    }),
+  );
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -586,9 +630,6 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
         parse__Node__Generic_assignable(~runtime, ~scope, value_node);
       let scope = restore(scope);
       // If the resolved value represents a type parameter, we should try to further resolve that with an argument
-      scope.context_args
-      |> CCList.iter(((name, t)) => {Console.log((name, Pp.ast_node(t)))});
-      Console.log("-----");
       let (runtime, scope, value_resolved) =
         Parser_utils.resolved_node_replace_type_parameter(
           ~runtime,
@@ -1384,7 +1425,16 @@ and parse__Node__FunctionDeclaration =
     };
   let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
     Identifier.TypeName(name);
-  let scope = {...scope, parent: Some(FunctionDeclaration(node))};
+
+  let params =
+    node#getTypeParameters()
+    |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
+
+  let scope = {
+    ...scope,
+    current_declaration: Some(FunctionDeclaration(node)),
+    current_declared_params: params,
+  };
 
   let (runtime, scope, annot) =
     parse__Node__FunctionLikeNode(
@@ -1393,10 +1443,6 @@ and parse__Node__FunctionDeclaration =
       node#getReturnTypeNode(),
       node#getParameters(),
     );
-
-  let params =
-    node#getTypeParameters()
-    |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
 
   (
     runtime,
@@ -1647,7 +1693,8 @@ and parse__Node__EnumDeclaration =
     Identifier.TypeName(node#getName());
   let scope = {
     ...scope,
-    parent: Some(EnumDeclaration(node)),
+    current_declaration: Some(EnumDeclaration(node)),
+    current_declared_params: [||],
     path:
       CCArray.append(scope.path, [|Identifier.TypeName(node#getName())|]),
   };
@@ -1684,15 +1731,18 @@ and parse__Node__TypeAliasDeclaration:
   (~runtime, ~scope, node: Ts_nodes.TypeAliasDeclaration.t) => {
     let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
       Identifier.TypeName(node#getName());
-    let scope = {
-      ...scope,
-      parent: Some(TypeAliasDeclaration(node)),
-      path:
-        CCArray.append(scope.path, [|Identifier.TypeName(node#getName())|]),
-    };
+
     let params =
       node#getTypeParameters()
       |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
+
+    let scope = {
+      ...scope,
+      current_declaration: Some(TypeAliasDeclaration(node)),
+      current_declared_params: params,
+      path:
+        CCArray.append(scope.path, [|Identifier.TypeName(node#getName())|]),
+    };
 
     let (runtime, scope, annotation) =
       parse__Node__Generic_assignable(~runtime, ~scope, node#getTypeNode());

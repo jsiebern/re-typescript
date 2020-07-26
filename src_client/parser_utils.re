@@ -16,7 +16,9 @@ type runtime = {
 type scope = {
   source_file: option(Ts_nodes.SourceFile.t),
   root_declarations: array(Node.node(Node.Constraint.moduleLevel)),
-  parent: option(Ts_nodes.nodeKind),
+  current_declaration: option(Ts_nodes.nodeKind),
+  current_declared_params:
+    array(Identifier.t(Identifier.Constraint.exactlyTypeParameter)),
   path: iPath,
   has_any: bool,
   refs: Hashtbl.t(iPath, array(iPath)),
