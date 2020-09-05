@@ -1,5 +1,0 @@
-(library
- (name re_typescript_ts_parser_bin)
- (public_name re_typescript.ts_parser_bin)
- (libraries console.lib containers containers.unix yojson))
- 

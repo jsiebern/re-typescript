@@ -1,3 +1,0 @@
-type package_json = {
-    ?types: string option;
-}
