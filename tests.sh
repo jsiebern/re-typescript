@@ -6,5 +6,5 @@ then
     esy tests --profile release-static
 else
     esy tests
-    $(fnm exec -- which node) ./_build/default/tests/RunTests.bc.js 
+    $(fnm exec -- which node) ./_build/default/tests/RunTests.bc.js $@
 fi
