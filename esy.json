@@ -40,8 +40,7 @@
     "ocaml": "~4.8.0",
     "@opam/js_of_ocaml-compiler": "3.6.0",
     "refmterr": "~3.3.0",
-    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#ce1840355541ff60b999e39388835027f89d8798",
-    "@opam/redemon": "ulrikstrid/redemon:redemon.opam",
+    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam",
     "@reason-native/rely": "^3.2.1"
   },
   "esy": {
