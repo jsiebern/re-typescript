@@ -15,3 +15,5 @@ lib
 .bsb.lock
 bundle
 notes
+_current.json
+test.json
