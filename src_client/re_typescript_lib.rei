@@ -1,7 +1,7 @@
 type print_language =
   | Reason
   | OCaml
-  | Napkin;
+  | ReScript;
 type config = Ts_morph.Project.Config.t;
 type project = Ts_morph.Project.t;
 type source_file = Ts_morph.SourceFile.t;

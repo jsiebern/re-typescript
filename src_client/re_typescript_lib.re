@@ -4,7 +4,7 @@ open Js_of_ocaml.Js;
 type print_language =
   | Reason
   | OCaml
-  | Napkin;
+  | ReScript;
 type config = Ts_morph.Project.Config.t;
 type project = Ts_morph.Project.t;
 type source_file = Ts_morph.SourceFile.t;
@@ -72,7 +72,7 @@ let print_code = (~print_language=Reason, ast) => {
       Format.str_formatter,
       (ast, []),
     )
-  | Napkin => raise(Failure("Napkin not available for now"))
+  | ReScript => raise(Failure("ReScript not available for now"))
   };
   Format.flush_str_formatter();
 };
