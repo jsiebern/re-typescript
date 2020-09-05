@@ -10,6 +10,6 @@ else
         esy dev-watch
     else
         esy dev
-        $(fnm exec -- which node) ./_build/default/src_client/re_typescript_exec.bc.js 
+        $(fnm exec -- which node) ./_build/default/src/re_typescript_exec.bc.js 
     fi
 fi
