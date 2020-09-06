@@ -113,3 +113,21 @@ let scope_params = (scope: scope) =>
       scope.context_params,
     ),
   );
+
+let scope_refs = (scope: scope) =>
+  Printf.sprintf(
+    "-- Refs --\n%s\n-- /Refs --\n",
+    scope.refs
+    |> CCHashtbl.to_list
+    |> CCList.to_string(~sep="\n", ((to_, from)) =>
+         Printf.sprintf(
+           "%s: [%s]",
+           Ast_generator_utils.Naming.full_identifier_of_path(to_),
+           from
+           |> CCArray.to_string(
+                ~sep=", ",
+                Ast_generator_utils.Naming.full_identifier_of_path,
+              ),
+         )
+       ),
+  );

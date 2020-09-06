@@ -1988,12 +1988,10 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
       };
 
     // Parse the reference information to make a note that it was referenced
-    let ref_to =
-      symbol
-      |> CCOpt.map_or(~default=type_name#getText(), s =>
-           s#getFullyQualifiedName()
-         );
-    let ref_path = build_path_from_ref_string(~scope, ref_to);
+    let ref_path =
+      scope.path
+      |> Path.make_current_scope
+      |> Path.add(Identifier.TypeName(type_name#getText()));
     let scope = scope |> Scope.add_ref(ref_path, scope.path);
 
     let default_return = (

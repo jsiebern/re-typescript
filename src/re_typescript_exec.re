@@ -2,14 +2,8 @@ let test = (
   "/test.d.ts",
   {|
 
-interface KeysExt {
-            key_3: boolean;
-          }
-          interface Keys extends KeysExt {
-            key_1: string;
-            key_2: number;
-          }
-          type with_keys = { [K in keyof Keys]: boolean };
+export interface I_a {}
+type x = I_a
 
 // ------------------------------------------------------
 
