@@ -203,6 +203,7 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
       ~scope: scope,
       root_module: Node.node(Node.Constraint.exactlyModule),
     ) => {
+  // TODO: This whole function is extremely shady and frankly stupid, this needs some serious overhaul in the future
   let rec replace =
           (~scope, ~current_type_list, ~path, node)
           : (
@@ -279,6 +280,22 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
            );
 
       (Record(nodes), lst);
+    | TypeDeclaration({annot: Reference({target, _}), path, _} as inner) =>
+      switch (
+        Helpers.get_replaceable_ref_target(
+          ~records=true,
+          ~scope,
+          ~current_type_list,
+          ~source_path=path,
+          target,
+        )
+      ) {
+      | None => (TypeDeclaration(inner), current_type_list)
+      | Some({annot, params, _}) => (
+          TypeDeclaration({...inner, annot, params}),
+          current_type_list,
+        )
+      }
     | TypeDeclaration({annot, path, _} as inner) =>
       let (node, lst) = replace(~scope, ~current_type_list, ~path, annot);
 
@@ -306,7 +323,6 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
              },
              ([||], types |> CCArray.map(Node.Escape.toGlobal)),
            );
-      // TODO: This whole function is extremely shady and frankly stupid, this needs some serious overhaul in the future
       lst
       |> CCArray.iteri((i, t) =>
            switch (t) {

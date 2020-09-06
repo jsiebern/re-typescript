@@ -5,10 +5,10 @@ module Test = {
     success: bool,
     error: option(errorHandling_error),
   };
-  type artworksData_artworks = {title: string};
-  type artworksData = {artworks: array(artworksData_artworks)};
-  type artistsData_artists = {name: string};
-  type artistsData = {artists: array(artistsData_artists)};
+  type artworksData_artworks_t = {title: string};
+  type artworksData = {artworks: array(artworksData_artworks_t)};
+  type artistsData_artists_t = {name: string};
+  type artistsData = {artists: array(artistsData_artists_t)};
   type artworksResponse = (artworksData, errorHandling);
   type artistsResponse = (artistsData, errorHandling);
 };
