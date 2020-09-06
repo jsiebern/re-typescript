@@ -1,5 +1,7 @@
 function definitions › function with return type
-type someFunction = unit => string
-and someOtherFunction_return = {inline: string}
-and someOtherFunction = unit => someOtherFunction_return;
+module Test = {
+  type someFunction = unit => string;
+  type someOtherFunction_return = {inline: string};
+  type someOtherFunction = unit => someOtherFunction_return;
+};
 

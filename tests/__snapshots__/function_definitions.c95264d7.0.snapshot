@@ -1,17 +1,18 @@
 function definitions › function with inline arguments
-module SomeFunction_a: {
-  type t;
-  let string: string => t;
-  let number: float => t;
-} = {
-  [@unboxed]
-  type t =
-    | Any('a): t;
-  let string = (v: string) => Any(v);
-  let number = (v: float) => Any(v);
+module Test = {
+  module SomeFunction_a: {
+    type t;
+    let string: string => t;
+    let number: float => t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let string = (v: string) => Any(v);
+    let number = (v: float) => Any(v);
+  };
+  type someFunction_a = SomeFunction_a.t;
+  type someFunction_b = {inline: float};
+  type someFunction = (someFunction_a, ~b: someFunction_b=?, unit) => string;
 };
-type someFunction_a = SomeFunction_a.t;
-type someFunction_b = {inline: float}
-and someFunction =
-  (~a: someFunction_a, ~b: option(someFunction_b)=?, unit) => string;
 
