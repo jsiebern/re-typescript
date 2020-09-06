@@ -1,13 +1,9 @@
-let test = (
-  "/test.d.ts",
-  {|
+let test = ("/test.d.ts", {|
 
-export enum Enum1 { Red, Green, Blue }
-export enum Enum2 { Red, Green, Blue }
-declare enum Enum3 { red, Green, blue }
+type s = string;
+type kof = keyof s;
 
-|},
-);
+|});
 
 Console.log(
   "\n-------------------------------------------------------------------\n",

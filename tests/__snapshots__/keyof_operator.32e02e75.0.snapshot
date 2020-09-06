@@ -1,0 +1,56 @@
+keyof operator › throws for non object types
+module Test = {
+  module Kof: {
+    type t;
+    let number: float => t;
+    let toString: string => t;
+    let charAt: string => t;
+    let charCodeAt: string => t;
+    let concat: string => t;
+    let indexOf: string => t;
+    let lastIndexOf: string => t;
+    let localeCompare: string => t;
+    let match: string => t;
+    let replace: string => t;
+    let search: string => t;
+    let slice: string => t;
+    let split: string => t;
+    let substring: string => t;
+    let toLowerCase: string => t;
+    let toLocaleLowerCase: string => t;
+    let toUpperCase: string => t;
+    let toLocaleUpperCase: string => t;
+    let trim: string => t;
+    let length: string => t;
+    let substr: string => t;
+    let valueOf: string => t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let number = (v: float) => Any(v);
+    let toString = (v: string) => Any(v);
+    let charAt = (v: string) => Any(v);
+    let charCodeAt = (v: string) => Any(v);
+    let concat = (v: string) => Any(v);
+    let indexOf = (v: string) => Any(v);
+    let lastIndexOf = (v: string) => Any(v);
+    let localeCompare = (v: string) => Any(v);
+    let match = (v: string) => Any(v);
+    let replace = (v: string) => Any(v);
+    let search = (v: string) => Any(v);
+    let slice = (v: string) => Any(v);
+    let split = (v: string) => Any(v);
+    let substring = (v: string) => Any(v);
+    let toLowerCase = (v: string) => Any(v);
+    let toLocaleLowerCase = (v: string) => Any(v);
+    let toUpperCase = (v: string) => Any(v);
+    let toLocaleUpperCase = (v: string) => Any(v);
+    let trim = (v: string) => Any(v);
+    let length = (v: string) => Any(v);
+    let substr = (v: string) => Any(v);
+    let valueOf = (v: string) => Any(v);
+  };
+  type kof = Kof.t;
+};
+

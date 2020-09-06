@@ -418,6 +418,12 @@ let rule_transform_single_literals_into_union_types =
       (~current_type_list: array(Node.node('a))=?, Node.node(t)) => unit =
     (~current_type_list=[||], node) =>
       switch (node) {
+      | Node.Module({types, _})
+          // We want to skip the entire module if it is a union type already
+          when
+            CCArray.get_safe(types, 0)
+            |> CCOpt.map_or(~default=false, t => t == Node.Fixture(TUnboxed)) =>
+        ()
       | Node.Module({types, _}) =>
         types |> CCArray.iter(t => walk(~current_type_list=types, t))
       | TypeDeclaration({annot: Literal(_) as l, path, _} as td) =>

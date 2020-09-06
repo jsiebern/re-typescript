@@ -4,17 +4,10 @@ let ctx = Lib.default_project_config;
 
 describe("keyof operator", ({test, _}) => {
   test("throws for non object types", ({expect, _}) => {
-    expect.fn(() => print({|
+    expect.string(print({|
         type kof = keyof string;
-    |})).toThrow();
-
-    expect.fn(() =>
-      print({|
-        type s = string;
-        type kof = keyof s;
-    |})
-    ).
-      toThrow();
+    |})).
+      toMatchSnapshot()
   });
   test("extracts keys from an interface", ({expect, _}) => {
     expect.string(
