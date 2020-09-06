@@ -3,35 +3,69 @@ open Node;
 open Parser_utils;
 
 let generate_string_literal_list = (~runtime, ~scope, strings: array(string)) => {
+  let config = Re_typescript_config.getConfig();
+  let makeVariant =
+    lazy(
+      v =>
+        Variant(
+          strings
+          |> CCArray.map(name =>
+               {
+                 VariantConstructor.name: Identifier.VariantIdentifier(name),
+                 arguments: [||],
+               }
+             ),
+          v,
+        )
+    );
+  let makeUnboxed =
+    lazy(
+      () => {
+        Basic(Any);
+      }
+    );
   (
     runtime,
     scope,
-    Variant(
-      strings
-      |> CCArray.map(name =>
-           {
-             VariantConstructor.name: Identifier.VariantIdentifier(name),
-             arguments: [||],
-           }
-         ),
-    ),
+    switch (config.unions.string_literal) {
+    | Unboxed => Lazy.force(makeUnboxed, ())
+    | Variant => Lazy.force(makeVariant, `variant)
+    | PolymorphicVariant => Lazy.force(makeVariant, `poly)
+    },
   );
 };
 
 let generate_number_literal_list = (~runtime, ~scope, floats: array(float)) => {
+  let config = Re_typescript_config.getConfig();
+  let makeVariant =
+    lazy(
+      v =>
+        Variant(
+          floats
+          |> CCArray.map(num =>
+               {
+                 VariantConstructor.name:
+                   Identifier.VariantIdentifier(Printf.sprintf("%.0f", num)),
+                 arguments: [||],
+               }
+             ),
+          v,
+        )
+    );
+  let makeUnboxed =
+    lazy(
+      () => {
+        Basic(Any);
+      }
+    );
   (
     runtime,
     scope,
-    Variant(
-      floats
-      |> CCArray.map(num =>
-           {
-             VariantConstructor.name:
-               Identifier.VariantIdentifier(Printf.sprintf("%.0f", num)),
-             arguments: [||],
-           }
-         ),
-    ),
+    switch (config.unions.number_literal) {
+    | Unboxed => Lazy.force(makeUnboxed, ())
+    | Variant => Lazy.force(makeVariant, `variant)
+    | PolymorphicVariant => Lazy.force(makeVariant, `poly)
+    },
   );
 };
 

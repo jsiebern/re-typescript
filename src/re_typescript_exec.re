@@ -2,13 +2,11 @@ let test = (
   "/test.d.ts",
   {|
 
-interface Person {
-              name: string;
-              age: number;
-          }
+type key = 'just_one_key';
+type Flags = { [K in key]: boolean };
 
-          type NullablePerson = { [P in keyof Person]: Person[P] | null }
-          type PartialPerson = { [P in keyof Person]?: Person[P] }
+type key2 = 4;
+type Flags2 = { [K in key2]: boolean };
 
 |},
 );

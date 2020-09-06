@@ -1,5 +1,11 @@
 mapped object types › map over a single string literal
-type key =
-  | Just_one_key
-and flags = {just_one_key: bool};
+module Test = {
+  type key = [ | `just_one_key];
+  type flags = {just_one_key: bool};
+  type key2 = any;
+  type flags2 = {
+    [@bs.as \"4\"]
+    _4: bool,
+  };
+};
 

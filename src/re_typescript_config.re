@@ -3,10 +3,16 @@ type print_language =
   | ReScript;
 
 module Unions = {
-  type number_literal =
+  type shared_literal =
     | Unboxed
+    | Variant
     | PolymorphicVariant;
-  type t = {number_literal};
+  type number_literal = shared_literal;
+  type string_literal = shared_literal;
+  type t = {
+    number_literal,
+    string_literal,
+  };
 };
 module Numbers = {
   type mode =
@@ -29,6 +35,7 @@ let default_config: t = {
   bindings: false,
   unions: {
     number_literal: Unboxed,
+    string_literal: PolymorphicVariant,
   },
   numbers: {
     mode: Int,

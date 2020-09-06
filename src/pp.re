@@ -63,7 +63,7 @@ let rec ast_node: type t. Node.node(t) => string =
         params
         |> CCList.to_string(~sep=", ", ((v, t)) => v ++ ": " ++ ast_node(t)),
       )
-    | Variant(variants) =>
+    | Variant(variants, _) =>
       Printf.sprintf(
         "Variant(%s)",
         variants

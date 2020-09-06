@@ -634,7 +634,7 @@ and parse__Node__MappedType__FromResolved =
   let optional = modifier == `to_optional;
   let keys =
     switch (resolved_node) {
-    | Variant(idents) =>
+    | Variant(idents, _) =>
       idents
       |> CCArray.map(i => i.VariantConstructor.name)
       |> CCArray.map(Ast_generator_utils.Naming.unwrap)
@@ -1802,7 +1802,7 @@ and parse__Node__EnumDeclaration =
            arguments: [||],
          }
        );
-  let annotation = Variant(variant_constructors);
+  let annotation = Variant(variant_constructors, `variant);
 
   (
     runtime,

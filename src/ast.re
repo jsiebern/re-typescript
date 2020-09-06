@@ -216,7 +216,7 @@ and Node: {
       : node(Constraint.atLeastSafeDict('poly))
     | Record(array(node(Constraint.exactlyParameter)))
       : node(Constraint.atLeastRecord('poly))
-    | Variant(array(VariantConstructor.t))
+    | Variant(array(VariantConstructor.t), [ | `poly | `variant])
       : node(Constraint.atLeastVariant('poly))
     | Tuple(array(node(Constraint.assignable)))
       : node(Constraint.atLeastTuple('poly))

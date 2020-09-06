@@ -173,37 +173,54 @@ and generate__Node__TypeDeclaration =
     };
 
     switch (node.annot) {
-    | Variant(variant_members) =>
+    | Variant(variant_members, mode) =>
       // TODO: Use normal variant type for the time being, this need to change in several levels of complexity
       // Each member could have been assiged another literal value (or not), there could be computated values
       // Also TODO: There will be more types like this that need to be parsed here as some can't return a core_type
-      let type_kind =
-        Util.make_variant_kind(
-          variant_members
-          |> CCArray.map(member =>
-               Util.Naming.fromIdentifier(
-                 Identifier.VariantIdentifier(
-                   switch (member.VariantConstructor.name) {
-                   | VariantIdentifier(str) => str
-                   },
-                 ),
+      switch (mode) {
+      | `variant =>
+        let type_kind =
+          Util.make_variant_kind(
+            variant_members
+            |> CCArray.map(member =>
+                 Util.Naming.fromIdentifier(
+                   Identifier.VariantIdentifier(
+                     switch (member.VariantConstructor.name) {
+                     | VariantIdentifier(str) => str
+                     },
+                   ),
+                 )
                )
-             )
-          |> CCArray.to_list,
+            |> CCArray.to_list,
+          );
+        (
+          scope,
+          [
+            Util.make_type_declaration_of_kind(
+              ~params=
+                node.params
+                |> CCArray.map(Util.Naming.fromIdentifier)
+                |> CCArray.to_list,
+              ~aliasName=Util.Naming.fromIdentifier(type_name),
+              ~kind=type_kind,
+            ),
+          ],
         );
-      (
-        scope,
-        [
-          Util.make_type_declaration_of_kind(
-            ~params=
-              node.params
-              |> CCArray.map(Util.Naming.fromIdentifier)
-              |> CCArray.to_list,
-            ~aliasName=Util.Naming.fromIdentifier(type_name),
-            ~kind=type_kind,
-          ),
-        ],
-      );
+      | `poly => (
+          scope,
+          [
+            Util.make_type_declaration(
+              ~params=
+                node.params
+                |> CCArray.map(Util.Naming.fromIdentifier)
+                |> CCArray.to_list,
+              ~aliasName=Util.Naming.fromIdentifier(type_name),
+              ~aliasType=
+                Util.make_polymorphic(variant_members |> CCArray.to_list),
+            ),
+          ],
+        )
+      }
     | Record(parameters) =>
       let (scope, fields) =
         CCArray.fold_left(
@@ -429,19 +446,19 @@ and generate__Node__Assignable_CoreType =
     | Boolean(_) =>
       generate__Node__Assignable_CoreType(~scope, Basic(Boolean))
     }
-  | Variant(variant_members) => (
+  | Variant(variant_members, `poly) => (
       scope,
       Some(Util.make_polymorphic(variant_members |> CCArray.to_list)),
     )
-  // | other =>
-  //   raise(
-  //     AstGeneratorException(
-  //       Printf.sprintf(
-  //         "> Error: Type '%s' should not be handled as an Assignable_CoreType",
-  //         Pp.ast_node(other),
-  //       ),
-  //     ),
-  //   )
+  | other =>
+    raise(
+      AstGeneratorException(
+        Printf.sprintf(
+          "> Error: Type '%s' should not be handled as an Assignable_CoreType",
+          Pp.ast_node(other),
+        ),
+      ),
+    )
   };
 }
 // ------------------------------------------------------------------------------------------
