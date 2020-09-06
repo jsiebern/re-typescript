@@ -259,6 +259,18 @@ let make_variant_kind = (names: list(string)) => {
     |> CCListLabels.map(~f=name => Type.constructor(Location.mknoloc(name))),
   );
 };
+let make_polymorphic = (names: list(string)) => {
+  Typ.mk(
+    Ptyp_variant(
+      names
+      |> CCListLabels.map(~f=name =>
+           Rtag(Location.mknoloc(name), [], true, [])
+         ),
+      Closed,
+      None,
+    ),
+  );
+};
 
 let make_tuple_of = (types: array(core_type)) =>
   Typ.tuple(types |> CCArray.to_list);

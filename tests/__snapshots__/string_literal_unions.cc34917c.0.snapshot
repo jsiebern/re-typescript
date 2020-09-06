@@ -1,16 +1,5 @@
 string literal unions › can be generated inside optional
-module Variant: {
-  type t = pri string;
-  [@bs.inline \"red\"]
-  let red: t;
-  [@bs.inline \"blue\"]
-  let blue: t;
-} = {
-  type t = string;
-  [@bs.inline]
-  let red = \"red\";
-  [@bs.inline]
-  let blue = \"blue\";
+module Test = {
+  type variant = option([ | `blue | `red]);
 };
-type variant = option(Variant.t);
 
