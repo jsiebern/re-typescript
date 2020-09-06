@@ -25,7 +25,7 @@ module Helpers = {
     let scoped_path = Path.make_current_scope(source_path);
     let qualified_target = CCArray.append(scoped_path, target_path);
     let ref_num =
-      CCHashtbl.get(scope.refs, target_path)
+      CCHashtbl.get(scope.refs, qualified_target)
       |> CCOpt.map_or(~default=0, CCArray.length);
     if (ref_num <= 1) {
       let target_idx = current_type_list |> find_td(qualified_target);
