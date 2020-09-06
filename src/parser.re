@@ -579,12 +579,17 @@ and parse__Node__LiteralType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
       scope,
       switch (inner |> Ts_nodes_util.identifyGenericNode) {
       | BooleanLiteral(b) => Literal(Boolean(b#getLiteralValue()))
+      | TrueKeyword(_) => Literal(Boolean(true))
+      | FalseKeyword(_) => Literal(Boolean(false))
       | StringLiteral(s) => Literal(String(s#getLiteralValue()))
       | NumericLiteral(n) => Literal(Number(n#getLiteralValue()))
       | NullLiteral(_) => Basic(Null)
       | _ =>
         raise(
-          Exceptions.FeatureMissing(inner#getKindName(), inner#getText()),
+          Exceptions.FeatureMissing(
+            "LiteralType(" ++ inner#getKindName() ++ ")",
+            inner#getText(),
+          ),
         )
       },
     );

@@ -31,6 +31,8 @@ let unwrap_identified = (node: Ts_nodes.nodeKind) =>
   | ObjectKeyword(node) => node |> from_node_kind_child
   | UndefinedKeyword(node) => node |> from_node_kind_child
   | BooleanKeyword(node) => node |> from_node_kind_child
+  | FalseKeyword(node) => node |> from_node_kind_child
+  | TrueKeyword(node) => node |> from_node_kind_child
   | VoidKeyword(node) => node |> from_node_kind_child
   | AnyKeyword(node) => node |> from_node_kind_child
   | NullKeyword(node) => node |> from_node_kind_child

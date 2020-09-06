@@ -733,6 +733,8 @@ module Identify: {
     | [@js.arg "node"] [@js "ObjectKeyword"] ObjectKeyword(Generic.t)
     | [@js.arg "node"] [@js "UndefinedKeyword"] UndefinedKeyword(Generic.t)
     | [@js.arg "node"] [@js "BooleanKeyword"] BooleanKeyword(Generic.t)
+    | [@js.arg "node"] [@js "FalseKeyword"] FalseKeyword(Generic.t)
+    | [@js.arg "node"] [@js "TrueKeyword"] TrueKeyword(Generic.t)
     | [@js.arg "node"] [@js "VoidKeyword"] VoidKeyword(Generic.t)
     | [@js.arg "node"] [@js "AnyKeyword"] AnyKeyword(Generic.t)
     | [@js.arg "node"] [@js "NullKeyword"] NullKeyword(Generic.t)
