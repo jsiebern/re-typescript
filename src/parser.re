@@ -1069,6 +1069,7 @@ and parse__Node__UnionType = (~runtime, ~scope, node: Ts_nodes.UnionType.t) => {
     type_nodes
     |> CCArray.foldi(
          ((runtime, scope, nodes), i, node) => {
+           // TODO: Maybe a quick check to replace "1st" with a "t" when this will become an optional / a nullable
            let current_path =
              base_path |> Path.add(Identifier.SubIdent(i + 1));
            let scope = scope |> Scope.replace_path_arr(current_path);

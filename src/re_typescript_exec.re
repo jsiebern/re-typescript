@@ -2,10 +2,7 @@ let test = (
   "/test.d.ts",
   {|
 
-type opt_in_arr = (string | undefined)[];
-type null_in_arr = Array<boolean | null>;
-type arr_null = string[] | null;
-type arr_opt = Array<boolean> | undefined;
+type some_interface = { field: boolean } | null;
 
 // ------------------------------------------------------
 

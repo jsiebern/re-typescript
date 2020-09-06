@@ -402,7 +402,7 @@ and generate__Node__Assignable_CoreType =
     );
   | Literal(literal) =>
     // Literals cannot really be displayed in reason, so we just use the primitive here
-    // TODO: Actually thik about an inline type here!
+    // TODO: Actually think about an inline type here!
     switch (literal) {
     | String(_) => generate__Node__Assignable_CoreType(~scope, Basic(String))
     | Number(_) => generate__Node__Assignable_CoreType(~scope, Basic(Number))

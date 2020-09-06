@@ -270,6 +270,8 @@ let rule_move_only_once_referenced_types_into_arrays_and_optionals =
               current_type_list,
             );
           switch (reference_idx, target_idx) {
+          | (_, Some((_, TypeDeclaration({annot: Node.Record(_), _})))) =>
+            ()
           | (
               Some((ri, TypeDeclaration({name, _}))),
               Some((ti, TypeDeclaration(t_inner))),

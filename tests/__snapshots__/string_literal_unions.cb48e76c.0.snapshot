@@ -1,12 +1,6 @@
 string literal unions › recognizes single string as union
-module Variant: {
-  type t = pri string;
-  [@bs.inline \"single\"]
-  let single: t;
-} = {
-  type t = string;
-  [@bs.inline]
-  let single = \"single\";
+module Test = {
+  type variant =
+    | Single;
 };
-type variant = Variant.t;
 
