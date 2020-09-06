@@ -2,16 +2,22 @@ let test = (
   "/test.d.ts",
   {|
 
-interface method_signature {
-              func1: (x: number) => number;       // Function type literal
-              func2(x: number): number;           // Method signature
-              func3(x: string, y: boolean): void; // Method signature for extraction
-            }
-            type extracted_method_signature = method_signature['func3'];
+interface KeysExt {
+            key_3: boolean;
+          }
+          interface Keys extends KeysExt {
+            key_1: string;
+            key_2: number;
+          }
+          type with_keys = { [K in keyof Keys]: boolean };
 
 // ------------------------------------------------------
 
 |},
+);
+
+Console.log(
+  "\n-------------------------------------------------------------------\n",
 );
 
 switch (Re_typescript_lib.quick_parse([|test|])) {

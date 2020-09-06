@@ -21,7 +21,7 @@ module Helpers = {
     find_td(path, current_type_list) |> CCOpt.get_exn;
 
   let get_replaceable_ref_target =
-      (~scope, ~current_type_list, ~source_path, target_path) => {
+      (~scope, ~records=false, ~current_type_list, ~source_path, target_path) => {
     let scoped_path = Path.make_current_scope(source_path);
     let qualified_target = CCArray.append(scoped_path, target_path);
     let ref_num =
@@ -30,7 +30,7 @@ module Helpers = {
     if (ref_num <= 1) {
       let target_idx = current_type_list |> find_td(qualified_target);
       switch (target_idx) {
-      | Some((ti, {annot: Record(_), _})) => None
+      | Some((ti, {annot: Record(_), _})) when !records => None
       | Some((ti, t_inner)) =>
         // Set this to "never" so it does not get printed.
         // Still keeping the name around could be useful later though
@@ -49,12 +49,20 @@ module Helpers = {
   };
 
   let maybe_replace_type_declaration =
-      (~mapper=?, ~scope, ~current_type_list, ~source_path, target_path) => {
+      (
+        ~mapper=?,
+        ~records=false,
+        ~scope,
+        ~current_type_list,
+        ~source_path,
+        target_path,
+      ) => {
     switch (current_type_list |> find_td(source_path)) {
     | None => ()
     | Some((source_id, source)) =>
       switch (
         get_replaceable_ref_target(
+          ~records,
           ~scope,
           ~current_type_list,
           ~source_path,
@@ -204,6 +212,7 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
         types |> CCArray.iter(t => walk(~current_type_list=types, t))
       | TypeDeclaration({annot: Reference({target, _}), path, _}) =>
         Helpers.maybe_replace_type_declaration(
+          ~records=true,
           ~scope,
           ~current_type_list,
           ~source_path=path,
