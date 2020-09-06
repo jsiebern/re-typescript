@@ -91,16 +91,16 @@ module Naming = {
     |> CCString.replace(~sub="$", ~by="_")
     |> CCString.replace(~sub=".", ~by="_");
 
-  let to_valid_variant_constructor = ident =>
-    ident
-    |> CCString.capitalize_ascii
+  let to_valid_variant_constructor = (~forceUpperCase=false, ident) =>
+    (forceUpperCase ? ident |> CCString.capitalize_ascii : ident)
     |> CCString.replace(~sub="$", ~by="_")
     |> CCString.replace(~sub=".", ~by="_");
 
   let to_int_variant_constructor = (i: int) => Printf.sprintf("_%#u", i);
 
   let moduleName = to_valid_variant_constructor;
-  let variantIdentifier = to_valid_variant_constructor;
+  let variantIdentifier = to_valid_variant_constructor(~forceUpperCase=true);
+  let polyVariantIdentifier = to_valid_variant_constructor;
   let typeName = to_valid_ident;
   let propertyName = to_valid_ident;
   let subIdent = to_int_variant_constructor;
@@ -259,13 +259,15 @@ let make_variant_kind = (names: list(string)) => {
     |> CCListLabels.map(~f=name => Type.constructor(Location.mknoloc(name))),
   );
 };
-let make_polymorphic = (names: list(string)) => {
+let make_polymorphic = (names: list(Ast.VariantConstructor.t)) => {
   Typ.mk(
     Ptyp_variant(
       names
-      |> CCListLabels.map(~f=name =>
-           Rtag(Location.mknoloc(name), [], true, [])
-         ),
+      |> CCList.map(
+           ({Ast.VariantConstructor.name: VariantIdentifier(name), _}) =>
+           Naming.to_valid_variant_constructor(name)
+         )
+      |> CCList.map(name => Rtag(Location.mknoloc(name), [], true, [])),
       Closed,
       None,
     ),

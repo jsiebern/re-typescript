@@ -59,7 +59,7 @@ let migrate_ast = ast => {
   migration.copy_structure(ast);
 };
 
-let print_code = (~print_language=Reason, ast) => {
+let print_code = (~print_language=ReScript, ast) => {
   let ast = migrate_ast(ast);
   switch (print_language) {
   | Reason =>

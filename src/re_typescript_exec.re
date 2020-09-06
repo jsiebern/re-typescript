@@ -2,9 +2,9 @@ let test = (
   "/test.d.ts",
   {|
 
-type obj = { field: string[] }
-
-// ------------------------------------------------------
+export enum Enum1 { Red, Green, Blue }
+export enum Enum2 { Red, Green, Blue }
+declare enum Enum3 { red, Green, blue }
 
 |},
 );
