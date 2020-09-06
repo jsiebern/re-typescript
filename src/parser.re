@@ -109,6 +109,8 @@ and parse__Node__Generic =
   | MappedType(_) => parse__Node__MappedType(~runtime, ~scope, identifiedNode)
   | TypeOperator(_) =>
     parse__Node__TypeOperator(~runtime, ~scope, identifiedNode)
+  | ParenthesizedType(pNode) =>
+    parse__Node__Generic(~runtime, ~scope, pNode#getTypeNode())
   | _ =>
     Console.log(
       Ast_generator_utils.Naming.full_identifier_of_path(scope.path),

@@ -355,6 +355,20 @@ module TypeAliasDeclaration: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module ParenthesizedType: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getTypeNode: unit => Generic.t;
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  [@js.cast]
+  let toGeneric: t => Generic.t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 module Parameter: {
   class t:
     (Ojs.t) =>
@@ -799,7 +813,9 @@ module Identify: {
     | [@js.arg "node"] [@js "IndexedAccessType"] IndexedAccessType(
         IndexedAccessType.t,
       )
-    | [@js.arg "node"] [@js "ParenthesizedType"] ParenthesizedType(Generic.t)
+    | [@js.arg "node"] [@js "ParenthesizedType"] ParenthesizedType(
+        ParenthesizedType.t,
+      )
     | [@js.arg "node"] [@js "LiteralLikeNode"] LiteralLikeNode(Generic.t)
     | [@js.arg "node"] [@js "InterfaceDeclaration"] InterfaceDeclaration(
         InterfaceDeclaration.t,
