@@ -4,6 +4,8 @@ on: [pull_request, push]
 
 jobs:
   run_tests:
+    # TODO: Re-Enable tests
+    if: false
     name: ${{ matrix.os }}/node-${{ matrix.node-version }}
     runs-on: ${{ matrix.os }}
     strategy:
