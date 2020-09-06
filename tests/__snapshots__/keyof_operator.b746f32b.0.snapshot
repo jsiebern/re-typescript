@@ -1,7 +1,5 @@
 keyof operator › extracts keys from an inline object
 module Test = {
-  type keys =
-    | X
-    | Y;
+  type keys = [ | `x | `y];
 };
 

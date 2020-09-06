@@ -9,8 +9,6 @@ module Test = {
     y: float,
     b: a_b,
   };
-  type keys =
-    | Z
-    | F;
+  type keys = [ | `z | `f];
 };
 

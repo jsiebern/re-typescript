@@ -4,8 +4,6 @@ module Test = {
     x: string,
     y: float,
   };
-  type keys =
-    | X
-    | Y;
+  type keys = [ | `x | `y];
 };
 
