@@ -1,10 +1,11 @@
 keyof operator › extracts keys from a type alias
-type a = {
-  x: string,
-  y: float,
-}
-and b = a
-and keys =
-  | X
-  | Y;
+module Test = {
+  type b = {
+    x: string,
+    y: float,
+  };
+  type keys =
+    | X
+    | Y;
+};
 

@@ -1,9 +1,8 @@
 mapped object types › map over inlined keys
-type flags_K =
-  | Option1
-  | Option2
-and flags = {
-  option1: bool,
-  option2: bool,
+module Test = {
+  type flags = {
+    option1: bool,
+    option2: bool,
+  };
 };
 

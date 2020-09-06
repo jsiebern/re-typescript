@@ -1,7 +1,9 @@
 type extractions › properly converts key names to resolve references
-type obj = {
-  [@bs.as \"I_BigField\"]
-  i_BigField: string,
-}
-and field_1 = string;
+module Test = {
+  type obj = {
+    [@bs.as \"I_BigField\"]
+    i_BigField: string,
+  };
+  type field_1 = string;
+};
 

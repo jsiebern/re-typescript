@@ -1,3 +1,5 @@
 function definitions › function with arguments
-type someFunction = (~a: string, ~b: float) => string;
+module Test = {
+  type someFunction = (string, float) => string;
+};
 

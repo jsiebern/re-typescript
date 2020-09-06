@@ -1,6 +1,8 @@
 clean enums › generates uppercase keys
-type enum =
-  | Red
-  | Green
-  | Blue;
+module Test = {
+  type enum =
+    | Red
+    | Green
+    | Blue;
+};
 

@@ -1,4 +1,5 @@
 reference resolution › resolve simple definitions
-type t_str = string
-and t_ref = t_str;
+module Test = {
+  type t_ref = string;
+};
 

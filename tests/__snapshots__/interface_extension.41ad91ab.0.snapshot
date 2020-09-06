@@ -1,11 +1,13 @@
 interface extension › adds fields from other interfaces
-type i_a = {
-  field_1: string,
-  field_2: string,
-}
-and i_b = {
-  field_1: string,
-  field_2: string,
-  field_3: float,
+module Test = {
+  type i_a = {
+    field_1: string,
+    field_2: string,
+  };
+  type i_b = {
+    field_1: string,
+    field_2: string,
+    field_3: float,
+  };
 };
 

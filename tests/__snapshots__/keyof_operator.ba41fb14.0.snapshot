@@ -1,14 +1,16 @@
 keyof operator › extracts keys from a type extraction
-type a_b = {
-  z: bool,
-  f: string,
-}
-and a = {
-  x: string,
-  y: float,
-  b: a_b,
-}
-and keys =
-  | Z
-  | F;
+module Test = {
+  type a_b = {
+    z: bool,
+    f: string,
+  };
+  type a = {
+    x: string,
+    y: float,
+    b: a_b,
+  };
+  type keys =
+    | Z
+    | F;
+};
 

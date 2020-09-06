@@ -1,3 +1,5 @@
 interface extension › resolves single call signatures in an interface inline
-type keyValueProcessor = {both: (~key: float, ~value: string) => bool};
+module Test = {
+  type keyValueProcessor = {both: (float, string) => bool};
+};
 

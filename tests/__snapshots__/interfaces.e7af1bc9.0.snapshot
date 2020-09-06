@@ -1,11 +1,13 @@
 interfaces › nested interfaces
-type i_a_field_3 = {
-  inline: bool,
-  nested: string,
-}
-and i_a = {
-  field_1: string,
-  field_2: string,
-  field_3: i_a_field_3,
+module Test = {
+  type i_a_field_3 = {
+    inline: bool,
+    nested: string,
+  };
+  type i_a = {
+    field_1: string,
+    field_2: string,
+    field_3: i_a_field_3,
+  };
 };
 

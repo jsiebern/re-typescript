@@ -1,9 +1,11 @@
 type extractions › can extract a field from a reference
-type i_int = {i_field: float}
-and obj = {
-  field_1: string,
-  [@bs.as \"if\"]
-  if_: i_int,
-}
-and field_1 = float;
+module Test = {
+  type i_int = {i_field: float};
+  type obj = {
+    field_1: string,
+    [@bs.as \"if\"]
+    if_: i_int,
+  };
+  type field_1 = float;
+};
 

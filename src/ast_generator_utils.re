@@ -114,7 +114,10 @@ module Naming = {
       | PropertyName(str) => str
       | SubName(str) => str
       | TypeParameter(str) => str
-      | SubIdent(num) => string_of_int(num)
+      | SubIdent(1) => "1st"
+      | SubIdent(2) => "2nd"
+      | SubIdent(3) => "3rd"
+      | SubIdent(num) => string_of_int(num) ++ "th"
       };
 
   let fromIdentifier: type t. Ast.Identifier.t(t) => string =

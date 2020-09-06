@@ -1,9 +1,11 @@
 keyof operator › extracts keys from an interface
-type a = {
-  x: string,
-  y: float,
-}
-and keys =
-  | X
-  | Y;
+module Test = {
+  type a = {
+    x: string,
+    y: float,
+  };
+  type keys =
+    | X
+    | Y;
+};
 

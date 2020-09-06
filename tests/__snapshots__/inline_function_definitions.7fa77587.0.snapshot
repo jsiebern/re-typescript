@@ -1,4 +1,5 @@
 inline function definitions › inline function in a function definition
-type func =
-  (~a: string, ~b: (~a: string, ~b: option(float)=?, unit) => string) => unit;
+module Test = {
+  type func = (string, (string, ~b: float=?, unit) => string) => unit;
+};
 

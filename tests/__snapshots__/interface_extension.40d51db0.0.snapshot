@@ -1,13 +1,15 @@
 interface extension › resolves extensions completely
-type i_a('A, 'B) = {
-  field_1: 'A,
-  field_2: 'B,
-  field_4: string,
-}
-and i_b = {
-  field_1: string,
-  field_2: bool,
-  field_4: string,
-  field_3: float,
+module Test = {
+  type i_a('A, 'B) = {
+    field_1: 'A,
+    field_2: 'B,
+    field_4: string,
+  };
+  type i_b = {
+    field_1: string,
+    field_2: bool,
+    field_4: string,
+    field_3: float,
+  };
 };
 

@@ -1,5 +1,5 @@
 type parameter logic › can use various default structures
-type with_param('a) = 'a
-and with_param_a = (string, float)
-and call_params = with_param(with_param_a);
+module Test = {
+  type call_params('a) = (string, float);
+};
 

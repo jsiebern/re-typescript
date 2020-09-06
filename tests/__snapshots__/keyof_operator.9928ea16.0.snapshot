@@ -1,10 +1,12 @@
 keyof operator › extracts keys from an optional wrapper
-type a = {
-  x: string,
-  y: float,
-}
-and b = option(a)
-and keys =
-  | X
-  | Y;
+module Test = {
+  type a = {
+    x: string,
+    y: float,
+  };
+  type b = option(a);
+  type keys =
+    | X
+    | Y;
+};
 

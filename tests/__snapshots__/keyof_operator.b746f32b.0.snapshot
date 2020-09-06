@@ -1,9 +1,7 @@
 keyof operator › extracts keys from an inline object
-type keys_t = {
-  x: string,
-  y: float,
-}
-and keys =
-  | X
-  | Y;
+module Test = {
+  type keys =
+    | X
+    | Y;
+};
 

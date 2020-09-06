@@ -116,10 +116,10 @@ describe("type parameter logic", ({test, _}) => {
     |},
       ),
     ).
-      toMatchSnapshot();
+      toMatchSnapshot()
   });
-  test("default parameter can be another union", ({expect,_}) => {
-      expect.string(
+  test("default parameter can be another union", ({expect, _}) => {
+    expect.string(
       print(
         {|
       type with_param2<a = string | number> = a;
@@ -127,7 +127,7 @@ describe("type parameter logic", ({test, _}) => {
     |},
       ),
     ).
-      toMatchSnapshot();
+      toMatchSnapshot()
   });
   test(
     "references parameters that are used when inlining a type", ({expect, _}) => {

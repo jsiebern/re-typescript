@@ -1,3 +1,5 @@
 function definitions › simple function
-type someFunction = unit => unit;
+module Test = {
+  type someFunction = unit => unit;
+};
 

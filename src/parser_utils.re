@@ -168,7 +168,10 @@ module Path = {
       | PropertyName(str)
       | VariantIdentifier(str)
       | SubName(str) => str
-      | SubIdent(i) => string_of_int(i)
+      | SubIdent(1) => "1st"
+      | SubIdent(2) => "2nd"
+      | SubIdent(3) => "3rd"
+      | SubIdent(i) => string_of_int(i) ++ "th"
       };
   let fold_fun:
     type t.
@@ -181,8 +184,8 @@ module Path = {
           | TypeParameter(str)
           | PropertyName(str)
           | SubName(str) => (CCArray.append([|str|], arr), false)
-          | SubIdent(num) => (
-              CCArray.append([|string_of_int(num)|], arr),
+          | SubIdent(_) as si => (
+              CCArray.append([|unwrap(si)|], arr),
               false,
             )
           | TypeName(str) => (CCArray.append([|str|], arr), true)

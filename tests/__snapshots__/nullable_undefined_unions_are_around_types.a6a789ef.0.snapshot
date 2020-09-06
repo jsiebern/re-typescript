@@ -1,3 +1,5 @@
 nullable / undefined unions are around types › nullable for single base types
-type null_string = Js.Nullable.t(string);
+module Test = {
+  type null_string = Js.Null.t(string);
+};
 

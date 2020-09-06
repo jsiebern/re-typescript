@@ -1,3 +1,5 @@
 basic syntax for types › basic type definition
-type t_string = string;
+module Test = {
+  type t_string = string;
+};
 

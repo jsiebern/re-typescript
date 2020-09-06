@@ -1,13 +1,8 @@
 mapped object types › map over an inline keyof instruction
-type flags_K_t = {
-  option1: string,
-  option2: float,
-}
-and flags_K =
-  | Option1
-  | Option2
-and flags = {
-  option1: bool,
-  option2: bool,
+module Test = {
+  type flags = {
+    option1: bool,
+    option2: bool,
+  };
 };
 

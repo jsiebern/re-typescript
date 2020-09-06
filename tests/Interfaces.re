@@ -30,18 +30,31 @@ describe("interfaces", ({test, _}) => {
   });
   test(
     "empty obj / interfaces should be valid but not rendered", ({expect, _}) => {
-    expect.string(print({|interface I_a {};|})).toMatch("");
-    expect.string(print({|type o_a = {}|})).toMatch("");
+    expect.string(
+      print({|
+      export interface I_a {}
+      type o_a = {}
+    |}),
+    ).
+      toMatch(
+      "",
+    )
   });
   test("empty objects should be referenced as any", ({expect, _}) => {
-    expect.string(print({|interface I_a {}; type x = I_a;|})).toMatchSnapshot()
+    expect.string(
+      print({|
+      export interface I_a {}
+      type x = I_a
+    |}),
+    ).
+      toMatchSnapshot()
   });
   test("empty interface should not be omitted when extened", ({expect, _}) => {
     expect.string(
       print(
         {|
-          interface I_b { field: string };
-          interface I_a extends I_b {};
+          interface I_b { field: string }
+          interface I_a extends I_b {}
         |},
       ),
     ).
@@ -51,8 +64,8 @@ describe("interfaces", ({test, _}) => {
     expect.string(
       print(
         {|
-          interface I_a {};
-          interface I_b extends I_a { field: string };
+          interface I_a {}
+          interface I_b extends I_a { field: string }
         |},
       ),
     ).

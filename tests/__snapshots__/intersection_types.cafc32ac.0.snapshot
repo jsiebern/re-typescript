@@ -1,4 +1,6 @@
 intersection types › can create simple intersection tuple with references
-type num_opt = option(float)
-and tpl = (string, num_opt);
+module Test = {
+  type num_opt = option(float);
+  type tpl = (string, num_opt);
+};
 

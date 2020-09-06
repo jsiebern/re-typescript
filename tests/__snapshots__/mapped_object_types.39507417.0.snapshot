@@ -1,11 +1,10 @@
 mapped object types › maps over type parameters
-type keys('A) = {
-  key_1: string,
-  key_2: float,
-  key_3: 'A,
-}
-and with_keys_K_t_0 = {key_4: bool}
-and with_keys_K =
-  | Key_4
-and with_keys = {key_4: bool};
+module Test = {
+  type keys('A) = {
+    key_1: string,
+    key_2: float,
+    key_3: 'A,
+  };
+  type with_keys = {key_4: bool};
+};
 

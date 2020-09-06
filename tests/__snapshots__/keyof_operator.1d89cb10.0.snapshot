@@ -1,16 +1,14 @@
 keyof operator › works together with parameterized mapped object types
-type a = {
-  x: string,
-  y: float,
-  z: bool,
-}
-and a_partial_P =
-  | X
-  | Y
-  | Z
-and a_partial = {
-  x: option(string),
-  y: option(float),
-  z: option(bool),
+module Test = {
+  type a = {
+    x: string,
+    y: float,
+    z: bool,
+  };
+  type a_partial = {
+    x: option(string),
+    y: option(float),
+    z: option(bool),
+  };
 };
 

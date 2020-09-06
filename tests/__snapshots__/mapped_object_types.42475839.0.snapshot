@@ -1,14 +1,16 @@
 mapped object types › map over a nested type
-type keys =
-  | Option1
-  | Option2
-and a_flags = {
-  option1: bool,
-  option2: bool,
-}
-and a = {
-  key_1: string,
-  key_2: float,
-  flags: a_flags,
+module Test = {
+  type keys =
+    | Option1
+    | Option2;
+  type a_flags = {
+    option1: bool,
+    option2: bool,
+  };
+  type a = {
+    key_1: string,
+    key_2: float,
+    flags: a_flags,
+  };
 };
 

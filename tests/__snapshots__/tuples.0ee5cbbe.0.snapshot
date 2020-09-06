@@ -1,4 +1,6 @@
 tuples › can generate an array of tuples
-type tpl_arr = array((string, float, bool))
-and tpl_arr2 = array((string, float, bool));
+module Test = {
+  type tpl_arr = array((string, float, bool));
+  type tpl_arr2 = array((string, float, bool));
+};
 

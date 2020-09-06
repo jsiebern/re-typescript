@@ -1,14 +1,13 @@
 mapped object types › can be used inline, for example in an intersection
-type keys = {
-  key_1: string,
-  key_2: float,
-}
-and with_keys_1_K =
-  | Key_1
-  | Key_2
-and with_keys_1 = {
-  key_1: bool,
-  key_2: bool,
-}
-and with_keys = (with_keys_1, keys);
+module Test = {
+  type keys = {
+    key_1: string,
+    key_2: float,
+  };
+  type with_keys_fst = {
+    key_1: bool,
+    key_2: bool,
+  };
+  type with_keys = (with_keys_fst, keys);
+};
 

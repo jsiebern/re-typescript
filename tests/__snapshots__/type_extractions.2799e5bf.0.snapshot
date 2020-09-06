@@ -1,8 +1,10 @@
 type extractions › can extract a base type from an obj / interface
-type obj = {
-  field_1: string,
-  field_2: bool,
-}
-and field_1 = string
-and field_2 = bool;
+module Test = {
+  type obj = {
+    field_1: string,
+    field_2: bool,
+  };
+  type field_1 = string;
+  type field_2 = bool;
+};
 

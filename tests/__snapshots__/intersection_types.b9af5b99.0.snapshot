@@ -1,3 +1,5 @@
 intersection types › can create simple intersection tuple
-type tpl = (string, float);
+module Test = {
+  type tpl = (string, float);
+};
 

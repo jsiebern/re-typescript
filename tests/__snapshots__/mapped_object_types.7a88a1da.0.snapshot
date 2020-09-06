@@ -1,20 +1,18 @@
 mapped object types › can use mapper ident type parameters
-type proxy('T) = {
-  get: unit => 'T,
-  set: (~value: 'T) => unit,
-}
-and a = {
-  x: string,
-  y: float,
-  z: bool,
-}
-and proxied_P =
-  | X
-  | Y
-  | Z
-and proxied = {
-  x: proxy(string),
-  y: proxy(float),
-  z: proxy(bool),
+module Test = {
+  type proxy('T) = {
+    get: unit => 'T,
+    set: 'T => unit,
+  };
+  type a = {
+    x: string,
+    y: float,
+    z: bool,
+  };
+  type proxied = {
+    x: proxy(string),
+    y: proxy(float),
+    z: proxy(bool),
+  };
 };
 

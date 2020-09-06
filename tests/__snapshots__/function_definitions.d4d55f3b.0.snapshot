@@ -1,3 +1,5 @@
 function definitions › function with optional arguments
-type someFunction = (~a: string, ~b: option(float)=?, unit) => string;
+module Test = {
+  type someFunction = (string, ~b: float=?, unit) => string;
+};
 

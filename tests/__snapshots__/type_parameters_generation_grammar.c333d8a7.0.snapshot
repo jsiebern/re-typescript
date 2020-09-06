@@ -1,3 +1,5 @@
 type parameters generation & grammar › prints correct generics for type parameters
-type with_param('ARG) = 'ARG;
+module Test = {
+  type with_param('ARG) = 'ARG;
+};
 

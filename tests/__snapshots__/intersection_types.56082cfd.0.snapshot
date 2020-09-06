@@ -1,13 +1,15 @@
 intersection types › can create more complex intersection tuple
-type errorHandling_error = {message: string}
-and errorHandling = {
-  success: bool,
-  error: option(errorHandling_error),
-}
-and artworksData_artworks_t = {title: string}
-and artworksData = {artworks: array(artworksData_artworks_t)}
-and artistsData_artists_t = {name: string}
-and artistsData = {artists: array(artistsData_artists_t)}
-and artworksResponse = (artworksData, errorHandling)
-and artistsResponse = (artistsData, errorHandling);
+module Test = {
+  type errorHandling_error = {message: string};
+  type errorHandling = {
+    success: bool,
+    error: option(errorHandling_error),
+  };
+  type artworksData_artworks = {title: string};
+  type artworksData = {artworks: array(artworksData_artworks)};
+  type artistsData_artists = {name: string};
+  type artistsData = {artists: array(artistsData_artists)};
+  type artworksResponse = (artworksData, errorHandling);
+  type artistsResponse = (artistsData, errorHandling);
+};
 

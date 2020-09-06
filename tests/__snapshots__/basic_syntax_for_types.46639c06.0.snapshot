@@ -1,6 +1,8 @@
 basic syntax for types › adds extra type for any
-[@unboxed]
-type any =
-  | Any('a): any;
-type t_any = any;
+module Test = {
+  [@unboxed]
+  type any =
+    | Any('a): any;
+  type t_any = any;
+};
 

@@ -1,16 +1,14 @@
 mapped object types › maps over recursively defined interfaces
-type a_flags_K =
-  | Key_1
-  | Key_2
-  | Flags
-and a_flags = {
-  key_1: bool,
-  key_2: bool,
-  flags: bool,
-}
-and a = {
-  key_1: string,
-  key_2: float,
-  flags: a_flags,
+module Test = {
+  type a_flags = {
+    key_1: bool,
+    key_2: bool,
+    flags: bool,
+  };
+  type a = {
+    key_1: string,
+    key_2: float,
+    flags: a_flags,
+  };
 };
 

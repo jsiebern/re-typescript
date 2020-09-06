@@ -1,3 +1,5 @@
 function definitions › functions accept type parameters
-type someFunction('A, 'B, 'C) = (~a: 'A, ~b: 'B) => 'C;
+module Test = {
+  type someFunction('A, 'B, 'C) = ('A, 'B) => 'C;
+};
 

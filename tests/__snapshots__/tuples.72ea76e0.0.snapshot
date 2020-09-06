@@ -1,3 +1,5 @@
 tuples › merges extracted tuple members back if possible
-type tpl = (string, (float, bool));
+module Test = {
+  type tpl = (string, (float, bool));
+};
 

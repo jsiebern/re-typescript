@@ -1,7 +1,5 @@
 interfaces › empty interface can be target of an extension
-[@unboxed]
-type any =
-  | Any('a): any;
-type i_a = any
-and i_b = {field: string};
+module Test = {
+  type i_b = {field: string};
+};
 

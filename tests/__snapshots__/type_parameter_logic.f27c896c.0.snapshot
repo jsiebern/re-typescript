@@ -1,8 +1,10 @@
 type parameter logic › type parameters can get referenced back to the parent when being applied
-type iPromise('X) = {field: 'X}
-and resouceResult_2('T) = {
-  promise: iPromise('T),
-  resolved: bool,
-}
-and resouceResult('T) = ('T, resouceResult_2('T));
+module Test = {
+  type iPromise('X) = {field: 'X};
+  type resouceResult_2nd('T) = {
+    promise: iPromise('T),
+    resolved: bool,
+  };
+  type resouceResult('T) = ('T, resouceResult_2nd('T));
+};
 

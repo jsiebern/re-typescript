@@ -1,34 +1,24 @@
 mapped object types › treats the optional status correctly
-type a = {
-  x: string,
-  y: option(float),
-  z: bool,
-}
-and same_P =
-  | X
-  | Y
-  | Z
-and same = {
-  x: string,
-  y: option(float),
-  z: bool,
-}
-and req_P =
-  | X
-  | Y
-  | Z
-and req = {
-  x: string,
-  y: float,
-  z: bool,
-}
-and part_P =
-  | X
-  | Y
-  | Z
-and part = {
-  x: option(string),
-  y: option(float),
-  z: option(bool),
+module Test = {
+  type a = {
+    x: string,
+    y: option(float),
+    z: bool,
+  };
+  type same = {
+    x: string,
+    y: option(float),
+    z: bool,
+  };
+  type req = {
+    x: string,
+    y: float,
+    z: bool,
+  };
+  type part = {
+    x: option(string),
+    y: option(float),
+    z: option(bool),
+  };
 };
 

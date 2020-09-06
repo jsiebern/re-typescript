@@ -1,3 +1,5 @@
 tuples › can use tuple inside of an interface
-type obj = {field: (string, float, bool)};
+module Test = {
+  type obj = {field: (string, float, bool)};
+};
 

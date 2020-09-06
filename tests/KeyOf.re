@@ -1,6 +1,7 @@
 open TestFramework;
 
-let ctx = ();
+let ctx = Lib.default_project_config;
+
 describe("keyof operator", ({test, _}) => {
   test("throws for non object types", ({expect, _}) => {
     expect.fn(() => print({|
@@ -150,7 +151,7 @@ describe("keyof operator", ({test, _}) => {
       print(
         ~ctx,
         {|
-            type Partial<T> = {
+            type PartialX<T> = {
                 [P in keyof T]?: T[P];
             }
             interface A {
@@ -159,7 +160,7 @@ describe("keyof operator", ({test, _}) => {
               z: boolean;
             }
 
-            type a_partial = Partial<A>;
+            type a_partial = PartialX<A>;
             |},
       ),
     ).

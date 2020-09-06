@@ -1,6 +1,6 @@
 open TestFramework;
 
-let ctx = ();
+let ctx = Lib.default_project_config;
 
 describe("mapped object types", ({test, _}) => {
   test("map over predefined keys ", ({expect, _}) => {
@@ -219,23 +219,23 @@ describe("mapped object types", ({test, _}) => {
       print(
         ~ctx,
         {|
-          type Required<T> = {
+          type RequiredX<T> = {
               [P in keyof T]-?: T[P];
-          };
-          type Partial<T> = {
+          }
+          type PartialX<T> = {
               [P in keyof T]?: T[P];
-          };
-          type Nothing<T> = {
+          }
+          type NothingX<T> = {
             [P in keyof T]: T[P];
-          };
+          }
           interface A {
             x: string;
             y?: number;
             z: boolean;
           }
-          type same = Nothing<A>;
-          type req = Required<A>;
-          type part = Partial<A>;
+          type same = NothingX<A>;
+          type req = RequiredX<A>;
+          type part = PartialX<A>;
         |},
       ),
     ).

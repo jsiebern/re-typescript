@@ -1,15 +1,17 @@
 keyof operator › extracts keys from an extended interface
-type a = {
-  x: string,
-  y: float,
-}
-and b = {
-  x: string,
-  y: float,
-  z: bool,
-}
-and keys =
-  | X
-  | Y
-  | Z;
+module Test = {
+  type a = {
+    x: string,
+    y: float,
+  };
+  type b = {
+    x: string,
+    y: float,
+    z: bool,
+  };
+  type keys =
+    | Z
+    | X
+    | Y;
+};
 

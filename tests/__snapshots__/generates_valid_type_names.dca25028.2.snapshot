@@ -1,3 +1,5 @@
 generates valid type names › invalid characters
-type __string = string;
+module Test = {
+  type __string = string;
+};
 

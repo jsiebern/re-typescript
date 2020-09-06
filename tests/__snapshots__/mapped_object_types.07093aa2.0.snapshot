@@ -1,9 +1,11 @@
 mapped object types › map over predefined keys 
-type keys =
-  | Option1
-  | Option2
-and flags = {
-  option1: bool,
-  option2: bool,
+module Test = {
+  type keys =
+    | Option1
+    | Option2;
+  type flags = {
+    option1: bool,
+    option2: bool,
+  };
 };
 

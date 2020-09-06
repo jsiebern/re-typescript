@@ -1,14 +1,16 @@
 mapped object types › omits parsing the mapped obj type if its args require it to be parsed on call
-type a = {
-  x: string,
-  y: float,
-  z: bool,
-}
-and keys =
-  | X
-  | Y
-and stripped = {
-  x: string,
-  y: float,
+module Test = {
+  type a = {
+    x: string,
+    y: float,
+    z: bool,
+  };
+  type keys =
+    | X
+    | Y;
+  type stripped = {
+    x: string,
+    y: float,
+  };
 };
 

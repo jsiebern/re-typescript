@@ -1,4 +1,6 @@
 tuples › can use inline interfaces
-type tpl_3 = {field: bool}
-and tpl = (string, float, tpl_3);
+module Test = {
+  type tpl_3rd = {field: bool};
+  type tpl = (string, float, tpl_3rd);
+};
 

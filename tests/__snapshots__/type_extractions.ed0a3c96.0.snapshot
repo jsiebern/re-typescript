@@ -1,8 +1,10 @@
 type extractions › can resolve inline interfaces
-type obj_field_2 = {field_3: bool}
-and obj = {
-  field_1: float,
-  field_2: obj_field_2,
-}
-and field_1 = bool;
+module Test = {
+  type obj_field_2 = {field_3: bool};
+  type obj = {
+    field_1: float,
+    field_2: obj_field_2,
+  };
+  type field_1 = bool;
+};
 

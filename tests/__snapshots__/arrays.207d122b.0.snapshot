@@ -1,3 +1,5 @@
 arrays › arrays in record field defs
-type obj = {field: array(string)};
+module Test = {
+  type obj = {field: array(string)};
+};
 

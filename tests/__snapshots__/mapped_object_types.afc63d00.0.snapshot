@@ -1,13 +1,12 @@
 mapped object types › map over a keyof instruction
-type keysObj = {
-  option1: string,
-  option2: float,
-}
-and flags_K =
-  | Option1
-  | Option2
-and flags = {
-  option1: bool,
-  option2: bool,
+module Test = {
+  type keysObj = {
+    option1: string,
+    option2: float,
+  };
+  type flags = {
+    option1: bool,
+    option2: bool,
+  };
 };
 

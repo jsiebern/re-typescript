@@ -1498,6 +1498,7 @@ and parse__Node__FunctionDeclaration =
     };
   let type_name: Identifier.t(Identifier.Constraint.exactlyTypeName) =
     Identifier.TypeName(name);
+  let scope = scope |> Scope.add_to_path(Identifier.TypeName(name));
 
   let params =
     node#getTypeParameters()
@@ -1874,7 +1875,8 @@ and parse__Node__Tuple = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
     ) =
       CCArray.foldi(
         ((runtime, scope, nodes), i, node) => {
-          let current_path = base_path |> Path.add(Identifier.SubIdent(i));
+          let current_path =
+            base_path |> Path.add(Identifier.SubIdent(i + 1));
           let scope = scope |> Scope.replace_path_arr(current_path);
           let (runtime, scope, res) =
             parse__Node__Generic_assignable(~runtime, ~scope, node);
@@ -2059,7 +2061,7 @@ and parse__ArrayOfGenerics =
              scope
              |> Scope.add_to_path(
                   CCArray.get_safe(scope_additions, i)
-                  |> CCOpt.map_or(~default=Identifier.SubIdent(i), v =>
+                  |> CCOpt.map_or(~default=Identifier.SubIdent(i + 1), v =>
                        Identifier.SubName(v)
                      ),
                 );
