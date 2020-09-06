@@ -35,22 +35,18 @@ let rec ast_node: type t. Node.node(t) => string =
         Ast_generator_utils.Naming.fromIdentifier(i),
       )
     | Basic(b) =>
-      Printf.sprintf(
-        "Basic(%s)",
-        switch (b) {
-        | RelevantKeyword(word) =>
-          Printf.sprintf("RelevantKeyword<%s>", word)
-        | String => "String"
-        | Number => "Number"
-        | Boolean => "Boolean"
-        | Void => "Void"
-        | Any => "Any"
-        | Null => "Null"
-        | Undefined => "Undefined"
-        | Never => "Never"
-        | This => "This"
-        },
-      )
+      switch (b) {
+      | RelevantKeyword(word) => Printf.sprintf("RelevantKeyword<%s>", word)
+      | String => "String"
+      | Number => "Number"
+      | Boolean => "Boolean"
+      | Void => "Void"
+      | Any => "Any"
+      | Null => "Null"
+      | Undefined => "Undefined"
+      | Never => "Never"
+      | This => "This"
+      }
     | TypeDeclaration({name, annot, _}) =>
       Printf.sprintf(
         "TypeDeclaration(%s, %s)",
@@ -77,9 +73,17 @@ let rec ast_node: type t. Node.node(t) => string =
       )
     | Fixture(_) => "Fixture"
     | Tuple(_) => "Tuple"
-    | Function(_) => "Function"
-    | Parameter({name, _}) =>
-      Printf.sprintf("Parameter(%s)", identifier(name))
+    | Function({parameters, _}) =>
+      Printf.sprintf(
+        "Function(%s)",
+        parameters |> CCArray.to_string(~sep=", ", t => ast_node(t)),
+      )
+    | Parameter({name, type_, _}) =>
+      Printf.sprintf(
+        "Parameter(%s: %s)",
+        Ast_generator_utils.Naming.unwrap(name),
+        ast_node(type_),
+      )
     | Record(_) => "Record"
     };
 

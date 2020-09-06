@@ -429,8 +429,13 @@ let extract_from_resolved =
             ~scope,
             t,
           );
+        let new_ref_path =
+          Path.make_current_scope(scope.path)
+          |> Path.add(TypeName(scope.path |> Path.make_sub_type_name));
         let new_ref = new_ref |> Node.Escape.toAny;
         let scope = restore(scope);
+        // Important to set another ref here to the extracted type
+        let scope = scope |> Scope.add_ref(new_ref_path, scope.path);
         CCArray.set(
           fields,
           field_idx,

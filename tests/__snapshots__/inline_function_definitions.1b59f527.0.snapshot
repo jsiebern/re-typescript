@@ -1,9 +1,11 @@
 inline function definitions › method signature in an interface
-type method_signature_func3 = (~x: string, ~y: bool) => unit
-and method_signature = {
-  func1: (~x: float) => float,
-  func2: (~x: float) => float,
-  func3: method_signature_func3,
-}
-and extracted_method_signature = method_signature_func3;
+module Test = {
+  type method_signature_func3 = (string, bool) => unit;
+  type method_signature = {
+    func1: float => float,
+    func2: float => float,
+    func3: method_signature_func3,
+  };
+  type extracted_method_signature = method_signature_func3;
+};
 

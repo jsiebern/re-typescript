@@ -1,5 +1,6 @@
 function definitions › function parameters get merged back if not referenced otherwise
-type someFunction_b_2 = {field: string}
-and someFunction =
-  (~a: float, ~b: (float, someFunction_b_2)) => (string, bool);
+module Test = {
+  type someFunction_b_2nd = {field: string};
+  type someFunction = (float, (float, someFunction_b_2nd)) => (string, bool);
+};
 
