@@ -2,8 +2,7 @@ let test = (
   "/test.d.ts",
   {|
 
-export interface I_a {}
-type x = I_a
+type x = {field: string}[];
 
 // ------------------------------------------------------
 

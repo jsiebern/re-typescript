@@ -1,4 +1,6 @@
 arrays › arrays of inline records
-type x_t = {field: string}
-and x = array(x_t);
+module Test = {
+  type x_t = {field: string};
+  type x = array(x_t);
+};
 

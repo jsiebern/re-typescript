@@ -2089,16 +2089,14 @@ and parse__ArrayOfGenerics =
 and parse__Node__Array = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   switch (node) {
   | ArrayType(node) =>
+    let scope = scope |> Scope.add_to_path(Identifier.SubName("t"));
     let (runtime, scope, inner) =
-      // TODO: Handle potentially extracted type here
-      // Whenever "inner" types are parsed, we should use a separate "parse__Node" function
-      // Maybe
-      parse__Node__Generic_assignable(
+      parse__Node__Generic__WrapSubNode(
         ~runtime,
         ~scope,
         node#getElementTypeNode(),
       );
-    (runtime, scope, Array(inner));
+    (runtime, scope, Array(inner |> Node.Escape.toAssignable));
 
   | _ => raise(Exceptions.UnexpectedAtThisPoint("Not an array"))
   };
