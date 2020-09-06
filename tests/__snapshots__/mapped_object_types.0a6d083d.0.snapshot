@@ -1,8 +1,6 @@
 mapped object types › can use type param (no extraction) as map target
 module Test = {
-  type record_K =
-    | A
-    | B;
+  type record_K = [ | `a | `b];
   type record_T = {field: bool};
   type record = {
     a: record_T,

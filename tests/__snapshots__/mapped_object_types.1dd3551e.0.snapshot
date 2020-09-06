@@ -5,9 +5,7 @@ module Test = {
     y: 'X,
     z: bool,
   };
-  type keys =
-    | X
-    | Y;
+  type keys = [ | `x | `y];
   type stripped_T_X = {obj: float};
   type stripped = {
     x: string,

@@ -1,8 +1,6 @@
 mapped object types › map over predefined keys through a reference
 module Test = {
-  type keysRef =
-    | Option1
-    | Option2;
+  type keysRef = [ | `option1 | `option2];
   type flags = {
     option1: bool,
     option2: bool,
