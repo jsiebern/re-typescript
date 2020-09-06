@@ -1,0 +1,5 @@
+interface extension › ignores additional fields in a call signature object
+module Test = {
+  type keyValueProcessor = (float, string) => bool;
+};
+

@@ -1763,7 +1763,12 @@ and parse__Node__SignatureLike:
       Debug.nodeKind_to_json(node);
       Console.log(Pp.path(scope.path));
       let node = Ts_nodes_util.unwrap_identified(node);
-      raise(Exceptions.FeatureMissing(node#getKindName(), node#getText()));
+      raise(
+        Exceptions.FeatureMissing(
+          "Signature: " ++ node#getKindName(),
+          node#getText(),
+        ),
+      );
     };
   }
 // ------------------------------------------------------------------------------------------

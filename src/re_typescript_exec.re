@@ -1,9 +1,18 @@
-let test = ("/test.d.ts", {|
+let test = (
+  "/test.d.ts",
+  {|
 
-type s = string;
-type kof = keyof s;
+// interface A {
+//     x: string;
+//     3: number;
+//     y: boolean;
+// }
+// type keys = keyof A;
 
-|});
+type numlit = 3 | 5 | 8
+
+|},
+);
 
 Console.log(
   "\n-------------------------------------------------------------------\n",

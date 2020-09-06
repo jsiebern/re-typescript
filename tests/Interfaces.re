@@ -184,9 +184,8 @@ describe("interface extension", ({test, _}) => {
       toMatchSnapshot()
   });
 
-  test(
-    "throws an error if call signature is mixed with a field", ({expect, _}) => {
-    expect.fn(() =>
+  test("ignores additional fields in a call signature object", ({expect, _}) => {
+    expect.string(
       print(
         {|
       interface KeyValueProcessor {
@@ -194,8 +193,8 @@ describe("interface extension", ({test, _}) => {
           field: string;
       }
     |},
-      )
+      ),
     ).
-      toThrow()
+      toMatchSnapshot()
   });
 });
