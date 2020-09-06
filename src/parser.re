@@ -227,6 +227,9 @@ and parse__Node__Generic__WrapSubNode =
   let (runtime, scope, wrapped_type) =
     parse__Node__Generic_assignable(~runtime, ~scope, node);
   switch (wrapped_type) {
+  | Nullable(Basic(_))
+  | Optional(Basic(_))
+  | Array(Basic(_))
   | Basic(_) => (runtime, scope, wrapped_type |> Node.Escape.toAny)
   | _ =>
     let (runtime, scope) =

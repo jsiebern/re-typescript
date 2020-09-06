@@ -2,14 +2,13 @@ let test = (
   "/test.d.ts",
   {|
 
-// interface A {
-//     x: string;
-//     3: number;
-//     y: boolean;
-// }
-// type keys = keyof A;
+interface Person {
+              name: string;
+              age: number;
+          }
 
-type numlit = 3 | 'x' | 8
+          type NullablePerson = { [P in keyof Person]: Person[P] | null }
+          type PartialPerson = { [P in keyof Person]?: Person[P] }
 
 |},
 );

@@ -4,10 +4,10 @@ module Test = {
     key_1: string,
     key_2: float,
   };
-  type with_keys_fst = {
+  type with_keys_1st = {
     key_1: bool,
     key_2: bool,
   };
-  type with_keys = (with_keys_fst, keys);
+  type with_keys = (with_keys_1st, keys);
 };
 
