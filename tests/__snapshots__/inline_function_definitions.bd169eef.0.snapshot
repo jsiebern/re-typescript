@@ -1,8 +1,10 @@
 inline function definitions › inline function in an interface
-type iTest_action = (~a: string, ~b: option(float)=?, unit) => unit
-and iTest = {
-  field: string,
-  action: iTest_action,
-}
-and access = iTest_action;
+module Test = {
+  type iTest_action = (string, ~b: float=?, unit) => unit;
+  type iTest = {
+    field: string,
+    action: iTest_action,
+  };
+  type access = iTest_action;
+};
 

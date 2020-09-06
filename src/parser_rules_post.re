@@ -10,7 +10,75 @@ module Helpers = {
         | _ => false
         },
       current_type_list,
-    );
+    )
+    |> CCOpt.flat_map(((i, v)) =>
+         switch (v) {
+         | Node.TypeDeclaration(inner) => Some((i, inner))
+         | _ => None
+         }
+       );
+  let find_td_unsafe = (path, current_type_list) =>
+    find_td(path, current_type_list) |> CCOpt.get_exn;
+
+  let get_replaceable_ref_target =
+      (~scope, ~current_type_list, ~source_path, target_path) => {
+    let scoped_path = Path.make_current_scope(source_path);
+    let qualified_target = CCArray.append(scoped_path, target_path);
+    let ref_num =
+      CCHashtbl.get(scope.refs, target_path)
+      |> CCOpt.map_or(~default=0, CCArray.length);
+    if (ref_num <= 1) {
+      let target_idx = current_type_list |> find_td(qualified_target);
+      switch (target_idx) {
+      | Some((ti, {annot: Record(_), _})) => None
+      | Some((ti, t_inner)) =>
+        // Set this to "never" so it does not get printed.
+        // Still keeping the name around could be useful later though
+        CCArray.set(
+          current_type_list,
+          ti,
+          TypeDeclaration({...t_inner, annot: Basic(Never), params: [||]}),
+        );
+        Hashtbl.remove(scope.refs, qualified_target);
+        Some(t_inner);
+      | _ => None
+      };
+    } else {
+      None;
+    };
+  };
+
+  let maybe_replace_type_declaration =
+      (~mapper=?, ~scope, ~current_type_list, ~source_path, target_path) => {
+    switch (current_type_list |> find_td(source_path)) {
+    | None => ()
+    | Some((source_id, source)) =>
+      switch (
+        get_replaceable_ref_target(
+          ~scope,
+          ~current_type_list,
+          ~source_path,
+          target_path,
+        )
+      ) {
+      | None => ()
+      | Some(target) =>
+        CCArray.set(
+          current_type_list,
+          source_id,
+          TypeDeclaration({
+            ...target,
+            name: source.name,
+            annot:
+              mapper
+              |> CCOpt.map_or(~default=target.annot, mapper =>
+                   mapper(target.annot)
+                 ),
+          }),
+        )
+      }
+    };
+  };
 };
 
 let rule_keep_referenced_empty_records_as_any =
@@ -50,7 +118,7 @@ let rule_keep_referenced_empty_records_as_any =
   (runtime, scope^, root_module);
 };
 
-let rule_move_only_once_referenced_types_back_into_record_types =
+let rule_move_only_once_referenced_types_back_into_record_types_and_functions =
     (
       ~runtime,
       ~scope: scope,
@@ -63,6 +131,30 @@ let rule_move_only_once_referenced_types_back_into_record_types =
       switch (node) {
       | Node.Module({types, _}) =>
         types |> CCArray.iter(t => walk(~current_type_list=types, t))
+      | TypeDeclaration({
+          annot: Function({return_type: Reference({target, _}), _}),
+          path,
+          _,
+        }) =>
+        switch (
+          Helpers.get_replaceable_ref_target(
+            ~scope,
+            ~current_type_list,
+            ~source_path=path,
+            target,
+          )
+        ) {
+        | None => ()
+        | Some(target) =>
+          let (source_id, source) =
+            current_type_list |> Helpers.find_td_unsafe(path);
+          CCArray.set(
+            current_type_list,
+            source_id,
+            TypeDeclaration({...target, name: source.name}),
+          );
+        }
+
       | TypeDeclaration({annot: Record(fields), path, _}) =>
         fields
         |> CCArray.iteri((i, field) =>
@@ -70,43 +162,22 @@ let rule_move_only_once_referenced_types_back_into_record_types =
              | Node.Parameter(
                  {type_: Reference({target, _}), _} as field_inner,
                ) =>
-               let scoped_path = Path.make_current_scope(path);
-               let qualified_target = CCArray.append(scoped_path, target);
-               let ref_num =
-                 CCHashtbl.get(scope.refs, qualified_target)
-                 |> CCOpt.map_or(~default=0, CCArray.length);
-               if (ref_num <= 1) {
-                 // TODO: Abstract the resolution of the path as it is used in many functions and will maybe break when using namespaces
-                 let target_idx =
-                   CCArray.find_idx(
-                     node =>
-                       switch (node) {
-                       | Node.TypeDeclaration({annot: Record(_), _}) => false
-                       | Node.TypeDeclaration({path: p, _})
-                           when Path.eq(p, qualified_target) =>
-                         true
-                       | _ => false
-                       },
-                     current_type_list,
-                   );
-                 switch (target_idx) {
-                 | Some((_, TypeDeclaration({annot: Record(_), _}))) => ()
-                 | Some((ti, TypeDeclaration({annot, _} as t_inner))) =>
-                   CCArray.set(
-                     fields,
-                     i,
-                     Parameter({...field_inner, type_: annot}),
-                   );
-                   CCArray.set(
-                     current_type_list,
-                     ti,
-                     TypeDeclaration({...t_inner, annot: Basic(Never)}),
-                   );
-                   Hashtbl.remove(scope.refs, qualified_target);
-                 | Some(_)
-                 | None => ()
-                 };
-               };
+               switch (
+                 Helpers.get_replaceable_ref_target(
+                   ~scope,
+                   ~current_type_list,
+                   ~source_path=path,
+                   target,
+                 )
+               ) {
+               | None => ()
+               | Some({annot, params, _}) =>
+                 CCArray.set(
+                   fields,
+                   i,
+                   Parameter({...field_inner, type_: annot}),
+                 )
+               }
              | _ => ()
              }
            )
@@ -132,59 +203,12 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
       | Node.Module({types, _}) =>
         types |> CCArray.iter(t => walk(~current_type_list=types, t))
       | TypeDeclaration({annot: Reference({target, _}), path, _}) =>
-        // TODO: This will maybe break between different modules
-        // Experiment with import statements and see how that affects scoping
-        let scoped_path = Path.make_current_scope(path);
-        let qualified_target = CCArray.append(scoped_path, target);
-        let ref_num =
-          CCHashtbl.get(scope.refs, qualified_target)
-          |> CCOpt.map_or(~default=0, CCArray.length);
-        if (ref_num <= 1) {
-          // TODO: Abstract the resolution of the path as it is used in many functions and will maybe break when using namespaces
-          let reference_idx =
-            CCArray.find_idx(
-              node =>
-                switch (node) {
-                | Node.TypeDeclaration({path: p, _}) when Path.eq(p, path) =>
-                  true
-                | _ => false
-                },
-              current_type_list,
-            );
-          let target_idx =
-            CCArray.find_idx(
-              node =>
-                switch (node) {
-                | Node.TypeDeclaration({path: p, _})
-                    when Path.eq(p, qualified_target) =>
-                  true
-                | _ => false
-                },
-              current_type_list,
-            );
-          switch (reference_idx, target_idx) {
-          | (
-              Some((ri, TypeDeclaration({name, _}))),
-              Some((ti, TypeDeclaration(t_inner))),
-            ) =>
-            CCArray.set(
-              current_type_list,
-              ri,
-              TypeDeclaration({...t_inner, name}),
-            );
-            CCArray.set(
-              current_type_list,
-              ti,
-              TypeDeclaration({
-                ...t_inner,
-                annot: Basic(Never),
-                params: [||],
-              }),
-            );
-            Hashtbl.remove(scope.refs, qualified_target);
-          | _ => ()
-          };
-        };
+        Helpers.maybe_replace_type_declaration(
+          ~scope,
+          ~current_type_list,
+          ~source_path=path,
+          target,
+        )
       | _ => ()
       };
 
@@ -239,65 +263,13 @@ let rule_move_only_once_referenced_types_into_arrays_and_optionals =
           | _ => raise(Failure("This is actually impossible"))
           };
 
-        // TODO: This will maybe break between different modules
-        // Experiment with import statements and see how that affects scoping
-        let scoped_path = Path.make_current_scope(path);
-        let qualified_target = CCArray.append(scoped_path, target);
-        let ref_num =
-          CCHashtbl.get(scope.refs, qualified_target)
-          |> CCOpt.map_or(~default=0, CCArray.length);
-        if (ref_num <= 1) {
-          // TODO: Abstract the resolution of the path as it is used in many functions and will maybe break when using namespaces
-          let reference_idx =
-            CCArray.find_idx(
-              node =>
-                switch (node) {
-                | Node.TypeDeclaration({path: p, _}) when Path.eq(p, path) =>
-                  true
-                | _ => false
-                },
-              current_type_list,
-            );
-          let target_idx =
-            CCArray.find_idx(
-              node =>
-                switch (node) {
-                | Node.TypeDeclaration({path: p, _})
-                    when Path.eq(p, qualified_target) =>
-                  true
-                | _ => false
-                },
-              current_type_list,
-            );
-          switch (reference_idx, target_idx) {
-          | (_, Some((_, TypeDeclaration({annot: Node.Record(_), _})))) =>
-            ()
-          | (
-              Some((ri, TypeDeclaration({name, _}))),
-              Some((ti, TypeDeclaration(t_inner))),
-            ) =>
-            CCArray.set(
-              current_type_list,
-              ri,
-              TypeDeclaration({
-                ...t_inner,
-                name,
-                annot: mapper(t_inner.annot),
-              }),
-            );
-            CCArray.set(
-              current_type_list,
-              ti,
-              TypeDeclaration({
-                ...t_inner,
-                annot: Basic(Never),
-                params: [||],
-              }),
-            );
-            Hashtbl.remove(scope.refs, qualified_target);
-          | _ => ()
-          };
-        };
+        Helpers.maybe_replace_type_declaration(
+          ~scope,
+          ~current_type_list,
+          ~source_path=path,
+          ~mapper,
+          target,
+        );
       | _ => ()
       };
     };
@@ -364,7 +336,7 @@ let run = (~runtime, ~scope, node: Node.node(Node.Constraint.exactlyModule)) => 
       node,
     );
   let (runtime, scope, node) =
-    rule_move_only_once_referenced_types_back_into_record_types(
+    rule_move_only_once_referenced_types_back_into_record_types_and_functions(
       ~runtime,
       ~scope,
       node,
