@@ -8,27 +8,16 @@
   },
   "dependencies": {
     "@opam/atdgen": "2.2.1",
-    "@opam/base-unix": "base",
     "@opam/containers": "2.8.1",
     "@opam/dune": "*",
     "@opam/gen_js_api": "1.0.6",
-    "@opam/iter": "1.2.1",
     "@opam/js_of_ocaml": "3.6.0",
     "@opam/js_of_ocaml-ppx": "3.6.0",
-    "@opam/logs": "0.7.0",
-    "@opam/lwt": "5.3.0",
-    "@opam/lwt_ppx": "2.0.1",
-    "@opam/menhir": "*",
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/ppx_tools": "6.2",
     "@opam/ppx_tools_versioned": "*",
-    "@opam/websocket-lwt-unix": "2.14",
     "@reason-native/console": "^0.1.0",
-    "@reason-native/file-context-printer": "^0.0.3",
-    "@reason-native/fp": "^0.0.1",
-    "@reason-native/pastel": "^0.3.0",
-    "isexe": "^2.0.0",
-    "pkg": "^4.4.9"
+    "@reason-native/pastel": "^0.3.0"
   },
   "devDependencies": {
     "@opam/reason": ">=3.6.0",
@@ -50,12 +39,6 @@
         "#{self.name}"
       ]
     ],
-    "buildsInSource": "_build",
-    "exportedEnv": {
-      "PROJECT_ROOT": {
-        "val": "#{self.root : $PROJECT_ROOT}",
-        "scope": "global"
-      }
-    }
+    "buildsInSource": "_build"
   }
 }

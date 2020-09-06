@@ -1049,22 +1049,23 @@ and parse__Node__UnionType__Nodes:
         Parser_union.generate_ast_for_union(~runtime, ~scope, members);
 
       (runtime, scope, reference);
-    | Some(NumericLiteral(literals)) => (
-        runtime,
-        scope,
-        Parser_generators.generate_number_literal_list(literals),
+    | Some(NumericLiteral(literals)) =>
+      Parser_generators.generate_number_literal_list(
+        ~runtime,
+        ~scope,
+        literals,
       )
-    | Some(MixedLiteral(literals)) => (
-        runtime,
-        scope,
-        Parser_generators.generate_mixed_literal_list(literals),
+    | Some(MixedLiteral(literals)) =>
+      Parser_generators.generate_mixed_literal_list(
+        ~runtime,
+        ~scope,
+        literals,
       )
     | Some(StringLiteral(literals)) =>
-      // TODO: React to different literal output options (like inline / variant, etc.)
-      (
-        runtime,
-        scope,
-        Parser_generators.generate_string_literal_list(literals),
+      Parser_generators.generate_string_literal_list(
+        ~runtime,
+        ~scope,
+        literals,
       )
     | None =>
       raise(Exceptions.UnexpectedAtThisPoint("Could not detect union type"))

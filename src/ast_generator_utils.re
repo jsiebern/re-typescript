@@ -326,6 +326,10 @@ module Unboxed = {
     ],
     [%sigi: type t],
   );
+  let unboxed_literal = (name, value: expression) => (
+    [%stri let [%p Pat.var(Location.mknoloc(name))] = Any([%e value])],
+    Sig.value(Val.mk(Location.mknoloc(name), [%type: t])),
+  );
   let unboxed_func = (~params=[], name, ty: core_type) => (
     [%stri
       let [%p Pat.var(Location.mknoloc(name))] = (v: [%t ty]) => Any(v)

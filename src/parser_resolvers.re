@@ -165,19 +165,29 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
            )
       | Some(Single(t)) => Some((runtime, scope, t))
       | Some(StringLiteral(literals)) =>
-        Some((
-          runtime,
-          scope,
-          Parser_generators.generate_string_literal_list(literals),
-        ))
+        Some(
+          Parser_generators.generate_string_literal_list(
+            ~runtime,
+            ~scope,
+            literals,
+          ),
+        )
       | Some(NumericLiteral(literals)) =>
-        Some((
-          runtime,
-          scope,
-          Parser_generators.generate_number_literal_list(literals),
-        ))
+        Some(
+          Parser_generators.generate_number_literal_list(
+            ~runtime,
+            ~scope,
+            literals,
+          ),
+        )
       | Some(MixedLiteral(literals)) =>
-        raise(Exceptions.FeatureMissing("MixedLiteral", ""))
+        Some(
+          Parser_generators.generate_mixed_literal_list(
+            ~runtime,
+            ~scope,
+            literals,
+          ),
+        )
       | Some(Discriminating) =>
         raise(Exceptions.FeatureMissing("Discriminating", ""))
       | Some(Union(types)) =>

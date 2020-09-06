@@ -1,12 +1,24 @@
 keyof operator › extracts mixed keys if necessary
-type a = {
-  x: string,
-  [@bs.as \"3\"]
-  _3: float,
-  y: bool,
-}
-and keys =
-  | X
-  | _3
-  | Y;
+module Test = {
+  type a = {
+    x: string,
+    [@bs.as \"3\"]
+    _3: float,
+    y: bool,
+  };
+  module Keys: {
+    type t;
+    let x: t;
+    let _3: t;
+    let y: t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let x = Any(\"x\");
+    let _3 = Any(3);
+    let y = Any(\"y\");
+  };
+  type keys = Keys.t;
+};
 

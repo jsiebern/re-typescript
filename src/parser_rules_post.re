@@ -431,9 +431,21 @@ let rule_transform_single_literals_into_union_types =
         let replace_annot =
           switch (union_type) {
           | Some(StringLiteral(literals)) =>
-            Parser_generators.generate_string_literal_list(literals)
+            let (_, _, t) =
+              Parser_generators.generate_string_literal_list(
+                ~runtime,
+                ~scope,
+                literals,
+              );
+            t;
           | Some(NumericLiteral(literals)) =>
-            Parser_generators.generate_number_literal_list(literals)
+            let (_, _, t) =
+              Parser_generators.generate_number_literal_list(
+                ~runtime,
+                ~scope,
+                literals,
+              );
+            t;
           | Some(_)
           | None => l
           };

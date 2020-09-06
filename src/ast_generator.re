@@ -80,9 +80,31 @@ and generate__Node__ModuleUnboxed =
              | Ast.Node.Fixture(TUnboxed) =>
                let (stri, sigi) = Util.Unboxed.make_unboxed_helper();
                Some((scope, stri, sigi));
+             | Ast.Node.TypeDeclaration({
+                 annot: Literal(literal),
+                 name: TypeName(name),
+                 _,
+               }) =>
+               let value =
+                 switch (literal) {
+                 | String(str) =>
+                   Ast_helper.(Exp.constant(Const.string(str)))
+                 | Number(num) =>
+                   Ast_helper.(Exp.constant(Const.int(int_of_float(num))))
+                 | Boolean(b) =>
+                   Ast_helper.Exp.construct(
+                     Location.mknoloc(Longident.parse(b ? "true" : "false")),
+                     None,
+                   )
+                 };
+
+               let (stri, sigi) = Util.Unboxed.unboxed_literal(name, value);
+
+               Some((scope, stri, sigi));
              | Ast.Node.TypeDeclaration({annot, name: TypeName(name), _}) =>
                let (scope, t) =
                  generate__Node__Assignable_CoreType(~scope, annot);
+
                switch (t) {
                | None => None
                | Some(t) =>

@@ -9,7 +9,7 @@ let test = (
 // }
 // type keys = keyof A;
 
-type numlit = 3 | 5 | 8
+type numlit = 3 | 'x' | 8
 
 |},
 );
