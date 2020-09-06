@@ -2,20 +2,10 @@ let test = (
   "/test.d.ts",
   {|
 
-type Proxy<T> = {
-    get(): T;
-    set(value: T): void;
-}
-type Proxify<T> = {
-    [P in keyof T]: Proxy<T[P]>;
-}
-
-interface A {
-  x: string;
-  y: number;
-  z: boolean;
-}
-type proxied = Proxify<A>;
+type opt_in_arr = (string | undefined)[];
+type null_in_arr = Array<boolean | null>;
+type arr_null = string[] | null;
+type arr_opt = Array<boolean> | undefined;
 
 // ------------------------------------------------------
 

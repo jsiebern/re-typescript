@@ -51,15 +51,21 @@ let rec ast_node: type t. Node.node(t) => string =
         | This => "This"
         },
       )
-    | TypeDeclaration({name, _}) =>
-      Printf.sprintf("TypeDeclaration(%s)", identifier(name))
+    | TypeDeclaration({name, annot, _}) =>
+      Printf.sprintf(
+        "TypeDeclaration(%s, %s)",
+        identifier(name),
+        ast_node(annot),
+      )
     | Array(t) => Printf.sprintf("Array(%s)", ast_node(t))
     | Optional(t) => Printf.sprintf("Optional(%s)", ast_node(t))
     | Nullable(t) => Printf.sprintf("Nullable(%s)", ast_node(t))
-    | Reference({target, _}) =>
+    | Reference({target, params}) =>
       Printf.sprintf(
-        "Reference(%s)",
-        Ast_generator_utils.Naming.full_identifier_of_path(target),
+        "Reference(%s, [%s])",
+        path(target),
+        params
+        |> CCList.to_string(~sep=", ", ((v, t)) => v ++ ": " ++ ast_node(t)),
       )
     | Variant(variants) =>
       Printf.sprintf(
