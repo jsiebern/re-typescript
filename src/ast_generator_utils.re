@@ -98,7 +98,7 @@ module Naming = {
 
   let to_int_variant_constructor = (i: int) => Printf.sprintf("_%#u", i);
 
-  let moduleName = to_valid_variant_constructor;
+  let moduleName = to_valid_variant_constructor(~forceUpperCase=true);
   let variantIdentifier = to_valid_variant_constructor(~forceUpperCase=true);
   let polyVariantIdentifier = to_valid_variant_constructor;
   let typeName = to_valid_ident;

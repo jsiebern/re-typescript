@@ -15,7 +15,9 @@ let create_source_file: (file, project) => source_file;
 let delete_source_file: (source_file, project) => unit;
 let create_source_files: (array(file), project) => array(source_file);
 let get_diagnostics: project => option(string);
-let get_generated_ast: array(node) => list(ast_representation);
+let get_generated_ast:
+  (~print_language: print_language=?, array(node)) =>
+  list(ast_representation);
 let print_code:
   (~print_language: print_language=?, list(ast_representation)) => string;
 let parse_files: array(source_file) => array(node);

@@ -50,7 +50,8 @@ let get_diagnostics = project => {
   diagnosticsResult |> CCString.trim != "" ? Some(diagnosticsResult) : None;
 };
 
-let get_generated_ast = nodes => Ast_generator.generate(nodes) |> snd;
+let get_generated_ast = (~print_language=ReScript, nodes) =>
+  Ast_generator.generate(~print_language, nodes) |> snd;
 
 let migrate_ast = ast => {
   open Migrate_parsetree;
@@ -62,6 +63,7 @@ let migrate_ast = ast => {
 let print_code = (~print_language=ReScript, ast) => {
   let ast = migrate_ast(ast);
   switch (print_language) {
+  | ReScript
   | Reason =>
     Reason_toolchain.RE.print_implementation_with_comments(
       Format.str_formatter,
@@ -72,7 +74,6 @@ let print_code = (~print_language=ReScript, ast) => {
       Format.str_formatter,
       (ast, []),
     )
-  | ReScript => raise(Failure("ReScript not available for now"))
   };
   Format.flush_str_formatter();
 };
