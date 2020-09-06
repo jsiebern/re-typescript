@@ -2,7 +2,7 @@ let test = (
   "/test.d.ts",
   {|
 
-type x = {field: string}[];
+type obj = { field: string[] }
 
 // ------------------------------------------------------
 

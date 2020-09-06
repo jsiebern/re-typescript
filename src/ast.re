@@ -138,6 +138,8 @@ and Node: {
       | exactlyModule
     ];
 
+    type global = [ any | moduleLevel | assignable];
+
     module Literal: {
       type exactlyString = [ | `String];
       type atLeastString('a) = [> | `String] as 'a;
@@ -268,8 +270,15 @@ and Node: {
     | Boolean(bool): kind_literal(Constraint.Literal.atLeastBoolean('poly));
 
   module Escape: {
-    external toAssignable: node('a) => node(Constraint.assignable) =
+    external toAssignable: node(_) => node(Constraint.assignable) =
       "%identity";
-    external toAny: node('a) => node(Constraint.any) = "%identity";
+    external toAny: node(_) => node(Constraint.any) = "%identity";
+    external toGlobal: node(_) => node(Constraint.global) = "%identity";
+    external toModuleOnly: node(_) => node(Constraint.exactlyModule) =
+      "%identity";
+    external toParameterOnly: node(_) => node(Constraint.exactlyParameter) =
+      "%identity";
+    external toModuleLevel: node(_) => node(Constraint.moduleLevel) =
+      "%identity";
   };
 } = Node;

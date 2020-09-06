@@ -224,66 +224,70 @@ and parse__Node__Generic__WrapSubNode =
     Path.make_current_scope(scope.path) |> Path.add(type_name);
   let scoped_path_str = Pp.path(scoped_path);
 
-  let (runtime, scope) =
-    !
-      CCList.mem(
-        ~eq=CCString.equal,
-        scoped_path_str,
-        runtime.fully_qualified_added,
-      )
-      ? {
-        let (runtime, scope, wrapped_type) =
-          parse__Node__Generic_assignable(~runtime, ~scope, node);
-        let wrapped_type_declaration =
-          TypeDeclaration({
-            path: qualified_path_to_type,
-            name: type_name,
-            annot: wrapped_type,
-            params: scope.current_declared_params,
-          });
-        let runtime = {
-          ...runtime,
-          fully_qualified_added: [
-            scoped_path_str,
-            ...runtime.fully_qualified_added,
-          ],
-        };
-        (
-          runtime,
-          scope |> Scope.add_root_declaration(wrapped_type_declaration),
-        );
-      }
-      : (runtime, scope);
+  let (runtime, scope, wrapped_type) =
+    parse__Node__Generic_assignable(~runtime, ~scope, node);
+  switch (wrapped_type) {
+  | Basic(_) => (runtime, scope, wrapped_type |> Node.Escape.toAny)
+  | _ =>
+    let (runtime, scope) =
+      !
+        CCList.mem(
+          ~eq=CCString.equal,
+          scoped_path_str,
+          runtime.fully_qualified_added,
+        )
+        ? {
+          let wrapped_type_declaration =
+            TypeDeclaration({
+              path: qualified_path_to_type,
+              name: type_name,
+              annot: wrapped_type,
+              params: scope.current_declared_params,
+            });
+          let runtime = {
+            ...runtime,
+            fully_qualified_added: [
+              scoped_path_str,
+              ...runtime.fully_qualified_added,
+            ],
+          };
+          (
+            runtime,
+            scope |> Scope.add_root_declaration(wrapped_type_declaration),
+          );
+        }
+        : (runtime, scope);
 
-  let scope =
-    scope
-    |> Scope.add_ref(
-         qualified_path_to_type,
-         Path.strip_current_sub_path(base_path),
-       );
-  (
-    runtime,
-    scope,
-    Reference({
-      target: [|type_name|],
-      params:
-        scope.current_declared_params
-        |> CCArray.map(
-             fun
-             | Identifier.TypeParameter(n) as i => (n, GenericReference(i))
-             | other =>
-               raise(
-                 Exceptions.UnexpectedAtThisPoint(
-                   Printf.sprintf(
-                     "Not a valid type param ident: %s",
-                     Pp.identifier(other),
+    let scope =
+      scope
+      |> Scope.add_ref(
+           qualified_path_to_type,
+           Path.strip_current_sub_path(base_path),
+         );
+    (
+      runtime,
+      scope,
+      Reference({
+        target: [|type_name|],
+        params:
+          scope.current_declared_params
+          |> CCArray.map(
+               fun
+               | Identifier.TypeParameter(n) as i => (n, GenericReference(i))
+               | other =>
+                 raise(
+                   Exceptions.UnexpectedAtThisPoint(
+                     Printf.sprintf(
+                       "Not a valid type param ident: %s",
+                       Pp.identifier(other),
+                     ),
                    ),
                  ),
-               ),
-           )
-        |> CCArray.to_list,
-    }),
-  );
+             )
+          |> CCArray.to_list,
+      }),
+    );
+  };
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------

@@ -203,27 +203,130 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
       ~scope: scope,
       root_module: Node.node(Node.Constraint.exactlyModule),
     ) => {
-  let rec walk:
-    type t.
-      (~current_type_list: array(Node.node('a))=?, Node.node(t)) => unit =
-    (~current_type_list=[||], node) =>
-      switch (node) {
-      | Node.Module({types, _}) =>
-        types |> CCArray.iter(t => walk(~current_type_list=types, t))
-      | TypeDeclaration({annot: Reference({target, _}), path, _}) =>
-        Helpers.maybe_replace_type_declaration(
-          ~records=true,
+  let rec replace =
+          (~scope, ~current_type_list, ~path, node)
+          : (
+              Node.node(Node.Constraint.global),
+              array(Node.node(Node.Constraint.global)),
+            ) => {
+    let node = Node.Escape.toGlobal(node);
+    switch (node) {
+    | Node.Array(inner) =>
+      let (node, lst) = replace(~scope, ~current_type_list, ~path, inner);
+      (Node.Array(node |> Node.Escape.toAssignable), lst);
+    | Optional(inner) =>
+      let (node, lst) = replace(~scope, ~current_type_list, ~path, inner);
+      (Optional(node |> Node.Escape.toAssignable), lst);
+    | Nullable(inner) =>
+      let (node, lst) = replace(~scope, ~current_type_list, ~path, inner);
+      (Nullable(node |> Node.Escape.toAssignable), lst);
+    | Parameter({type_, _} as inner) =>
+      let (node, lst) = replace(~scope, ~current_type_list, ~path, type_);
+      (Parameter({...inner, type_: node |> Node.Escape.toAssignable}), lst);
+    | Tuple(members) =>
+      let (nodes, lst) =
+        members
+        |> CCArray.fold_left(
+             ((members, lst), member) => {
+               let (node, lst) =
+                 replace(~scope, ~current_type_list=lst, ~path, member);
+               (
+                 CCArray.append(
+                   members,
+                   [|node |> Node.Escape.toAssignable|],
+                 ),
+                 lst,
+               );
+             },
+             ([||], current_type_list),
+           );
+      (Tuple(nodes), lst);
+    | Reference({target, _}) as r =>
+      let lst = ref(current_type_list);
+      switch (
+        Helpers.get_replaceable_ref_target(
           ~scope,
-          ~current_type_list,
+          ~current_type_list=lst^,
           ~source_path=path,
           target,
         )
-      | _ => ()
+      ) {
+      | None => (r, lst^)
+      | Some({annot, _}) => (annot |> Node.Escape.toGlobal, lst^)
       };
 
-  walk(root_module);
+    | Record(fields) =>
+      let (nodes, lst) =
+        fields
+        |> CCArray.fold_left(
+             ((members, lst), member) => {
+               let (node, lst) =
+                 replace(
+                   ~scope,
+                   ~current_type_list=lst,
+                   ~path,
+                   member |> Node.Escape.toAssignable,
+                 );
+               (
+                 CCArray.append(
+                   members,
+                   [|node |> Node.Escape.toParameterOnly|],
+                 ),
+                 lst,
+               );
+             },
+             ([||], current_type_list),
+           );
 
-  (runtime, scope, root_module);
+      (Record(nodes), lst);
+    | TypeDeclaration({annot, path, _} as inner) =>
+      let (node, lst) = replace(~scope, ~current_type_list, ~path, annot);
+
+      (
+        TypeDeclaration({...inner, annot: node |> Node.Escape.toAssignable}),
+        lst,
+      );
+    | Module({types, _} as m) =>
+      let t = ref(types |> CCArray.map(Node.Escape.toGlobal));
+      let (nodes, lst) =
+        t^
+        |> CCArray.fold_left(
+             ((nodes, lst), typ) => {
+               let (node, lst) =
+                 replace(
+                   ~scope,
+                   ~current_type_list=lst,
+                   ~path,
+                   typ |> Node.Escape.toAssignable,
+                 );
+               (
+                 CCArray.append(nodes, [|node |> Node.Escape.toModuleLevel|]),
+                 lst,
+               );
+             },
+             ([||], types |> CCArray.map(Node.Escape.toGlobal)),
+           );
+      // TODO: This whole function is extremely shady and frankly stupid, this needs some serious overhaul in the future
+      lst
+      |> CCArray.iteri((i, t) =>
+           switch (t) {
+           | Node.TypeDeclaration({annot: Basic(Never), _}) =>
+             CCArray.set(nodes, i, t |> Node.Escape.toModuleLevel)
+           | _ => ()
+           }
+         );
+      (Module({...m, types: nodes}), [||]);
+    | v => (v |> Node.Escape.toGlobal, current_type_list)
+    };
+  };
+  let (root_module, _) =
+    replace(
+      ~scope,
+      ~current_type_list=[||],
+      ~path=[||],
+      root_module |> Node.Escape.toAssignable,
+    );
+  (runtime, scope, root_module |> Node.Escape.toModuleOnly);
 };
 
 let rule_move_only_once_referenced_types_into_arrays_and_optionals =
