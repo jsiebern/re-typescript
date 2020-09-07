@@ -2,49 +2,46 @@ open Ast;
 open Parser_utils;
 
 module Helpers = {
-  let find_td = (path, current_type_list) =>
-    CCArray.find_idx(
-      node =>
-        switch (node) {
-        | Node.TypeDeclaration({path: p, _}) when Path.eq(p, path) => true
-        | _ => false
-        },
-      current_type_list,
-    )
-    |> CCOpt.flat_map(((i, v)) =>
-         switch (v) {
-         | Node.TypeDeclaration(inner) => Some((i, inner))
-         | _ => None
-         }
-       );
   let find_td_unsafe = (path, current_type_list) =>
     find_td(path, current_type_list) |> CCOpt.get_exn;
 
   let get_replaceable_ref_target =
       (~scope, ~records=false, ~current_type_list, ~source_path, target_path) => {
-    let scoped_path = Path.make_current_scope(source_path);
+    // TODO: Needs refactoring, it's a very intedependant solution
+    // scoped_path can lose one more module if the last sub part is a "_"
+    // Line ~287 needs refactoring alongside this BADLY
+    let scoped_path =
+      source_path
+      |> Path.make_sub_type_name
+      |> CCString.rev
+      |> CCString.take(1) == "_"
+        ? Path.make_current_scope(source_path)
+          |> CCArray.rev
+          |> Path.strip_root_module
+          |> CCArray.rev
+        : Path.make_current_scope(source_path);
+
     let qualified_target = CCArray.append(scoped_path, target_path);
     let ref_num =
       CCHashtbl.get(scope.refs, qualified_target)
       |> CCOpt.map_or(~default=0, CCArray.length);
-    if (ref_num <= 1) {
-      let target_idx = current_type_list |> find_td(qualified_target);
-      switch (target_idx) {
-      | Some((ti, {annot: Record(_), _})) when !records => None
-      | Some((ti, t_inner)) =>
-        // Set this to "never" so it does not get printed.
-        // Still keeping the name around could be useful later though
-        CCArray.set(
-          current_type_list,
-          ti,
-          TypeDeclaration({...t_inner, annot: Basic(Never), params: [||]}),
-        );
-        Hashtbl.remove(scope.refs, qualified_target);
-        Some(t_inner);
-      | _ => None
-      };
-    } else {
-      None;
+    let target_idx = current_type_list |> find_td(qualified_target);
+    switch (target_idx) {
+    | Some((ti, {annot: Record(_), _})) when !records => None
+    | Some((_, {annot: Basic(_), _} as t_inner)) when ref_num > 1 =>
+      scope |> Scope.decrease_ref(qualified_target);
+      Some(t_inner);
+    | Some((ti, t_inner)) when ref_num <= 1 =>
+      // Set this to "never" so it does not get printed.
+      // Still keeping the name around could be useful later though
+      CCArray.set(
+        current_type_list,
+        ti,
+        TypeDeclaration({...t_inner, annot: Basic(Never), params: [||]}),
+      );
+      Hashtbl.remove(scope.refs, qualified_target);
+      Some(t_inner);
+    | _ => None
     };
   };
 
@@ -280,13 +277,18 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
            );
 
       (Record(nodes), lst);
-    | TypeDeclaration({annot: Reference({target, _}), path, _} as inner) =>
+    | TypeDeclaration({annot: Reference({target, _}), _} as inner) =>
       switch (
         Helpers.get_replaceable_ref_target(
           ~records=true,
           ~scope,
           ~current_type_list,
-          ~source_path=path,
+          ~source_path=
+            path
+            |> Path.make_sub_type_name
+            |> CCString.rev
+            |> CCString.take(1) == "_"
+              ? inner.path |> Path.add(Identifier.SubName("_")) : inner.path,
           target,
         )
       ) {
@@ -298,9 +300,76 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
       }
     | TypeDeclaration({annot, path, _} as inner) =>
       let (node, lst) = replace(~scope, ~current_type_list, ~path, annot);
-
       (
         TypeDeclaration({...inner, annot: node |> Node.Escape.toAssignable}),
+        lst,
+      );
+    | Function({parameters, return_type}) =>
+      let (nodes, lst) =
+        parameters
+        |> CCArray.fold_left(
+             ((members, lst), member) => {
+               let (node, lst) =
+                 replace(
+                   ~scope,
+                   ~current_type_list=lst,
+                   ~path,
+                   member |> Node.Escape.toAssignable,
+                 );
+               (
+                 CCArray.append(
+                   members,
+                   [|node |> Node.Escape.toAssignable|],
+                 ),
+                 lst,
+               );
+             },
+             ([||], current_type_list),
+           );
+      let (return_type, lst) =
+        replace(
+          ~scope,
+          ~current_type_list=lst,
+          ~path,
+          return_type |> Node.Escape.toAssignable,
+        );
+      (
+        Function({
+          parameters: nodes |> CCArray.map(Node.Escape.toParameterOnly),
+          return_type: return_type |> Node.Escape.toAssignable,
+        }),
+        lst,
+      );
+    | Module({types, _} as m)
+        when
+          CCArray.get_safe(types, 0)
+          |> CCOpt.map_or(~default=false, t => t == Node.Fixture(TUnboxed)) =>
+      let (nodes, lst) =
+        types
+        |> CCArray.fold_left(
+             ((members, lst), member) => {
+               let (node, lst) =
+                 replace(
+                   ~scope,
+                   ~current_type_list=lst,
+                   ~path=path |> Path.add(Identifier.SubName("_")),
+                   member |> Node.Escape.toAssignable,
+                 );
+               (
+                 CCArray.append(
+                   members,
+                   [|node |> Node.Escape.toAssignable|],
+                 ),
+                 lst,
+               );
+             },
+             ([||], current_type_list),
+           );
+      (
+        Module({
+          ...m,
+          types: nodes |> CCArray.map(Node.Escape.toModuleLevel),
+        }),
         lst,
       );
     | Module({types, _} as m) =>
@@ -449,7 +518,7 @@ let rule_transform_single_literals_into_union_types =
           | Some(_)
           | None => l
           };
-        switch (current_type_list |> Helpers.find_td(path)) {
+        switch (current_type_list |> find_td(path)) {
         | None => ()
         | Some((i, _)) =>
           CCArray.set(

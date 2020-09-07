@@ -29,7 +29,7 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
       exports_only: false,
     },
     fully_qualified_added: [],
-    warnings: false,
+    warnings: true,
   };
   let runtime =
     source_files
@@ -1111,9 +1111,17 @@ and parse__Node__IndexedAccessType =
       switch (Ts_nodes_util.identifyGenericNode(index)) {
       | LiteralType(lt) =>
         switch (Ts_nodes_util.identifyGenericNode(lt#getLiteral())) {
-        | StringLiteral(sl) => sl#getLiteralValue()
-        | NumericLiteral(nl) => Printf.sprintf("%.0f", nl#getLiteralValue())
-        | _ => "t"
+        | StringLiteral(sl) => [|sl#getLiteralValue()|]
+        | NumericLiteral(nl) => [|
+            Printf.sprintf("%.0f", nl#getLiteralValue()),
+          |]
+        | l =>
+          Runtime.warn_ftr(
+            "Index of access node invalid: ",
+            Pp.node_kind(l),
+            runtime,
+          );
+          [|"t"|];
         }
       | TypeReference(_)
           when
@@ -1123,12 +1131,51 @@ and parse__Node__IndexedAccessType =
             } =>
         let param_name = index#getText();
         switch (scope |> Context.get_arg(param_name)) {
-        | Some(Literal(String(str))) => str
-        | Some(Literal(Number(n))) => Printf.sprintf("%.0f", n)
-        | Some(_)
-        | None => "t"
+        | Some(Literal(String(str))) => [|str|]
+        | Some(Literal(Number(n))) => [|Printf.sprintf("%.0f", n)|]
+        | Some(l) =>
+          Runtime.warn_ftr(
+            "Index of access node invalid: ",
+            Pp.ast_node(l),
+            runtime,
+          );
+          [|"t"|];
+        | None =>
+          Runtime.warn_ftr(
+            "Index of access node invalid: ",
+            param_name,
+            runtime,
+          );
+          [|"t"|];
         };
-      | _ => "t"
+      | UnionType(union) =>
+        // TODO: Abstract this function, currently all over the place with a lot of repition
+        union#getTypeNodes()
+        |> CCArray.filter_map(member =>
+             switch (Ts_nodes_util.identifyGenericNode(member)) {
+             | LiteralType(lt) =>
+               switch (Ts_nodes_util.identifyGenericNode(lt#getLiteral())) {
+               | StringLiteral(sl) => Some(sl#getLiteralValue())
+               | NumericLiteral(nl) =>
+                 Some(Printf.sprintf("%.0f", nl#getLiteralValue()))
+               | l =>
+                 Runtime.warn_ftr(
+                   "Index of access node invalid (in union): ",
+                   Pp.node_kind(l),
+                   runtime,
+                 );
+                 None;
+               }
+             | _ => None
+             }
+           )
+      | other =>
+        Runtime.warn_ftr(
+          "Index of access node invalid: ",
+          Pp.node_kind(other),
+          runtime,
+        );
+        [|"t"|];
       };
     (index, index_stringified);
   };
@@ -1165,7 +1212,13 @@ and parse__Node__IndexedAccessType =
       if (CCArray.length(indexedAccessTypes) == 1
           && scope
           |> Scope.get_ref(
-               ref_path |> Path.add(Identifier.SubName(index_stringified)),
+               ref_path
+               |> Path.add(
+                    Identifier.SubName(
+                      CCArray.get_safe(index_stringified, 0)
+                      |> CCOpt.value(~default=""),
+                    ),
+                  ),
              )
           |> CCOpt.is_some) {
         (
@@ -1177,7 +1230,12 @@ and parse__Node__IndexedAccessType =
             target: [|
               Identifier.TypeName(
                 Path.make_sub_type_name(
-                  ref_path |> Path.add(Identifier.SubName(index_stringified)),
+                  ref_path
+                  |> Path.add(
+                       Identifier.SubName(
+                         CCArray.unsafe_get(index_stringified, 0),
+                       ),
+                     ),
                 ),
               ),
             |],
@@ -1223,6 +1281,8 @@ and parse__Node__IndexedAccessType =
       } =>*/
   | Some(_) =>
     let (_, index_stringified) = index_of_access_node(node);
+    let index_stringified =
+      CCArray.get_safe(index_stringified, 0) |> CCOpt.value(~default="");
 
     let maybe_resolve_from_record = maybe_record_with_runtime_and_scope =>
       switch (maybe_record_with_runtime_and_scope) {

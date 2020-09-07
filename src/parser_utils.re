@@ -72,6 +72,10 @@ module Runtime = {
     root_modules: CCArray.append(runtime.root_modules, [|root_module|]),
   };
   let incr_node = runtime => {...runtime, node_count: runtime.node_count + 1};
+  let warn = (e: exn, runtime: runtime) =>
+    runtime.warnings ? Console.warn(Printexc.to_string(e)) : ();
+  let warn_ftr = (a, b, runtime) =>
+    runtime |> warn(Exceptions.FeatureMissing(a, b));
 };
 module Scope = {
   let add_to_path: (Identifier.t(_), scope) => scope =
@@ -108,7 +112,8 @@ module Scope = {
           switch (found_idx) {
           | None =>
             CCArray.append([|root_declaration|], scope.root_declarations)
-          | Some((insert_before, _)) when insert_before == 0 =>
+          | Some((insert_before, _))
+              when insert_before == 0 || insert_before == 1 =>
             CCArray.append([|root_declaration|], scope.root_declarations)
           | Some((insert_before, _)) =>
             CCArray.concat([
@@ -144,6 +149,19 @@ module Scope = {
   };
   let get_ref = (to_: iPath, scope: scope) => {
     Hashtbl.find_opt(scope.refs, to_);
+  };
+  let decrease_ref = (p: iPath, scope: scope) => {
+    switch (get_ref(p, scope)) {
+    | None => ()
+    | Some(refs) when CCArray.length(refs) <= 1 =>
+      Hashtbl.remove(scope.refs, p)
+    | Some(refs) =>
+      Hashtbl.replace(
+        scope.refs,
+        p,
+        CCArray.sub(refs, 1, CCArray.length(refs) - 1),
+      )
+    };
   };
 };
 module Path = {
@@ -305,3 +323,19 @@ let parse__map = (map_func, (runtime, scope, payload)) => (
   scope,
   map_func(payload),
 );
+
+let find_td = (path, current_type_list) =>
+  CCArray.find_idx(
+    node =>
+      switch (node) {
+      | Node.TypeDeclaration({path: p, _}) when Path.eq(p, path) => true
+      | _ => false
+      },
+    current_type_list,
+  )
+  |> CCOpt.flat_map(((i, v)) =>
+       switch (v) {
+       | Node.TypeDeclaration(inner) => Some((i, inner))
+       | _ => None
+       }
+     );

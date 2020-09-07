@@ -387,12 +387,18 @@ let rec follow_references_from_resolved =
 };
 
 let extract_from_resolved =
-    (~wrap_sub_node, ~runtime, ~scope, path, access_fields: array(string)) => {
+    (
+      ~wrap_sub_node,
+      ~runtime,
+      ~scope,
+      path,
+      access_fields: array(array(string)),
+    ) => {
   // A few possibilities:
   let path_no_root = path |> Path.strip_root_module;
 
   let rec resolve_from_root_fields =
-          (~runtime, ~scope, obj_path, access_fields) => {
+          (~runtime, ~scope, obj_path, access_fields: array(array(string))) => {
     let path_eq = Path.eq(obj_path);
 
     let root_obj =
@@ -413,25 +419,84 @@ let extract_from_resolved =
       let access_fields =
         CCArray.sub(access_fields, 1, CCArray.length(access_fields) - 1);
 
-      let field =
+      let fields_found =
         fields
-        |> CCArray.find_idx(field =>
+        |> CCArray.mapi((i, field) =>
              switch (field) {
              | Parameter({name: PropertyName(pName), _})
-                 when pName == access_field =>
-               true
-             | _ => false
+                 when
+                   access_field
+                   |> CCArray.find_idx(CCString.equal(pName, _))
+                   |> CCOpt.is_some =>
+               Some((i, pName, field))
+             | _ => None
              }
-           );
-      switch (field, access_fields) {
-      | (Some((_, Parameter({type_: Basic(_) as t, _}))), _) =>
+           )
+        |> CCArray.filter_map(a => a);
+      switch (fields_found, access_fields) {
+      | ([|(_, _, Parameter({type_: Basic(_) as t, _}))|], _) =>
         Some((runtime, scope, t))
-      | (Some((field_idx, Parameter({type_: t, _} as type_))), [||]) =>
+      | (fields_found, [||]) when CCArray.length(fields_found) > 1 =>
+        // TODO: Abstract this next part as it's doubled one step further down
+        let (runtime, scope, members) =
+          fields_found
+          |> CCArray.fold_left(
+               ((runtime, scope, acc), field) =>
+                 switch (field) {
+                 | (field_idx, pName, Parameter({type_: t, _} as type_)) =>
+                   let (scope, restore) =
+                     scope
+                     |> Scope.retain_path(
+                          path |> Path.add(Identifier.SubName(pName)),
+                        );
+                   let (runtime, scope, new_ref) =
+                     wrap_sub_node(
+                       ~before=?CCArray.get_safe(obj_path, 0),
+                       ~runtime,
+                       ~scope,
+                       t,
+                     );
+                   let new_ref_path =
+                     Path.make_current_scope(scope.path)
+                     |> Path.add(
+                          TypeName(scope.path |> Path.make_sub_type_name),
+                        );
+                   let new_ref = new_ref |> Node.Escape.toAny;
+                   let scope = restore(scope);
+                   // Important to set another ref here to the extracted type
+                   let scope =
+                     scope |> Scope.add_ref(new_ref_path, scope.path);
+                   CCArray.set(
+                     fields,
+                     field_idx,
+                     Parameter({
+                       ...type_,
+                       type_: new_ref |> Node.Escape.toAssignable,
+                     }),
+                   );
+                   (runtime, scope, CCArray.append(acc, [|new_ref|]));
+                 | _ => (runtime, scope, acc)
+                 },
+               (runtime, scope, [||]),
+             );
+        switch (members) {
+        | [||] => None
+        | more =>
+          // more |> CCArray.iter(a => Console.log(Pp.ast_node(a)));
+
+          let (runtime, scope, union) =
+            Parser_union.generate_ast_for_union(
+              ~runtime,
+              ~scope,
+              more |> CCArray.map(Node.Escape.toAssignable),
+            );
+          Some((runtime, scope, union |> Node.Escape.toAny));
+        };
+
+      | ([|(field_idx, pName, Parameter({type_: t, _} as type_))|], [||]) =>
         let (scope, restore) =
           scope
-          |> Scope.retain_path(
-               path |> Path.add(Identifier.SubName(access_field)),
-             );
+          |> Scope.retain_path(path |> Path.add(Identifier.SubName(pName)));
         let (runtime, scope, new_ref) =
           wrap_sub_node(
             ~before=?CCArray.get_safe(obj_path, 0),
@@ -452,7 +517,7 @@ let extract_from_resolved =
           Parameter({...type_, type_: new_ref |> Node.Escape.toAssignable}),
         );
         Some((runtime, scope, new_ref));
-      | (Some((_, Parameter({type_: Reference({target, _}), _}))), rest) =>
+      | ([|(_, _, Parameter({type_: Reference({target, _}), _}))|], rest) =>
         resolve_from_root_fields(~runtime, ~scope, target, rest)
       | _ => None
       };

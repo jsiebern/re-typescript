@@ -12,8 +12,9 @@ type unionType =
   | Optional(array(Node.node(Node.Constraint.assignable)))
   | Single(Node.node(Node.Constraint.assignable));
 
-let rec make_union_typename: type t. Node.node(t) => string =
-  node =>
+let rec make_union_typename:
+  type t. (~runtime: runtime, ~scope: scope, Node.node(t)) => string =
+  (~runtime, ~scope, node) =>
     switch (node) {
     | Basic(String) => "string"
     | Basic(Number) => "number"
@@ -33,10 +34,21 @@ let rec make_union_typename: type t. Node.node(t) => string =
     | Record(_) => "obj"
     | Variant(_) => "var"
     | Tuple(_) => "tpl"
-    | Array(t) => Printf.sprintf("arr_of_%s", make_union_typename(t))
-    | Reference({target, _}) => Path.make_sub_type_name(target)
+    | Array(t) =>
+      Printf.sprintf("arr_of_%s", make_union_typename(~runtime, ~scope, t))
+    | Reference({target, _}) =>
+      switch (
+        scope.root_declarations
+        |> find_td(
+             CCArray.append(scope.path |> Path.make_current_scope, target),
+           )
+      ) {
+      | None => Path.make_sub_type_name(target)
+      | Some((_, {annot, _})) =>
+        make_union_typename(~runtime, ~scope, annot)
+      }
     | Nullable(t)
-    | Optional(t) => make_union_typename(t)
+    | Optional(t) => make_union_typename(~runtime, ~scope, t)
     | _ => "other"
     };
 
@@ -140,7 +152,7 @@ let checks = [|
           )
         : None
   ),
-  // --- Todo: Discriminating
+  // --- Todo: Discrimimeting
   // --- Union
   lazy(nodes => Some(Union(nodes))),
 |];
@@ -182,7 +194,7 @@ let generate_ast_for_union:
     let members =
       members
       |> CCArray.map(node => {
-           let name = make_union_typename(node);
+           let name = make_union_typename(~runtime, ~scope, node);
            let type_name = Identifier.TypeName(name);
            Node.TypeDeclaration({
              name: type_name,
