@@ -29,9 +29,11 @@ module Helpers = {
     switch (target_idx) {
     | Some((ti, {annot: Record(_), _})) when !records => None
     | Some((_, {annot: Basic(_), _} as t_inner)) when ref_num > 1 =>
+      // Basic types can be "desolved" over time as it doesn't make sense
+      // to keep a base type alias around
       scope |> Scope.decrease_ref(qualified_target);
       Some(t_inner);
-    | Some((ti, t_inner)) when ref_num <= 1 =>
+    | Some((ti, {params: [||], _} as t_inner)) when ref_num <= 1 =>
       // Set this to "never" so it does not get printed.
       // Still keeping the name around could be useful later though
       CCArray.set(
@@ -343,7 +345,12 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
     | Module({types, _} as m)
         when
           CCArray.get_safe(types, 0)
-          |> CCOpt.map_or(~default=false, t => t == Node.Fixture(TUnboxed)) =>
+          |> CCOpt.map_or(~default=false, t =>
+               switch (t) {
+               | Node.Fixture(TUnboxed(_)) => true
+               | _ => false
+               }
+             ) =>
       let (nodes, lst) =
         types
         |> CCArray.fold_left(
@@ -491,7 +498,12 @@ let rule_transform_single_literals_into_union_types =
           // We want to skip the entire module if it is a union type already
           when
             CCArray.get_safe(types, 0)
-            |> CCOpt.map_or(~default=false, t => t == Node.Fixture(TUnboxed)) =>
+            |> CCOpt.map_or(~default=false, t =>
+                 switch (t) {
+                 | Node.Fixture(TUnboxed(_)) => true
+                 | _ => false
+                 }
+               ) =>
         ()
       | Node.Module({types, _}) =>
         types |> CCArray.iter(t => walk(~current_type_list=types, t))

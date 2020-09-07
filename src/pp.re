@@ -93,7 +93,7 @@ let node_kind = (n: Ts_nodes.nodeKind) =>
 
 let scope_args = (scope: scope) =>
   Printf.sprintf(
-    "-- Args --\n%s-- /Args --\n",
+    "-- Args --\n%s\n-- /Args --\n",
     CCList.to_string(
       ~sep="\n",
       ((key, node)) => Printf.sprintf("%s: %s", key, ast_node(node)),
@@ -102,7 +102,7 @@ let scope_args = (scope: scope) =>
   );
 let scope_params = (scope: scope) =>
   Printf.sprintf(
-    "-- Params --\n%s-- /Params --\n",
+    "-- Params --\n%s\n-- /Params --\n",
     CCList.to_string(
       ~sep="\n",
       ((key, node)) =>

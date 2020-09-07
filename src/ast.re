@@ -251,7 +251,8 @@ and Node: {
       : node(Constraint.atLeastFixture('poly))
   and kind_fixture('tag) =
     | AnyUnboxed: kind_fixture(Constraint.Fixture.atLeastAnyUnboxed('poly))
-    | TUnboxed: kind_fixture(Constraint.Fixture.atLeastTUnboxed('poly))
+    | TUnboxed(list((string, option(node(Constraint.assignable)))))
+      : kind_fixture(Constraint.Fixture.atLeastTUnboxed('poly))
   and kind_basic('tag) =
     | RelevantKeyword(string)
       : kind_basic(Constraint.Basic.atLeastRelevantKeyword('poly))

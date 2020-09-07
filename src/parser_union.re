@@ -223,16 +223,19 @@ let generate_ast_for_union:
       Node.Module({
         name: wrapper_module_name,
         path: "",
-        types: CCArray.append([|Node.Fixture(TUnboxed)|], members),
+        types:
+          CCArray.append(
+            [|Node.Fixture(TUnboxed(scope.context_params))|],
+            members,
+          ),
       });
     let scope = scope |> Scope.add_root_declaration(wrapper_module);
-
     (
       runtime,
       scope,
       Reference({
         target: [|Module(wrapper_module_name), TypeName("t")|],
-        params: [],
+        params: Context.get_params_generalized(scope),
       }),
     );
   };

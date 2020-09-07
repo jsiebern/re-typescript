@@ -62,6 +62,25 @@ module Context = {
       |> CCList.filter(((_, default)) => CCOpt.is_none(default)),
     )
     >= 0;
+  let get_params_generalized = (scope: scope) =>
+    scope.context_params
+    |> CCList.map(((name, _)) =>
+         (name, Node.GenericReference(Identifier.TypeParameter(name)))
+       );
+  let get_all_args = (scope: scope) =>
+    args_match_params(scope)
+      ? scope.context_args
+      : scope.context_params
+        |> CCList.map(((name, default)) =>
+             switch (get_arg(name, scope), default) {
+             | (Some(arg), _) => (name, arg)
+             | (None, Some(arg)) => (name, arg)
+             | (None, None) => (
+                 name,
+                 Node.GenericReference(Identifier.TypeParameter(name)),
+               )
+             }
+           );
 };
 module Runtime = {
   let add_root_module =

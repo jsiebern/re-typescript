@@ -82,8 +82,10 @@ and generate__Node__ModuleUnboxed =
          ((scope, arr_stri, arr_sigi), node) => {
            let res =
              switch (node) {
-             | Ast.Node.Fixture(TUnboxed) =>
-               let (stri, sigi) = Util.Unboxed.make_unboxed_helper();
+             | Ast.Node.Fixture(TUnboxed(params)) =>
+               let params = params |> CCList.map(fst);
+               let (stri, sigi) =
+                 Util.Unboxed.make_unboxed_helper(~params, ());
                Some((scope, stri, sigi));
              | Ast.Node.TypeDeclaration({
                  annot: Literal(literal),
@@ -156,7 +158,7 @@ and generate__Node__TypeDeclaration =
   | Module({types, _}) as module_node
       when
         switch (CCArray.get_safe(types, 0)) {
-        | Some(Fixture(TUnboxed)) => true
+        | Some(Fixture(TUnboxed(_))) => true
         | _ => false
         } =>
     let (scope, item) = generate__Node__ModuleUnboxed(~scope, module_node);
@@ -474,6 +476,6 @@ and generate__Fixture =
     (~scope, Fixture(fixture): Node.node(Node.Constraint.exactlyFixture)) => {
   switch (fixture) {
   | AnyUnboxed => (scope, Util.make_any_helper_unboxed())
-  | TUnboxed => (scope, [fst(Util.Unboxed.make_unboxed_helper())])
+  | TUnboxed(_) => (scope, [fst(Util.Unboxed.make_unboxed_helper())])
   };
 };

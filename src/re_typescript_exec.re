@@ -10,7 +10,8 @@ let test = (
 
 
 // can use recursion in unions in combination with type params
-type x<B> = string | B;
+type x<B = number> = string | B;
+type y = x<boolean>
 
 |},
 );

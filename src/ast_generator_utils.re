@@ -326,14 +326,29 @@ module Unboxed = {
       Location.mknoloc(Longident.Lident("t")),
       params |> CCList.map(param => Typ.var(param)),
     );
-  let make_unboxed_helper = () => (
-    [%stri
-      [@unboxed]
-      type t =
-        | Any('a): t
-    ],
-    [%sigi: type t],
-  );
+  let make_unboxed_helper = (~params=[], ()) => {
+    let t =
+      Ast_helper.Str.type_(
+        Recursive,
+        [
+          Ast_helper.Type.mk(
+            ~params=
+              params
+              |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
+            Location.mknoloc("t"),
+          ),
+        ],
+      );
+
+    (
+      [%str
+        [@unboxed]
+        type t =
+          | Any('a): t
+      ],
+      [%sigi: type t],
+    );
+  };
   let unboxed_literal = (name, value: expression) => (
     [%stri let [%p Pat.var(Location.mknoloc(name))] = Any([%e value])],
     Sig.value(Val.mk(Location.mknoloc(name), [%type: t])),

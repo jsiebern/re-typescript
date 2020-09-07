@@ -54,7 +54,7 @@ let generate_string_literal_list = (~runtime, ~scope, strings: array(string)) =>
           Node.Module({
             name: wrapper_module_name,
             path: "",
-            types: CCArray.append([|Node.Fixture(TUnboxed)|], members),
+            types: CCArray.append([|Node.Fixture(TUnboxed([]))|], members),
           });
         let scope = scope |> Scope.add_root_declaration(wrapper_module);
 
@@ -132,7 +132,7 @@ let generate_number_literal_list = (~runtime, ~scope, floats: array(float)) => {
           Node.Module({
             name: wrapper_module_name,
             path: "",
-            types: CCArray.append([|Node.Fixture(TUnboxed)|], members),
+            types: CCArray.append([|Node.Fixture(TUnboxed([]))|], members),
           });
         let scope = scope |> Scope.add_root_declaration(wrapper_module);
 
@@ -195,7 +195,7 @@ let generate_mixed_literal_list =
     Node.Module({
       name: wrapper_module_name,
       path: "",
-      types: CCArray.append([|Node.Fixture(TUnboxed)|], members),
+      types: CCArray.append([|Node.Fixture(TUnboxed([]))|], members),
     });
   let scope = scope |> Scope.add_root_declaration(wrapper_module);
 
