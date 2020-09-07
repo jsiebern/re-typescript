@@ -88,11 +88,13 @@ module Naming = {
       | e => raise(e)
       }
     )
+    |> CCString.replace(~sub=" ", ~by="_")
     |> CCString.replace(~sub="$", ~by="_")
     |> CCString.replace(~sub=".", ~by="_");
 
   let to_valid_variant_constructor = (~forceUpperCase=false, ident) =>
     (forceUpperCase ? ident |> CCString.capitalize_ascii : ident)
+    |> CCString.replace(~sub=" ", ~by="_")
     |> CCString.replace(~sub="$", ~by="_")
     |> CCString.replace(~sub=".", ~by="_");
 
@@ -327,21 +329,20 @@ module Unboxed = {
       params |> CCList.map(param => Typ.var(param)),
     );
   let make_unboxed_helper = (~params=[], ()) => {
-    let t =
-      Ast_helper.Str.type_(
-        Recursive,
-        [
-          Ast_helper.Type.mk(
-            ~params=
-              params
-              |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
-            Location.mknoloc("t"),
-          ),
-        ],
-      );
-
     (
-      [%str
+      // let t =
+      //   Ast_helper.Str.type_(
+      //     Recursive,
+      //     [
+      //       Ast_helper.Type.mk(
+      //         ~params=
+      //           params
+      //           |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
+      //         Location.mknoloc("t"),
+      //       ),
+      //     ],
+      //   );
+      [%stri
         [@unboxed]
         type t =
           | Any('a): t

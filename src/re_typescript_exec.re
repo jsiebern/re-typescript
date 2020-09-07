@@ -8,10 +8,12 @@ let test = (
 // }
 // type in_arr = Array<obj['field']>;
 
+type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
+
 
 // can use recursion in unions in combination with type params
-type x<B = number> = string | B;
-type y = x<boolean>
+// type x<B = number> = string | B;
+// type y = x<boolean>
 
 |},
 );
