@@ -1,14 +1,16 @@
 mixed unions › generates unboxed type
-module X: {
-  type t;
-  let string: t;
-  let _1: t;
-} = {
-  [@unboxed]
-  type t =
-    | Any('a): t;
-  let string = Any(\"string\");
-  let _1 = Any(1);
+module Test = {
+  module X: {
+    type t;
+    let _1: t;
+    let string: t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let _1 = Any(1);
+    let string = Any(\"string\");
+  };
+  type x = X.t;
 };
-type x = X.t;
 

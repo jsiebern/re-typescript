@@ -1,18 +1,20 @@
 mixed unions › can be made optional no matter the position of the undefined
-module X: {
-  type t;
-  let string: t;
-  let _1: t;
-  let _3: t;
-  let false_: t;
-} = {
-  [@unboxed]
-  type t =
-    | Any('a): t;
-  let string = Any(\"string\");
-  let _1 = Any(1);
-  let _3 = Any(3);
-  let false_ = Any(false);
+module Test = {
+  module X: {
+    type t;
+    let _3: t;
+    let false_: t;
+    let string: t;
+    let _1: t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let _3 = Any(3);
+    let false_ = Any(false);
+    let string = Any(\"string\");
+    let _1 = Any(1);
+  };
+  type x = option(X.t);
 };
-type x = option(X.t);
 

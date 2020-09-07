@@ -1,18 +1,20 @@
 mixed unions › works with all primitives
-module X: {
-  type t;
-  let string: t;
-  let _1: t;
-  let _3: t;
-  let false_: t;
-} = {
-  [@unboxed]
-  type t =
-    | Any('a): t;
-  let string = Any(\"string\");
-  let _1 = Any(1);
-  let _3 = Any(3);
-  let false_ = Any(false);
+module Test = {
+  module X: {
+    type t;
+    let _1: t;
+    let string: t;
+    let false_: t;
+    let _3: t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let _1 = Any(1);
+    let string = Any(\"string\");
+    let false_ = Any(false);
+    let _3 = Any(3);
+  };
+  type x = X.t;
 };
-type x = X.t;
 

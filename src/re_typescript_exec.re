@@ -1,8 +1,21 @@
-let test = ("/test.d.ts", {|
+let test = (
+  "/test.d.ts",
+  {|
 
-type variant = 'str1' | 'Str1' | "X_$STR";
+// can be generated inline
+interface obj {
+  field: 'red' | 'blue',
+}
+type in_arr = Array<obj['field']>;
 
-|});
+// generates simple int union
+// type variant = 2 | 4 | 8 | 16;
+
+// can use recursion in unions in combination with type params
+type x<B> = string | B;
+
+|},
+);
 
 Console.log(
   "\n-------------------------------------------------------------------\n",

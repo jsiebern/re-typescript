@@ -1,20 +1,5 @@
 string literal unions › can generate simple string unions
-module Variant: {
-  type t = pri string;
-  [@bs.inline \"str1\"]
-  let str1: t;
-  [@bs.inline \"Str1\"]
-  let str1: t;
-  [@bs.inline \"X_$STR\"]
-  let x__STR: t;
-} = {
-  type t = string;
-  [@bs.inline]
-  let str1 = \"str1\";
-  [@bs.inline]
-  let str1 = \"Str1\";
-  [@bs.inline]
-  let x__STR = \"X_$STR\";
+module Test = {
+  type variant = [ | `str1 | `Str1 | `X__STR];
 };
-type variant = Variant.t;
 
