@@ -1,7 +1,9 @@
 type extractions › can create an array after the access
-type c = {
-  a: string,
-  b: float,
-}
-and d = array(string);
+module Test = {
+  type c = {
+    a: string,
+    b: float,
+  };
+  type d = array(string);
+};
 

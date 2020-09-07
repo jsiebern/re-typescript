@@ -43,9 +43,10 @@ let rec make_union_typename:
              CCArray.append(scope.path |> Path.make_current_scope, target),
            )
       ) {
-      | None => Path.make_sub_type_name(target)
-      | Some((_, {annot, _})) =>
+      | Some((_, {annot: Basic(_) as annot, _})) =>
         make_union_typename(~runtime, ~scope, annot)
+      | Some(_)
+      | None => Path.make_sub_type_name(target)
       }
     | Nullable(t)
     | Optional(t) => make_union_typename(~runtime, ~scope, t)
@@ -191,10 +192,21 @@ let generate_ast_for_union:
   (~runtime, ~scope, members) => {
     let name = Path.make_sub_type_name(scope.path);
     let wrapper_module_name = Ast_generator_utils.Naming.moduleName(name);
+
+    let name_cache = ref([||]);
     let members =
       members
       |> CCArray.map(node => {
            let name = make_union_typename(~runtime, ~scope, node);
+           let suffix = ref("");
+           let i = ref(1);
+           while (CCArray.find_idx(n => n == name ++ suffix^, name_cache^)
+                  |> CCOpt.is_some) {
+             i := i^ + 1;
+             suffix := string_of_int(i^);
+           };
+           let name = name ++ suffix^;
+           name_cache := CCArray.append(name_cache^, [|name|]);
            let type_name = Identifier.TypeName(name);
            Node.TypeDeclaration({
              name: type_name,
