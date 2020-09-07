@@ -1,6 +1,6 @@
 function definitions › inline obj union as function return type
 module Test = {
   type someOtherFunction_return_2nd = {inline: string};
-  type someOtherFunction = Js.Null.t(someOtherFunction_return_2nd);
+  type someOtherFunction = unit => Js.Null.t(someOtherFunction_return_2nd);
 };
 

@@ -11,8 +11,7 @@ module Test = {
     let string = (v: string) => Any(v);
     let number = (v: float) => Any(v);
   };
-  type someFunction_a = SomeFunction_a.t;
   type someFunction_b = {inline: float};
-  type someFunction = (someFunction_a, ~b: someFunction_b=?, unit) => string;
+  type someFunction = (SomeFunction_a.t, ~b: someFunction_b=?, unit) => string;
 };
 

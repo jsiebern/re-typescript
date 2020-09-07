@@ -1871,7 +1871,7 @@ and parse__Node__EnumDeclaration =
     |> CCArray.map(member =>
          {
            VariantConstructor.name:
-             Identifier.VariantIdentifier(member#getName()),
+             Identifier.VariantIdentifier(member#getName(), false),
            arguments: [||],
          }
        );

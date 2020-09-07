@@ -109,7 +109,7 @@ module Naming = {
     i =>
       switch (i) {
       | Module(str) => str
-      | VariantIdentifier(str) => str
+      | VariantIdentifier(str, _) => str
       | TypeName(str) => str
       | PropertyName(str) => str
       | SubName(str) => str
@@ -124,7 +124,8 @@ module Naming = {
     i =>
       switch (i) {
       | Module(str) => moduleName(str)
-      | VariantIdentifier(str) => variantIdentifier(str)
+      | VariantIdentifier(str, has_exotic_identifiers) =>
+        has_exotic_identifiers ? str : variantIdentifier(str)
       | TypeName(str) => typeName(str)
       | PropertyName(str) => typeName(str)
       | SubName(str) => typeName(str)
@@ -264,8 +265,15 @@ let make_polymorphic = (names: list(Ast.VariantConstructor.t)) => {
     Ptyp_variant(
       names
       |> CCList.map(
-           ({Ast.VariantConstructor.name: VariantIdentifier(name), _}) =>
-           Naming.to_valid_variant_constructor(name)
+           (
+             {
+               Ast.VariantConstructor.name:
+                 VariantIdentifier(name, has_exotic_identifiers),
+               _,
+             },
+           ) =>
+           has_exotic_identifiers
+             ? name : Naming.to_valid_variant_constructor(name)
          )
       |> CCList.map(name => Rtag(Location.mknoloc(name), [], true, [])),
       Closed,

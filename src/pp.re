@@ -8,7 +8,8 @@ let identifier: type t. Identifier.t(t) => string =
     | Module(str) => Printf.sprintf("Module(%s)", str)
     | TypeName(str) => Printf.sprintf("TypeName(%s)", str)
     | PropertyName(str) => Printf.sprintf("PropertyName(%s)", str)
-    | VariantIdentifier(str) => Printf.sprintf("VariantIdentifier(%s)", str)
+    | VariantIdentifier(str, _) =>
+      Printf.sprintf("VariantIdentifier(%s)", str)
     | SubName(str) => Printf.sprintf("SubName(%s)", str)
     | SubIdent(str) => Printf.sprintf("SubIdent(%i)", str)
     };

@@ -41,7 +41,7 @@ and Identifier: {
     | Module(string): t(Constraint.atLeastModule('poly))
     | TypeName(string): t(Constraint.atLeastTypeName('poly))
     | PropertyName(string): t(Constraint.atLeastPropertyName('poly))
-    | VariantIdentifier(string)
+    | VariantIdentifier(string, bool)
       : t(Constraint.atLeastVariantIdentifier('poly))
     | SubName(string): t(Constraint.atLeastSubName('poly))
     | SubIdent(int): t(Constraint.atLeastSubIdent('poly));

@@ -1,6 +1,5 @@
 string literal unions › recognizes single string as union
 module Test = {
-  type variant =
-    | Single;
+  type variant = [ | `single];
 };
 

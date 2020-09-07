@@ -184,7 +184,7 @@ module Path = {
       | TypeName(str)
       | TypeParameter(str)
       | PropertyName(str)
-      | VariantIdentifier(str)
+      | VariantIdentifier(str, _)
       | SubName(str) => str
       | SubIdent(1) => "1st"
       | SubIdent(2) => "2nd"

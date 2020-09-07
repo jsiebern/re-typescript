@@ -184,11 +184,10 @@ and generate__Node__TypeDeclaration =
             variant_members
             |> CCArray.map(member =>
                  Util.Naming.fromIdentifier(
-                   Identifier.VariantIdentifier(
-                     switch (member.VariantConstructor.name) {
-                     | VariantIdentifier(str) => str
-                     },
-                   ),
+                   switch (member.VariantConstructor.name) {
+                   | VariantIdentifier(str, has_exotic_identifiers) =>
+                     Identifier.VariantIdentifier(str, has_exotic_identifiers)
+                   },
                  )
                )
             |> CCArray.to_list,

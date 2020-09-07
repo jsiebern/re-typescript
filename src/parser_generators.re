@@ -4,6 +4,7 @@ open Parser_utils;
 
 let generate_string_literal_list = (~runtime, ~scope, strings: array(string)) => {
   let config = Re_typescript_config.getConfig();
+  let has_exotic_identifiers = config.print_language == ReScript;
   let makeVariant =
     lazy(
       v =>
@@ -11,7 +12,8 @@ let generate_string_literal_list = (~runtime, ~scope, strings: array(string)) =>
           strings
           |> CCArray.map(name =>
                {
-                 VariantConstructor.name: Identifier.VariantIdentifier(name),
+                 VariantConstructor.name:
+                   Identifier.VariantIdentifier(name, has_exotic_identifiers),
                  arguments: [||],
                }
              ),
@@ -37,6 +39,7 @@ let generate_string_literal_list = (~runtime, ~scope, strings: array(string)) =>
 
 let generate_number_literal_list = (~runtime, ~scope, floats: array(float)) => {
   let config = Re_typescript_config.getConfig();
+  let has_exotic_identifiers = config.print_language == ReScript;
   let makeVariant =
     lazy(
       v =>
@@ -45,7 +48,10 @@ let generate_number_literal_list = (~runtime, ~scope, floats: array(float)) => {
           |> CCArray.map(num =>
                {
                  VariantConstructor.name:
-                   Identifier.VariantIdentifier(Printf.sprintf("%.0f", num)),
+                   Identifier.VariantIdentifier(
+                     Printf.sprintf("%.0f", num),
+                     has_exotic_identifiers,
+                   ),
                  arguments: [||],
                }
              ),
