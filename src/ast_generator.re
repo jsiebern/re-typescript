@@ -33,7 +33,7 @@ let rec generate =
        ((scope, struct_carry), node) => {
          let (scope, generated_struct) =
            generate__Node__Module(~scope, node);
-         (scope, struct_carry @ [generated_struct]);
+         (scope, struct_carry @ generated_struct);
        },
        (scope, []),
      );
@@ -59,7 +59,12 @@ and generate__Node__Module =
          (scope, []),
        );
 
-  (scope, Util.make_module(module_name, generated_structure));
+  (
+    scope,
+    CCString.trim(module_name) == ""
+      ? generated_structure
+      : [Util.make_module(module_name, generated_structure)],
+  );
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
@@ -157,8 +162,8 @@ and generate__Node__TypeDeclaration =
     let (scope, item) = generate__Node__ModuleUnboxed(~scope, module_node);
     (scope, [item]);
   | Module(_) as module_node =>
-    let (scope, item) = generate__Node__Module(~scope, module_node);
-    (scope, [item]);
+    let (scope, items) = generate__Node__Module(~scope, module_node);
+    (scope, items);
   | Fixture(_) as fixtureNode => generate__Fixture(~scope, fixtureNode)
   | TypeDeclaration(node) =>
     let type_name =

@@ -25,9 +25,6 @@ let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
   let runtime = {
     root_modules: [||],
     node_count: 0,
-    parse_config: {
-      exports_only: false,
-    },
     fully_qualified_added: [],
     warnings: true,
   };
@@ -300,10 +297,11 @@ and parse__Node__Generic__WrapSubNode =
 and parse__Node__SourceFile =
     (~runtime, ~scope, node: Ts_nodes.SourceFile.t)
     : (runtime, scope, Node.node(Node.Constraint.atLeastModule('poly))) => {
+  let config = Re_typescript_config.getConfig();
   let source_file_name = node#getBaseNameWithoutExtension();
   let scope = {...scope, source_file: Some(node)};
   let children_to_traverse: array(Ts_nodes.Generic.t) =
-    runtime.parse_config.exports_only
+    config.types == ExportsOnly
       ? node#getExportedDeclarations() : node#getStatements();
 
   let (runtime: runtime, scope: scope) =
@@ -325,7 +323,7 @@ and parse__Node__SourceFile =
     runtime,
     scope,
     Module({
-      name: source_file_name,
+      name: config.top_level_module ? source_file_name : "",
       path: node#getFilePath(),
       types: CCArray.append(prependFixtures, scope.root_declarations),
     }),
@@ -482,8 +480,9 @@ and parse__Node__Declaration:
 // ------------------------------------------------------------------------------------------
 and parse__Node__NamespaceDeclaration =
     (~runtime, ~scope, node: Ts_nodes.NamespaceDeclaration.t) => {
+  let config = Re_typescript_config.getConfig();
   let children_to_traverse: array(Ts_nodes.Generic.t) =
-    runtime.parse_config.exports_only
+    config.types == ExportsOnly
       ? node#getExportedDeclarations() : node#getStatements();
 
   let scope = scope |> Scope.add_to_path(Identifier.Module(node#getName()));

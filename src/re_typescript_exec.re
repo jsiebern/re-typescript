@@ -3,13 +3,11 @@ let test = (
   {|
 
 // can be generated inline
-interface obj {
-  field: 'red' | 'blue',
-}
-type in_arr = Array<obj['field']>;
+// interface obj {
+//   field: 'red' | 'blue',
+// }
+// type in_arr = Array<obj['field']>;
 
-// generates simple int union
-// type variant = 2 | 4 | 8 | 16;
 
 // can use recursion in unions in combination with type params
 type x<B> = string | B;

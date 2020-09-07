@@ -6,11 +6,9 @@ module Exceptions = {
 };
 
 type iPath = Identifier.path;
-type parse_config = {exports_only: bool};
 type runtime = {
   root_modules: array(Node.node(Node.Constraint.exactlyModule)),
   node_count: int,
-  parse_config,
   fully_qualified_added: list(string),
   warnings: bool,
 };

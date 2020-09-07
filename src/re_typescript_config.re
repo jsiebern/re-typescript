@@ -21,12 +21,19 @@ module Numbers = {
     | Unboxed({conversion_helpers: bool});
   type t = {mode};
 };
+module Types = {
+  type t =
+    | All
+    | ExportsOnly
+    | Custom(string);
+};
 type t = {
   print_language,
   top_level_module: bool,
   bindings: bool,
   unions: Unions.t,
   numbers: Numbers.t,
+  types: Types.t,
 };
 
 let default_config: t = {
@@ -37,6 +44,7 @@ let default_config: t = {
     number_literal: Unboxed,
     string_literal: PolymorphicVariant,
   },
+  types: All,
   numbers: {
     mode: Int,
   },
