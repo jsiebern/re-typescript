@@ -1345,8 +1345,21 @@ and parse__Node__IndexedAccessType =
              ),
         );
       | Some(t) =>
-        let res = Parser_resolvers.try_to_resolve_type(~runtime, ~scope, t);
-        maybe_resolve_from_record(res);
+        let maybe_path =
+          scope.path
+          |> Path.make_current_scope
+          |> Path.add(
+               Identifier.TypeName(obj_reference#getTypeName()#getText()),
+             );
+        let maybe = scope.root_declarations |> find_td(maybe_path);
+        switch (maybe) {
+        | Some((_, {annot: Record(_) as r, _})) =>
+          maybe_resolve_from_record(Some((runtime, scope, r)))
+        | Some(_)
+        | None =>
+          let res = Parser_resolvers.try_to_resolve_type(~runtime, ~scope, t);
+          maybe_resolve_from_record(res);
+        };
       | None =>
         raise(
           Exceptions.FeatureMissing(

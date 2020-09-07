@@ -1,18 +1,20 @@
 type extractions › can access a string literal of fields
-type c = {
-  a: string,
-  b: float,
+module Test = {
+  type c = {
+    a: string,
+    b: float,
+  };
+  module D: {
+    type t;
+    let string: string => t;
+    let number: float => t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let string = (v: string) => Any(v);
+    let number = (v: float) => Any(v);
+  };
+  type d = D.t;
 };
-module D: {
-  type t;
-  let string: string => t;
-  let number: float => t;
-} = {
-  [@unboxed]
-  type t =
-    | Any('a): t;
-  let string = (v: string) => Any(v);
-  let number = (v: float) => Any(v);
-};
-type d = D.t;
 
