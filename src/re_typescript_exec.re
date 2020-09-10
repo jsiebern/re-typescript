@@ -3,10 +3,10 @@ let test = (
   {|
 
 // can be generated inline
-// interface obj {
-//   field: 'red' | 'blue',
-// }
-// type in_arr = Array<obj['field']>;
+interface obj {
+  field: 'red' | 'blue',
+}
+type in_arr = Array<obj['field']>;
 
 // type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
 

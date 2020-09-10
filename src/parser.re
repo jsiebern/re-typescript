@@ -1303,6 +1303,17 @@ and parse__Node__IndexedAccessType =
                }
              )
         ) {
+        | Some((_, Parameter({type_: Reference({target, _}) as type_, _}))) =>
+          // Special case: If this is a reference, then the scope needs to get an additional reference count from the originating path
+          // Maybe breaking at this point, idea for future:
+          // Add scope field to reference so that refs can be re-built from anywhere that obj is used
+          let scope =
+            scope
+            |> Scope.add_ref(
+                 Path.make_current_scope(scope.path) |> Path.append(target),
+                 scope.path,
+               );
+          (runtime, scope, type_ |> Node.Escape.toAny);
         | Some((_, Parameter({type_, _}))) => (
             runtime,
             scope,

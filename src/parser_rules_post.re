@@ -421,68 +421,6 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
   (runtime, scope, root_module |> Node.Escape.toModuleOnly);
 };
 
-let rule_move_only_once_referenced_types_into_arrays_and_optionals =
-    (
-      ~runtime,
-      ~scope: scope,
-      root_module: Node.node(Node.Constraint.exactlyModule),
-    ) => {
-  let rec walk:
-    type t.
-      (~current_type_list: array(Node.node('a))=?, Node.node(t)) => unit =
-    (~current_type_list=[||], node) => {
-      switch (node) {
-      | Node.Module({types, _}) =>
-        types |> CCArray.iter(t => walk(~current_type_list=types, t))
-      | TypeDeclaration({
-          annot: Array(Reference({target, _})) as annot,
-          path,
-          _,
-        })
-      | TypeDeclaration({
-          annot:
-            Reference({
-              target: [|TypeName("Array")|],
-              params: [(_, Node.Reference({target, _}))],
-            }) as annot,
-          path,
-          _,
-        })
-      | TypeDeclaration({
-          annot: Optional(Reference({target, _})) as annot,
-          path,
-          _,
-        })
-      | TypeDeclaration({
-          annot: Nullable(Reference({target, _})) as annot,
-          path,
-          _,
-        }) =>
-        let mapper =
-          switch (annot) {
-          | Reference({target: [|TypeName("Array")|], _})
-          | Array(_) => (a => Node.Array(a))
-          | Optional(_) => (a => Node.Optional(a))
-          | Nullable(_) => (a => Node.Nullable(a))
-          | _ => raise(Failure("This is actually impossible"))
-          };
-
-        Helpers.maybe_replace_type_declaration(
-          ~scope,
-          ~current_type_list,
-          ~source_path=path,
-          ~mapper,
-          target,
-        );
-      | _ => ()
-      };
-    };
-
-  walk(root_module);
-
-  (runtime, scope, root_module);
-};
-
 let rule_transform_single_literals_into_union_types =
     (
       ~runtime,
@@ -552,12 +490,6 @@ let run = (~runtime, ~scope, node: Node.node(Node.Constraint.exactlyModule)) => 
     rule_keep_referenced_empty_records_as_any(~runtime, ~scope, node);
   let (runtime, scope, node) =
     rule_move_only_once_referenced_types_into_their_respective_type_declaration(
-      ~runtime,
-      ~scope,
-      node,
-    );
-  let (runtime, scope, node) =
-    rule_move_only_once_referenced_types_into_arrays_and_optionals(
       ~runtime,
       ~scope,
       node,

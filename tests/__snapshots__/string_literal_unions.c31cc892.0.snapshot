@@ -1,18 +1,7 @@
 string literal unions › can be generated inline
-module Obj_field: {
-  type t = pri string;
-  [@bs.inline \"red\"]
-  let red: t;
-  [@bs.inline \"blue\"]
-  let blue: t;
-} = {
-  type t = string;
-  [@bs.inline]
-  let red = \"red\";
-  [@bs.inline]
-  let blue = \"blue\";
+module Test = {
+  type obj_field = [ | `red | `blue];
+  type obj = {field: obj_field};
+  type in_arr = array(obj_field);
 };
-type obj_field = Obj_field.t;
-type obj = {field: obj_field}
-and in_arr = array(obj_field);
 

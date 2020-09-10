@@ -200,6 +200,7 @@ module Path = {
     CCArray.get_safe(p, CCArray.length(p) - 1);
   };
   let add = (i, p: t) => CCArray.append(p, [|i|]);
+  let append = (i, p: t) => CCArray.append(p, i);
   let hd_unsafe = (p: t) => CCArray.get(p, CCArray.length(p) - 1);
   let is_sub = i =>
     switch (i) {
