@@ -329,8 +329,8 @@ module Unboxed = {
       (
         [%stri
           [@unboxed]
-          type t('B) =
-            | Any('a): t('B)
+          type t =
+            | Any('a): t
         ],
         [%sigi: type t],
       );
