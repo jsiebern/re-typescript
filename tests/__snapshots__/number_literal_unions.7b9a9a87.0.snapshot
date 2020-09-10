@@ -1,12 +1,14 @@
 number literal unions › generates int union from single value
-module Variant: {
-  type t = pri int;
-  [@bs.inline 32]
-  let _32: t;
-} = {
-  type t = int;
-  [@bs.inline]
-  let _32 = 32;
+module Test = {
+  module Variant: {
+    type t;
+    let _32: t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let _32 = Any(32);
+  };
+  type variant = Variant.t;
 };
-type variant = Variant.t;
 

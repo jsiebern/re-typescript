@@ -427,10 +427,95 @@ let rule_transform_single_literals_into_union_types =
       ~scope: scope,
       root_module: Node.node(Node.Constraint.exactlyModule),
     ) => {
-  let rec walk:
+  let config = Re_typescript_config.getConfig();
+  // TODO: Sub modules should be iterated on in walk_list as well
+  let walk_list:
+    type t. (Node.node(t), array(Node.node('a))) => array(Node.node('a)) =
+    (node, current_type_list) => {
+      switch (node) {
+      | TypeDeclaration({annot: Literal(_) as l, path, _} as td) =>
+        let union_type = Parser_union.determine_union_type([|l|]);
+        let replace_annot =
+          switch (union_type) {
+          | Some(StringLiteral(literals)) =>
+            let (_, scope, t) =
+              Parser_generators.generate_string_literal_list(
+                ~runtime,
+                ~scope,
+                literals,
+              );
+            (
+              t,
+              switch (config.unions.string_literal) {
+              | Unboxed =>
+                Some(
+                  CCArray.get(
+                    scope.root_declarations,
+                    CCArray.length(scope.root_declarations) - 1,
+                  ),
+                )
+              | Variant
+              | PolymorphicVariant => None
+              },
+            );
+          | Some(NumericLiteral(literals)) =>
+            let (_, scope, t) =
+              Parser_generators.generate_number_literal_list(
+                ~runtime,
+                ~scope,
+                literals,
+              );
+            (
+              t,
+              switch (config.unions.number_literal) {
+              | Unboxed =>
+                Some(
+                  CCArray.get(
+                    scope.root_declarations,
+                    CCArray.length(scope.root_declarations) - 1,
+                  ),
+                )
+              | Variant
+              | PolymorphicVariant => None
+              },
+            );
+          | Some(_)
+          | None => (l, None)
+          };
+        switch (current_type_list |> find_td(path)) {
+        | None => current_type_list
+        | Some((i, _)) =>
+          let (replace_annot, before) = replace_annot;
+          CCArray.set(
+            current_type_list,
+            i,
+            TypeDeclaration({...td, annot: replace_annot}),
+          );
+          switch (before) {
+          | None => current_type_list
+          | Some(before) when i == 0 =>
+            CCArray.append([|before|], current_type_list)
+          | Some(before) =>
+            CCArray.concat([
+              CCArray.sub(current_type_list, 0, i - 1),
+              [|before|],
+              CCArray.sub(
+                current_type_list,
+                i,
+                CCArray.length(current_type_list) - i - 1,
+              ),
+            ])
+          };
+        };
+      | _ => current_type_list
+      };
+    };
+
+  let walk:
     type t.
-      (~current_type_list: array(Node.node('a))=?, Node.node(t)) => unit =
-    (~current_type_list=[||], node) =>
+      (~current_type_list: ref(array(Node.node('a)))=?, Node.node(t)) =>
+      Node.node(t) =
+    (~current_type_list=ref([||]), node) =>
       switch (node) {
       | Node.Module({types, _})
           // We want to skip the entire module if it is a union type already
@@ -441,46 +526,21 @@ let rule_transform_single_literals_into_union_types =
                  | Node.Fixture(TUnboxed(_)) => true
                  | _ => false
                  }
-               ) =>
-        ()
-      | Node.Module({types, _}) =>
-        types |> CCArray.iter(t => walk(~current_type_list=types, t))
-      | TypeDeclaration({annot: Literal(_) as l, path, _} as td) =>
-        let union_type = Parser_union.determine_union_type([|l|]);
-        let replace_annot =
-          switch (union_type) {
-          | Some(StringLiteral(literals)) =>
-            let (_, _, t) =
-              Parser_generators.generate_string_literal_list(
-                ~runtime,
-                ~scope,
-                literals,
-              );
-            t;
-          | Some(NumericLiteral(literals)) =>
-            let (_, _, t) =
-              Parser_generators.generate_number_literal_list(
-                ~runtime,
-                ~scope,
-                literals,
-              );
-            t;
-          | Some(_)
-          | None => l
-          };
-        switch (current_type_list |> find_td(path)) {
-        | None => ()
-        | Some((i, _)) =>
-          CCArray.set(
-            current_type_list,
-            i,
-            TypeDeclaration({...td, annot: replace_annot}),
-          )
-        };
-      | _ => ()
+               ) => node
+      | Node.Module({types, _} as m) =>
+        Node.Module({
+          ...m,
+          types:
+            types
+            |> CCArray.fold_left(
+                 (types, node) => walk_list(node, types),
+                 types,
+               ),
+        })
+      | _ => node
       };
 
-  walk(root_module);
+  let root_module = walk(root_module);
 
   (runtime, scope, root_module);
 };
