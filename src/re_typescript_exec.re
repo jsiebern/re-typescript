@@ -8,12 +8,13 @@ let test = (
 // }
 // type in_arr = Array<obj['field']>;
 
-type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
+// type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
 
+// export declare type Subset<T, U> = {
+//   [key in keyof T]: key extends keyof U ? T[key] : never;
+// };
 
-// can use recursion in unions in combination with type params
-// type x<B = number> = string | B;
-// type y = x<boolean>
+// type xyz = Subset<animation, 'push' | 'scale down'>
 
 |},
 );

@@ -323,43 +323,71 @@ let make_record_kind =
   );
 
 module Unboxed = {
-  let t = params =>
-    Ast_helper.Typ.constr(
-      Location.mknoloc(Longident.Lident("t")),
-      params |> CCList.map(param => Typ.var(param)),
-    );
-  let make_unboxed_helper = (~params=[], ()) => {
-    (
-      // let t =
-      //   Ast_helper.Str.type_(
-      //     Recursive,
-      //     [
-      //       Ast_helper.Type.mk(
-      //         ~params=
-      //           params
-      //           |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
-      //         Location.mknoloc("t"),
-      //       ),
-      //     ],
-      //   );
-      [%stri
-        [@unboxed]
-        type t =
-          | Any('a): t
-      ],
-      [%sigi: type t],
-    );
-  };
+  let make_unboxed_helper =
+      (~params=[], ()): (structure_item, signature_item) =>
+    if (CCList.is_empty(params)) {
+      (
+        [%stri
+          [@unboxed]
+          type t('B) =
+            | Any('a): t('B)
+        ],
+        [%sigi: type t],
+      );
+    } else {
+      let t_with_params =
+        make_type_constraint(~inner=params |> CCList.map(Typ.var), "t");
+      (
+        Str.type_(
+          Recursive,
+          [
+            Type.mk(
+              ~attrs=[(Location.mknoloc("unboxed"), PStr([]))],
+              ~params=
+                params
+                |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
+              ~kind=
+                Ptype_variant([
+                  Type.constructor(
+                    ~args=Pcstr_tuple([Typ.var("any")]),
+                    ~res=t_with_params,
+                    Location.mknoloc("Any"),
+                  ),
+                ]),
+              Location.mknoloc("t"),
+            ),
+          ],
+        ),
+        Sig.type_(
+          Recursive,
+          [
+            Type.mk(
+              ~params=
+                params
+                |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
+              Location.mknoloc("t"),
+            ),
+          ],
+        ),
+      );
+    };
   let unboxed_literal = (name, value: expression) => (
     [%stri let [%p Pat.var(Location.mknoloc(name))] = Any([%e value])],
     Sig.value(Val.mk(Location.mknoloc(name), [%type: t])),
   );
-  let unboxed_func = (~params=[], name, ty: core_type) => (
-    [%stri
-      let [%p Pat.var(Location.mknoloc(name))] = (v: [%t ty]) => Any(v)
-    ],
-    Sig.value(
-      Val.mk(Location.mknoloc(name), [%type: [%t ty] => [%t t(params)]]),
-    ),
-  );
+  let unboxed_func = (~params=[], name, ty: core_type) => {
+    let t_with_params =
+      make_type_constraint(~inner=params |> CCList.map(Typ.var), "t");
+    (
+      [%stri
+        let [%p Pat.var(Location.mknoloc(name))] = (v: [%t ty]) => Any(v)
+      ],
+      Sig.value(
+        Val.mk(
+          Location.mknoloc(name),
+          [%type: [%t ty] => [%t t_with_params]],
+        ),
+      ),
+    );
+  };
 };

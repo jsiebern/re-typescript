@@ -50,112 +50,108 @@ let rec make_union_typename:
       }
     | Nullable(t)
     | Optional(t) => make_union_typename(~runtime, ~scope, t)
+    | GenericReference(TypeParameter(t)) =>
+      let config = Re_typescript_config.getConfig();
+      switch (config.print_language) {
+      | ReasonML => Ast_generator_utils.Naming.to_valid_ident(t)
+      | ReScript => t
+      };
     | _ => "other"
     };
 
 let checks = [|
   // --- Undefined
-  lazy(
-    nodes =>
-      nodes
-      |> CCArray.find_idx(node =>
-           switch (node) {
-           | Node.Basic(Undefined) => true
-           | _ => false
-           }
-         )
-      |> CCOpt.map(((idx, _)) =>
-           Optional(CCArray.except_idx(nodes, idx) |> CCArray.of_list)
-         )
-  ),
+  nodes =>
+    nodes
+    |> CCArray.find_idx(node =>
+         switch (node) {
+         | Node.Basic(Undefined) => true
+         | _ => false
+         }
+       )
+    |> CCOpt.map(((idx, _)) =>
+         Optional(CCArray.except_idx(nodes, idx) |> CCArray.of_list)
+       ),
   // --- Nullable
-  lazy(
-    nodes =>
-      nodes
-      |> CCArray.find_idx(node =>
-           switch (node) {
-           | Node.Basic(Null) => true
-           | _ => false
-           }
-         )
-      |> CCOpt.map(((idx, _)) =>
-           Nullable(CCArray.except_idx(nodes, idx) |> CCArray.of_list)
-         )
-  ),
+  nodes =>
+    nodes
+    |> CCArray.find_idx(node =>
+         switch (node) {
+         | Node.Basic(Null) => true
+         | _ => false
+         }
+       )
+    |> CCOpt.map(((idx, _)) =>
+         Nullable(CCArray.except_idx(nodes, idx) |> CCArray.of_list)
+       ),
   // --- StringLiteral
-  lazy(
-    nodes =>
-      nodes
-      |> CCArray.for_all(node =>
-           switch (node) {
-           | Node.Literal(String(_)) => true
-           | _ => false
-           }
-         )
-        ? Some(
-            StringLiteral(
-              nodes
-              |> CCArray.map(node =>
-                   switch (node) {
-                   | Node.Literal(String(str)) => str
-                   | other => raise(Invalid_argument(Pp.ast_node(other)))
-                   }
-                 ),
-            ),
-          )
-        : None
-  ),
+  nodes =>
+    nodes
+    |> CCArray.for_all(node =>
+         switch (node) {
+         | Node.Literal(String(_)) => true
+         | _ => false
+         }
+       )
+      ? Some(
+          StringLiteral(
+            nodes
+            |> CCArray.map(node =>
+                 switch (node) {
+                 | Node.Literal(String(str)) => str
+                 | other => raise(Invalid_argument(Pp.ast_node(other)))
+                 }
+               ),
+          ),
+        )
+      : None,
   // --- Numeric Literal
-  lazy(
-    nodes =>
-      nodes
-      |> CCArray.for_all(node =>
-           switch (node) {
-           | Node.Literal(Number(_)) => true
-           | _ => false
-           }
-         )
-        ? Some(
-            NumericLiteral(
-              nodes
-              |> CCArray.map(node =>
-                   switch (node) {
-                   | Node.Literal(Number(num)) => num
-                   | other => raise(Invalid_argument(Pp.ast_node(other)))
-                   }
-                 ),
-            ),
-          )
-        : None
-  ),
+  nodes =>
+    nodes
+    |> CCArray.for_all(node =>
+         switch (node) {
+         | Node.Literal(Number(_)) => true
+         | _ => false
+         }
+       )
+      ? Some(
+          NumericLiteral(
+            nodes
+            |> CCArray.map(node =>
+                 switch (node) {
+                 | Node.Literal(Number(num)) => num
+                 | other => raise(Invalid_argument(Pp.ast_node(other)))
+                 }
+               ),
+          ),
+        )
+      : None,
   // --- Mixed Literal
-  lazy(
-    nodes =>
-      nodes
-      |> CCArray.for_all(node =>
-           switch (node) {
-           | Node.Literal(Number(_)) => true
-           | Node.Literal(String(_)) => true
-           | Node.Literal(Boolean(_)) => true
-           | _ => false
-           }
-         )
-        ? Some(
-            MixedLiteral(
-              nodes
-              |> CCArray.map(node =>
-                   switch (node) {
-                   | Node.Literal(_) as n => n
-                   | other => raise(Invalid_argument(Pp.ast_node(other)))
-                   }
-                 ),
-            ),
-          )
-        : None
-  ),
+  nodes =>
+    nodes
+    |> CCArray.for_all(node =>
+         switch (node) {
+         | Node.Literal(Number(_)) => true
+         | Node.Literal(String(_)) => true
+         | Node.Literal(Boolean(_)) => true
+         | _ => false
+         }
+       )
+      ? Some(
+          MixedLiteral(
+            nodes
+            |> CCArray.map(node =>
+                 switch (node) {
+                 | Node.Literal(_) as n => n
+                 | other => raise(Invalid_argument(Pp.ast_node(other)))
+                 }
+               ),
+          ),
+        )
+      : None,
   // --- Todo: Discrimimeting
   // --- Union
-  lazy(nodes => Some(Union(nodes))),
+  nodes => Some(Union(nodes)),
 |];
 
 let determine_union_type =
@@ -171,9 +167,9 @@ let determine_union_type =
   | nodes =>
     checks
     |> CCArray.fold_left(
-         (prev, lazy_func) => {
+         (prev, fn) => {
            switch (prev) {
-           | None => Lazy.force(lazy_func, nodes)
+           | None => fn(nodes)
            | Some(_) => prev
            }
          },

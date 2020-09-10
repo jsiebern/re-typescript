@@ -1077,6 +1077,11 @@ and parse__Node__UnionType__Nodes:
 and parse__Node__UnionType = (~runtime, ~scope, node: Ts_nodes.UnionType.t) => {
   let type_nodes = node#getTypeNodes();
   let base_path = scope.path;
+  let (scope, restore) = scope |> Scope.retain_path(base_path);
+  let (scope, restoreParams) = Context.retain_default_params(scope);
+  // Note on unions:
+  // As unions are usually extracted into their own modules for generation (unboxed for example)
+  // we cannot apply any default args (that would generate the wrong types in the module)
   let (runtime, scope, parsed_nodes) =
     type_nodes
     |> CCArray.foldi(
@@ -1091,7 +1096,8 @@ and parse__Node__UnionType = (~runtime, ~scope, node: Ts_nodes.UnionType.t) => {
          },
          (runtime, scope, [||]),
        );
-  let scope = scope |> Scope.replace_path_arr(base_path);
+  let scope = restore(scope);
+  let scope = restoreParams(scope);
 
   let (runtime, scope, t) =
     parse__Node__UnionType__Nodes(~runtime, ~scope, parsed_nodes);

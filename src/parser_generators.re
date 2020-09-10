@@ -35,7 +35,7 @@ let generate_string_literal_list = (~runtime, ~scope, strings: array(string)) =>
           |> CCArray.map(str => {
                let name =
                  switch (config.print_language) {
-                 | ReasonMl => str |> Ast_generator_utils.Naming.to_valid_ident
+                 | ReasonML => str |> Ast_generator_utils.Naming.to_valid_ident
                  | ReScript => str
                  };
                let type_name = Identifier.TypeName(name);
@@ -112,7 +112,7 @@ let generate_number_literal_list = (~runtime, ~scope, floats: array(float)) => {
                let name = Printf.sprintf("%.0f", num);
                let name =
                  switch (config.print_language) {
-                 | ReasonMl =>
+                 | ReasonML =>
                    name |> Ast_generator_utils.Naming.to_valid_ident
                  | ReScript => name
                  };
@@ -176,7 +176,7 @@ let generate_mixed_literal_list =
            };
          let name =
            switch (config.print_language) {
-           | ReasonMl => name |> Ast_generator_utils.Naming.to_valid_ident
+           | ReasonML => name |> Ast_generator_utils.Naming.to_valid_ident
            | ReScript => name
            };
          let type_name = Identifier.TypeName(name);

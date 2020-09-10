@@ -75,6 +75,12 @@ and generate__Node__ModuleUnboxed =
     (~scope, Module(node): Node.node(Node.Constraint.exactlyModule)) => {
   let module_name = Util.Naming.moduleName(node.name);
   let scope = {parent: Some(Module(node)), path: [|Module(module_name)|]};
+  let params =
+    switch (CCArray.get_safe(node.types, 0)) {
+    | Some(Ast.Node.Fixture(TUnboxed(params))) => CCList.map(fst, params)
+    | Some(_)
+    | None => []
+    };
 
   let (scope, generated_stri, generated_sigi) =
     node.types
@@ -82,8 +88,7 @@ and generate__Node__ModuleUnboxed =
          ((scope, arr_stri, arr_sigi), node) => {
            let res =
              switch (node) {
-             | Ast.Node.Fixture(TUnboxed(params)) =>
-               let params = params |> CCList.map(fst);
+             | Ast.Node.Fixture(TUnboxed(_)) =>
                let (stri, sigi) =
                  Util.Unboxed.make_unboxed_helper(~params, ());
                Some((scope, stri, sigi));
@@ -115,7 +120,8 @@ and generate__Node__ModuleUnboxed =
                switch (t) {
                | None => None
                | Some(t) =>
-                 let (stri, sigi) = Util.Unboxed.unboxed_func(name, t);
+                 let (stri, sigi) =
+                   Util.Unboxed.unboxed_func(~params, name, t);
 
                  Some((scope, stri, sigi));
                };
@@ -476,6 +482,16 @@ and generate__Fixture =
     (~scope, Fixture(fixture): Node.node(Node.Constraint.exactlyFixture)) => {
   switch (fixture) {
   | AnyUnboxed => (scope, Util.make_any_helper_unboxed())
-  | TUnboxed(_) => (scope, [fst(Util.Unboxed.make_unboxed_helper())])
+  | TUnboxed(params) => (
+      scope,
+      [
+        fst(
+          Util.Unboxed.make_unboxed_helper(
+            ~params=CCList.map(fst, params),
+            (),
+          ),
+        ),
+      ],
+    )
   };
 };

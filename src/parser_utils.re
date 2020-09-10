@@ -67,6 +67,19 @@ module Context = {
     |> CCList.map(((name, _)) =>
          (name, Node.GenericReference(Identifier.TypeParameter(name)))
        );
+  let retain_default_params = (scope: scope) => {
+    let context_params = scope.context_params;
+    let context_args = scope.context_args;
+    (
+      {
+        ...scope,
+        context_params:
+          scope.context_params |> CCList.map(((name, _)) => (name, None)),
+        context_args: [],
+      },
+      newScope => {...newScope, context_params, context_args},
+    );
+  };
   let get_all_args = (scope: scope) =>
     args_match_params(scope)
       ? scope.context_args

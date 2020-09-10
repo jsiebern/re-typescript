@@ -1,5 +1,5 @@
 type print_language =
-  | ReasonMl
+  | ReasonML
   | ReScript;
 
 module Unions = {
@@ -37,7 +37,7 @@ type t = {
 };
 
 let default_config: t = {
-  print_language: ReasonMl,
+  print_language: ReasonML,
   top_level_module: true,
   bindings: false,
   unions: {
