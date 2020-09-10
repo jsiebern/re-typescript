@@ -46,7 +46,15 @@ let rec make_union_typename:
       | Some((_, {annot: Basic(_) as annot, _})) =>
         make_union_typename(~runtime, ~scope, annot)
       | Some(_)
-      | None => Path.make_sub_type_name(target)
+      | None =>
+        let config = Re_typescript_config.getConfig();
+        switch (config.print_language) {
+        | ReasonML =>
+          Ast_generator_utils.Naming.to_valid_ident(
+            Path.make_sub_type_name(target),
+          )
+        | ReScript => Path.make_sub_type_name(target)
+        };
       }
     | Nullable(t)
     | Optional(t) => make_union_typename(~runtime, ~scope, t)
