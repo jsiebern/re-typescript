@@ -3,18 +3,18 @@ let test = (
   {|
 
 // unresolvable type params get passed on as far down as possible
-// export interface Map<A,B> {
-//   a: A;
-//   b: B;
-// }
-// export interface RecoilRootProps<C> {
-//   initializeState?: (options: {
-//     set: <T>(recoilVal: T, newVal: T) => void;
-//     setUnvalidatedAtomValues: (atomMap: Map<string, C>) => void;
-//   }) => void;
-// }
+export interface Map<A,B> {
+  a: A;
+  b: B;
+}
+export interface RecoilRootProps<C> {
+  initializeState?: (options: {
+    set: <T>(recoilVal: T, newVal: T) => void;
+    setUnvalidatedAtomValues: (atomMap: Map<string, C>) => void;
+  }) => void;
+}
 
-// type use_it = RecoilRootProps<string>;
+type use_it = RecoilRootProps<string>;
 
 
 

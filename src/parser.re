@@ -1961,6 +1961,19 @@ and parse__Node__TypeAliasDeclaration:
     let (runtime, scope, annotation) =
       parse__Node__Generic_assignable(~runtime, ~scope, node#getTypeNode());
 
+    // TODO: While it is important to collect params here (because signatures can have their own), this next step is not exactly performant. Should replace eventually (maybe have signatures report their required params to the scope and read it here)
+    let detect_params = finalize_generic_reference(annotation);
+
+    let params =
+      CCArray.length(detect_params) == CCArray.length(params)
+        ? params
+        : {
+          let detect_params =
+            detect_params |> CCArray.filter(p => !CCArray.mem(p, params));
+
+          CCArray.append(params, detect_params);
+        };
+
     (
       runtime,
       scope,
@@ -2119,13 +2132,40 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
       |> Path.add(Identifier.TypeName(type_name#getText()));
     let scope = scope |> Scope.add_ref(ref_path, scope.path);
 
+    let target = [|Identifier.TypeName(type_name#getText())|];
+    // Target COULD have some more parameters
+    // So we need to try resolve the target and fill it up with GenericReferences in order for the declaration function to pick up
+    let arguments =
+      switch (scope.root_declarations |> find_td(ref_path)) {
+      | Some((_, {params, _}))
+          when CCArray.length(params) > CCList.length(arguments) =>
+        let add =
+          params
+          |> CCArray.filter(
+               (
+                 TypeParameter(p):
+                   Identifier.t(Identifier.Constraint.exactlyTypeParameter),
+               ) =>
+               !CCList.exists(((name, _)) => name == p, arguments)
+             )
+          |> CCArray.map(
+               (
+                 TypeParameter(p):
+                   Identifier.t(Identifier.Constraint.exactlyTypeParameter),
+               ) =>
+               (p, Node.GenericReference(TypeParameter(p)))
+             )
+          |> CCArray.to_list;
+        // We don't need to check the scope params here, as a difference should only ever be able to occur from pulling up signature params
+        arguments @ add;
+      | Some(_)
+      | None => arguments
+      };
+
     let default_return = (
       runtime,
       scope,
-      Reference({
-        target: [|Identifier.TypeName(type_name#getText())|],
-        params: arguments,
-      }),
+      Reference({target, params: arguments}),
     );
     switch (
       (
