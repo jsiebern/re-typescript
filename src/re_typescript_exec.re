@@ -2,15 +2,7 @@ let test = (
   "/test.d.ts",
   {|
 
-interface I_a<A, B = boolean> {
-  field_1: A;
-  field_2: B;
-  field_4: string;
-}
-interface I_b extends I_a<string> {
-  field_3: number
-}
-
+type ValueOrArray<T> = T | Array<ValueOrArray<T>>;
 
 // works with array / nullable on the original
 // type x = 3 | 4;

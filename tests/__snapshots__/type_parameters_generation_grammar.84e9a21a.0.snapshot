@@ -7,7 +7,7 @@ module Test = {
   type with_param_2('a1, 'a2, 'a3) = {
     a1: 'a1,
     a2: 'a2,
-    a3: string,
+    a3: 'a3,
   };
   type with_param_3('a1, 'a2, 'a3) = {
     a1: 'a1,

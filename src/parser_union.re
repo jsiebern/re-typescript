@@ -197,6 +197,7 @@ let generate_ast_for_union:
     let name = Path.make_sub_type_name(scope.path);
     let wrapper_module_name = Ast_generator_utils.Naming.moduleName(name);
     let scope = ref(scope);
+    let base_as_target = Path.strip_root_module(scope^.path);
 
     let name_cache = ref([||]);
     let members =
@@ -218,32 +219,54 @@ let generate_ast_for_union:
              |> Path.add(Module(wrapper_module_name))
              |> Path.add(type_name);
            // Add a new reference point here if necessary (background: original references while generating would originate from the primary type path)
-           switch (node) {
-           | Reference({target, _}) =>
-             switch (
-               scope^.root_declarations
-               |> find_td(
-                    CCArray.append(
-                      scope^.path |> Path.make_current_scope,
-                      target,
-                    ),
-                  )
-             ) {
-             | Some((_, {annot: Basic(_), _})) =>
-               // Do not add additional reference if it's a basic type as that get's printed directly and there's no need to keep it around as a declaration
-               ()
-             | Some(_)
-             | None =>
-               scope :=
-                 scope^
-                 |> Scope.add_ref(
-                      Path.make_current_scope(scope^.path)
-                      |> Path.append(target),
-                      path,
+           // Also parse possible recursive types here and map them to type "t"
+           // Again, TODO: Can most certainly be abstracted to somewhere else (maybe some traversal tools module)
+           let node =
+             switch (node) {
+             | Reference({
+                 target: [|TypeName("Array")|],
+                 params: [(_, Reference({target, _} as r))],
+               })
+                 when Path.eq(target, base_as_target) =>
+               Node.Array(Reference({...r, target: [|TypeName("t")|]}))
+             | Array(Reference({target, _} as r))
+                 when Path.eq(target, base_as_target) =>
+               Array(Reference({...r, target: [|TypeName("t")|]}))
+             | Optional(Reference({target, _} as r))
+                 when Path.eq(target, base_as_target) =>
+               Optional(Reference({...r, target: [|TypeName("t")|]}))
+             | Nullable(Reference({target, _} as r))
+                 when Path.eq(target, base_as_target) =>
+               Nullable(Reference({...r, target: [|TypeName("t")|]}))
+             | Reference({target, _} as r)
+                 when Path.eq(target, base_as_target) =>
+               Reference({...r, target: [|TypeName("t")|]})
+             | Reference({target, _}) =>
+               switch (
+                 scope^.root_declarations
+                 |> find_td(
+                      CCArray.append(
+                        scope^.path |> Path.make_current_scope,
+                        target,
+                      ),
                     )
-             }
-           | _ => ()
-           };
+               ) {
+               | Some((_, {annot: Basic(_), _})) =>
+                 // Do not add additional reference if it's a basic type as that get's printed directly and there's no need to keep it around as a declaration
+                 ()
+               | Some(_)
+               | None =>
+                 scope :=
+                   scope^
+                   |> Scope.add_ref(
+                        Path.make_current_scope(scope^.path)
+                        |> Path.append(target),
+                        path,
+                      )
+               };
+               node;
+             | _ => node
+             };
            Node.TypeDeclaration({
              name: type_name,
              path,
@@ -253,11 +276,8 @@ let generate_ast_for_union:
          });
 
     // Try find all recursive references and then pull them into this module
-    // let base_as_target = Path.strip_root_module(scope^.path);
-    // let (runtime, scope, extracted) =
-    //   find_and_extract(~runtime, ~scope=scope^, base_as_target);
-    let extracted = [||];
-    let scope = scope^;
+    let (runtime, scope, extracted) =
+      find_and_extract(~runtime, ~scope=scope^, base_as_target);
 
     let target = [|Identifier.Module(wrapper_module_name), TypeName("t")|];
     let path = Path.make_current_scope(scope.path) |> Path.append(target);

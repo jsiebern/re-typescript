@@ -462,6 +462,12 @@ let rec check_node_for_ref = (~found: ref(bool), ~replace, find_target, node) =>
     found := true;
     Node.Reference({...inner, target: replace});
   // TODO: Add other types to recursion
+  | Array(inner) =>
+    Array(check_node_for_ref(~found, ~replace, find_target, inner))
+  | Nullable(inner) =>
+    Nullable(check_node_for_ref(~found, ~replace, find_target, inner))
+  | Optional(inner) =>
+    Optional(check_node_for_ref(~found, ~replace, find_target, inner))
   | Record(fields) =>
     Record(
       fields
@@ -512,6 +518,7 @@ let find_and_extract = (~runtime, ~scope, find_target) => {
          | _ => member
          }
        );
+
   let decls =
     if (CCArray.length(found^) == 0) {
       decls;

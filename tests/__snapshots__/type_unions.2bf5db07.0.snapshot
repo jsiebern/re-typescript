@@ -7,7 +7,7 @@ module Test = {
   } = {
     [@unboxed]
     type t('B) =
-      | Any('any): t('B);
+      | Any('a): t('B);
     let string = (v: string) => Any(v);
     let b = (v: 'B) => Any(v);
   };

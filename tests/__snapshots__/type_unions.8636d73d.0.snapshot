@@ -1,14 +1,16 @@
 type unions › can use recursion in nested union types when using type params - arrays
-module ValueOrArray: {
-  type t('T);
-  let t: 'T => t('T);
-  let arr_valueOrArray: array(t('T)) => t('T);
-} = {
-  [@unboxed]
-  type t('T) =
-    | Any('a): t('T);
-  let t = (v: 'T) => Any(v);
-  let arr_valueOrArray = (v: array(t('T))) => Any(v);
+module Test = {
+  module ValueOrArray: {
+    type t('T);
+    let t: 'T => t('T);
+    let array: array(t('T)) => t('T);
+  } = {
+    [@unboxed]
+    type t('T) =
+      | Any('a): t('T);
+    let t = (v: 'T) => Any(v);
+    let array = (v: array(t('T))) => Any(v);
+  };
+  type valueOrArray('T) = ValueOrArray.t('T);
 };
-type valueOrArray('T) = ValueOrArray.t('T);
 
