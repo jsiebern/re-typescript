@@ -18,8 +18,16 @@ let test = (
 // type x = 3 | 4;
 // type y = Array<1 | x | 2 | null>;
 
-export function someOtherFunction(): null | { inline: string };
+type PartialX<T> = {
+                [P in keyof T]?: T[P];
+            }
+            interface A {
+              x: string;
+              y: number;
+              z: boolean;
+            }
 
+            type a_partial = PartialX<A>;
 
 
 

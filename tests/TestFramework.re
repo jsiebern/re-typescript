@@ -23,9 +23,4 @@ let print = (~ctx=?, value) => {
   | Error(err) => raise(Failure(err))
   | Ok(code) => code
   };
-  // let source_file = project#createSourceFile(file_path, value);
-  // source_file#saveSync();
-  // let nodes = Lib.parse_files([|source_file|]);
-  // let ast = Lib.get_generated_ast(nodes);
-  // Lib.print_code(ast);
 };

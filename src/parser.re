@@ -21,12 +21,13 @@ module PlannedExceptions = {
 // --- Entry / Preparation
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
-let rec parse__Entry = (~source_files: array(Ts_morph.SourceFile.t)) => {
+let rec parse__Entry =
+        (~warnings=true, ~source_files: array(Ts_morph.SourceFile.t)) => {
   let runtime = {
     root_modules: [||],
     node_count: 0,
     fully_qualified_added: [],
-    warnings: true,
+    warnings,
   };
   let runtime =
     source_files

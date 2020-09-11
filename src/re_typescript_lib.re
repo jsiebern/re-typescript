@@ -78,7 +78,8 @@ let print_code = (~print_language=ReScript, ast) => {
   Format.flush_str_formatter();
 };
 
-let parse_files = files => Parser.parse__Entry(~source_files=files);
+let parse_files = files =>
+  Parser.parse__Entry(~warnings=false, ~source_files=files);
 
 let quick_parse =
     (~config=default_project_config, files: array((string, string))) => {
