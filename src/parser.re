@@ -405,11 +405,13 @@ and create__ContextFromNode =
            let scope =
              switch (arg, default) {
              | (Some(arg), _) => scope |> Context.add_arg(key, arg)
-             | (None, Some(Record(_))) =>
-               // We can filter out records here for them to not be inlined. This is far from ideal. In the end it might make the most sense to completely omit default values in the original type
-               scope
-             | (None, Some(default)) =>
-               scope |> Context.add_arg(key, default)
+             | (None, Some(_)) => scope
+             // TYPE PARAMS: Just omit all defaults from directly being applied. Should be the safest bet
+             //  | (None, Some(Record(_))) =>
+             // We can filter out records here for them to not be inlined. This is far from ideal. In the end it might make the most sense to completely omit default values in the original type
+             //  scope
+             //  | (None, Some(default)) =>
+             //    scope |> Context.add_arg(key, default)
              | (None, None) => scope
              };
 

@@ -1,5 +1,6 @@
 type parameter logic › can use various default structures
 module Test = {
-  type call_params('a) = (string, float);
+  type with_param('a) = 'a;
+  type call_params = with_param((string, float));
 };
 
