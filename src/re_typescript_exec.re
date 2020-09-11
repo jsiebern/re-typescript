@@ -3,10 +3,6 @@ let test = (
   {|
 
 
-// can access a string literal of fields
-type c = {a: string, b: number};
-type d = c['a' | 'b']
-
 // resolves nested params
 // interface A<X> {
 //   field_x: X;

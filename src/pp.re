@@ -97,7 +97,11 @@ let rec ast_node: type t. (~level: int=?, Node.node(t)) => string =
           Ast_generator_utils.Naming.unwrap(name),
           ast_node(type_),
         )
-      | Record(_) => "Record"
+      | Record(fields) =>
+        Printf.sprintf(
+          "Record\n%s",
+          fields |> CCArray.to_string(~sep="\n", ast_node(~level=level + 1)),
+        )
       };
     Printf.sprintf("%s%s%s", spacer, level > 0 ? "- " : "", rendered);
   };
