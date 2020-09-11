@@ -1,16 +1,18 @@
 type parameter logic › default parameter can be another union
-type with_param2('a) = 'a;
-module With_param2_a: {
-  type t;
-  let string: string => t;
-  let number: float => t;
-} = {
-  [@unboxed]
-  type t =
-    | Any('a): t;
-  let string = (v: string) => Any(v);
-  let number = (v: float) => Any(v);
+module Test = {
+  type with_param2('a) = 'a;
+  module Call_params2_a: {
+    type t;
+    let string: string => t;
+    let number: float => t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let string = (v: string) => Any(v);
+    let number = (v: float) => Any(v);
+  };
+  type call_params2_a = Call_params2_a.t;
+  type call_params2 = with_param2(call_params2_a);
 };
-type with_param2_a = With_param2_a.t;
-type call_params2 = with_param2(with_param2_a);
 
