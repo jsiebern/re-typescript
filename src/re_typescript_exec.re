@@ -1,16 +1,20 @@
 let test = (
   "/test.d.ts",
   {|
+
+interface I_a<A, B = boolean> {
+  field_1: A;
+  field_2: B;
+  field_4: string;
+}
+interface I_b extends I_a<string> {
+  field_3: number
+}
+
+
 // works with array / nullable on the original
 // type x = 3 | 4;
 // type y = Array<1 | x | 2 | null>;
-
-
-
-
-
-
-
 
 // type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
 

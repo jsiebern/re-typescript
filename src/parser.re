@@ -339,6 +339,7 @@ and parse__Node__SourceFile =
 // ------------------------------------------------------------------------------------------
 and create__ContextFromNode =
     (
+      ~with_defaults=false,
       ~clear=true,
       ~runtime,
       ~type_arguments=[||],
@@ -362,24 +363,28 @@ and create__ContextFromNode =
                  let scope = scope |> Scope.replace_path_arr(base_path);
                  let name = param#getName();
                  // IMPORTANT: Maybe revert this change later, but for now disabling the render of the default params to prevent superfluous type definitions like union modules that only add noise.
-                 //  let (runtime, scope, default) =
-                 //    param#getDefault()
-                 //    |> CCOpt.map(paramNode => {
-                 //         let (runtime, scope, res) =
-                 //           parse__Node__Generic_assignable(
-                 //             ~runtime,
-                 //             ~scope,
-                 //             paramNode,
-                 //           );
-                 //         (runtime, scope, Some(res));
-                 //       })
-                 //    |> CCOpt.value(~default=(runtime, scope, None));
-                 let scope = scope |> Context.add_param(name, None);
+                 let (runtime, scope, default) =
+                   if (with_defaults) {
+                     param#getDefault()
+                     |> CCOpt.map(paramNode => {
+                          let (runtime, scope, res) =
+                            parse__Node__Generic_assignable(
+                              ~runtime,
+                              ~scope,
+                              paramNode,
+                            );
+                          (runtime, scope, Some(res));
+                        })
+                     |> CCOpt.value(~default=(runtime, scope, None));
+                   } else {
+                     (runtime, scope, None);
+                   };
+                 let scope = scope |> Context.add_param(name, default);
 
                  (
                    runtime,
                    scope,
-                   CCArray.append(params, [|(name, None)|]),
+                   CCArray.append(params, [|(name, default)|]),
                  );
                },
                (runtime, scope, [||]),
@@ -407,13 +412,12 @@ and create__ContextFromNode =
            let scope =
              switch (arg, default) {
              | (Some(arg), _) => scope |> Context.add_arg(key, arg)
+             | (None, Some(Record(_))) when with_defaults =>
+               // We can filter out records here for them to not be inlined. This is far from ideal. In the end it might make the most sense to completely omit default values in the original type
+               scope
+             | (None, Some(default)) when with_defaults =>
+               scope |> Context.add_arg(key, default)
              | (None, Some(_)) => scope
-             // TYPE PARAMS: Just omit all defaults from directly being applied. Should be the safest bet
-             //  | (None, Some(Record(_))) =>
-             // We can filter out records here for them to not be inlined. This is far from ideal. In the end it might make the most sense to completely omit default values in the original type
-             //  scope
-             //  | (None, Some(default)) =>
-             //    scope |> Context.add_arg(key, default)
              | (None, None) => scope
              };
 
@@ -1473,6 +1477,7 @@ and parse__Node__InterfaceDeclaration__CollectExtension:
            let scope = scope |> Scope.replace_path_arr(base_path);
            let (runtime, scope) =
              create__ContextFromNode(
+               ~with_defaults=true,
                ~runtime,
                ~type_arguments=args,
                ~node=declaration,
