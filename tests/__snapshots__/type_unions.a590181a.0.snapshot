@@ -1,16 +1,18 @@
 type unions › can use recursion in nested union types 2
-module Rec_y: {
-  type t
-  and rec_y_1 = {inline_obj: t};
-  let string: string => t;
-  let rec_y_1: rec_y_1 => t;
-} = {
-  [@unboxed]
-  type t =
-    | Any('a): t
-  and rec_y_1 = {inline_obj: t};
-  let string = (v: string) => Any(v);
-  let rec_y_1 = (v: rec_y_1) => Any(v);
+module Test = {
+  module Rec_y: {
+    type t
+    and rec_y_2nd = {inline_obj: t};
+    let string: string => t;
+    let rec_y_2nd: rec_y_2nd => t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t
+    and rec_y_2nd = {inline_obj: t};
+    let string = (v: string) => Any(v);
+    let rec_y_2nd = (v: rec_y_2nd) => Any(v);
+  };
+  type rec_y = Rec_y.t;
 };
-type rec_y = Rec_y.t;
 

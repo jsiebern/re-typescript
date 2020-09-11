@@ -1078,10 +1078,10 @@ and parse__Node__UnionType = (~runtime, ~scope, node: Ts_nodes.UnionType.t) => {
   let type_nodes = node#getTypeNodes();
   let base_path = scope.path;
   let (scope, restore) = scope |> Scope.retain_path(base_path);
-  let (scope, restoreParams) = Context.retain_default_params(scope);
   // Note on unions:
   // As unions are usually extracted into their own modules for generation (unboxed for example)
   // we cannot apply any default args (that would generate the wrong types in the module)
+  let (scope, restoreParams) = Context.retain_default_params(scope);
   let (runtime, scope, parsed_nodes) =
     type_nodes
     |> CCArray.foldi(
@@ -2213,7 +2213,7 @@ and parse__Fixtures__ForSourceFile = (~runtime, ~scope) => {
     runtime,
     scope,
     if (scope.has_any) {
-      [|Fixture(AnyUnboxed)|];
+      [|Fixture(AnyUnboxed, [||])|];
     } else {
       [||];
     },

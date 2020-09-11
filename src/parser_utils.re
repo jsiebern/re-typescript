@@ -359,7 +359,8 @@ let find_td = (path, current_type_list) =>
   CCArray.find_idx(
     node =>
       switch (node) {
-      | Node.TypeDeclaration({path: p, _}) when Path.eq(p, path) => true
+      | Node.Fixture(_, p)
+      | TypeDeclaration({path: p, _}) when Path.eq(p, path) => true
       | _ => false
       },
     current_type_list,
@@ -370,3 +371,84 @@ let find_td = (path, current_type_list) =>
        | _ => None
        }
      );
+
+let rec check_node_for_ref = (~found: ref(bool), ~replace, find_target, node) =>
+  switch (node) {
+  | Node.Reference({target, _} as inner) when Path.eq(target, find_target) =>
+    found := true;
+    Node.Reference({...inner, target: replace});
+  | Record(fields) =>
+    Record(
+      fields
+      |> CCArray.map(field =>
+           switch (field) {
+           | Node.Parameter({type_, _} as field) =>
+             Node.Parameter({
+               ...field,
+               type_:
+                 check_node_for_ref(~found, ~replace, find_target, type_),
+             })
+           | _ => field
+           }
+         ),
+    )
+  | other => other
+  };
+
+let find_and_extract = (~runtime, ~scope, find_target) => {
+  let found = ref([||]);
+  let decls =
+    scope.root_declarations
+    |> CCArray.map(member =>
+         switch (member) {
+         | Node.TypeDeclaration({annot, _} as td) =>
+           let foundInMember = ref(false);
+           let inner =
+             annot
+             |> check_node_for_ref(
+                  ~found=foundInMember,
+                  ~replace=[|Identifier.TypeName("t")|],
+                  find_target,
+                );
+           if (foundInMember^) {
+             found :=
+               CCArray.append(
+                 found^,
+                 [|Node.TypeDeclaration({...td, annot: inner})|],
+               );
+             Node.TypeDeclaration({
+               ...td,
+               params: [||],
+               annot: Basic(Never),
+             });
+           } else {
+             TypeDeclaration(td);
+           };
+         | _ => member
+         }
+       );
+  let decls =
+    if (CCArray.length(found^) == 0) {
+      decls;
+    } else {
+      decls
+      |> CCArray.filter(dec =>
+           switch (dec) {
+           | Node.TypeDeclaration({path, _})
+               when
+                 found^
+                 |> CCArray.exists(d =>
+                      switch (d) {
+                      | Node.TypeDeclaration({path: p, _})
+                          when Path.eq(p, path) =>
+                        true
+                      | _ => false
+                      }
+                    ) =>
+             false
+           | _ => true
+           }
+         );
+    };
+  (runtime, {...scope, root_declarations: decls}, found^);
+};

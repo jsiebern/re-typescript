@@ -196,12 +196,13 @@ let generate_ast_for_union:
   (~runtime, ~scope, members) => {
     let name = Path.make_sub_type_name(scope.path);
     let wrapper_module_name = Ast_generator_utils.Naming.moduleName(name);
+    let scope = ref(scope);
 
     let name_cache = ref([||]);
     let members =
       members
       |> CCArray.map(node => {
-           let name = make_union_typename(~runtime, ~scope, node);
+           let name = make_union_typename(~runtime, ~scope=scope^, node);
            let suffix = ref("");
            let i = ref(1);
            while (CCArray.find_idx(n => n == name ++ suffix^, name_cache^)
@@ -212,24 +213,48 @@ let generate_ast_for_union:
            let name = name ++ suffix^;
            name_cache := CCArray.append(name_cache^, [|name|]);
            let type_name = Identifier.TypeName(name);
+           let path =
+             scope^.path
+             |> Path.add(Module(wrapper_module_name))
+             |> Path.add(type_name);
+           // Add a new reference point here if necessary (background: original references while generating would originate from the primary type path)
+           switch (node) {
+           | Reference({target, _}) =>
+             scope :=
+               scope^
+               |> Scope.add_ref(
+                    Path.make_current_scope(scope^.path)
+                    |> Path.append(target),
+                    path,
+                  )
+           | _ => ()
+           };
            Node.TypeDeclaration({
              name: type_name,
-             path:
-               scope.path
-               |> Path.add(Module(wrapper_module_name))
-               |> Path.add(type_name),
+             path,
              annot: node,
              params: [||],
            });
          });
 
+    // Try find all recursive references and then pull them into this module
+    // let base_as_target = Path.strip_root_module(scope^.path);
+    // let (runtime, scope, extracted) =
+    //   find_and_extract(~runtime, ~scope=scope^, base_as_target);
+    let extracted = [||];
+    let scope = scope^;
+
+    let target = [|Identifier.Module(wrapper_module_name), TypeName("t")|];
+    let path = Path.make_current_scope(scope.path) |> Path.append(target);
     let wrapper_module =
       Node.Module({
         name: wrapper_module_name,
-        path: "",
+        path: path |> Path.make_sub_type_name,
         types:
           CCArray.append(
-            [|Node.Fixture(TUnboxed(scope.context_params))|],
+            [|
+              Node.Fixture(TUnboxed(scope.context_params, extracted), path),
+            |],
             members,
           ),
       });
@@ -237,9 +262,6 @@ let generate_ast_for_union:
     (
       runtime,
       scope,
-      Reference({
-        target: [|Module(wrapper_module_name), TypeName("t")|],
-        params: Context.get_params_generalized(scope),
-      }),
+      Reference({target, params: Context.get_params_generalized(scope)}),
     );
   };

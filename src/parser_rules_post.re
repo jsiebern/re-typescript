@@ -25,6 +25,7 @@ module Helpers = {
     let ref_num =
       CCHashtbl.get(scope.refs, qualified_target)
       |> CCOpt.map_or(~default=0, CCArray.length);
+
     let target_idx = current_type_list |> find_td(qualified_target);
     switch (target_idx) {
     | Some((ti, {annot: Record(_), _})) when !records => None
@@ -33,6 +34,18 @@ module Helpers = {
       // to keep a base type alias around
       scope |> Scope.decrease_ref(qualified_target);
       Some(t_inner);
+    | Some((_, {params: [||], annot: Reference({target, _}), _}))
+        when
+          CCArray.get_safe(target, 0)
+          |> CCOpt.map_or(
+               ~default=false,
+               fun
+               | Identifier.Module(_) => true
+               | _ => false,
+             ) =>
+      // Do not unset module refs (usually artificial ones)
+      // TODO: Might be an obsolete logic if we resolve recursive references before this point
+      None
     | Some((ti, {params: [||], _} as t_inner)) when ref_num <= 1 =>
       // Set this to "never" so it does not get printed.
       // Still keeping the name around could be useful later though
@@ -117,83 +130,12 @@ let rule_keep_referenced_empty_records_as_any =
       | Module({types, _} as m) =>
         Node.Module({
           ...m,
-          types: CCArray.append([|Node.Fixture(AnyUnboxed)|], types),
+          types: CCArray.append([|Node.Fixture(AnyUnboxed, [||])|], types),
         })
       }
     | _ => root_module
     };
   (runtime, scope^, root_module);
-};
-
-let rule_move_only_once_referenced_types_back_into_record_types_and_functions =
-    (
-      ~runtime,
-      ~scope: scope,
-      root_module: Node.node(Node.Constraint.exactlyModule),
-    ) => {
-  let rec walk:
-    type t.
-      (~current_type_list: array(Node.node('a))=?, Node.node(t)) => unit =
-    (~current_type_list=[||], node) =>
-      switch (node) {
-      | Node.Module({types, _}) =>
-        types |> CCArray.iter(t => walk(~current_type_list=types, t))
-      | TypeDeclaration({
-          annot: Function({return_type: Reference({target, _}), _}),
-          path,
-          _,
-        }) =>
-        switch (
-          Helpers.get_replaceable_ref_target(
-            ~scope,
-            ~current_type_list,
-            ~source_path=path,
-            target,
-          )
-        ) {
-        | None => ()
-        | Some(target) =>
-          let (source_id, source) =
-            current_type_list |> Helpers.find_td_unsafe(path);
-          CCArray.set(
-            current_type_list,
-            source_id,
-            TypeDeclaration({...target, name: source.name}),
-          );
-        }
-
-      | TypeDeclaration({annot: Record(fields), path, _}) =>
-        fields
-        |> CCArray.iteri((i, field) =>
-             switch (field) {
-             | Node.Parameter(
-                 {type_: Reference({target, _}), _} as field_inner,
-               ) =>
-               switch (
-                 Helpers.get_replaceable_ref_target(
-                   ~scope,
-                   ~current_type_list,
-                   ~source_path=path,
-                   target,
-                 )
-               ) {
-               | None => ()
-               | Some({annot, params, _}) =>
-                 CCArray.set(
-                   fields,
-                   i,
-                   Parameter({...field_inner, type_: annot}),
-                 )
-               }
-             | _ => ()
-             }
-           )
-      | _ => ()
-      };
-
-  walk(root_module);
-
-  (runtime, scope, root_module);
 };
 
 let rule_move_only_once_referenced_types_into_their_respective_type_declaration =
@@ -241,6 +183,18 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
              ([||], current_type_list),
            );
       (Tuple(nodes), lst);
+    | Reference({target, _}) as r
+        when
+          CCArray.get_safe(target, 0)
+          |> CCOpt.map_or(
+               ~default=false,
+               fun
+               | Identifier.Module(_) => true
+               | _ => false,
+             ) => (
+        r,
+        current_type_list,
+      )
     | Reference({target, _}) as r =>
       let lst = ref(current_type_list);
       switch (
@@ -347,7 +301,7 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
           CCArray.get_safe(types, 0)
           |> CCOpt.map_or(~default=false, t =>
                switch (t) {
-               | Node.Fixture(TUnboxed(_)) => true
+               | Node.Fixture(TUnboxed(_), _) => true
                | _ => false
                }
              ) =>
@@ -523,7 +477,7 @@ let rule_transform_single_literals_into_union_types =
             CCArray.get_safe(types, 0)
             |> CCOpt.map_or(~default=false, t =>
                  switch (t) {
-                 | Node.Fixture(TUnboxed(_)) => true
+                 | Node.Fixture(TUnboxed(_), _) => true
                  | _ => false
                  }
                ) => node
@@ -555,12 +509,7 @@ let run = (~runtime, ~scope, node: Node.node(Node.Constraint.exactlyModule)) => 
       node,
     );
   let (runtime, scope, node) =
-    rule_move_only_once_referenced_types_back_into_record_types_and_functions(
-      ~runtime,
-      ~scope,
-      node,
-    );
-  let (runtime, scope, node) =
     rule_transform_single_literals_into_union_types(~runtime, ~scope, node);
+  Console.log(Pp.scope_nodes(scope));
   (runtime, scope, node);
 };

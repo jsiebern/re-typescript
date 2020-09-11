@@ -18,12 +18,7 @@ let test = (
 // type x = 3 | 4;
 // type y = Array<1 | x | 2 | null>;
 
-// can use recursion in nested union types when using type params - objects
-type ValueOrObj<T> = T | { obj_value: T };
-
-// can use recursion in nested union types 2
-// type rec_y = string | { inline_obj: rec_y };
-
+export function someOtherFunction(): null | { inline: string };
 
 
 

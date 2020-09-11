@@ -247,11 +247,17 @@ and Node: {
       : node(Constraint.atLeastGenericReference('poly))
     | TypeDeclaration(TypeDeclaration.t)
       : node(Constraint.atLeastTypeDeclaration('poly))
-    | Fixture(kind_fixture(Constraint.Fixture.any))
+    | Fixture(
+        kind_fixture(Constraint.Fixture.any),
+        array(Identifier.t(Identifier.Constraint.any)),
+      )
       : node(Constraint.atLeastFixture('poly))
   and kind_fixture('tag) =
     | AnyUnboxed: kind_fixture(Constraint.Fixture.atLeastAnyUnboxed('poly))
-    | TUnboxed(list((string, option(node(Constraint.assignable)))))
+    | TUnboxed(
+        list((string, option(node(Constraint.assignable)))),
+        array(node(Constraint.moduleLevel)),
+      )
       : kind_fixture(Constraint.Fixture.atLeastTUnboxed('poly))
   and kind_basic('tag) =
     | RelevantKeyword(string)

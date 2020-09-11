@@ -51,10 +51,36 @@ and generate__Node__Module =
   let (scope, generated_structure) =
     node.types
     |> CCArray.fold_left(
-         ((scope, struct_carry), node) => {
-           let (scope, generated_struct) =
-             generate__Node__TypeDeclaration(~scope, node);
-           (scope, struct_carry @ generated_struct);
+         (
+           (scope, struct_carry),
+           node: Node.node(Node.Constraint.moduleLevel),
+         ) => {
+           switch (node) {
+           | Node.Module({types, _}) as module_node
+               when
+                 switch (CCArray.get_safe(types, 0)) {
+                 | Some(Fixture(TUnboxed(_), _)) => true
+                 | _ => false
+                 } =>
+             let (scope, item) =
+               generate__Node__ModuleUnboxed(~scope, module_node);
+             (scope, struct_carry @ [item]);
+           | Module(_) as module_node =>
+             let (scope, items) =
+               generate__Node__Module(~scope, module_node);
+             (scope, struct_carry @ items);
+           | Fixture(_) as fixtureNode =>
+             let (scope, items) = generate__Fixture(~scope, fixtureNode);
+             (scope, struct_carry @ items);
+           | TypeDeclaration(node) =>
+             let (scope, type_declarations) =
+               generate__Node__TypeDeclaration(~scope, node);
+             (
+               scope,
+               struct_carry
+               @ [Util.wrap_type_declarations(type_declarations)],
+             );
+           }
          },
          (scope, []),
        );
@@ -77,7 +103,8 @@ and generate__Node__ModuleUnboxed =
   let scope = {parent: Some(Module(node)), path: [|Module(module_name)|]};
   let params =
     switch (CCArray.get_safe(node.types, 0)) {
-    | Some(Ast.Node.Fixture(TUnboxed(params))) => CCList.map(fst, params)
+    | Some(Ast.Node.Fixture(TUnboxed(params, _), _)) =>
+      CCList.map(fst, params)
     | Some(_)
     | None => []
     };
@@ -88,9 +115,26 @@ and generate__Node__ModuleUnboxed =
          ((scope, arr_stri, arr_sigi), node) => {
            let res =
              switch (node) {
-             | Ast.Node.Fixture(TUnboxed(_)) =>
+             | Ast.Node.Fixture(TUnboxed(_, header_types), _) =>
+               let (scope, header_types) =
+                 header_types
+                 |> CCArray.fold_left(
+                      ((scope, nodes), node) =>
+                        switch (node) {
+                        | Node.TypeDeclaration(td) =>
+                          let (scope, td) =
+                            generate__Node__TypeDeclaration(~scope, td);
+                          (scope, nodes @ td);
+                        | _ =>
+                          raise(
+                            Invalid_argument("Should be a TypeDeclaration"),
+                          )
+                        },
+                      (scope, []),
+                    );
+
                let (stri, sigi) =
-                 Util.Unboxed.make_unboxed_helper(~params, ());
+                 Util.Unboxed.make_unboxed_helper(~params, ~header_types, ());
                Some((scope, stri, sigi));
              | Ast.Node.TypeDeclaration({
                  annot: Literal(literal),
@@ -159,140 +203,118 @@ and generate__Node__ModuleUnboxed =
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 and generate__Node__TypeDeclaration =
-    (~scope, node: Node.node(Node.Constraint.moduleLevel)) => {
-  switch (node) {
-  | Module({types, _}) as module_node
-      when
-        switch (CCArray.get_safe(types, 0)) {
-        | Some(Fixture(TUnboxed(_))) => true
-        | _ => false
-        } =>
-    let (scope, item) = generate__Node__ModuleUnboxed(~scope, module_node);
-    (scope, [item]);
-  | Module(_) as module_node =>
-    let (scope, items) = generate__Node__Module(~scope, module_node);
-    (scope, items);
-  | Fixture(_) as fixtureNode => generate__Fixture(~scope, fixtureNode)
-  | TypeDeclaration(node) =>
-    let type_name =
-      Identifier.TypeName(
-        switch (node.name) {
-        | TypeName(str) => str
-        },
-      );
-    let scope = {
-      parent: Some(TypeDeclaration(node)),
-      path: CCArray.append(scope.path, [||]),
-    };
+    (~scope, node: TypeDeclaration.t): (scope, list(type_declaration)) => {
+  let type_name =
+    Identifier.TypeName(
+      switch (node.name) {
+      | TypeName(str) => str
+      },
+    );
+  let scope = {
+    parent: Some(TypeDeclaration(node)),
+    path: CCArray.append(scope.path, [||]),
+  };
 
-    switch (node.annot) {
-    | Variant(variant_members, mode) =>
-      // TODO: Use normal variant type for the time being, this need to change in several levels of complexity
-      // Each member could have been assiged another literal value (or not), there could be computated values
-      // Also TODO: There will be more types like this that need to be parsed here as some can't return a core_type
-      switch (mode) {
-      | `variant =>
-        let type_kind =
-          Util.make_variant_kind(
-            variant_members
-            |> CCArray.map(member =>
-                 Util.Naming.fromIdentifier(
-                   switch (member.VariantConstructor.name) {
-                   | VariantIdentifier(str, has_exotic_identifiers) =>
-                     Identifier.VariantIdentifier(str, has_exotic_identifiers)
-                   },
-                 )
+  switch (node.annot) {
+  | Variant(variant_members, mode) =>
+    // TODO: Use normal variant type for the time being, this need to change in several levels of complexity
+    // Each member could have been assiged another literal value (or not), there could be computated values
+    // Also TODO: There will be more types like this that need to be parsed here as some can't return a core_type
+    switch (mode) {
+    | `variant =>
+      let type_kind =
+        Util.make_variant_kind(
+          variant_members
+          |> CCArray.map(member =>
+               Util.Naming.fromIdentifier(
+                 switch (member.VariantConstructor.name) {
+                 | VariantIdentifier(str, has_exotic_identifiers) =>
+                   Identifier.VariantIdentifier(str, has_exotic_identifiers)
+                 },
                )
+             )
+          |> CCArray.to_list,
+        );
+      (
+        scope,
+        Util.make_type_declaration_of_kind(
+          ~params=
+            node.params
+            |> CCArray.map(Util.Naming.fromIdentifier)
             |> CCArray.to_list,
-          );
+          ~aliasName=Util.Naming.fromIdentifier(type_name),
+          ~kind=type_kind,
+        ),
+      );
+    | `poly => (
+        scope,
+        Util.make_type_declaration(
+          ~params=
+            node.params
+            |> CCArray.map(Util.Naming.fromIdentifier)
+            |> CCArray.to_list,
+          ~aliasName=Util.Naming.fromIdentifier(type_name),
+          ~aliasType=
+            Util.make_polymorphic(variant_members |> CCArray.to_list),
+        ),
+      )
+    }
+  | Record(parameters) =>
+    let (scope, fields) =
+      CCArray.fold_left(
         (
-          scope,
-          [
-            Util.make_type_declaration_of_kind(
-              ~params=
-                node.params
-                |> CCArray.map(Util.Naming.fromIdentifier)
-                |> CCArray.to_list,
-              ~aliasName=Util.Naming.fromIdentifier(type_name),
-              ~kind=type_kind,
-            ),
-          ],
-        );
-      | `poly => (
-          scope,
-          [
-            Util.make_type_declaration(
-              ~params=
-                node.params
-                |> CCArray.map(Util.Naming.fromIdentifier)
-                |> CCArray.to_list,
-              ~aliasName=Util.Naming.fromIdentifier(type_name),
-              ~aliasType=
-                Util.make_polymorphic(variant_members |> CCArray.to_list),
-            ),
-          ],
-        )
-      }
-    | Record(parameters) =>
-      let (scope, fields) =
-        CCArray.fold_left(
-          (
-            (scope, params),
-            Node.Parameter({name, is_optional, type_, named}):
-              Node.node(Node.Constraint.exactlyParameter),
-          ) => {
-            let type_ = is_optional ? Node.Optional(type_) : type_;
-            let (scope, t) =
-              generate__Node__Assignable_CoreType(~scope, type_);
-            let name_original = Util.Naming.unwrap(name);
-            let name_reason = Util.Naming.fromIdentifier(name);
-            let param = (
-              name_reason,
-              t |> CCOpt.value(~default=Util.make_type_constraint("any")),
-              name_reason != name_original
-                ? [Util.make_bs_as_attribute(name_original)] : [],
-            );
-            (scope, CCArray.append(params, [|param|]));
-          },
-          (scope, [||]),
-          parameters,
-        );
-      let record_kind = Util.make_record_kind(fields);
-      (
-        scope,
-        [
-          Util.make_type_declaration_of_kind(
-            ~params=
-              node.params
-              |> CCArray.map(Util.Naming.fromIdentifier)
-              |> CCArray.to_list,
-            ~aliasName=Util.Naming.fromIdentifier(type_name),
-            ~kind=record_kind,
-          ),
-        ],
-      );
-
-    | annot =>
-      let (scope, annotated_type) =
-        generate__Node__Assignable_CoreType(~scope, annot);
-
-      (
-        scope,
-        switch (annotated_type) {
-        | None => []
-        | Some(annotated_type) => [
-            Util.make_type_declaration(
-              ~params=
-                node.params
-                |> CCArray.map(Util.Naming.fromIdentifier)
-                |> CCArray.to_list,
-              ~aliasName=Util.Naming.fromIdentifier(type_name),
-              ~aliasType=annotated_type,
-            ),
-          ]
+          (scope, params),
+          Node.Parameter({name, is_optional, type_, named}):
+            Node.node(Node.Constraint.exactlyParameter),
+        ) => {
+          let type_ = is_optional ? Node.Optional(type_) : type_;
+          let (scope, t) =
+            generate__Node__Assignable_CoreType(~scope, type_);
+          let name_original = Util.Naming.unwrap(name);
+          let name_reason = Util.Naming.fromIdentifier(name);
+          let param = (
+            name_reason,
+            t |> CCOpt.value(~default=Util.make_type_constraint("any")),
+            name_reason != name_original
+              ? [Util.make_bs_as_attribute(name_original)] : [],
+          );
+          (scope, CCArray.append(params, [|param|]));
         },
+        (scope, [||]),
+        parameters,
       );
-    };
+    let record_kind = Util.make_record_kind(fields);
+    (
+      scope,
+      Util.make_type_declaration_of_kind(
+        ~params=
+          node.params
+          |> CCArray.map(Util.Naming.fromIdentifier)
+          |> CCArray.to_list,
+        ~aliasName=Util.Naming.fromIdentifier(type_name),
+        ~kind=record_kind,
+      ),
+    );
+
+  | annot =>
+    let (scope, annotated_type) =
+      generate__Node__Assignable_CoreType(~scope, annot);
+
+    (
+      scope,
+      switch (annotated_type) {
+      | None => []
+      | Some(annotated_type) =>
+        Util.make_type_declaration(
+          ~params=
+            node.params
+            |> CCArray.map(Util.Naming.fromIdentifier)
+            |> CCArray.to_list,
+          ~aliasName=Util.Naming.fromIdentifier(type_name),
+          ~aliasType=annotated_type,
+        )
+      },
+    );
   };
 }
 // ------------------------------------------------------------------------------------------
@@ -426,7 +448,6 @@ and generate__Node__Assignable_CoreType =
          )
       |> CCList.map(snd)
       |> CCList.keep_some;
-
     (
       scope,
       Some(
@@ -479,19 +500,33 @@ and generate__Node__Assignable_CoreType =
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 and generate__Fixture =
-    (~scope, Fixture(fixture): Node.node(Node.Constraint.exactlyFixture)) => {
+    (~scope, Fixture(fixture, _): Node.node(Node.Constraint.exactlyFixture)) => {
   switch (fixture) {
   | AnyUnboxed => (scope, Util.make_any_helper_unboxed())
-  | TUnboxed(params) => (
+  | TUnboxed(params, header_types) =>
+    let (scope, header_types) =
+      header_types
+      |> CCArray.fold_left(
+           ((scope, nodes), node) =>
+             switch (node) {
+             | Node.TypeDeclaration(td) =>
+               let (scope, td) = generate__Node__TypeDeclaration(~scope, td);
+               (scope, nodes @ td);
+             | _ => raise(Invalid_argument("Should be a TypeDeclaration"))
+             },
+           (scope, []),
+         );
+    (
       scope,
       [
         fst(
           Util.Unboxed.make_unboxed_helper(
+            ~header_types,
             ~params=CCList.map(fst, params),
             (),
           ),
         ),
       ],
-    )
+    );
   };
 };

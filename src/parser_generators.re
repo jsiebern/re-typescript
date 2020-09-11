@@ -50,22 +50,25 @@ let generate_string_literal_list = (~runtime, ~scope, strings: array(string)) =>
                });
              });
 
+        let target = [|
+          Identifier.Module(wrapper_module_name),
+          TypeName("t"),
+        |];
+        let path =
+          Path.make_current_scope(scope.path) |> Path.append(target);
         let wrapper_module =
           Node.Module({
             name: wrapper_module_name,
-            path: "",
-            types: CCArray.append([|Node.Fixture(TUnboxed([]))|], members),
+            path: path |> Path.make_sub_type_name,
+            types:
+              CCArray.append(
+                [|Node.Fixture(TUnboxed([], [||]), path)|],
+                members,
+              ),
           });
         let scope = scope |> Scope.add_root_declaration(wrapper_module);
 
-        (
-          runtime,
-          scope,
-          Reference({
-            target: [|Module(wrapper_module_name), TypeName("t")|],
-            params: [],
-          }),
-        );
+        (runtime, scope, Reference({target, params: []}));
       }
     );
   switch (config.unions.string_literal) {
@@ -128,22 +131,25 @@ let generate_number_literal_list = (~runtime, ~scope, floats: array(float)) => {
                });
              });
 
+        let target = [|
+          Identifier.Module(wrapper_module_name),
+          TypeName("t"),
+        |];
+        let path =
+          Path.make_current_scope(scope.path) |> Path.append(target);
         let wrapper_module =
           Node.Module({
             name: wrapper_module_name,
             path: "",
-            types: CCArray.append([|Node.Fixture(TUnboxed([]))|], members),
+            types:
+              CCArray.append(
+                [|Node.Fixture(TUnboxed([], [||]), path)|],
+                members,
+              ),
           });
         let scope = scope |> Scope.add_root_declaration(wrapper_module);
 
-        (
-          runtime,
-          scope,
-          Reference({
-            target: [|Module(wrapper_module_name), TypeName("t")|],
-            params: [],
-          }),
-        );
+        (runtime, scope, Reference({target, params: []}));
       }
     );
   switch (config.unions.number_literal) {
@@ -191,22 +197,21 @@ let generate_mixed_literal_list =
          });
        });
 
+  let target = [|Identifier.Module(wrapper_module_name), TypeName("t")|];
+  let path = Path.make_current_scope(scope.path) |> Path.append(target);
   let wrapper_module =
     Node.Module({
       name: wrapper_module_name,
       path: "",
-      types: CCArray.append([|Node.Fixture(TUnboxed([]))|], members),
+      types:
+        CCArray.append(
+          [|Node.Fixture(TUnboxed([], [||]), path)|],
+          members,
+        ),
     });
   let scope = scope |> Scope.add_root_declaration(wrapper_module);
 
-  (
-    runtime,
-    scope,
-    Reference({
-      target: [|Module(wrapper_module_name), TypeName("t")|],
-      params: [],
-    }),
-  );
+  (runtime, scope, Reference({target, params: []}));
 };
 
 let generate_intersection_body =

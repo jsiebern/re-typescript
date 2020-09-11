@@ -175,53 +175,46 @@ let make_module = (moduleName, moduleItems): Parsetree.structure_item => {
 
 let make_type_declaration =
     (~params=[], ~aliasName: string, ~aliasType: core_type)
-    : Parsetree.structure_item => {
-  pstr_desc:
-    Parsetree.Pstr_type(
-      Asttypes.Recursive,
-      [
-        {
-          ptype_name: {
-            txt: aliasName,
-            loc,
-          },
-          ptype_params:
-            params
-            |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
-          ptype_cstrs: [],
-          ptype_kind: Parsetree.Ptype_abstract,
-          ptype_private: Asttypes.Public,
-          ptype_manifest: Some(aliasType),
-          ptype_attributes: [],
-          ptype_loc: loc,
-        },
-      ],
-    ),
-  pstr_loc: loc,
-};
+    : list(type_declaration) => [
+  {
+    ptype_name: {
+      txt: aliasName,
+      loc,
+    },
+    ptype_params:
+      params |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
+    ptype_cstrs: [],
+    ptype_kind: Parsetree.Ptype_abstract,
+    ptype_private: Asttypes.Public,
+    ptype_manifest: Some(aliasType),
+    ptype_attributes: [],
+    ptype_loc: loc,
+  },
+];
 let make_type_declaration_of_kind =
     (~params=[], ~aliasName: string, ~kind: type_kind)
-    : Parsetree.structure_item => {
+    : list(type_declaration) => [
+  {
+    ptype_name: {
+      txt: aliasName,
+      loc,
+    },
+    ptype_params:
+      params |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
+    ptype_cstrs: [],
+    ptype_kind: kind,
+    ptype_private: Asttypes.Public,
+    ptype_manifest: None,
+    ptype_attributes: [],
+    ptype_loc: loc,
+  },
+];
+
+let wrap_type_declarations = (~recursive=true, tds) => {
   pstr_desc:
     Parsetree.Pstr_type(
-      Asttypes.Recursive,
-      [
-        {
-          ptype_name: {
-            txt: aliasName,
-            loc,
-          },
-          ptype_params:
-            params
-            |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
-          ptype_cstrs: [],
-          ptype_kind: kind,
-          ptype_private: Asttypes.Public,
-          ptype_manifest: None,
-          ptype_attributes: [],
-          ptype_loc: loc,
-        },
-      ],
+      recursive ? Asttypes.Recursive : Asttypes.Nonrecursive,
+      tds,
     ),
   pstr_loc: loc,
 };
@@ -324,53 +317,45 @@ let make_record_kind =
 
 module Unboxed = {
   let make_unboxed_helper =
-      (~params=[], ()): (structure_item, signature_item) =>
-    if (CCList.is_empty(params)) {
-      (
-        [%stri
-          [@unboxed]
-          type t =
-            | Any('a): t
-        ],
-        [%sigi: type t],
-      );
-    } else {
-      let t_with_params =
-        make_type_constraint(~inner=params |> CCList.map(Typ.var), "t");
-      (
-        Str.type_(
-          Recursive,
-          [
-            Type.mk(
-              ~attrs=[(Location.mknoloc("unboxed"), PStr([]))],
-              ~params=
-                params
-                |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
-              ~kind=
-                Ptype_variant([
-                  Type.constructor(
-                    ~args=Pcstr_tuple([Typ.var("any")]),
-                    ~res=t_with_params,
-                    Location.mknoloc("Any"),
-                  ),
-                ]),
-              Location.mknoloc("t"),
-            ),
-          ],
-        ),
-        Sig.type_(
-          Recursive,
-          [
-            Type.mk(
-              ~params=
-                params
-                |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
-              Location.mknoloc("t"),
-            ),
-          ],
-        ),
-      );
-    };
+      (~header_types=[], ~params=[], ()): (structure_item, signature_item) => {
+    let t_with_params =
+      make_type_constraint(~inner=params |> CCList.map(Typ.var), "t");
+    (
+      Str.type_(
+        Recursive,
+        [
+          Type.mk(
+            ~attrs=[(Location.mknoloc("unboxed"), PStr([]))],
+            ~params=
+              params
+              |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
+            ~kind=
+              Ptype_variant([
+                Type.constructor(
+                  ~args=Pcstr_tuple([Typ.var("a")]),
+                  ~res=t_with_params,
+                  Location.mknoloc("Any"),
+                ),
+              ]),
+            Location.mknoloc("t"),
+          ),
+        ]
+        @ header_types,
+      ),
+      Sig.type_(
+        Recursive,
+        [
+          Type.mk(
+            ~params=
+              params
+              |> CCList.map(param => (Typ.var(param), Asttypes.Invariant)),
+            Location.mknoloc("t"),
+          ),
+        ]
+        @ header_types,
+      ),
+    );
+  };
   let unboxed_literal = (name, value: expression) => (
     [%stri let [%p Pat.var(Location.mknoloc(name))] = Any([%e value])],
     Sig.value(Val.mk(Location.mknoloc(name), [%type: t])),
