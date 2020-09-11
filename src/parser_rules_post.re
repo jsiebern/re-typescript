@@ -46,7 +46,7 @@ module Helpers = {
       // Do not unset module refs (usually artificial ones)
       // TODO: Might be an obsolete logic if we resolve recursive references before this point
       None
-    | Some((ti, {params: [||], _} as t_inner)) when ref_num <= 1 =>
+    | Some((ti, {params: [||], annot, _} as t_inner)) when ref_num <= 1 =>
       // Set this to "never" so it does not get printed.
       // Still keeping the name around could be useful later though
       CCArray.set(

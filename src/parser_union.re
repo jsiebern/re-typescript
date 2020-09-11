@@ -220,13 +220,28 @@ let generate_ast_for_union:
            // Add a new reference point here if necessary (background: original references while generating would originate from the primary type path)
            switch (node) {
            | Reference({target, _}) =>
-             scope :=
-               scope^
-               |> Scope.add_ref(
-                    Path.make_current_scope(scope^.path)
-                    |> Path.append(target),
-                    path,
+             switch (
+               scope^.root_declarations
+               |> find_td(
+                    CCArray.append(
+                      scope^.path |> Path.make_current_scope,
+                      target,
+                    ),
                   )
+             ) {
+             | Some((_, {annot: Basic(_), _})) =>
+               // Do not add additional reference if it's a basic type as that get's printed directly and there's no need to keep it around as a declaration
+               ()
+             | Some(_)
+             | None =>
+               scope :=
+                 scope^
+                 |> Scope.add_ref(
+                      Path.make_current_scope(scope^.path)
+                      |> Path.append(target),
+                      path,
+                    )
+             }
            | _ => ()
            };
            Node.TypeDeclaration({
