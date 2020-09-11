@@ -2,30 +2,6 @@ let test = (
   "/test.d.ts",
   {|
 
-// type parameters that are defined inline will be bubbled up the tree
-export interface Map<A,B> {
-  a: A;
-  b: B;
-}
-export interface RecoilRootProps {
-  initializeState?: (options: {
-    set: <T>(recoilVal: T, newVal: T) => void; // Ignores type params on inline functions
-    setUnvalidatedAtomValues: (atomMap: Map<string, any>) => void;
-  }) => void;
-}
-
-// bubbling type parameters can be combined with regular ones
-// export interface Map<A,B> {
-//   a: A;
-//   b: B;
-// }
-// export interface RecoilRootProps<C> {
-//   initializeState?: (options: {
-//     set: <T>(recoilVal: T, newVal: T) => void;
-//     setUnvalidatedAtomValues: (atomMap: Map<string, C>) => void;
-//   }) => void;
-// }
-
 // unresolvable type params get passed on as far down as possible
 // export interface Map<A,B> {
 //   a: A;

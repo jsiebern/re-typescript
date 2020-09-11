@@ -1573,13 +1573,16 @@ and parse__Node__InterfaceDeclaration =
     |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
   // TODO: While it is important to collect params in an interface (because signatures can have their own), this next step is not exactly performant. Should replace eventually (maybe have signatures report their required params to the scope and read it here)
   let detect_params = finalize_generic_reference(Record(signatures));
+
   let params =
     CCArray.length(detect_params) == CCArray.length(params)
       ? params
-      : CCArray.append(params, detect_params)
-        |> CCArray.to_list
-        |> CCList.uniq(~eq=(==))
-        |> CCArray.of_list;
+      : {
+        let detect_params =
+          detect_params |> CCArray.filter(p => !CCArray.mem(p, params));
+
+        CCArray.append(params, detect_params);
+      };
 
   (
     runtime,
