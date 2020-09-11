@@ -1,7 +1,9 @@
 type parameter logic › reference inline params work inside a nested interface
-type iParamNested_field2('B) = {field3: 'B}
-and iParamNested('A, 'B) = {
-  field1: 'A,
-  field2: iParamNested_field2('B),
+module Test = {
+  type iParamNested_field2('B) = {field3: 'B};
+  type iParamNested('A, 'B) = {
+    field1: 'A,
+    field2: iParamNested_field2('B),
+  };
 };
 

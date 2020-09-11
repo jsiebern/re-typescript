@@ -1,8 +1,9 @@
 type parameter logic › references parameters that are used when inlining a type
-type someFunction_return('B, 'C) = {
-  b: 'B,
-  c: 'C,
-}
-and someFunction('A, 'B, 'C) =
-  (~a: 'A, ~b: 'B) => someFunction_return('B, 'C);
+module Test = {
+  type someFunction_return('B, 'C) = {
+    b: 'B,
+    c: 'C,
+  };
+  type someFunction('A, 'B, 'C) = ('A, 'B) => someFunction_return('B, 'C);
+};
 

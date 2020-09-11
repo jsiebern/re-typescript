@@ -388,11 +388,80 @@ let find_td = (path, current_type_list) =>
        }
      );
 
+// TODO: Abstract these recursing functions into a general recursor (that can also be used by the plugin system that will be added at a later stage)
+let rec collect_generic_references:
+  type t.
+    (
+      ~acc: list(Identifier.t(Identifier.Constraint.exactlyTypeParameter))=?,
+      Node.node(t)
+    ) =>
+    list(Identifier.t(Identifier.Constraint.exactlyTypeParameter)) =
+  (~acc=[], node) =>
+    switch (node) {
+    | Node.GenericReference(i) => [i, ...acc]
+    | Record(fields) =>
+      fields
+      |> CCArray.fold_left(
+           (acc, field) => collect_generic_references(~acc, field),
+           acc,
+         )
+    | Parameter({type_, _}) => collect_generic_references(~acc, type_)
+    | Function({parameters, return_type}) =>
+      let acc =
+        parameters
+        |> CCArray.fold_left(
+             (acc, field) => collect_generic_references(~acc, field),
+             acc,
+           );
+      collect_generic_references(~acc, return_type);
+    | Variant(constructors, _) =>
+      constructors
+      |> CCArray.map(({VariantConstructor.arguments, _}) => arguments)
+      |> CCArray.to_list
+      |> CCArray.concat
+      |> CCArray.fold_left(
+           (acc, field) => collect_generic_references(~acc, field),
+           acc,
+         )
+    | Tuple(members) =>
+      members
+      |> CCArray.fold_left(
+           (acc, field) => collect_generic_references(~acc, field),
+           acc,
+         )
+    | Array(inner)
+    | Optional(inner)
+    | Nullable(inner) => collect_generic_references(~acc, inner)
+    | Module({types, _}) =>
+      types
+      |> CCArray.fold_left(
+           (acc, field) => collect_generic_references(~acc, field),
+           acc,
+         )
+    | TypeDeclaration({annot, params, _}) =>
+      let acc = collect_generic_references(~acc, annot);
+      acc @ CCArray.to_list(params);
+    | Reference({params, _}) =>
+      params
+      |> CCList.fold_left(
+           (acc, (_, field)) => collect_generic_references(~acc, field),
+           acc,
+         )
+    | _ => acc
+    };
+let finalize_generic_reference = node => {
+  collect_generic_references(node)
+  |> CCList.uniq(~eq=(==))
+  |> CCList.rev
+  |> CCArray.of_list;
+};
+
 let rec check_node_for_ref = (~found: ref(bool), ~replace, find_target, node) =>
   switch (node) {
   | Node.Reference({target, _} as inner) when Path.eq(target, find_target) =>
     found := true;
     Node.Reference({...inner, target: replace});
+  // TODO: Add other types to recursion
   | Record(fields) =>
     Record(
       fields

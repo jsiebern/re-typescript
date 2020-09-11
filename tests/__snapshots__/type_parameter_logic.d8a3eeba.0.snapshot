@@ -1,17 +1,19 @@
 type parameter logic › type parameters that are defined inline will be bubbled up the tree
-[@unboxed]
-type any =
-  | Any('a): any;
-type map('A, 'B) = {
-  a: 'A,
-  b: 'B,
-}
-and recoilRootProps_initializeState_options('T) = {
-  set: (~recoilVal: 'T, ~newVal: 'T) => unit,
-  setUnvalidatedAtomValues: (~atomMap: map(string, any)) => unit,
-}
-and recoilRootProps('T) = {
-  initializeState:
-    option((~options: recoilRootProps_initializeState_options('T)) => unit),
+module Test = {
+  [@unboxed]
+  type any =
+    | Any('a): any;
+  type map('A, 'B) = {
+    a: 'A,
+    b: 'B,
+  };
+  type recoilRootProps_initializeState_options('T) = {
+    set: ('T, 'T) => unit,
+    setUnvalidatedAtomValues: map(string, any) => unit,
+  };
+  type recoilRootProps('T) = {
+    initializeState:
+      option(recoilRootProps_initializeState_options('T) => unit),
+  };
 };
 

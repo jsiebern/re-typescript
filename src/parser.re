@@ -225,6 +225,7 @@ and parse__Node__Generic__WrapSubNode =
 
   let (runtime, scope, wrapped_type) =
     parse__Node__Generic_assignable(~runtime, ~scope, node);
+  let wrapped_params = finalize_generic_reference(wrapped_type);
   switch (wrapped_type) {
   | Nullable(Basic(_))
   | Optional(Basic(_))
@@ -244,7 +245,7 @@ and parse__Node__Generic__WrapSubNode =
               path: qualified_path_to_type,
               name: type_name,
               annot: wrapped_type,
-              params: scope.current_declared_params,
+              params: wrapped_params,
             });
           let runtime = {
             ...runtime,
@@ -272,7 +273,7 @@ and parse__Node__Generic__WrapSubNode =
       Reference({
         target: [|type_name|],
         params:
-          scope.current_declared_params
+          wrapped_params
           |> CCArray.map(
                fun
                | Identifier.TypeParameter(n) as i => (n, GenericReference(i))
@@ -1570,6 +1571,15 @@ and parse__Node__InterfaceDeclaration =
   let params =
     node#getTypeParameters()
     |> CCArray.map(n => Identifier.TypeParameter(n#getName()));
+  // TODO: While it is important to collect params in an interface (because signatures can have their own), this next step is not exactly performant. Should replace eventually (maybe have signatures report their required params to the scope and read it here)
+  let detect_params = finalize_generic_reference(Record(signatures));
+  let params =
+    CCArray.length(detect_params) == CCArray.length(params)
+      ? params
+      : CCArray.append(params, detect_params)
+        |> CCArray.to_list
+        |> CCList.uniq(~eq=(==))
+        |> CCArray.of_list;
 
   (
     runtime,
