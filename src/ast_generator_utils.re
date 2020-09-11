@@ -210,14 +210,19 @@ let make_type_declaration_of_kind =
   },
 ];
 
-let wrap_type_declarations = (~recursive=true, tds) => {
-  pstr_desc:
-    Parsetree.Pstr_type(
-      recursive ? Asttypes.Recursive : Asttypes.Nonrecursive,
-      tds,
-    ),
-  pstr_loc: loc,
-};
+let wrap_type_declarations = (~recursive=true, tds): list(structure_item) =>
+  CCList.is_empty(tds)
+    ? []
+    : [
+      {
+        pstr_desc:
+          Parsetree.Pstr_type(
+            recursive ? Asttypes.Recursive : Asttypes.Nonrecursive,
+            tds,
+          ),
+        pstr_loc: loc,
+      },
+    ];
 
 let make_type_constraint = (~inner=[], name) => {
   Typ.constr(Location.mknoloc(Longident.parse(name)), inner);

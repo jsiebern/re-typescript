@@ -510,6 +510,5 @@ let run = (~runtime, ~scope, node: Node.node(Node.Constraint.exactlyModule)) => 
     );
   let (runtime, scope, node) =
     rule_transform_single_literals_into_union_types(~runtime, ~scope, node);
-  Console.log(Pp.scope_nodes(scope));
   (runtime, scope, node);
 };

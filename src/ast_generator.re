@@ -77,8 +77,7 @@ and generate__Node__Module =
                generate__Node__TypeDeclaration(~scope, node);
              (
                scope,
-               struct_carry
-               @ [Util.wrap_type_declarations(type_declarations)],
+               struct_carry @ Util.wrap_type_declarations(type_declarations),
              );
            }
          },
