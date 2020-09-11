@@ -2,7 +2,16 @@ mapped object types › map over a single string literal
 module Test = {
   type key = [ | `just_one_key];
   type flags = {just_one_key: bool};
-  type key2 = any;
+  module Flags2: {
+    type t;
+    let _4: t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let _4 = Any(4);
+  };
+  type key2 = Flags2.t;
   type flags2 = {
     [@bs.as \"4\"]
     _4: bool,
