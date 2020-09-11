@@ -9,23 +9,23 @@
   "dependencies": {
     "@opam/atdgen": "2.2.1",
     "@opam/containers": "2.8.1",
-    "@opam/dune": "*",
+    "@opam/dune": "2.7.0",
     "@opam/gen_js_api": "1.0.6",
-    "@opam/js_of_ocaml": "3.6.0",
-    "@opam/js_of_ocaml-ppx": "3.6.0",
-    "@opam/ocaml-migrate-parsetree": "*",
+    "@opam/js_of_ocaml": "3.7.0",
+    "@opam/js_of_ocaml-ppx": "3.7.0",
+    "@opam/ocaml-migrate-parsetree": "1.7.3",
     "@opam/ppx_tools": "6.2",
-    "@opam/ppx_tools_versioned": "*",
-    "@reason-native/console": "^0.1.0",
-    "@reason-native/pastel": "^0.3.0"
+    "@opam/ppx_tools_versioned": "5.4.0",
+    "@reason-native/console": "0.1.0",
+    "@reason-native/pastel": "0.3.0"
   },
   "devDependencies": {
-    "@opam/reason": ">=3.6.0",
-    "ocaml": "~4.8.0",
-    "@opam/js_of_ocaml-compiler": "3.6.0",
-    "refmterr": "~3.3.0",
+    "@opam/reason": "3.6.0",
+    "ocaml": "4.8.1000",
+    "@opam/js_of_ocaml-compiler": "3.7.0",
+    "refmterr": "3.3.2",
     "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam",
-    "@reason-native/rely": "^3.2.1"
+    "@reason-native/rely": "3.2.1"
   },
   "esy": {
     "build": [
