@@ -360,24 +360,25 @@ and create__ContextFromNode =
                ((runtime, scope, params), param) => {
                  let scope = scope |> Scope.replace_path_arr(base_path);
                  let name = param#getName();
-                 let (runtime, scope, default) =
-                   param#getDefault()
-                   |> CCOpt.map(paramNode => {
-                        let (runtime, scope, res) =
-                          parse__Node__Generic_assignable(
-                            ~runtime,
-                            ~scope,
-                            paramNode,
-                          );
-                        (runtime, scope, Some(res));
-                      })
-                   |> CCOpt.value(~default=(runtime, scope, None));
-                 let scope = scope |> Context.add_param(name, default);
+                 // IMPORTANT: Maybe revert this change later, but for now disabling the render of the default params to prevent superfluous type definitions like union modules that only add noise.
+                 //  let (runtime, scope, default) =
+                 //    param#getDefault()
+                 //    |> CCOpt.map(paramNode => {
+                 //         let (runtime, scope, res) =
+                 //           parse__Node__Generic_assignable(
+                 //             ~runtime,
+                 //             ~scope,
+                 //             paramNode,
+                 //           );
+                 //         (runtime, scope, Some(res));
+                 //       })
+                 //    |> CCOpt.value(~default=(runtime, scope, None));
+                 let scope = scope |> Context.add_param(name, None);
 
                  (
                    runtime,
                    scope,
-                   CCArray.append(params, [|(name, default)|]),
+                   CCArray.append(params, [|(name, None)|]),
                  );
                },
                (runtime, scope, [||]),

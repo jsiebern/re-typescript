@@ -2,7 +2,6 @@ let test = (
   "/test.d.ts",
   {|
 
-
 // resolves nested params
 // interface A<X> {
 //   field_x: X;

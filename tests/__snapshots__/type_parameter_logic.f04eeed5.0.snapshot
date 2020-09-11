@@ -1,6 +1,8 @@
 type parameter logic › can have nested default values
-type orig_param('a) = 'a
-and with_param('a) = 'a
-and with_param_a = {b: orig_param(float)}
-and call_params = with_param(with_param_a);
+module Test = {
+  type orig_param('a) = 'a;
+  type with_param('a) = 'a;
+  type call_params_a = {b: orig_param(float)};
+  type call_params = with_param(call_params_a);
+};
 
