@@ -43,6 +43,7 @@ let rec parse__Entry =
              refs: Hashtbl.create(10),
              context_params: [],
              context_args: [],
+             context_args_retained: [],
            };
 
            let source_file =
@@ -775,12 +776,14 @@ and parse__Node__MappedType = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
              ),
           scope,
         );
-      let scope =
-        scope
-        |> Context.add_param(parameter_name, None)
-        |> Context.add_arg(parameter_name, key_type);
+      let scope = scope |> Context.add_param(parameter_name, None);
+      let (scope, restore_retained_args) =
+        scope |> Context.inject_retained_arg_tpl((parameter_name, key_type));
+
       let (runtime, scope, value_resolved) =
         parse__Node__Generic_assignable(~runtime, ~scope, value_node);
+
+      let scope = restore_retained_args(scope);
       let scope = restore(scope);
       // If the resolved value represents a type parameter, we should try to further resolve that with an argument
       Parser_utils.resolved_node_replace_type_parameter(
@@ -1324,7 +1327,7 @@ and parse__Node__IndexedAccessType =
           raise(
             Exceptions.UnexpectedAtThisPoint(
               Printf.sprintf(
-                "Could not extract %s from record",
+                "Could not extract type '%s' from record",
                 index_stringified,
               ),
             ),

@@ -2,12 +2,10 @@ let test = (
   "/test.d.ts",
   {|
 
-// map over a single string literal
-type key = 'just_one_key';
-            type Flags = { [K in key]: boolean };
 
-            type key2 = 4;
-          type Flags2 = { [K in key2]: boolean };
+// can access a string literal of fields
+type c = {a: string, b: number};
+type d = c['a' | 'b']
 
 // resolves nested params
 // interface A<X> {

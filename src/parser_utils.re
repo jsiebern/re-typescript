@@ -24,6 +24,8 @@ type scope = {
   context_params:
     list((string, option(Node.node(Node.Constraint.assignable)))),
   context_args: list((string, Node.node(Node.Constraint.assignable))),
+  context_args_retained:
+    list((string, Node.node(Node.Constraint.assignable))),
 };
 type mapped_modifier = [ | `none | `to_optional | `to_required];
 module Context = {
@@ -54,7 +56,14 @@ module Context = {
   let add_arg_lst = (lst, scope) =>
     lst |> CCList.fold_left((scope, tpl) => add_arg_tpl(tpl, scope), scope);
   let get_arg = (key, scope) =>
-    scope.context_args |> CCList.Assoc.get(~eq=CCString.equal, key);
+    CCOpt.or_lazy(
+      ~else_=
+        () => {
+          scope.context_args_retained
+          |> CCList.Assoc.get(~eq=CCString.equal, key)
+        },
+      scope.context_args |> CCList.Assoc.get(~eq=CCString.equal, key),
+    );
   let args_match_params = scope =>
     CCList.compare_lengths(
       scope.context_args,
@@ -94,6 +103,13 @@ module Context = {
                )
              }
            );
+  let inject_retained_arg_tpl = ((key, ty), scope) => {
+    let context_args_retained = scope.context_args_retained;
+    (
+      {...scope, context_args_retained: context_args_retained @ [(key, ty)]},
+      newScope => {...newScope, context_args_retained},
+    );
+  };
 };
 module Runtime = {
   let add_root_module =
