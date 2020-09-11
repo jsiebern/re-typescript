@@ -2,6 +2,13 @@ let test = (
   "/test.d.ts",
   {|
 
+// map over a single string literal
+type key = 'just_one_key';
+            type Flags = { [K in key]: boolean };
+
+            type key2 = 4;
+          type Flags2 = { [K in key2]: boolean };
+
 // resolves nested params
 // interface A<X> {
 //   field_x: X;
@@ -17,19 +24,6 @@ let test = (
 // works with array / nullable on the original
 // type x = 3 | 4;
 // type y = Array<1 | x | 2 | null>;
-
-type PartialX<T> = {
-                [P in keyof T]?: T[P];
-            }
-            interface A {
-              x: string;
-              y: number;
-              z: boolean;
-            }
-
-            type a_partial = PartialX<A>;
-
-
 
 
 

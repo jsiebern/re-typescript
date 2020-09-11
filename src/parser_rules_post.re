@@ -451,12 +451,12 @@ let rule_transform_single_literals_into_union_types =
             CCArray.append([|before|], current_type_list)
           | Some(before) =>
             CCArray.concat([
-              CCArray.sub(current_type_list, 0, i - 1),
+              CCArray.sub(current_type_list, 0, i),
               [|before|],
               CCArray.sub(
                 current_type_list,
                 i,
-                CCArray.length(current_type_list) - i - 1,
+                CCArray.length(current_type_list) - i,
               ),
             ])
           };
