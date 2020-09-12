@@ -12,6 +12,7 @@ external from_node_kind_child: 'a => Ts_nodes.Generic.t = "%identity";
 let unwrap_identified = (node: Ts_nodes.nodeKind) =>
   switch (node) {
   | TypeAliasDeclaration(node) => node |> from_node_kind_child
+  | ConditionalType(node) => node |> from_node_kind_child
   | NamespaceDeclaration(node) => node |> from_node_kind_child
   | ModuleDeclaration(node) => node |> from_node_kind_child
   | Identifier(node) => node |> from_node_kind_child

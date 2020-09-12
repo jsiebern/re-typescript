@@ -663,6 +663,21 @@ module LiteralType: {
   let t_of_js: Ojs.t => t;
   let t_to_js: t => Ojs.t;
 };
+module ConditionalType: {
+  class t:
+    (Ojs.t) =>
+    {
+      inherit Generic.t;
+      pub getCheckType: unit => Generic.t;
+      pub getExtendsType: unit => Generic.t;
+      pub getTrueType: unit => Generic.t;
+      pub getFalseType: unit => Generic.t;
+    };
+  [@js.cast]
+  let fromGeneric: Generic.t => t;
+  let t_of_js: Ojs.t => t;
+  let t_to_js: t => Ojs.t;
+};
 module NamespaceDeclaration: {
   class t:
     (Ojs.t) =>
@@ -746,6 +761,9 @@ module Identify: {
       )
     | [@js.arg "node"] [@js "TypeLiteral"] TypeLiteral(TypeLiteral.t)
     | [@js.arg "node"] [@js "LiteralType"] LiteralType(LiteralType.t)
+    | [@js.arg "node"] [@js "ConditionalType"] ConditionalType(
+        ConditionalType.t,
+      )
     | [@js.arg "node"] [@js "PropertySignature"] PropertySignature(
         PropertySignature.t,
       )

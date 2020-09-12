@@ -503,6 +503,7 @@ let rule_transform_single_literals_into_union_types =
 };
 
 let run = (~runtime, ~scope, node: Node.node(Node.Constraint.exactlyModule)) => {
+  // Console.log(Pp.ast_node(node));
   let (runtime, scope, node) =
     rule_keep_referenced_empty_records_as_any(~runtime, ~scope, node);
   let (runtime, scope, node) =

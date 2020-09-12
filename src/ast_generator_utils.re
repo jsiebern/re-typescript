@@ -135,18 +135,19 @@ module Naming = {
       | SubIdent(num) => subIdent(num)
       };
 
-  let full_identifier_of_path = (p: Ast.Identifier.path) =>
+  let full_identifier_of_path = (p: Ast.Identifier.path) => {
     p
     |> CCArray.mapi((i, ident) =>
          switch (ident, CCArray.get_safe(p, i + 1)) {
-         | _ when i === 0 && CCArray.length(p) === 1 => fromIdentifier(ident)
-         | (_, None) => unwrap(ident)
+         | _ when i == 0 && CCArray.length(p) == 1 => fromIdentifier(ident)
+         | (_, None) => fromIdentifier(ident)
          | (Ast.Identifier.Module(str), Some(_)) =>
            Printf.sprintf("%s.", str)
          | (_, Some(_)) => Printf.sprintf("%s_", unwrap(ident))
          }
        )
     |> CCArray.to_string(~sep="", a => a);
+  };
 };
 
 let make_bs_as_attribute: string => attribute =

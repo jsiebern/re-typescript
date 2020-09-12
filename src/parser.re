@@ -112,6 +112,9 @@ and parse__Node__Generic =
     parse__Node__TypeOperator(~runtime, ~scope, identifiedNode)
   | ParenthesizedType(pNode) =>
     parse__Node__Generic(~runtime, ~scope, pNode#getTypeNode())
+  | ConditionalType(cond) =>
+    Console.log(Pp.path(scope.path));
+    (runtime, scope, Basic(Never));
   | _ =>
     Console.log(
       Ast_generator_utils.Naming.full_identifier_of_path(scope.path),
@@ -2137,13 +2140,26 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
       };
 
     // Parse the reference information to make a note that it was referenced
+    let parsed_type_name =
+      (
+        switch (
+          CCString.split_on_char('.', type_name#getText())
+          |> CCList.map(s => Identifier.Module(s))
+          |> CCList.rev
+        ) {
+        | [Module(one)] => [Identifier.TypeName(one)]
+        | [Module(one), ...rest] =>
+          [Identifier.TypeName(one), ...rest] |> CCList.rev
+        | _ => [TypeName(type_name#getText())]
+        }
+      )
+      |> CCArray.of_list;
+    
     let ref_path =
-      scope.path
-      |> Path.make_current_scope
-      |> Path.add(Identifier.TypeName(type_name#getText()));
+      scope.path |> Path.make_current_scope |> Path.append(parsed_type_name);
     let scope = scope |> Scope.add_ref(ref_path, scope.path);
 
-    let target = [|Identifier.TypeName(type_name#getText())|];
+    let target = parsed_type_name;
     // Target COULD have some more parameters
     // So we need to try resolve the target and fill it up with GenericReferences in order for the declaration function to pick up
     let arguments =
