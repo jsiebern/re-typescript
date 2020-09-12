@@ -11,17 +11,20 @@ module Test = {
     let _3 = Any(3);
     let _4 = Any(4);
   };
+  type x = X.t;
   module Y: {
     type t;
     let _2: t;
-    let x: X.t => t;
+    let _3: t;
+    let _4: t;
     let _1: t;
   } = {
     [@unboxed]
     type t =
       | Any('a): t;
     let _2 = Any(2);
-    let x = (v: X.t) => Any(v);
+    let _3 = Any(3);
+    let _4 = Any(4);
     let _1 = Any(1);
   };
   type y = option(Y.t);

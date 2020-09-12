@@ -55,6 +55,8 @@ let rec parse__Entry =
              parse__Node__SourceFile(~runtime, ~scope, source_file);
            let (runtime, scope, t) =
              Parser_rules_post.run(~runtime, ~scope, t);
+           // Clear union cache after the module / source file is done
+           Parser_union.Cache.clear();
            runtime |> Runtime.add_root_module(t);
          },
          runtime,
@@ -1049,7 +1051,11 @@ and parse__Node__UnionType__Nodes:
   ) =>
   (runtime, scope, Node.node(Node.Constraint.assignable)) =
   (~runtime, ~scope, nodes) => {
-    let union_type = Parser_union.determine_union_type(nodes);
+    let union_type = Parser_union.determine_union_type(~scope, nodes);
+    switch (union_type) {
+    | None => ()
+    | Some(union_type) => union_type |> Parser_union.Cache.add(scope.path)
+    };
     switch (union_type) {
     | Some(Optional(rest)) =>
       let (runtime, scope, t) =

@@ -1,34 +1,6 @@
 type unions should get optimized into literals if possible › string literals
-module X: {
-  type t = pri string;
-  [@bs.inline \"x\"]
-  let x: t;
-  [@bs.inline \"y\"]
-  let y: t;
-} = {
-  type t = string;
-  [@bs.inline]
-  let x = \"x\";
-  [@bs.inline]
-  let y = \"y\";
+module Test = {
+  type x = [ | `x | `y];
+  type y = [ | `z | `x | `y];
 };
-type x = X.t;
-module Y: {
-  type t = pri string;
-  [@bs.inline \"z\"]
-  let z: t;
-  [@bs.inline \"x\"]
-  let x: t;
-  [@bs.inline \"y\"]
-  let y: t;
-} = {
-  type t = string;
-  [@bs.inline]
-  let z = \"z\";
-  [@bs.inline]
-  let x = \"x\";
-  [@bs.inline]
-  let y = \"y\";
-};
-type y = Y.t;
 

@@ -387,6 +387,11 @@ let find_td = (path, current_type_list) =>
        | _ => None
        }
      );
+let find_td_by_target_in_scope = (target, scope) =>
+  find_td(
+    Path.make_current_scope(scope.path) |> Path.append(target),
+    scope.root_declarations,
+  );
 
 // TODO: Abstract these recursing functions into a general recursor (that can also be used by the plugin system that will be added at a later stage)
 let rec collect_generic_references:

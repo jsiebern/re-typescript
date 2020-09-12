@@ -12,6 +12,15 @@ type unionType =
   | Optional(array(Node.node(Node.Constraint.assignable)))
   | Single(Node.node(Node.Constraint.assignable));
 
+module Cache = {
+  type t = Hashtbl.t(Path.t, unionType);
+  let cache: t = Hashtbl.create(0);
+  let add = (path, t) => Hashtbl.replace(cache, path, t);
+  let get = path => Hashtbl.find_opt(cache, path);
+  let has = path => CCOpt.is_some(get(path));
+  let clear = () => Hashtbl.clear(cache);
+};
+
 let rec make_union_typename:
   type t. (~runtime: runtime, ~scope: scope, Node.node(t)) => string =
   (~runtime, ~scope, node) =>
@@ -67,7 +76,7 @@ let rec make_union_typename:
     | _ => "other"
     };
 
-let checks = [|
+let checks = (~scope: scope) => [|
   // --- Undefined
   nodes =>
     nodes
@@ -95,20 +104,47 @@ let checks = [|
   // --- StringLiteral
   nodes =>
     nodes
-    |> CCArray.for_all(node =>
+    |> CCArray.for_all(node => {
          switch (node) {
          | Node.Literal(String(_)) => true
+         | Reference({target, _}) =>
+           Cache.get(
+             Path.make_current_scope(scope.path) |> Path.append(target),
+           )
+           |> CCOpt.map_or(~default=false, t =>
+                switch (t) {
+                | StringLiteral(_) => true
+                | _ => false
+                }
+              )
          | _ => false
          }
-       )
+       })
       ? Some(
           StringLiteral(
             nodes
-            |> CCArray.map(node =>
-                 switch (node) {
-                 | Node.Literal(String(str)) => str
-                 | other => raise(Invalid_argument(Pp.ast_node(other)))
-                 }
+            |> CCArray.fold_left(
+                 (acc, node) =>
+                   switch (node) {
+                   | Node.Literal(String(str)) =>
+                     CCArray.append(acc, [|str|])
+                   | Reference({target, _}) =>
+                     CCArray.append(
+                       acc,
+                       switch (
+                         Cache.get(
+                           Path.make_current_scope(scope.path)
+                           |> Path.append(target),
+                         )
+                         |> CCOpt.get_exn
+                       ) {
+                       | StringLiteral(v) => v
+                       | _ => raise(Invalid_argument("Not StringLiteral"))
+                       },
+                     )
+                   | other => raise(Invalid_argument(Pp.ast_node(other)))
+                   },
+                 [||],
                ),
           ),
         )
@@ -119,17 +155,44 @@ let checks = [|
     |> CCArray.for_all(node =>
          switch (node) {
          | Node.Literal(Number(_)) => true
+         | Reference({target, _}) =>
+           Cache.get(
+             Path.make_current_scope(scope.path) |> Path.append(target),
+           )
+           |> CCOpt.map_or(~default=false, t =>
+                switch (t) {
+                | NumericLiteral(_) => true
+                | _ => false
+                }
+              )
          | _ => false
          }
        )
       ? Some(
           NumericLiteral(
             nodes
-            |> CCArray.map(node =>
-                 switch (node) {
-                 | Node.Literal(Number(num)) => num
-                 | other => raise(Invalid_argument(Pp.ast_node(other)))
-                 }
+            |> CCArray.fold_left(
+                 (acc, node) =>
+                   switch (node) {
+                   | Node.Literal(Number(num)) =>
+                     CCArray.append(acc, [|num|])
+                   | Reference({target, _}) =>
+                     CCArray.append(
+                       acc,
+                       switch (
+                         Cache.get(
+                           Path.make_current_scope(scope.path)
+                           |> Path.append(target),
+                         )
+                         |> CCOpt.get_exn
+                       ) {
+                       | NumericLiteral(v) => v
+                       | _ => raise(Invalid_argument("Not NumericLiteral"))
+                       },
+                     )
+                   | other => raise(Invalid_argument(Pp.ast_node(other)))
+                   },
+                 [||],
                ),
           ),
         )
@@ -140,19 +203,51 @@ let checks = [|
     |> CCArray.for_all(node =>
          switch (node) {
          | Node.Literal(Number(_)) => true
-         | Node.Literal(String(_)) => true
-         | Node.Literal(Boolean(_)) => true
+         | Literal(String(_)) => true
+         | Literal(Boolean(_)) => true
+         | Reference({target, _}) =>
+           Cache.get(
+             Path.make_current_scope(scope.path) |> Path.append(target),
+           )
+           |> CCOpt.map_or(~default=false, t =>
+                switch (t) {
+                | StringLiteral(_) => true
+                | NumericLiteral(_) => true
+                | MixedLiteral(_) => true
+                | _ => false
+                }
+              )
          | _ => false
          }
        )
       ? Some(
           MixedLiteral(
             nodes
-            |> CCArray.map(node =>
-                 switch (node) {
-                 | Node.Literal(_) as n => n
-                 | other => raise(Invalid_argument(Pp.ast_node(other)))
-                 }
+            |> CCArray.fold_left(
+                 (acc, node) =>
+                   switch (node) {
+                   | Node.Literal(_) as n => CCArray.append(acc, [|n|])
+                   | Reference({target, _}) =>
+                     CCArray.append(
+                       acc,
+                       switch (
+                         Cache.get(
+                           Path.make_current_scope(scope.path)
+                           |> Path.append(target),
+                         )
+                         |> CCOpt.get_exn
+                       ) {
+                       | NumericLiteral(v) =>
+                         v |> CCArray.map(f => Node.Literal(Number(f)))
+                       | StringLiteral(v) =>
+                         v |> CCArray.map(f => Node.Literal(String(f)))
+                       | MixedLiteral(v) => v
+                       | _ => raise(Invalid_argument("Not Mixed Literal"))
+                       },
+                     )
+                   | other => raise(Invalid_argument(Pp.ast_node(other)))
+                   },
+                 [||],
                ),
           ),
         )
@@ -163,7 +258,8 @@ let checks = [|
 |];
 
 let determine_union_type =
-    (nodes: array(Node.node(Node.Constraint.assignable))) => {
+    (~scope: scope, nodes: array(Node.node(Node.Constraint.assignable))) => {
+  // Important: Scope is readonly here as it's not being returned
   switch (nodes) {
   | [|one|]
       when
@@ -173,7 +269,7 @@ let determine_union_type =
         } =>
     Some(Single(one))
   | nodes =>
-    checks
+    checks(~scope)
     |> CCArray.fold_left(
          (prev, fn) => {
            switch (prev) {

@@ -149,7 +149,7 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
         resolve_union(
           ~runtime,
           ~scope,
-          Parser_union.determine_union_type(next),
+          Parser_union.determine_union_type(~scope, next),
         )
         |> CCOpt.map(((runtime, scope, next)) =>
              (runtime, scope, Node.Optional(next))
@@ -158,7 +158,7 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
         resolve_union(
           ~runtime,
           ~scope,
-          Parser_union.determine_union_type(next),
+          Parser_union.determine_union_type(~scope, next),
         )
         |> CCOpt.map(((runtime, scope, next)) =>
              (runtime, scope, Node.Nullable(next))
@@ -198,7 +198,7 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
     resolve_union(
       ~runtime,
       ~scope,
-      Parser_union.determine_union_type(types),
+      Parser_union.determine_union_type(~scope, types),
     );
   } else if (t#isInterface()) {
     t#getSymbol()

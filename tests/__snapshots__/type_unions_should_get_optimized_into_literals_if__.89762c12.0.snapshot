@@ -1,38 +1,33 @@
 type unions should get optimized into literals if possible › works with array / nullable on the original
-module X: {
-  type t = pri int;
-  [@bs.inline 3]
-  let _3: t;
-  [@bs.inline 4]
-  let _4: t;
-} = {
-  type t = int;
-  [@bs.inline]
-  let _3 = 3;
-  [@bs.inline]
-  let _4 = 4;
+module Test = {
+  module X: {
+    type t;
+    let _3: t;
+    let _4: t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let _3 = Any(3);
+    let _4 = Any(4);
+  };
+  type x = X.t;
+  module Y_T: {
+    type t;
+    let _2: t;
+    let _3: t;
+    let _4: t;
+    let _1: t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let _2 = Any(2);
+    let _3 = Any(3);
+    let _4 = Any(4);
+    let _1 = Any(1);
+  };
+  type y_T = Js.Null.t(Y_T.t);
+  type y = array(y_T);
 };
-type x = X.t;
-module Y: {
-  type t = pri int;
-  [@bs.inline 2]
-  let _2: t;
-  [@bs.inline 1]
-  let _1: t;
-  [@bs.inline 3]
-  let _3: t;
-  [@bs.inline 4]
-  let _4: t;
-} = {
-  type t = int;
-  [@bs.inline]
-  let _2 = 2;
-  [@bs.inline]
-  let _1 = 1;
-  [@bs.inline]
-  let _3 = 3;
-  [@bs.inline]
-  let _4 = 4;
-};
-type y = array(Js.Nullable.t(Y.t));
 

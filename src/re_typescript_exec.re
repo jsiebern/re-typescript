@@ -2,12 +2,6 @@ let test = (
   "/test.d.ts",
   {|
 
-type ValueOrArray<T> = T | Array<ValueOrArray<T>>;
-
-// works with array / nullable on the original
-// type x = 3 | 4;
-// type y = Array<1 | x | 2 | null>;
-
 // type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
 
 // export declare type Subset<T, U> = {

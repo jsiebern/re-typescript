@@ -1,28 +1,30 @@
 type unions should get optimized into literals if possible › string / numeric into mixed literals
-module X: {
-  type t;
-  let y: t;
-  let _3: t;
-} = {
-  [@unboxed]
-  type t =
-    | Any('a): t;
-  let y = Any(\"y\");
-  let _3 = Any(3);
+module Test = {
+  module X: {
+    type t;
+    let _3: t;
+    let y: t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let _3 = Any(3);
+    let y = Any(\"y\");
+  };
+  type x = X.t;
+  module Y: {
+    type t;
+    let z: t;
+    let _3: t;
+    let y: t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let z = Any(\"z\");
+    let _3 = Any(3);
+    let y = Any(\"y\");
+  };
+  type y = Y.t;
 };
-type x = X.t;
-module Y: {
-  type t;
-  let z: t;
-  let y: t;
-  let _3: t;
-} = {
-  [@unboxed]
-  type t =
-    | Any('a): t;
-  let z = Any(\"z\");
-  let y = Any(\"y\");
-  let _3 = Any(3);
-};
-type y = Y.t;
 

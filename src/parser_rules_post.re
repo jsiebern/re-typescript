@@ -156,6 +156,9 @@ let rule_move_only_once_referenced_types_into_their_respective_type_declaration 
     | Node.Array(inner) =>
       let (node, lst) = replace(~scope, ~current_type_list, ~path, inner);
       (Node.Array(node |> Node.Escape.toAssignable), lst);
+    | Reference({target: [|TypeName("Array")|], params: [(_, inner)]}) =>
+      let (node, lst) = replace(~scope, ~current_type_list, ~path, inner);
+      (Node.Array(node |> Node.Escape.toAssignable), lst);
     | Optional(inner) =>
       let (node, lst) = replace(~scope, ~current_type_list, ~path, inner);
       (Optional(node |> Node.Escape.toAssignable), lst);
@@ -388,7 +391,7 @@ let rule_transform_single_literals_into_union_types =
     (node, current_type_list) => {
       switch (node) {
       | TypeDeclaration({annot: Literal(_) as l, path, _} as td) =>
-        let union_type = Parser_union.determine_union_type([|l|]);
+        let union_type = Parser_union.determine_union_type(~scope, [|l|]);
         let replace_annot =
           switch (union_type) {
           | Some(StringLiteral(literals)) =>
