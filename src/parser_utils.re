@@ -303,8 +303,67 @@ module Path = {
 
   let eq = (p1: t, p2: t) => CCArray.equal((a, b) => a == b, p1, p2);
 };
+module ParserBag = {
+  type bag('t) = (runtime, scope, 't);
+  let map:
+    type t t'.
+      (
+        ~runtime: runtime,
+        ~scope: scope,
+        (~runtime: runtime, ~scope: scope, t) => bag(t'),
+        array(t)
+      ) =>
+      (runtime, scope, array(t')) =
+    (~runtime, ~scope, map_fn, nodes) =>
+      nodes
+      |> CCArray.fold_left(
+           ((runtime, scope, nodes), node) => {
+             let (runtime, scope, node) = map_fn(~runtime, ~scope, node);
+             (runtime, scope, CCArray.append(nodes, [|node|]));
+           },
+           (runtime, scope, [||]),
+         );
+  let filter_map:
+    type t t'.
+      (
+        ~runtime: runtime,
+        ~scope: scope,
+        (~runtime: runtime, ~scope: scope, t) => bag(option(t')),
+        array(t)
+      ) =>
+      (runtime, scope, array(t')) =
+    (~runtime: runtime, ~scope: scope, map_fn, nodes) => {
+      let (runtime, scope, nodes) = map(~runtime, ~scope, map_fn, nodes);
+      (runtime, scope, nodes |> CCArray.filter_map(a => a));
+    };
+  let filter_map_bag:
+    type t t'.
+      (
+        ~runtime: runtime,
+        ~scope: scope,
+        (~runtime: runtime, ~scope: scope, t) => option(bag(t')),
+        array(t)
+      ) =>
+      (runtime, scope, array(t')) =
+    (~runtime, ~scope, map_fn, nodes) =>
+      nodes
+      |> CCArray.fold_left(
+           ((runtime, scope, nodes), node) => {
+             switch (map_fn(~runtime, ~scope, node)) {
+             | None => (runtime, scope, nodes)
+             | Some((runtime, scope, node)) => (
+                 runtime,
+                 scope,
+                 CCArray.append(nodes, [|node|]),
+               )
+             }
+           },
+           (runtime, scope, [||]),
+         );
+};
 
-let build_path_from_ref_string = (~scope, ref_string: string) => {
+let build_path_from_ref_string =
+    (~with_scope=true, ~scope, ref_string: string) => {
   let path_parts = CCString.split_on_char('.', ref_string);
   let parts_count = CCList.length(path_parts);
 
@@ -321,7 +380,7 @@ let build_path_from_ref_string = (~scope, ref_string: string) => {
     | [first, ..._] => [Identifier.Module(first)]
     };
   let result = parse_parts(path_parts) |> CCArray.of_list;
-  if (parts_count == 1) {
+  if (parts_count == 1 && with_scope) {
     CCArray.append(Path.make_current_scope(scope.path), result);
   } else {
     result;

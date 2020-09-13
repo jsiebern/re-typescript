@@ -32,6 +32,17 @@ file.forEachChild(child => {
   if (Node.isTypeAliasDeclaration(child)) {
     const tn = child.getTypeNode();
     if (Node.isTypeReferenceNode(tn)) {
+      const symbol = tn.getType().getAliasSymbol();
+      const args = tn.getType().getAliasTypeArguments();
+      // args.forEach(a => {a.get})
+      const name = symbol.getName();
+      const dec = symbol.getDeclarations()[0];
+      if (Node.isTypeAliasDeclaration(dec)) {
+        console.log(dec.getTypeParameters().map(t => t.getName()));
+        console.log(name);
+      }
+
+
       // console.log(tn.getType().getSymbol())
       // const t = tn.getType().compilerType;
       // const newNode = createWrappedNode(

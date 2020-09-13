@@ -1,0 +1,33 @@
+conditional types › distributive conditional types
+module Test = {
+  type boxedValue('T) = {value: 'T};
+  type boxedArray_array_t('T) = 'T;
+  type boxedArray('T) = {array: array(boxedArray_array_t('T))};
+  module Boxed: {
+    type t('T);
+    let boxedArray: boxedArray(float) => t('T);
+    let boxedValue: boxedValue('T) => t('T);
+  } = {
+    [@unboxed]
+    type t('T) =
+      | Any('a): t('T);
+    let boxedArray = (v: boxedArray(float)) => Any(v);
+    let boxedValue = (v: boxedValue('T)) => Any(v);
+  };
+  type boxed('T) = Boxed.t('T);
+  type t1 = boxedValue(string);
+  type t2 = boxedArray(float);
+  module T3: {
+    type t;
+    let boxedValue: boxedValue(string) => t;
+    let boxedArray: boxedArray(float) => t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let boxedValue = (v: boxedValue(string)) => Any(v);
+    let boxedArray = (v: boxedArray(float)) => Any(v);
+  };
+  type t3 = T3.t;
+};
+

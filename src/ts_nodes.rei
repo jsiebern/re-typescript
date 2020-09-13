@@ -257,6 +257,8 @@ module Type: {
       pub getObjectFlags: unit => int;
       pub getApparentType: unit => t;
       pub getBaseTypes: unit => array(t);
+      pub getAliasSymbol: unit => option(Symbol.t);
+      pub getAliasTypeArguments: unit => option(array(t));
     };
 
   [@js.cast]

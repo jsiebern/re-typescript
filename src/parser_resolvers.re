@@ -101,6 +101,38 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
     Some((runtime, scope, Basic(Number)));
   } else if (Ts_nodes_util.Type.has_flag(t, Never)) {
     None;
+  } else if (Ts_nodes_util.Type.has_flag(t, Object)  // Basically a "Type" repr. of the node TypeReference
+             && t#getAliasSymbol()
+             |> CCOpt.is_some
+             && t#getAliasTypeArguments()
+             |> CCOpt.is_some) {
+    let symbol = t#getAliasSymbol() |> CCOpt.get_exn;
+    let arguments = t#getAliasTypeArguments() |> CCOpt.get_exn;
+    let target =
+      build_path_from_ref_string(
+        ~with_scope=false,
+        ~scope,
+        symbol#getFullyQualifiedName(),
+      );
+    let (runtime, scope, arguments) =
+      arguments
+      |> ParserBag.filter_map_bag(~runtime, ~scope, try_to_resolve_type)
+      |> parse__map(CCArray.to_list);
+    // Potential error: Might need to pull in the defaults if arguments and parameter count differs
+    let parameters =
+      CCArray.get_safe(symbol#getDeclarations(), 0)
+      |> CCOpt.map(Ts_nodes_util.identifyGenericNode)
+      |> CCOpt.flat_map(node =>
+           switch (node) {
+           | Ts_nodes.Identify.TypeAliasDeclaration(td) => Some(td)
+           | _ => None
+           }
+         )
+      |> CCOpt.map(td => td#getTypeParameters())
+      |> CCOpt.map(CCArray.map(p => p#getName()))
+      |> CCOpt.map_or(~default=[], CCArray.to_list);
+    let params = CCList.combine(parameters, arguments);
+    Some((runtime, scope, Reference({target, params})));
   } else if (t#isBooleanLiteral()) {
     Some((
       runtime,

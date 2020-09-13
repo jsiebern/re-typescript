@@ -76,4 +76,20 @@ describe("conditional types", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("distributive conditional types", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      type BoxedValue<T> = { value: T };
+      type BoxedArray<T> = { array: T[] };
+      type Boxed<T> = T extends any[] ? BoxedArray<T[number]> : BoxedValue<T>;
+
+      type T1 = Boxed<string>;
+      type T2 = Boxed<number[]>;
+      type T3 = Boxed<string | number[]>;
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

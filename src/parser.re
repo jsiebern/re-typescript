@@ -2134,6 +2134,36 @@ and parse__Node_Conditional = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
 // --- TypeReference
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
+// and parse__Node_TypeReference_To_Conditional = (~runtime, ~scope, node: Ts_nodes.TypeReference.t) => {
+//   // First path: Check if 
+
+
+//   // let result =
+//   //     Ts_nodes.WithGetType.fromGeneric(node#getParent() |> CCOpt.get_exn)#
+//   //       getType()
+//   //     |> CCOpt.flat_map(
+//   //          Parser_resolvers.try_to_resolve_type(~runtime, ~scope),
+//   //        )
+//   //     |> CCOpt.map(parse__map(Node.Escape.toAny));
+//   //   switch (result) {
+//   //   | None =>
+//   //     Runtime.warn(
+//   //       Exceptions.ParseFailed(
+//   //         Printf.sprintf(
+//   //           "Could not determine type for: %s -> %s",
+//   //           node#getText(),
+//   //           node#getType()
+//   //           |> CCOpt.map_or(~default="- no type -", n => n#getText()),
+//   //         ),
+//   //       ),
+//   //       runtime,
+//   //     );
+//   //     parse__AssignAny(~runtime, ~scope);
+//   //   | Some(t) => t
+//   //   };
+
+//   (runtime,scope,Basic(Any))
+// }
 and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   switch (node) {
   // Is a reference to a conditional type
@@ -2143,7 +2173,7 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
           node#getTypeName()#getType(),
           Ts_nodes.Type.Conditional,
         ) =>
-    let result =
+        let result =
       Ts_nodes.WithGetType.fromGeneric(node#getParent() |> CCOpt.get_exn)#
         getType()
       |> CCOpt.flat_map(
