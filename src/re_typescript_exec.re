@@ -2,13 +2,27 @@ let test = (
   "/test.d.ts",
   {|
 
-type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
 
-export declare type Subset<T, U> = {
-  [key in keyof T]: key extends keyof U ? T[key] : never;
-};
+type Diff<T, U> = T extends U ? never : T;
+type Filter<T, U> = T extends U ? T : never;
 
-type xyz = Subset<'push' | 'scale down', animation>
+type T1 = Diff<"a" | "b" | "c" | "d", "a" | "c" | "f">;
+type T2 = Filter<"a" | "b" | "c" | "d", "a" | "c" | "f">; // "a" | "c"
+type T3 = Diff<string | number | (() => void), Function>; // string | number
+type T4 = Filter<string | number | (() => void), Function>; // () => void
+
+type NotNullable<T> = Diff<T, null | undefined>;
+
+type T5 = NotNullable<string | number | undefined>;
+type T6 = NotNullable<string | string[] | null | undefined>;
+
+// type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
+
+// export declare type Subset<T, U> = {
+//   [key in keyof T]: key extends keyof U ? T[key] : never;
+// };
+
+// type xyz = Subset<'push' | 'scale down', animation>
 
 // declare namespace React {
 //   export type ReactType<TProps> = TProps;
