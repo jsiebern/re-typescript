@@ -92,4 +92,24 @@ describe("conditional types", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("strip away some keys", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      interface A {
+        x: string;
+        y: number;
+        z: boolean;
+      }
+
+      type stripped = Exclude<keyof A, "y">;
+
+      type ReuseStrippedKeys = {
+        [key in stripped]: A[key]
+      }
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

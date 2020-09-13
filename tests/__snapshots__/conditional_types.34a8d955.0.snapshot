@@ -1,0 +1,14 @@
+conditional types › strip away some keys
+module Test = {
+  type a = {
+    x: string,
+    y: float,
+    z: bool,
+  };
+  type stripped = [ | `x | `z];
+  type reuseStrippedKeys = {
+    x: string,
+    z: bool,
+  };
+};
+
