@@ -4,6 +4,7 @@ set -e
 if [ "$1" ==  "build" ]
 then
     esy tests --profile release-static
+    $(fnm exec -- which node) ./_build/default/tests/RunTests.bc.js
 else
     esy tests
     U=""

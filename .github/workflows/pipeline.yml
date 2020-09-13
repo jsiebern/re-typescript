@@ -4,8 +4,7 @@ on: [pull_request, push]
 
 jobs:
   run_tests:
-    # TODO: Re-Enable tests
-    if: false
+    # if: false
     name: ${{ matrix.os }}/node-${{ matrix.node-version }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -23,10 +22,12 @@ jobs:
 
       - name: Install esy
         run: |
-          npm install -g esy@latest
+          npm install -g esy@latest yarn@latest
 
       - name: Install
-        run: esy install
+        run: |
+         yarn install
+         esy install
 
       - name: Print esy cache
         id: print_esy_cache
@@ -44,6 +45,6 @@ jobs:
 
       - name: run-tests
         run: |
-          esy test
+          ./run_test.sh build
         env:
           CI: true
