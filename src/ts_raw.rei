@@ -59,8 +59,9 @@ module Type: {
     {
       inherit Ojs.obj;
       pub target: option(t);
+      pub baseType: t;
       pub id: option(int);
-      pub flags: option(int);
+      pub flags: int;
       pub objectFlags: option(int);
       pub symbol: option(Symbol.t);
       // Type checks

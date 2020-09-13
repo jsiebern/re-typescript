@@ -2,6 +2,7 @@ open Ast;
 
 module Exceptions = {
   exception UnexpectedAtThisPoint(string);
+  exception ParseFailed(string);
   exception FeatureMissing(string, string);
 };
 

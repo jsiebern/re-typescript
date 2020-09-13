@@ -148,6 +148,7 @@ module Symbol: {
       pub getValueDeclaration: unit => option(Generic.t);
       pub getDeclarations: unit => array(Generic.t);
       pub getTypeAtLocation: Generic.t => RootType.t;
+      pub getTargetType: unit => option(t);
       // Type checking
       pub isAlias: unit => bool;
       pub hasFlags: flags => bool;
@@ -255,6 +256,7 @@ module Type: {
       pub getFlags: unit => int;
       pub getObjectFlags: unit => int;
       pub getApparentType: unit => t;
+      pub getBaseTypes: unit => array(t);
     };
 
   [@js.cast]

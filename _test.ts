@@ -1,4 +1,4 @@
-import { Project, Node, Type, ts } from 'ts-morph';
+import { Project, Node, Type, ts, createWrappedNode } from 'ts-morph';
 // import * as c from '@ts-morph/common';
 
 const project = new Project({
@@ -8,33 +8,51 @@ const project = new Project({
   },
 });
 
+
+
 const file = project.createSourceFile(
   'test.d.ts',
   `
-  type x<a> = a extends string ? string : number;
-  type y = x<string>
-  type z = x<boolean>
+  type BoxedValue<T> = { value: T };
+type BoxedArray<T> = { array: T[] };
+type Boxed<T> = T extends any[] ? BoxedArray<T[number]> : BoxedValue<T>;
 
-//   type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
-
-// export declare type Subset<T, U> = {
-//   [key in keyof T]: key extends keyof U ? T[key] : never;
-// };
-
-// type xyz = Subset<'push' | 'scale down', animation>
+type T1 = Boxed<string>;
+type T2 = Boxed<number[]>;
+type T3 = Boxed<string | number[]>;
 `);
 
 file.forEachChild(child => {
+  // if (child.getType().getFlags() & ts.TypeFlags.IndexedAccess) {
+  //   console.log(child.getType().getText());
+  //   child.getType().getBaseTypes()
+  // }
   // if (Node.isConditionalTypeNode(child)) {
-
   // }
   if (Node.isTypeAliasDeclaration(child)) {
-    const n = child.getNameNode();
-    const t = n.getType();
     const tn = child.getTypeNode();
     if (Node.isTypeReferenceNode(tn)) {
-      console.log(tn.getTypeName().getType().getFlags() & ts.TypeFlags.Conditional);
+      // console.log(tn.getType().getSymbol())
+      // const t = tn.getType().compilerType;
+      // const newNode = createWrappedNode(
+      //   project
+      //     .getTypeChecker()
+      //     .compilerObject
+      //     .typeToTypeNode(t, child.compilerNode),
+      //   { typeChecker: project.getTypeChecker().compilerObject, sourceFile: file.compilerNode }
+      // );
+      // console.log(newNode.print())
+
+      // if (tn.getType().getAliasSymbol()) {
+      //   console.log('Y')
+      // }
     }
+    // const nam = child.getNameNode();
+    //   console.log(tn.getType().getSymbol().getName());
+    //   // ts.createTypeReferenceNode()
+    //   const tt = child.getType();
+
+    //   const n = child.getNameNode();
     // console.log(child.getTypeNode().getKindName())
     // console.log(n.getSymbol().getDeclarations().forEach(dec => console.log(dec.getText())));
     // console.log(t.getFlags() & ts.TypeFlags.Conditional);

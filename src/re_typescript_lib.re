@@ -78,18 +78,22 @@ let print_code = (~print_language=ReScript, ast) => {
   Format.flush_str_formatter();
 };
 
-let parse_files = files =>
-  Parser.parse__Entry(~warnings=false, ~source_files=files);
+let parse_files = (~warnings=false, files) =>
+  Parser.parse__Entry(~warnings, ~source_files=files);
 
 let quick_parse =
-    (~config=default_project_config, files: array((string, string))) => {
+    (
+      ~warnings=false,
+      ~config=default_project_config,
+      files: array((string, string)),
+    ) => {
   let project = create_project(config);
   let source_files = project |> create_source_files(files);
 
   switch (get_diagnostics(project)) {
   | Some(error) => Result.Error(error)
   | None =>
-    let nodes_parsed = parse_files(source_files);
+    let nodes_parsed = parse_files(~warnings, source_files);
     let generated = get_generated_ast(nodes_parsed);
     Result.Ok(print_code(generated));
   };

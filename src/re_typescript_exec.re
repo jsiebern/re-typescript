@@ -11,13 +11,13 @@ let test = (
 // type xyz = Subset<'push' | 'scale down', animation>
 
 
-// type BoxedValue<T> = { value: T };
-// type BoxedArray<T> = { array: T[] };
-// type Boxed<T> = T extends any[] ? BoxedArray<T[number]> : BoxedValue<T>;
+type BoxedValue<T> = { value: T };
+type BoxedArray<T> = { array: T[] };
+type Boxed<T> = T extends any[] ? BoxedArray<T[number]> : BoxedValue<T>;
 
-// type T1 = Boxed<string>;
-// type T2 = Boxed<number[]>;
-// type T3 = Boxed<string | number[]>;
+type T1 = Boxed<string>;
+type T2 = Boxed<number[]>;
+type T3 = Boxed<string | number[]>;
 
 // declare namespace React {
 //   export type ReactType<TProps> = TProps;
@@ -34,7 +34,7 @@ Console.log(
   "\n-------------------------------------------------------------------\n",
 );
 
-switch (Re_typescript_lib.quick_parse([|test|])) {
+switch (Re_typescript_lib.quick_parse(~warnings=true, [|test|])) {
 | Error(e) => raise(Failure(e))
 | Ok(parsed) => Console.log(parsed)
 };

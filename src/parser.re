@@ -1163,14 +1163,14 @@ and parse__Node__IndexedAccessType =
         | Some(Literal(Number(n))) => [|Printf.sprintf("%.0f", n)|]
         | Some(l) =>
           Runtime.warn_ftr(
-            "Index of access node invalid: ",
+            "Index of access node invalid (has_param): ",
             Pp.ast_node(l),
             runtime,
           );
           [|"t"|];
         | None =>
           Runtime.warn_ftr(
-            "Index of access node invalid: ",
+            "Index of access node invalid (no param): ",
             param_name,
             runtime,
           );
@@ -1199,11 +1199,11 @@ and parse__Node__IndexedAccessType =
            )
       | other =>
         Runtime.warn_ftr(
-          "Index of access node invalid: ",
+          "Index of access node invalid (other): ",
           Pp.node_kind(other),
           runtime,
         );
-        [|"t"|];
+        [|""|];
       };
     (index, index_stringified);
   };
@@ -1307,6 +1307,25 @@ and parse__Node__IndexedAccessType =
       | None => false
       | Some(t) => Ts_nodes_util.Type.has_object_flag(t, Mapped)
       } =>*/
+  | Some(_)
+      when {
+        let obj_type =
+          Ts_nodes.WithGetType.fromGeneric(node#getObjectTypeNode())#getType()
+          |> CCOpt.get_exn;
+        if (Ts_nodes_util.Type.has_flag(obj_type, Ts_nodes.Type.Substitution)) {
+          // If object type is a type variable
+          // For now, we'll just render the access type if this is true
+          // This will fail for sure in the future, but just to tackle this right now...
+          Int.logand(
+            obj_type#compilerType#baseType#flags,
+            Ojs.int_of_js(Ts_nodes.Type.(flags_to_js(TypeVariable))),
+          )
+          > 0;
+        } else {
+          false;
+        };
+      } =>
+    parse__Node__Generic(~runtime, ~scope, node#getIndexTypeNode())
   | Some(_) =>
     let (_, index_stringified) = index_of_access_node(node);
     let index_stringified =
@@ -2124,12 +2143,29 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
           node#getTypeName()#getType(),
           Ts_nodes.Type.Conditional,
         ) =>
-    node#getType()
-    |> CCOpt.flat_map(
-         Parser_resolvers.try_to_resolve_type(~runtime, ~scope),
-       )
-    |> CCOpt.get_or(~default=parse__AssignAny(~runtime, ~scope))
-    |> parse__map(Node.Escape.toAny)
+    let result =
+      Ts_nodes.WithGetType.fromGeneric(node#getParent() |> CCOpt.get_exn)#
+        getType()
+      |> CCOpt.flat_map(
+           Parser_resolvers.try_to_resolve_type(~runtime, ~scope),
+         )
+      |> CCOpt.map(parse__map(Node.Escape.toAny));
+    switch (result) {
+    | None =>
+      Runtime.warn(
+        Exceptions.ParseFailed(
+          Printf.sprintf(
+            "Could not determine type for: %s -> %s",
+            node#getText(),
+            node#getType()
+            |> CCOpt.map_or(~default="- no type -", n => n#getText()),
+          ),
+        ),
+        runtime,
+      );
+      parse__AssignAny(~runtime, ~scope);
+    | Some(t) => t
+    };
 
   // Is a reference to a generic type
   | TypeReference(node)

@@ -20,8 +20,12 @@ let get_generated_ast:
   list(ast_representation);
 let print_code:
   (~print_language: print_language=?, list(ast_representation)) => string;
-let parse_files: array(source_file) => array(node);
+let parse_files: (~warnings: bool=?, array(source_file)) => array(node);
 
 let quick_parse:
-  (~config: Ts_morph.Project.Config.t=?, array((string, string))) =>
+  (
+    ~warnings: bool=?,
+    ~config: Ts_morph.Project.Config.t=?,
+    array((string, string))
+  ) =>
   Result.t(string, string);
