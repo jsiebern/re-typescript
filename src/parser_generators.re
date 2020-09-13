@@ -15,7 +15,13 @@ let generate_string_literal_list = (~runtime, ~scope, strings: array(string)) =>
           |> CCArray.map(name =>
                {
                  VariantConstructor.name:
-                   Identifier.VariantIdentifier(name, has_exotic_identifiers),
+                   Identifier.VariantIdentifier(
+                     !has_exotic_identifiers && v == `poly
+                       ? name
+                         |> Ast_generator_utils.Naming.escape_reserved_keyword
+                       : name,
+                     has_exotic_identifiers,
+                   ),
                  arguments: [||],
                }
              ),

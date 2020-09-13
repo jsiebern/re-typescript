@@ -112,9 +112,8 @@ and parse__Node__Generic =
     parse__Node__TypeOperator(~runtime, ~scope, identifiedNode)
   | ParenthesizedType(pNode) =>
     parse__Node__Generic(~runtime, ~scope, pNode#getTypeNode())
-  | ConditionalType(cond) =>
-    Console.log(Pp.path(scope.path));
-    (runtime, scope, Basic(Never));
+  | ConditionalType(_) =>
+    parse__Node_Conditional(~runtime, ~scope, identifiedNode)
   | _ =>
     Console.log(
       Ast_generator_utils.Naming.full_identifier_of_path(scope.path),
@@ -2053,11 +2052,85 @@ and parse__Node__Tuple = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
 }
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
+// --- ConditionalType
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
+and parse__Node_Conditional = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
+  // These can be super complex, but for now we'll just make it a union between the result types
+  switch (node) {
+  | ConditionalType(node) =>
+    // These should be able to be chained together and seen as one type as a whole
+    let rec accumulate_chain = (node: Ts_nodes.ConditionalType.t) => {
+      let trueType = node#getTrueType();
+      let falseType = node#getFalseType();
+      CCArray.concat([
+        trueType#getKindName() == "ConditionalType"
+          ? accumulate_chain(
+              trueType |> Ts_nodes.ConditionalType.fromGeneric,
+            )
+          : [|trueType|],
+        falseType#getKindName() == "ConditionalType"
+          ? accumulate_chain(
+              falseType |> Ts_nodes.ConditionalType.fromGeneric,
+            )
+          : [|falseType|],
+      ]);
+    };
+
+    let nodes = accumulate_chain(node);
+    let (runtime, scope, types) =
+      parse__ArrayOfGenerics(~runtime, ~scope, nodes);
+
+    let old_params = scope.context_params;
+    let context_params =
+      types
+      |> CCArray.map(collect_generic_references)
+      |> CCArray.to_list
+      |> CCList.concat
+      |> CCList.uniq(~eq=(==))
+      |> CCList.rev;
+    let scope = {
+      ...scope,
+      context_params:
+        context_params
+        |> CCList.map(
+             (
+               TypeParameter(a):
+                 Identifier.t(Identifier.Constraint.exactlyTypeParameter),
+             ) =>
+             (a, None)
+           ),
+    };
+
+    let (runtime, scope, t) =
+      parse__Node__UnionType__Nodes(~runtime, ~scope, types)
+      |> parse__map(Node.Escape.toAny);
+    let scope = {...scope, context_params: old_params};
+    (runtime, scope, t);
+  | _ => raise(Exceptions.UnexpectedAtThisPoint("Not a conditional type"))
+  };
+}
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
 // --- TypeReference
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   switch (node) {
+  // Is a reference to a conditional type
+  | TypeReference(node)
+      when
+        Ts_nodes_util.Type.has_flag(
+          node#getTypeName()#getType(),
+          Ts_nodes.Type.Conditional,
+        ) =>
+    node#getType()
+    |> CCOpt.flat_map(
+         Parser_resolvers.try_to_resolve_type(~runtime, ~scope),
+       )
+    |> CCOpt.get_or(~default=parse__AssignAny(~runtime, ~scope))
+    |> parse__map(Node.Escape.toAny)
+
   // Is a reference to a generic type
   | TypeReference(node)
       when
@@ -2154,7 +2227,7 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
         }
       )
       |> CCArray.of_list;
-    
+
     let ref_path =
       scope.path |> Path.make_current_scope |> Path.append(parsed_type_name);
     let scope = scope |> Scope.add_ref(ref_path, scope.path);

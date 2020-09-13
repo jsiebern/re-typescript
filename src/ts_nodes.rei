@@ -346,6 +346,7 @@ module TypeAliasDeclaration: {
     {
       inherit TypeParametered.t;
       pub getName: unit => string;
+      pub getType: unit => Type.t;
       pub getTypeNode: unit => Generic.t;
     };
   [@js.cast]
@@ -508,6 +509,7 @@ module Identifier: {
     {
       inherit Generic.t;
       pub getImplementations: unit => Generic.t;
+      pub getType: unit => Type.t;
     };
   [@js.cast]
   let fromGeneric: Generic.t => t;

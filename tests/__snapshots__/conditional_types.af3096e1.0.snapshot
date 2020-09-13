@@ -1,0 +1,19 @@
+conditional types › references to conditional types get resolved
+module Test = {
+  module X: {
+    type t;
+    let string: string => t;
+    let number: float => t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let string = (v: string) => Any(v);
+    let number = (v: float) => Any(v);
+  };
+  type x('a) = X.t;
+  type y = string;
+  type z = float;
+  type m = float;
+};
+

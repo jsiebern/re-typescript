@@ -1,0 +1,17 @@
+conditional types › conditional types can be chained and the root union reflects that
+module Test = {
+  type typeName('T) = [
+    | `string
+    | `number
+    | `boolean
+    | `undefined
+    | `function_
+    | `object_
+  ];
+  type t0 = [ | `string];
+  type t1 = [ | `string];
+  type t2 = [ | `boolean];
+  type t3 = [ | `function_];
+  type t4 = [ | `object_];
+};
+

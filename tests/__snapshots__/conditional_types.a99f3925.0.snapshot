@@ -1,0 +1,16 @@
+conditional types › inline conditional types are printed as unions
+module Test = {
+  module F_return: {
+    type t('T);
+    let string: string => t('T);
+    let t: 'T => t('T);
+  } = {
+    [@unboxed]
+    type t('T) =
+      | Any('a): t('T);
+    let string = (v: string) => Any(v);
+    let t = (v: 'T) => Any(v);
+  };
+  type f('T) = 'T => F_return.t('T);
+};
+

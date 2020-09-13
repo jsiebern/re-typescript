@@ -1,0 +1,15 @@
+conditional types › unions passed to conditionals get resolved correctly
+module Test = {
+  type typeName('T) = [
+    | `string
+    | `number
+    | `boolean
+    | `undefined
+    | `function_
+    | `object_
+  ];
+  type t5 = [ | `string | `function_];
+  type t6 = [ | `string | `object_];
+  type t7 = [ | `object_];
+};
+
