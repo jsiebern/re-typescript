@@ -112,4 +112,25 @@ describe("conditional types", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("More complex example from the TS website", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      type Diff<T, U> = T extends U ? never : T;
+      type Filter<T, U> = T extends U ? T : never;
+
+      type T1 = Diff<"a" | "b" | "c" | "d", "a" | "c" | "f">;
+      type T2 = Filter<"a" | "b" | "c" | "d", "a" | "c" | "f">; // "a" | "c"
+      type T3 = Diff<string | number | (() => void), Function>; // string | number
+      type T4 = Filter<string | number | (() => void), Function>; // () => void
+
+      type NotNullable<T> = Diff<T, null | undefined>;
+
+      type T5 = NotNullable<string | number | undefined>;
+      type T6 = NotNullable<string | string[] | null | undefined>;
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

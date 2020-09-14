@@ -305,6 +305,17 @@ module Path = {
 };
 module ParserBag = {
   type bag('t) = (runtime, scope, 't);
+  module Option = {
+    let map:
+      type t t'.
+        (
+          (~runtime: runtime, ~scope: scope, t) => bag(t'),
+          option(bag(t))
+        ) =>
+        option(bag(t')) =
+      (map_fn, v) =>
+        v |> CCOpt.map(((runtime, scope, v)) => map_fn(~runtime, ~scope, v));
+  };
   let map:
     type t t'.
       (

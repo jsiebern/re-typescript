@@ -30,6 +30,7 @@ file.forEachChild(child => {
   // if (Node.isConditionalTypeNode(child)) {
   // }
   if (Node.isTypeAliasDeclaration(child)) {
+    child.getType().isArray
     const tn = child.getTypeNode();
     if (Node.isTypeReferenceNode(tn)) {
       const symbol = tn.getType().getAliasSymbol();

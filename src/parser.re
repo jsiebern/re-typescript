@@ -1,6 +1,5 @@
 // TODO: Eventually define an interface so that multiple backends can be built
 // ALso: Plugin system should be solved here as well, before the AST is built
-// TODO: Add more ways in which elements can obtain references (like type extraction)
 
 // Could use a similar system to graphql-ppx (see https://github.com/reasonml-community/graphql-ppx/blob/master/src/base/validations.re for reference)
 open Ast;
@@ -2135,8 +2134,7 @@ and parse__Node_Conditional = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
 // ------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------
 // and parse__Node_TypeReference_To_Conditional = (~runtime, ~scope, node: Ts_nodes.TypeReference.t) => {
-//   // First path: Check if 
-
+//   // First path: Check if
 
 //   // let result =
 //   //     Ts_nodes.WithGetType.fromGeneric(node#getParent() |> CCOpt.get_exn)#
@@ -2173,7 +2171,7 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
           node#getTypeName()#getType(),
           Ts_nodes.Type.Conditional,
         ) =>
-        let result =
+    let result =
       Ts_nodes.WithGetType.fromGeneric(node#getParent() |> CCOpt.get_exn)#
         getType()
       |> CCOpt.flat_map(
@@ -2199,9 +2197,18 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
 
   // Is a reference to a generic type
   | TypeReference(node)
-      when
+      when {
         node#getType()
-        |> CCOpt.map_or(~default=false, t => t#isTypeParameter()) =>
+        |> CCOpt.map_or(~default=false, t =>
+             t#isTypeParameter()
+             || Ts_nodes_util.Type.has_flag(t, Ts_nodes.Type.Substitution)
+             && Int.logand(
+                  t#compilerType#baseType#flags,
+                  Ojs.int_of_js(Ts_nodes.Type.(flags_to_js(TypeVariable))),
+                )
+             > 0
+           );
+      } =>
     let tpName = node#getTypeName()#getText();
     (
       runtime,

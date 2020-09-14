@@ -94,18 +94,22 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
   } else if (t#isArray()) {
     t#getArrayElementType()
     |> CCOpt.map(Ts_nodes.Type.fromRootType)
-    |> CCOpt.flat_map(inner => try_to_resolve_type(~runtime, ~scope, inner));
+    |> CCOpt.flat_map(inner => try_to_resolve_type(~runtime, ~scope, inner))
+    |> ParserBag.Option.map((~runtime, ~scope, t) =>
+         (runtime, scope, Array(t))
+       );
   } else if (Ts_nodes_util.Type.has_flag(t, Void)) {
     Some((runtime, scope, Basic(Void)));
   } else if (Ts_nodes_util.Type.has_flag(t, BigInt)) {
     Some((runtime, scope, Basic(Number)));
   } else if (Ts_nodes_util.Type.has_flag(t, Never)) {
     None;
-  } else if (Ts_nodes_util.Type.has_flag(t, Object)  // Basically a "Type" repr. of the node TypeReference
-             && t#getAliasSymbol()
-             |> CCOpt.is_some
-             && t#getAliasTypeArguments()
-             |> CCOpt.is_some) {
+  } else if
+    //Ts_nodes_util.Type.has_flag(t, Object)  &&
+    (t#getAliasSymbol()
+     |> CCOpt.is_some
+     && t#getAliasTypeArguments()
+     |> CCOpt.is_some) {
     let symbol = t#getAliasSymbol() |> CCOpt.get_exn;
     let arguments = t#getAliasTypeArguments() |> CCOpt.get_exn;
     let target =
@@ -116,7 +120,10 @@ let rec try_to_resolve_type = (~runtime, ~scope, t: Ts_nodes.Type.t) =>
       );
     let (runtime, scope, arguments) =
       arguments
-      |> ParserBag.filter_map_bag(~runtime, ~scope, try_to_resolve_type)
+      |> ParserBag.map(~runtime, ~scope, (~runtime, ~scope, t) =>
+           try_to_resolve_type(~runtime, ~scope, t)
+           |> CCOpt.get_or(~default=parse__AssignAny(~runtime, ~scope))
+         )
       |> parse__map(CCArray.to_list);
     // Potential error: Might need to pull in the defaults if arguments and parameter count differs
     let parameters =

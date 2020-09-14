@@ -1,0 +1,67 @@
+conditional types › More complex example from the TS website
+module Test = {
+  [@unboxed]
+  type any =
+    | Any('a): any;
+  module Diff: {
+    type t('T);
+    let t: 'T => t('T);
+  } = {
+    [@unboxed]
+    type t('T) =
+      | Any('a): t('T);
+    let t = (v: 'T) => Any(v);
+  };
+  type diff('T, 'U) = Diff.t('T);
+  module Filter: {
+    type t('T);
+    let t: 'T => t('T);
+  } = {
+    [@unboxed]
+    type t('T) =
+      | Any('a): t('T);
+    let t = (v: 'T) => Any(v);
+  };
+  type filter('T, 'U) = Filter.t('T);
+  type t1 = [ | `b | `d];
+  type t2 = [ | `a | `c];
+  module T3: {
+    type t;
+    let string: string => t;
+    let number: float => t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let string = (v: string) => Any(v);
+    let number = (v: float) => Any(v);
+  };
+  type t3 = T3.t;
+  type t4 = unit => unit;
+  type notNullable('T) = diff(any, Js.null(unit));
+  module T5: {
+    type t;
+    let string: string => t;
+    let number: float => t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let string = (v: string) => Any(v);
+    let number = (v: float) => Any(v);
+  };
+  type t5 = T5.t;
+  module T6: {
+    type t;
+    let string: string => t;
+    let arr_of_string: array(string) => t;
+  } = {
+    [@unboxed]
+    type t =
+      | Any('a): t;
+    let string = (v: string) => Any(v);
+    let arr_of_string = (v: array(string)) => Any(v);
+  };
+  type t6 = T6.t;
+};
+
