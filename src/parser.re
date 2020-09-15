@@ -2209,7 +2209,11 @@ and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
              > 0
            );
       } =>
-    let tpName = node#getTypeName()#getText();
+    let tpName =
+      node#getType()
+      |> CCOpt.flat_map(t => t#compilerType#symbol)
+      |> CCOpt.map(s => s#escapedName)
+      |> CCOpt.get_or(~default=node#getTypeName()#getText());
     (
       runtime,
       scope,

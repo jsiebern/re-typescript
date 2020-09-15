@@ -48,6 +48,7 @@ module Symbol: {
       inherit Ojs.obj;
       pub valueDeclaration: unit => option(Node.t);
       pub getName: unit => string;
+      pub escapedName: string;
     };
 
   let t_of_js: Ojs.t => t;

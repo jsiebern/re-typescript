@@ -2,19 +2,38 @@ let test = (
   "/test.d.ts",
   {|
 
+// Discriminated
+// type TimingEvent = { name: "start"; userStarted: boolean } | { name: "closed"; duration: number };
 
-type Diff<T, U> = T extends U ? never : T;
-type Filter<T, U> = T extends U ? T : never;
+// ------------------------------------------
 
-type T1 = Diff<"a" | "b" | "c" | "d", "a" | "c" | "f">;
-type T2 = Filter<"a" | "b" | "c" | "d", "a" | "c" | "f">; // "a" | "c"
-type T3 = Diff<string | number | (() => void), Function>; // string | number
-type T4 = Filter<string | number | (() => void), Function>; // () => void
+// Overloaded functions
+// declare function getWidget(n: number): number;
+// declare function getWidget(s: string): number[];
 
-type NotNullable<T> = Diff<T, null | undefined>;
+// ------------------------------------------
 
-type T5 = NotNullable<string | number | undefined>;
-type T6 = NotNullable<string | string[] | null | undefined>;
+// type FunctionPropertyNames<T> = {
+//   [K in keyof T]: T[K] extends Function ? K : never;
+// }[keyof T];
+// type FunctionProperties<T> = Pick<T, FunctionPropertyNames<T>>;
+
+// type NonFunctionPropertyNames<T> = {
+//   [K in keyof T]: T[K] extends Function ? never : K;
+// }[keyof T];
+// type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
+
+// interface Part {
+//   id: number;
+//   name: string;
+//   subparts: Part[];
+//   updatePart(newName: string): void;
+// }
+
+// type T1 = FunctionPropertyNames<Part>;
+// type T2 = NonFunctionPropertyNames<Part>;
+// type T3 = FunctionProperties<Part>;
+// type T4 = NonFunctionProperties<Part>;
 
 // ----------------------------
 
@@ -25,15 +44,6 @@ type T6 = NotNullable<string | string[] | null | undefined>;
 // };
 
 // type xyz = Subset<'push' | 'scale down', animation>
-
-// declare namespace React {
-//   export type ReactType<TProps> = TProps;
-//   export type ReactNode = string;
-//   export type ReactNodeArray = string[];
-//   export type ReactElement<T> = ReactType<T>;
-// }
-
-// type node = React.ReactType<{color: string}>;
 |},
 );
 
