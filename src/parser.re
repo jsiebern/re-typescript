@@ -1370,6 +1370,18 @@ and parse__Node__IndexedAccessType =
             ),
           )
         }
+      | Some((runtime, scope, Variant(idents, variant))) =>
+        let (_, index_stringified) = index_of_access_node(node);
+        let idents =
+          idents
+          |> CCArray.filter(({VariantConstructor.name, _}) =>
+               switch (name) {
+               | Identifier.VariantIdentifier(n, _) =>
+                 CCArray.mem(n, index_stringified)
+               }
+             );
+        (runtime, scope, Variant(idents, variant));
+
       | Some((_, _, other)) =>
         raise(
           Exceptions.FeatureMissing(
@@ -2164,16 +2176,25 @@ and parse__Node_Conditional = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
 // }
 and parse__Node_TypeReference = (~runtime, ~scope, node: Ts_nodes.nodeKind) => {
   switch (node) {
-  // Is a reference to a conditional type
+  // Is a reference to a conditional / (resolveable) mapped type
   | TypeReference(node)
       when
         Ts_nodes_util.Type.has_flag(
           node#getTypeName()#getType(),
           Ts_nodes.Type.Conditional,
-        ) =>
+        )
+        || !(
+             node#getType()
+             |> CCOpt.map_or(~default=false, t =>
+                  Ts_nodes_util.Type.has_object_flag(t, Ts_nodes.Type.Mapped)
+                )
+           )
+        && Ts_nodes_util.Type.has_object_flag(
+             node#getTypeName()#getType(),
+             Ts_nodes.Type.Mapped,
+           ) =>
     let result =
-      Ts_nodes.WithGetType.fromGeneric(node#getParent() |> CCOpt.get_exn)#
-        getType()
+      node#getType()
       |> CCOpt.flat_map(
            Parser_resolvers.try_to_resolve_type(~runtime, ~scope),
          )

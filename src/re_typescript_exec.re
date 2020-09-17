@@ -37,13 +37,13 @@ let test = (
 
 // ----------------------------
 
-// type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
+type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
 
-// export declare type Subset<T, U> = {
-//   [key in keyof T]: key extends keyof U ? T[key] : never;
-// };
+export declare type Subset<T, U> = {
+  [key in keyof T]: key extends keyof U ? T[key] : never;
+};
 
-// type xyz = Subset<'push' | 'scale down', animation>
+type xyz = Subset<'push' | 'scale down', animation>
 |},
 );
 

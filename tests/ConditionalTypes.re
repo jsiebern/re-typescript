@@ -133,4 +133,20 @@ describe("conditional types", ({test, _}) => {
     ).
       toMatchSnapshot()
   });
+  test("More complex example from the TS website 2", ({expect, _}) => {
+    expect.string(
+      print(
+        {|
+      type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
+
+      export declare type Subset<T, U> = {
+        [key in keyof T]: key extends keyof U ? T[key] : never;
+      };
+
+      type xyz = Subset<'push' | 'scale down', animation>
+    |},
+      ),
+    ).
+      toMatchSnapshot()
+  });
 });

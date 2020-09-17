@@ -1,0 +1,13 @@
+conditional types › More complex example from the TS website 2
+module Test = {
+  type animation = [
+    | `overlay
+    | `push
+    | `scale_down
+    | `uncover
+    | `slide_out
+    | `slide_along
+  ];
+  type xyz = [ | `push | `scale_down];
+};
+
