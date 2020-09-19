@@ -11,16 +11,18 @@ let project = Lib.create_project(Lib.default_project_config);
 
 type rndfun = unit => float;
 let rnd: rndfun = Js_of_ocaml.Js.Unsafe.global##._Math##.random;
+let file_path = Printf.sprintf("/%f/test.d.ts", rnd());
+let file = project#createSourceFile(file_path, "");
+file#saveSync();
 let print = (~ctx=?, value) => {
-  let file_path = Printf.sprintf("/%f/test.d.ts", rnd());
+  Console.log("--> STARTING");
+  file#replaceWithText(value)#saveSync();
 
-  let result =
-    Lib.quick_parse(
-      ~config=ctx |> CCOpt.value(~default=Lib.default_project_config),
-      [|(file_path, value)|],
-    );
-  switch (result) {
-  | Error(err) => raise(Failure(err))
-  | Ok(code) => code
+  switch (Lib.get_diagnostics(project)) {
+  | Some(err) => raise(Failure(err))
+  | None =>
+    let nodes_parsed = Lib.parse_files(~warnings=false, [|file|]);
+    let generated = Lib.get_generated_ast(nodes_parsed);
+    Lib.print_code(generated);
   };
 };

@@ -90,6 +90,7 @@ module SourceFile: {
     {
       inherit Node.t;
       pub saveSync: unit => unit;
+      pub replaceWithText: string => t;
       pub refreshFromFileSystemSync: unit => unit;
       pub getFilePath: unit => string;
       pub compilerNode: Ts_raw.Node.t;

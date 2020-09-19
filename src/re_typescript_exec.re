@@ -13,37 +13,28 @@ let test = (
 
 // ------------------------------------------
 
-// type FunctionPropertyNames<T> = {
-//   [K in keyof T]: T[K] extends Function ? K : never;
-// }[keyof T];
-// type FunctionProperties<T> = Pick<T, FunctionPropertyNames<T>>;
+type FunctionPropertyNames<T> = {
+  [K in keyof T]: T[K] extends Function ? K : never;
+}[keyof T];
+type FunctionProperties<T> = Pick<T, FunctionPropertyNames<T>>;
 
-// type NonFunctionPropertyNames<T> = {
-//   [K in keyof T]: T[K] extends Function ? never : K;
-// }[keyof T];
-// type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
+type NonFunctionPropertyNames<T> = {
+  [K in keyof T]: T[K] extends Function ? never : K;
+}[keyof T];
+type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
 
-// interface Part {
-//   id: number;
-//   name: string;
-//   subparts: Part[];
-//   updatePart(newName: string): void;
-// }
+interface Part {
+  id: number;
+  name: string;
+  subparts: Part[];
+  updatePart(newName: string): void;
+}
 
-// type T1 = FunctionPropertyNames<Part>;
-// type T2 = NonFunctionPropertyNames<Part>;
-// type T3 = FunctionProperties<Part>;
-// type T4 = NonFunctionProperties<Part>;
+export type T1 = FunctionPropertyNames<Part>;
+export type T2 = NonFunctionPropertyNames<Part>;
+export type T3 = FunctionProperties<Part>;
+export type T4 = NonFunctionProperties<Part>;
 
-// ----------------------------
-
-type animation = 'overlay' | 'push' | 'scale down' | 'uncover' | 'slide out' | 'slide along'
-
-export declare type Subset<T, U> = {
-  [key in keyof T]: key extends keyof U ? T[key] : never;
-};
-
-type xyz = Subset<'push' | 'scale down', animation>
 |},
 );
 
