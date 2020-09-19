@@ -7,17 +7,28 @@
  (libraries gen_js_api js_of_ocaml reason console.lib containers
    ocaml-migrate-parsetree ppx_tools_versioned yojson)
  (modules
-  (:standard \ Re_typescript_exec))
+  (:standard \ Re_typescript_js Re_typescript_dev))
  (preprocess
   (pps gen_js_api.ppx js_of_ocaml-ppx ppx_tools_versioned.metaquot_406)))
 
 (executable
- (name re_typescript_exec)
+ (name re_typescript_dev)
  (ocamlopt_flags -linkall -g)
  (js_of_ocaml
   (flags --pretty --source-map))
  (libraries js_of_ocaml console.lib re_typescript.lib)
- (modules re_typescript_exec)
+ (modules re_typescript_dev)
+ (preprocess
+  (pps gen_js_api.ppx js_of_ocaml-ppx ppx_tools_versioned.metaquot_406))
+ (modes js))
+
+(executable
+ (name re_typescript_js)
+ (ocamlopt_flags -linkall -g)
+ (js_of_ocaml
+  (flags --pretty --source-map))
+ (libraries js_of_ocaml console.lib re_typescript.lib)
+ (modules re_typescript_js)
  (preprocess
   (pps gen_js_api.ppx js_of_ocaml-ppx ppx_tools_versioned.metaquot_406))
  (modes js))

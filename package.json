@@ -10,17 +10,12 @@
     "fpack-watch": "./node_modules/.bin/fpack watch --dev --mock constants:constants-browserify --mock fs --mock child_process --mock tty --preprocess='\\.css$:style-loader!css-loader' --preprocess='\\.(png|svg)$:url-loader'",
     "fpack-worker": "./node_modules/.bin/fpack build -c fastpack-worker.json --dev --mock constants:constants-browserify --mock fs --mock child_process --mock tty --preprocess='\\.css$:style-loader!css-loader'",
     "docs": "./docs.sh",
-    "types": "./types.sh",
-    "start": "cd docs; python -m SimpleHTTPServer",
-    "ts": "yarn bs:build; yarn ts-node -P src_ts/tsconfig.json src_ts/morph.ts",
-    "tss": "npx ts-node -P src_ts/tsconfig.json src_ts/test.ts",
-    "ast": "yarn bs:build; node src_ts/bs/test.bs.js",
-    "server": "yarn bs:build; node src_ws/service.bs.js"
+    "start": "cd docs; python -m SimpleHTTPServer"
   },
   "devDependencies": {
     "@minima.app/re-css": "^1.0.1",
     "@types/node": "^14.0.14",
-    "bs-platform": "8.1",
+    "bs-platform": "8.3.0-dev.2",
     "byots": "^4.0.0-dev.20200624.14.21",
     "constants-browserify": "^1.0.0",
     "css-loader": "^3.5.3",

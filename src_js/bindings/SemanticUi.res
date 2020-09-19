@@ -83,7 +83,7 @@ module Image = {
     ~className: string=?,
     ~href: string=?,
     ~spaced: Spaced.t=?,
-    ~size: @bs.string [ | #mini | #tiny | #small | #medium | #large | #big | #huge | #massive ]=?,
+    ~size: [#mini | #tiny | #small | #medium | #large | #big | #huge | #massive]=?,
     ~inline: bool=?,
     ~src: string,
   ) => React.element = "Image"
@@ -97,7 +97,7 @@ module Menu = {
     ~stackable: bool=?,
     ~vertical: bool=?,
     ~tabular: bool=?,
-    ~icons: @bs.string [ | #labeled ]=?,
+    ~icons: [#labeled]=?,
     ~children: React.element,
   ) => React.element = "Menu"
 }
@@ -106,7 +106,7 @@ module MenuMenu = {
   @react.component @bs.module("semantic-ui-react")
   external make: (
     ~className: string=?,
-    ~position: @bs.string [ | #left | #right ]=?,
+    ~position: [#left | #right]=?,
     ~children: React.element,
   ) => React.element = "MenuMenu"
 }
@@ -163,21 +163,20 @@ module Label = {
     ~circular: bool=?,
     ~onClick: (ReactEvent.Mouse.t, 'a) => unit=?,
     ~onRemove: (ReactEvent.Mouse.t, 'a) => unit=?,
-    ~color: @bs.string
-    [
-    | #red
-    | #orange
-    | #yellow
-    | #olive
-    | #green
-    | #teal
-    | #blue
-    | #violet
-    | #purple
-    | #pink
-    | #brown
-    | #grey
-    | #black
+    ~color: [
+      | #red
+      | #orange
+      | #yellow
+      | #olive
+      | #green
+      | #teal
+      | #blue
+      | #violet
+      | #purple
+      | #pink
+      | #brown
+      | #grey
+      | #black
     ]=?,
     ~children: React.element=?,
   ) => React.element = "Label"
@@ -188,21 +187,20 @@ module Icon = {
   @react.component @bs.module("semantic-ui-react")
   external make: (
     ~className: string=?,
-    ~color: @bs.string
-    [
-    | #red
-    | #orange
-    | #yellow
-    | #olive
-    | #green
-    | #teal
-    | #blue
-    | #violet
-    | #purple
-    | #pink
-    | #brown
-    | #grey
-    | #black
+    ~color: [
+      | #red
+      | #orange
+      | #yellow
+      | #olive
+      | #green
+      | #teal
+      | #blue
+      | #violet
+      | #purple
+      | #pink
+      | #brown
+      | #grey
+      | #black
     ]=?,
     ~name: string=?,
   ) => React.element = "Icon"
@@ -232,20 +230,20 @@ module Sidebar = {
     ~className: string=?,
     ~animation: @bs.string
     [
-    | #overlay
-    | #push
-    | @bs.as("scale down")
-    #scale_down
-    | #uncover
-    | @bs.as("slide out")
-    #slide_out
-    | @bs.as("slide along")
-    #slide_along
+      | #overlay
+      | #push
+      | @bs.as("scale down")
+      #scale_down
+      | #uncover
+      | @bs.as("slide out")
+      #slide_out
+      | @bs.as("slide along")
+      #slide_along
     ]=?,
-    ~direction: @bs.string [ | #top | #right | #bottom | #left ]=?,
+    ~direction: [#top | #right | #bottom | #left]=?,
     ~visible: bool=?,
     ~width: @bs.string
-    [ | @bs.as("very thin") #very_thin | #thin | #wide | @bs.as("very wide") #very_wide ]=?,
+    [@bs.as("very thin") #very_thin | #thin | #wide | @bs.as("very wide") #very_wide]=?,
     ~vertical: bool=?,
     ~target: Dom.element=?,
     ~_as: 'a=?,
@@ -337,23 +335,22 @@ module Button = {
     ~icon: string=?,
     ~circular: bool=?,
     ~compact: bool=?,
-    ~color: @bs.string
-    [
-    | #red
-    | #orange
-    | #yellow
-    | #olive
-    | #green
-    | #teal
-    | #blue
-    | #violet
-    | #purple
-    | #pink
-    | #brown
-    | #grey
-    | #black
+    ~color: [
+      | #red
+      | #orange
+      | #yellow
+      | #olive
+      | #green
+      | #teal
+      | #blue
+      | #violet
+      | #purple
+      | #pink
+      | #brown
+      | #grey
+      | #black
     ]=?,
-    ~size: @bs.string [ | #mini | #tiny | #small | #medium | #large | #big | #huge | #massive ]=?,
+    ~size: [#mini | #tiny | #small | #medium | #large | #big | #huge | #massive]=?,
     ~children: React.element=?,
   ) => React.element = "Button"
 }

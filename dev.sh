@@ -10,6 +10,6 @@ else
         npx redemon --paths=src --extensions=re,atd,mll,mly ./dev.sh
     else
         esy dev
-        $(fnm exec -- which node) ./_build/default/src/re_typescript_exec.bc.js 
+        $(fnm exec -- which node) ./_build/default/src/re_typescript_dev.bc.js 
     fi
 fi

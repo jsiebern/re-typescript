@@ -3,7 +3,7 @@ module MonacoEditor = {
   external make: (
     ~height: string=?,
     ~width: string=?,
-    ~language: @bs.string [ | #javascript | #typescript ],
+    ~language:  [ | #javascript | #typescript ],
     ~value: string,
     ~editorDidMount: ('a, 'b) => unit=?,
     ~onChange: ('a, string) => unit,

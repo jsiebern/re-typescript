@@ -3,7 +3,7 @@
   "namespace": true,
   "sources": [
     {
-      "dir": "src_client",
+      "dir": "src_js",
       "subdirs": true
     }
   ],
